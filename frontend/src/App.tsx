@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { authService, User } from './services/auth.ts'
 
 interface HealthResponse {
   status: string
@@ -12,32 +13,70 @@ interface HealthResponse {
 
 export const App: React.FC = () => {
   const [health, setHealth] = useState<HealthResponse | null>(null)
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string | null>(null)
+  const [loadingHealth, setLoadingHealth] = useState<boolean>(true)
+  const [healthError, setHealthError] = useState<string | null>(null)
 
-  const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+  // Auth states
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const [username, setUsername] = useState<string>('admin')
+  const [password, setPassword] = useState<string>('Admin123!')
+  const [authLoading, setAuthLoading] = useState<boolean>(false)
+  const [authError, setAuthError] = useState<string | null>(null)
+
+  const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8005/api/v1'
 
   useEffect(() => {
+    // 1. Fetch Health
     fetch(`${apiBase}/health`)
       .then((res) => {
-        if (!res.ok) {
-          throw new Error(`HTTP Error: ${res.status}`)
-        }
+        if (!res.ok) throw new Error(`HTTP Error: ${res.status}`)
         return res.json()
       })
       .then((data: HealthResponse) => {
         setHealth(data)
-        setLoading(false)
+        setLoadingHealth(false)
       })
       .catch((err: Error) => {
-        setError(err.message)
-        setLoading(false)
+        setHealthError(err.message)
+        setLoadingHealth(false)
       })
+
+    // 2. Check existing session
+    const token = authService.getAccessToken()
+    if (token) {
+      authService
+        .getMe()
+        .then((user) => setCurrentUser(user))
+        .catch(() => authService.clearTokens())
+    }
   }, [apiBase])
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setAuthLoading(true)
+    setAuthError(null)
+    try {
+      const response = await authService.login(username, password)
+      setCurrentUser(response.user)
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setAuthError(err.message)
+      } else {
+        setAuthError('Terjadi kesalahan autentikasi')
+      }
+    } finally {
+      setAuthLoading(false)
+    }
+  }
+
+  const handleLogout = () => {
+    authService.logout()
+    setCurrentUser(null)
+  }
 
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '2rem 1rem' }}>
-      <header style={{ marginBottom: '2.5rem', textAlign: 'center' }}>
+      <header style={{ marginBottom: '2rem', textAlign: 'center' }}>
         <h1 style={{ fontSize: '2.25rem', color: '#1e3a8a', fontWeight: '800' }}>
           Banda Digital Ecosystem
         </h1>
@@ -45,6 +84,126 @@ export const App: React.FC = () => {
           Platform Terpadu Kependudukan, Pemetaan Petani & Traceability Rempah Banda Neira
         </p>
       </header>
+
+      {/* Authentication & User Session Section */}
+      <section
+        style={{
+          background: '#ffffff',
+          borderRadius: '12px',
+          padding: '1.5rem',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          marginBottom: '2rem',
+          border: '1px solid #e2e8f0',
+        }}
+      >
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: '#0f172a' }}>
+          Autentikasi & Akses Pengguna (Phase 2: RBAC)
+        </h2>
+
+        {currentUser ? (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <p style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#1e3a8a' }}>
+                Selamat datang, {currentUser.full_name} (@{currentUser.username})
+              </p>
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+                {currentUser.roles.map((r) => (
+                  <span
+                    key={r.id}
+                    style={{
+                      background: '#dbeafe',
+                      color: '#1e40af',
+                      padding: '0.2rem 0.6rem',
+                      borderRadius: '9999px',
+                      fontSize: '0.8rem',
+                      fontWeight: '600',
+                    }}
+                  >
+                    {r.name}
+                  </span>
+                ))}
+                {currentUser.is_superuser && (
+                  <span
+                    style={{
+                      background: '#fef3c7',
+                      color: '#b45309',
+                      padding: '0.2rem 0.6rem',
+                      borderRadius: '9999px',
+                      fontSize: '0.8rem',
+                      fontWeight: '600',
+                    }}
+                  >
+                    superuser
+                  </span>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              style={{
+                background: '#ef4444',
+                color: '#ffffff',
+                border: 'none',
+                padding: '0.5rem 1.25rem',
+                borderRadius: '8px',
+                fontWeight: '600',
+              }}
+            >
+              Keluar (Logout)
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '400px' }}>
+            {authError && (
+              <div style={{ color: '#b91c1c', background: '#fef2f2', padding: '0.6rem', borderRadius: '6px', fontSize: '0.9rem' }}>
+                {authError}
+              </div>
+            )}
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#475569', marginBottom: '0.25rem' }}>
+                Username / Email
+              </label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#475569', marginBottom: '0.25rem' }}>
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={authLoading}
+              style={{
+                background: '#1e40af',
+                color: '#ffffff',
+                border: 'none',
+                padding: '0.6rem 1.25rem',
+                borderRadius: '6px',
+                fontWeight: '600',
+                marginTop: '0.25rem',
+              }}
+            >
+              {authLoading ? 'Memproses...' : 'Masuk (Login)'}
+            </button>
+            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+              Default development admin: <code>admin</code> / <code>Admin123!</code>
+            </span>
+          </form>
+        )}
+      </section>
 
       {/* System Status Section */}
       <section
@@ -58,12 +217,12 @@ export const App: React.FC = () => {
         }}
       >
         <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: '#0f172a' }}>
-          Status Sistem (Phase 1: Project Foundation)
+          Status Infrastruktur Sistem
         </h2>
-        {loading && <p style={{ color: '#64748b' }}>Memeriksa koneksi layanan backend...</p>}
-        {error && (
+        {loadingHealth && <p style={{ color: '#64748b' }}>Memeriksa koneksi layanan backend...</p>}
+        {healthError && (
           <div style={{ color: '#b91c1c', background: '#fef2f2', padding: '0.75rem', borderRadius: '8px' }}>
-            Backend offline atau belum dapat dihubungi: {error}
+            Backend offline atau belum dapat dihubungi: {healthError}
           </div>
         )}
         {health && (
@@ -75,7 +234,7 @@ export const App: React.FC = () => {
               </p>
             </div>
             <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <span style={{ fontSize: '0.875rem', color: '#64748b' }}>PostgreSQL / PostGIS</span>
+              <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Database Engine</span>
               <p
                 style={{
                   fontSize: '1.125rem',

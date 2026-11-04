@@ -8,7 +8,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 
 - [x] **Phase 0: Project Inception & Requirements Discovery**
 - [x] **Phase 1: Project Foundation & Skeleton Setup**
-- [ ] **Phase 2: Authentication & Authorization (RBAC)**
+- [x] **Phase 2: Authentication & Authorization (RBAC)**
 - [ ] **Phase 3: Population Management Module**
 - [ ] **Phase 4: Farmer & Farm Mapping Module (PostGIS + Leaflet)**
 - [ ] **Phase 5: Harvest & Traceability Subsystem**
@@ -29,11 +29,12 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 1.6 Basic automated tests (FastAPI TestClient / pytest for health check).
 
 ### Phase 2: Authentication & Authorization (RBAC)
-- [ ] 2.1 Database schema for `users`, `roles`, and `user_roles`.
-- [ ] 2.2 Password hashing (Argon2id/bcrypt) and JWT token service.
-- [ ] 2.3 Login endpoint (`/api/v1/auth/login`) and profile endpoint (`/api/v1/auth/me`).
-- [ ] 2.4 FastAPI dependency injection for role-based permissions (`village_officer`, `admin`, `farmer`, etc.).
-- [ ] 2.5 Frontend Auth context, login page, and protected routes.
+- [x] 2.1 Database schema for `users`, `roles`, and `user_roles` with Alembic migration `001_initial_users_and_roles`.
+- [x] 2.2 Password hashing (bcrypt) and JWT token service (`access_token`, `refresh_token`).
+- [x] 2.3 Login endpoint (`/api/v1/auth/login`), profile endpoint (`/api/v1/auth/me`), and token refresh (`/api/v1/auth/refresh`).
+- [x] 2.4 FastAPI dependency injection for role-based permissions (`admin`, `village_officer`, `farmer_group_admin`, `farmer`, `smart_tourism_admin`).
+- [x] 2.5 Seed script for default roles and admin account.
+- [x] 2.6 Frontend Auth service and login interface.
 
 ### Phase 3: Population Management
 - [ ] 3.1 `residents` schema and Alembic migration.

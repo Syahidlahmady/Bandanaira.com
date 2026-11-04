@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from backend.app.core.config import settings
 from backend.app.database.session import check_db_health
+from backend.app.modules.auth.router import router as auth_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -13,6 +14,9 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
 )
+
+# Register routers
+app.include_router(auth_router, prefix=settings.API_V1_STR)
 
 # CORS Middleware
 app.add_middleware(
