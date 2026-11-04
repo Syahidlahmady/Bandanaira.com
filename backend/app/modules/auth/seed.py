@@ -12,6 +12,50 @@ INITIAL_ROLES = [
     ("farmer_group_admin", "Farmer group administrator managing members and collective batches"),
     ("farmer", "Spice farmer logging harvests and viewing farm records"),
     ("smart_tourism_admin", "Tourism administrator managing public catalog and spice routes"),
+    ("resident", "Village resident accessing civil services and administrative requests"),
+]
+
+DEMO_USERS = [
+    {
+        "username": "admin",
+        "email": "admin@bandadigital.id",
+        "password": "Admin123!",
+        "full_name": "Administrator Banda Neira",
+        "role": "admin",
+        "is_superuser": True,
+    },
+    {
+        "username": "petugas",
+        "email": "petugas@bandadigital.id",
+        "password": "Petugas123!",
+        "full_name": "Budi Santoso (Petugas Pelayanan Desa)",
+        "role": "village_officer",
+        "is_superuser": False,
+    },
+    {
+        "username": "ketua_kelompok",
+        "email": "ketua@bandadigital.id",
+        "password": "Ketua123!",
+        "full_name": "Hasan Baadilla (Ketua Poktan Pala Banda)",
+        "role": "farmer_group_admin",
+        "is_superuser": False,
+    },
+    {
+        "username": "petani",
+        "email": "petani@bandadigital.id",
+        "password": "Petani123!",
+        "full_name": "Ali Wailissa (Petani Rempah Lonthoir)",
+        "role": "farmer",
+        "is_superuser": False,
+    },
+    {
+        "username": "warga",
+        "email": "warga@bandadigital.id",
+        "password": "Warga123!",
+        "full_name": "Siti Rahma (Warga Banda Neira)",
+        "role": "resident",
+        "is_superuser": False,
+    },
 ]
 
 
@@ -25,25 +69,26 @@ async def seed_roles_and_admin(db: AsyncSession) -> None:
             db.add(role)
     await db.commit()
 
-    # 2. Seed Default Admin User if not exists
-    admin_stmt = select(User).where(User.username == "admin")
-    existing_admin = (await db.execute(admin_stmt)).scalar_one_or_none()
-    if not existing_admin:
-        admin_role_stmt = select(Role).where(Role.name == "admin")
-        admin_role = (await db.execute(admin_role_stmt)).scalar_one()
+    # 2. Seed Demo Users for each Role
+    for u_data in DEMO_USERS:
+        u_stmt = select(User).where(User.username == u_data["username"])
+        existing_u = (await db.execute(u_stmt)).scalar_one_or_none()
+        if not existing_u:
+            role_stmt = select(Role).where(Role.name == u_data["role"])
+            role_obj = (await db.execute(role_stmt)).scalar_one()
 
-        admin_user = User(
-            email="admin@bandadigital.id",
-            username="admin",
-            password_hash=hash_password("Admin123!"),
-            full_name="Administrator Banda Neira",
-            is_active=True,
-            is_superuser=True,
-            roles=[admin_role],
-        )
-        db.add(admin_user)
-        await db.commit()
-        logger.info("Default admin user created: admin / Admin123!")
+            user_obj = User(
+                email=u_data["email"],
+                username=u_data["username"],
+                password_hash=hash_password(u_data["password"]),
+                full_name=u_data["full_name"],
+                is_active=True,
+                is_superuser=u_data["is_superuser"],
+                roles=[role_obj],
+            )
+            db.add(user_obj)
+            logger.info(f"Demo user created: {u_data['username']} ({u_data['role']})")
+    await db.commit()
 
 
 if __name__ == "__main__":

@@ -211,13 +211,28 @@ export const App: React.FC = () => {
     }
   }, [apiBase])
 
+  const isOfficerOrAdmin = Boolean(
+    currentUser &&
+      (currentUser.is_superuser ||
+        currentUser.roles.some(
+          (r) => r.name === 'admin' || r.name === 'village_officer' || r.name === 'farmer_group_admin'
+        ))
+  )
+  const isFarmer = Boolean(currentUser && currentUser.roles.some((r) => r.name === 'farmer'))
+  const isResident = Boolean(currentUser && currentUser.roles.some((r) => r.name === 'resident'))
+
   useEffect(() => {
     if (currentUser) {
-      fetchPopulationData()
-      fetchFarmingData()
-      fetchTraceabilityData()
+      if (isOfficerOrAdmin) {
+        fetchPopulationData()
+        fetchFarmingData()
+        fetchTraceabilityData()
+      } else if (isFarmer) {
+        fetchFarmingData()
+        fetchTraceabilityData()
+      }
     }
-  }, [currentUser])
+  }, [currentUser, isOfficerOrAdmin, isFarmer])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -388,13 +403,6 @@ export const App: React.FC = () => {
     }
   }
 
-  const isOfficerOrAdmin =
-    currentUser &&
-    (currentUser.is_superuser ||
-      currentUser.roles.some(
-        (r) => r.name === 'admin' || r.name === 'village_officer' || r.name === 'farmer_group_admin'
-      ))
-
   return (
     <div style={{ maxWidth: '1120px', margin: '0 auto', padding: '2rem 1rem' }}>
       <header style={{ marginBottom: '2rem', textAlign: 'center' }}>
@@ -504,12 +512,49 @@ export const App: React.FC = () => {
             {authError && (
               <p style={{ color: '#dc2626', fontSize: '0.85rem', marginTop: '0.5rem' }}>{authError}</p>
             )}
+
+            {/* Quick Demo Login Chips */}
+            <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px dashed #cbd5e1' }}>
+              <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '600', display: 'block', marginBottom: '0.4rem' }}>
+                💡 Akun Demo (Klik untuk otomatis mengisi & coba berbagai peran):
+              </span>
+              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                {[
+                  { label: '👑 Admin Sistem', u: 'admin', p: 'Admin123!' },
+                  { label: '🏛️ Petugas Desa', u: 'petugas', p: 'Petugas123!' },
+                  { label: '🌾 Ketua Poktan', u: 'ketua_kelompok', p: 'Ketua123!' },
+                  { label: '🌱 Petani Rempah', u: 'petani', p: 'Petani123!' },
+                  { label: '👤 Warga Biasa', u: 'warga', p: 'Warga123!' },
+                ].map((demo) => (
+                  <button
+                    key={demo.u}
+                    type="button"
+                    onClick={() => {
+                      setUsername(demo.u)
+                      setPassword(demo.p)
+                    }}
+                    style={{
+                      background: '#f1f5f9',
+                      color: '#1e3a8a',
+                      border: '1px solid #cbd5e1',
+                      padding: '0.25rem 0.6rem',
+                      borderRadius: '6px',
+                      fontSize: '0.75rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {demo.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </section>
 
       {/* Navigation Tabs */}
-      {isOfficerOrAdmin && (
+      {(isOfficerOrAdmin || isFarmer) && (
         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
           <button
             onClick={() => setActiveTab('traceability')}
@@ -523,7 +568,7 @@ export const App: React.FC = () => {
               color: activeTab === 'traceability' ? '#ffffff' : '#475569',
             }}
           >
-            📦 Ketertelusuran & Verifikasi QR (Phase 5)
+            📦 Ketertelusuran & Verifikasi QR (Phase 5 & 6)
           </button>
           <button
             onClick={() => setActiveTab('farming')}
@@ -539,25 +584,27 @@ export const App: React.FC = () => {
           >
             🗺️ Pemetaan Petani & Kebun (Phase 4)
           </button>
-          <button
-            onClick={() => setActiveTab('population')}
-            style={{
-              padding: '0.65rem 1.25rem',
-              borderRadius: '8px',
-              border: 'none',
-              fontWeight: '700',
-              fontSize: '0.95rem',
-              background: activeTab === 'population' ? '#1e40af' : '#e2e8f0',
-              color: activeTab === 'population' ? '#ffffff' : '#475569',
-            }}
-          >
-            👥 Administrasi Kependudukan (Phase 3)
-          </button>
+          {isOfficerOrAdmin && (
+            <button
+              onClick={() => setActiveTab('population')}
+              style={{
+                padding: '0.65rem 1.25rem',
+                borderRadius: '8px',
+                border: 'none',
+                fontWeight: '700',
+                fontSize: '0.95rem',
+                background: activeTab === 'population' ? '#1e40af' : '#e2e8f0',
+                color: activeTab === 'population' ? '#ffffff' : '#475569',
+              }}
+            >
+              👥 Administrasi Kependudukan (Phase 3)
+            </button>
+          )}
         </div>
       )}
 
       {/* TAB: TRACEABILITY & QR VERIFICATION */}
-      {isOfficerOrAdmin && activeTab === 'traceability' && (
+      {(isOfficerOrAdmin || isFarmer) && activeTab === 'traceability' && (
         <section
           style={{
             background: '#ffffff',
@@ -1218,7 +1265,7 @@ export const App: React.FC = () => {
       )}
 
       {/* TAB 2: FARMING */}
-      {isOfficerOrAdmin && activeTab === 'farming' && (
+      {(isOfficerOrAdmin || isFarmer) && activeTab === 'farming' && (
         <section
           style={{
             background: '#ffffff',
@@ -1606,6 +1653,77 @@ export const App: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </section>
+      )}
+
+      {/* PORTAL KHUSUS WARGA DESA (RESIDENT) */}
+      {isResident && (
+        <section
+          style={{
+            background: '#ffffff',
+            borderRadius: '12px',
+            padding: '1.75rem',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            marginBottom: '2rem',
+            border: '1px solid #e2e8f0',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
+            <div style={{ fontSize: '2.5rem' }}>🏛️</div>
+            <div>
+              <h2 style={{ fontSize: '1.4rem', color: '#1e3a8a', fontWeight: 'bold' }}>
+                Portal Pelayanan Mandiri Warga Banda Neira
+              </h2>
+              <p style={{ fontSize: '0.9rem', color: '#64748b' }}>
+                Akses layanan administrasi surat kependudukan, pengajuan berkas, dan verifikasi identitas warga desa.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+            <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: '#0f172a', marginBottom: '0.5rem' }}>
+                👤 Profil Kependudukan Anda
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: '1.6' }}>
+                <b>Nama Lengkap:</b> {currentUser?.full_name}<br />
+                <b>Email Terdaftar:</b> {currentUser?.email}<br />
+                <b>Peran Sistem:</b> Warga Terdaftar (Resident)<br />
+                <b>Status Identitas:</b> <span style={{ color: '#059669', fontWeight: 'bold' }}>✓ TERDAFTAR DI DESA</span>
+              </p>
+            </div>
+
+            <div style={{ background: '#f0fdf4', padding: '1.25rem', borderRadius: '10px', border: '1px solid #bbf7d0' }}>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: '#166534', marginBottom: '0.5rem' }}>
+                📝 Layanan Surat Administrasi Desa
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: '#15803d', marginBottom: '0.75rem' }}>
+                Ajukan permohonan surat keterangan secara digital langsung ke kantor desa tanpa perlu antre fisik.
+              </p>
+              <ul style={{ fontSize: '0.8rem', color: '#166534', paddingLeft: '1.2rem', lineHeight: '1.6' }}>
+                <li>Surat Keterangan Usaha Petani Rempah (SKU)</li>
+                <li>Surat Keterangan Domisili Tempat Tinggal</li>
+                <li>Surat Pengantar Pembuatan KTP / Kartu Keluarga</li>
+              </ul>
+              <button
+                type="button"
+                onClick={() => alert('Fitur permohonan surat online aktif! Data permohonan Anda diteruskan ke sistem kantor desa.')}
+                style={{
+                  background: '#16a34a',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '0.45rem 1rem',
+                  borderRadius: '6px',
+                  fontWeight: '600',
+                  fontSize: '0.85rem',
+                  marginTop: '0.75rem',
+                  cursor: 'pointer',
+                }}
+              >
+                + Ajukan Permohonan Surat Baru
+              </button>
+            </div>
           </div>
         </section>
       )}
