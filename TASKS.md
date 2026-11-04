@@ -51,11 +51,11 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 4.4 Frontend interactive map using Leaflet, OpenStreetMap tiles, and commodity status indicators.
 
 ### Phase 5: Harvest & Traceability Subsystem
-- [ ] 5.1 `harvests`, `product_batches`, `batch_harvests`, and `batch_events` schema.
-- [ ] 5.2 Harvest entry endpoint and batch creation endpoint.
-- [ ] 5.3 Batch event logging with deterministic canonical SHA-256 event hashing.
-- [ ] 5.4 Unique QR Code generation with public verification token.
-- [ ] 5.5 Public QR verification endpoint and frontend responsive product timeline page.
+- [x] 5.1 `harvests`, `product_batches`, `batch_harvests`, and `batch_events` schema with migration `004_harvest_and_traceability_tables`.
+- [x] 5.2 Harvest entry endpoint and batch creation endpoint.
+- [x] 5.3 Batch event logging with deterministic canonical SHA-256 event hashing.
+- [x] 5.4 Unique QR Code generation with public verification token.
+- [x] 5.5 Public QR verification endpoint and frontend responsive product timeline page.
 
 ### Phase 6: Blockchain Integration
 - [ ] 6.1 Solidity smart contract (`SpiceRegistry.sol`) for batch hash anchoring and verification.

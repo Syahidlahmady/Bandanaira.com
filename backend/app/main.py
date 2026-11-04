@@ -7,7 +7,10 @@ from backend.app.database.session import check_db_health
 from backend.app.modules.auth.router import router as auth_router
 from backend.app.modules.farmers.router import router as farmers_router
 from backend.app.modules.farms.router import router as farms_router
+from backend.app.modules.harvests.router import router as harvests_router
 from backend.app.modules.population.router import router as population_router
+from backend.app.modules.qr.router import router as qr_router
+from backend.app.modules.traceability.router import router as traceability_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -23,6 +26,9 @@ app.include_router(auth_router, prefix=settings.API_V1_STR)
 app.include_router(population_router, prefix=settings.API_V1_STR)
 app.include_router(farmers_router, prefix=settings.API_V1_STR)
 app.include_router(farms_router, prefix=settings.API_V1_STR)
+app.include_router(harvests_router, prefix=settings.API_V1_STR)
+app.include_router(traceability_router, prefix=settings.API_V1_STR)
+app.include_router(qr_router, prefix=settings.API_V1_STR)
 
 # CORS Middleware
 app.add_middleware(
