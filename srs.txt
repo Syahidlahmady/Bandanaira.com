@@ -1,0 +1,1081 @@
+WKWKWK. Aku tahu maksudmu. Kamu ingin AI coding agent bekerja berdasarkan aturan dan dokumentasi proyek, sehingga saat kamu menyuruh AI membuat fitur, dia tidak asal mengubah struktur, membuat tabel baru sembarangan, atau merusak fitur yang sudah selesai.
+
+Dan menurutku, untuk proyek sebesar ini, kita memang harus menyiapkan dokumentasi sebelum mulai coding.
+
+Ada beberapa istilah yang mungkin sedang kamu ingat:
+
+| Istilah     | Fungsi                                                                     |
+| ----------- | -------------------------------------------------------------------------- |
+| SRS         | Dokumen kebutuhan dan spesifikasi sistem                                   |
+| PRD         | Menjelaskan tujuan produk dan kebutuhan pengguna                           |
+| `AGENTS.md` | Instruksi permanen untuk AI coding agent                                   |
+| `README.md` | Dokumentasi proyek dan cara menjalankannya                                 |
+| `MCP`       | Model Context Protocol, standar penghubung AI dengan tools dan sumber data |
+| `TASKS.md`  | Daftar pekerjaan dan progres pengembangan                                  |
+
+Yang kamu butuhkan sebenarnya bukan MCP terlebih dahulu. Kamu membutuhkan kombinasi SRS + arsitektur sistem + `AGENTS.md` + roadmap pengerjaan.
+
+MCP bisa ditambahkan nanti, misalnya ketika AI perlu mengakses database development, dokumentasi, GitHub, atau tools lain. MCP bukan pengganti dokumentasi proyek.
+
+Aku akan menyiapkan fondasi yang bisa kamu berikan kepada Cursor, Claude Code, Codex, atau AI coding agent lainnya.
+
+# Dokumen utama proyek
+
+BANDA DIGITAL ECOSYSTEM
+
+Draft v1.0
+
+# System Requirements & AI Development Guide
+
+SRS · Technical Architecture · AI Instructions · Development Roadmap
+
+Target: Prototipe yang dapat diuji di Desa Banda Neira.
+
+Developer: 1 orang dengan bantuan AI coding agent.
+
+Dokumen spesifikasi terpadu
+
+Siap dijadikan pedoman pengembangan.
+
+# BANDA DIGITAL ECOSYSTEM
+
+## Software Requirements Specification & AI Development Guide
+
+**Version:** 1.0\
+**Status:** Initial Development Specification\
+**Project Type:** Integrated Village Digital Platform\
+**Pilot Location:** Desa Banda Neira, Maluku\
+**Development Model:** Single Developer + AI Coding Agent
+
+---
+
+# PART 1. PROJECT OVERVIEW
+
+## 1.1 Project Description
+
+Banda Digital Ecosystem merupakan platform digital terintegrasi yang dirancang untuk mendukung digitalisasi pelayanan masyarakat, pendataan petani rempah, pemetaan perkebunan, dan transparansi rantai pasok produk rempah di Banda Neira.
+
+Platform memiliki tiga sistem utama:
+
+1. Population Identity & Administration.
+2. Spice Farmer Mapping.
+3. Blockchain-Based Spice Traceability.
+
+Ketiga sistem menggunakan satu backend dan database terintegrasi dengan sistem autentikasi dan otorisasi terpusat.
+
+Blockchain digunakan untuk mencatat bukti integritas data dan riwayat aktivitas penting, bukan untuk menyimpan data pribadi secara langsung.
+
+## 1.2 Project Objectives
+
+- Membantu digitalisasi administrasi kependudukan tingkat desa.
+- Menyediakan identitas digital internal bagi penduduk yang terdaftar.
+- Memetakan petani dan lokasi perkebunan rempah.
+- Mendokumentasikan komoditas dan hasil produksi.
+- Menyediakan sistem pelacakan produk dari petani sampai konsumen.
+- Membantu konsumen memeriksa riwayat produk melalui QR Code.
+- Meningkatkan transparansi dan akuntabilitas pencatatan.
+- Membangun fondasi digital yang dapat dikembangkan setelah program KKN selesai.
+
+## 1.3 Project Scope
+
+### Included
+
+- Web application responsif.
+- Progressive Web App (PWA).
+- Authentication dan role-based access control.
+- Manajemen data penduduk.
+- Verifikasi identitas oleh petugas.
+- Pemetaan petani dan perkebunan.
+- Manajemen kelompok tani.
+- Pencatatan hasil panen.
+- Batch management.
+- Product traceability.
+- QR Code verification.
+- Blockchain transaction recording.
+- Audit trail.
+- Dashboard administrasi.
+
+### Excluded from Initial MVP
+
+- Penggantian sistem resmi Dukcapil/SIAK.
+- Penerbitan dokumen kependudukan resmi.
+- Integrasi langsung dengan database Dukcapil.
+- Pembayaran digital.
+- Marketplace dengan payment gateway.
+- Blockchain publik dengan transaksi produksi sungguhan.
+- Integrasi IoT dan sensor perkebunan.
+- Aplikasi Android native.
+- Pengakuan otomatis keaslian fisik rempah melalui AI.
+
+---
+
+# PART 2. USER ROLES
+
+## 2.1 System Administrator
+
+Responsibilities:
+
+- Mengelola akun pengguna.
+- Mengelola role dan permissions.
+- Mengelola konfigurasi sistem.
+- Memantau aktivitas sistem.
+- Mengelola modul yang tersedia.
+
+## 2.2 Village Officer
+
+Responsibilities:
+
+- Mengelola data penduduk sesuai kewenangan.
+- Melakukan verifikasi identitas.
+- Memperbarui data kependudukan.
+- Mengelola pengajuan administrasi.
+- Melihat laporan kependudukan.
+- Memeriksa audit trail.
+
+## 2.3 Farmer
+
+Responsibilities:
+
+- Melihat profil petani sendiri.
+- Memperbarui informasi yang diizinkan.
+- Mengirim catatan panen.
+- Melihat riwayat produksi sendiri.
+- Melihat status batch produk.
+
+## 2.4 Farmer Group Administrator
+
+Responsibilities:
+
+- Mengelola anggota kelompok tani.
+- Membantu registrasi petani.
+- Memvalidasi informasi kelompok.
+- Memantau aktivitas produksi anggota.
+
+## 2.5 Smart Tourism Administrator
+
+Responsibilities:
+
+- Mengelola konten portal.
+- Mengelola informasi produk publik.
+- Mengelola informasi wisata dan marketplace.
+- Memantau aktivitas modul sesuai permissions.
+
+## 2.6 Public Consumer
+
+Responsibilities:
+
+- Memindai QR Code.
+- Melihat informasi produk publik.
+- Memeriksa riwayat perjalanan produk.
+- Memeriksa status verifikasi catatan produk.
+
+---
+
+# PART 3. FUNCTIONAL REQUIREMENTS
+
+## 3.1 Authentication and Authorization
+
+FR-AUTH-001: Sistem harus menyediakan login menggunakan email/username dan password.
+
+FR-AUTH-002: Sistem harus mendukung role-based access control.
+
+FR-AUTH-003: Setiap endpoint yang membutuhkan autentikasi harus memvalidasi hak akses pengguna.
+
+FR-AUTH-004: Password harus disimpan menggunakan password hashing yang aman.
+
+FR-AUTH-005: Sistem harus menyediakan logout dan mekanisme pengelolaan sesi.
+
+FR-AUTH-006: Admin dapat mengaktifkan dan menonaktifkan akun.
+
+## 3.2 Population Management
+
+FR-POP-001: Petugas dapat mendaftarkan profil penduduk.
+
+FR-POP-002: Sistem menghasilkan Resident ID internal yang unik.
+
+FR-POP-003: Petugas dapat memperbarui informasi penduduk sesuai kewenangannya.
+
+FR-POP-004: Sistem menyediakan status verifikasi penduduk.
+
+FR-POP-005: Sistem mencatat setiap perubahan data penting.
+
+FR-POP-006: Sistem menyediakan pencarian dan filter penduduk.
+
+FR-POP-007: Sistem menyediakan dashboard statistik kependudukan.
+
+FR-POP-008: Sistem dapat mencatat pengajuan administrasi desa sebagai prototipe.
+
+FR-POP-009: Sistem harus membatasi akses terhadap informasi pribadi penduduk.
+
+**Privacy Requirement:**
+
+NIK, nomor telepon, alamat lengkap, dokumen identitas, dan informasi sensitif tidak boleh ditulis ke blockchain publik.
+
+Data tersebut harus disimpan dalam database yang dilindungi dengan kontrol akses.
+
+## 3.3 Farmer Management
+
+FR-FARM-001: Petugas dapat mendaftarkan petani.
+
+FR-FARM-002: Sistem menghasilkan Farmer ID unik.
+
+FR-FARM-003: Petani dapat dihubungkan dengan kelompok tani.
+
+FR-FARM-004: Sistem mencatat komoditas yang dibudidayakan.
+
+FR-FARM-005: Sistem dapat mencatat informasi perkebunan.
+
+FR-FARM-006: Sistem dapat menyimpan koordinat lokasi perkebunan dengan persetujuan pemilik.
+
+FR-FARM-007: Sistem menyediakan peta persebaran petani dan komoditas.
+
+FR-FARM-008: Sistem menyediakan pencarian petani berdasarkan komoditas dan wilayah.
+
+FR-FARM-009: Sistem menyediakan statistik petani dan perkebunan.
+
+## 3.4 Harvest Management
+
+FR-HARVEST-001: Petani atau petugas berwenang dapat mencatat hasil panen.
+
+FR-HARVEST-002: Setiap catatan panen memiliki Harvest ID unik.
+
+FR-HARVEST-003: Data panen meliputi petani, komoditas, tanggal, jumlah, dan satuan.
+
+FR-HARVEST-004: Sistem dapat menghubungkan hasil panen dengan batch produk.
+
+FR-HARVEST-005: Perubahan data panen harus tercatat dalam audit trail.
+
+## 3.5 Spice Traceability
+
+FR-TRACE-001: Sistem dapat membuat batch produk dari catatan hasil panen.
+
+FR-TRACE-002: Setiap batch memiliki Batch ID unik.
+
+FR-TRACE-003: Sistem mencatat asal petani dan komoditas.
+
+FR-TRACE-004: Sistem mencatat proses pengolahan.
+
+FR-TRACE-005: Sistem mencatat perpindahan kepemilikan atau distribusi.
+
+FR-TRACE-006: Sistem mencatat proses pengemasan.
+
+FR-TRACE-007: Setiap batch memiliki riwayat aktivitas.
+
+FR-TRACE-008: Sistem menghasilkan QR Code unik untuk batch atau unit kemasan.
+
+FR-TRACE-009: Konsumen dapat memindai QR Code tanpa login.
+
+FR-TRACE-010: Sistem hanya menampilkan informasi produk yang telah disetujui untuk publikasi.
+
+FR-TRACE-011: Sistem menyediakan status verifikasi catatan blockchain.
+
+FR-TRACE-012: Sistem harus dapat membedakan catatan yang belum dikonfirmasi blockchain dengan catatan yang sudah dikonfirmasi.
+
+## 3.6 Blockchain Integration
+
+FR-CHAIN-001: Sistem menyediakan blockchain service terpisah dari business logic utama.
+
+FR-CHAIN-002: Blockchain menyimpan hash dari catatan atau event yang relevan.
+
+FR-CHAIN-003: Sistem tidak menyimpan data pribadi langsung di blockchain.
+
+FR-CHAIN-004: Sistem menyimpan transaction hash dan status transaksi.
+
+FR-CHAIN-005: Sistem menyediakan proses verifikasi hash.
+
+FR-CHAIN-006: Sistem menyediakan status transaksi Pending, Submitted, Confirmed, dan Failed.
+
+FR-CHAIN-007: Sistem tidak boleh menampilkan status Verified jika transaksi belum dikonfirmasi.
+
+FR-CHAIN-008: Perubahan catatan harus menghasilkan versi baru dan bukti audit baru, bukan menghapus riwayat sebelumnya.
+
+## 3.7 QR Verification
+
+FR-QR-001: Setiap batch memiliki token atau identifier publik yang tidak mudah ditebak.
+
+FR-QR-002: QR Code mengarah ke halaman verifikasi publik.
+
+FR-QR-003: Halaman verifikasi menampilkan informasi asal dan riwayat produk yang diizinkan.
+
+FR-QR-004: Halaman verifikasi menampilkan status integritas catatan.
+
+FR-QR-005: QR Code yang tidak valid harus menghasilkan status tidak ditemukan.
+
+FR-QR-006: QR Code tidak boleh mengandung informasi pribadi atau data sensitif.
+
+---
+
+# PART 4. NON-FUNCTIONAL REQUIREMENTS
+
+## 4.1 Security
+
+- Gunakan HTTPS pada deployment produksi.
+- Gunakan password hashing Argon2id atau algoritma aman yang sesuai.
+- Terapkan RBAC pada backend, bukan hanya frontend.
+- Validasi semua input di backend.
+- Gunakan environment variables untuk secret.
+- Jangan menyimpan private key blockchain dalam repository.
+- Terapkan rate limiting pada endpoint publik.
+- Catat aktivitas penting dalam audit log.
+- Hindari menampilkan informasi sensitif melalui API.
+- Terapkan prinsip least privilege.
+
+## 4.2 Performance
+
+- Halaman dashboard harus tetap responsif pada perangkat kelas menengah.
+- Query database harus menggunakan pagination untuk data besar.
+- Peta hanya memuat data yang dibutuhkan.
+- QR verification harus memiliki respons yang ringan.
+- Hindari request blockchain secara langsung pada setiap page load.
+
+## 4.3 Offline Capability
+
+- Gunakan PWA.
+- Sediakan penyimpanan sementara pada IndexedDB.
+- Data formulir dapat dimasukkan ketika koneksi tidak stabil.
+- Sediakan antrean sinkronisasi.
+- Tampilkan status Offline, Pending Sync, Synced, dan Failed.
+- Terapkan mekanisme penanganan konflik sinkronisasi.
+- Jangan menyatakan transaksi blockchain berhasil ketika perangkat sedang offline.
+
+## 4.4 Maintainability
+
+- Gunakan struktur kode modular.
+- Pisahkan business logic dari API routes.
+- Gunakan database migrations.
+- Sediakan dokumentasi API.
+- Gunakan automated tests.
+- Jangan membuat duplikasi business logic.
+- Semua perubahan database harus melalui migration.
+
+## 4.5 Privacy and Data Governance
+
+- Kumpulkan data hanya sesuai tujuan.
+- Gunakan persetujuan yang jelas.
+- Batasi akses berdasarkan peran.
+- Pisahkan data publik dan privat.
+- Sediakan mekanisme koreksi data.
+- Tentukan masa penyimpanan data.
+- Jangan menjanjikan penghapusan data blockchain yang bersifat immutable.
+- Lakukan penilaian kepatuhan terhadap UU Perlindungan Data Pribadi dan aturan administrasi kependudukan sebelum menggunakan data nyata.
+
+---
+
+# PART 5. TECHNICAL ARCHITECTURE
+
+## 5.1 Technology Stack
+
+Frontend:
+
+- React
+- Vite
+- TypeScript
+- CSS Modules atau plain CSS
+- React Router
+- TanStack Query
+- IndexedDB untuk offline queue
+
+Backend:
+
+- Python
+- FastAPI
+- SQLAlchemy
+- Alembic
+- Pydantic
+
+Database:
+
+- PostgreSQL
+- PostGIS
+
+Blockchain:
+
+- Solidity
+- Local EVM development network
+- Web3.py
+- Smart contract untuk pencatatan hash dan event
+
+Mapping:
+
+- Leaflet
+- OpenStreetMap
+- PostGIS
+
+Deployment:
+
+- Docker
+- Docker Compose
+- Nginx atau reverse proxy yang sesuai
+
+## 5.2 Architecture Principles
+
+1. Gunakan modular monolith.
+2. Satu backend API untuk seluruh modul.
+3. Satu database utama.
+4. Pisahkan blockchain service dari business logic.
+5. Semua komunikasi frontend-backend menggunakan REST API.
+6. Gunakan database sebagai sumber data operasional utama.
+7. Blockchain menjadi lapisan bukti integritas dan audit.
+8. Jangan membuat microservices pada tahap MVP.
+
+## 5.3 Suggested Backend Structure
+
+backend/
+
+- app/
+  - main.py
+  - core/
+    - config.py
+    - security.py
+    - permissions.py
+  - database/
+    - session.py
+    - base.py
+  - modules/
+    - auth/
+    - users/
+    - population/
+    - farmers/
+    - farmer_groups/
+    - farms/
+    - harvests/
+    - traceability/
+    - blockchain/
+    - qr/
+    - audit/
+  - common/
+  - schemas/
+- migrations/
+- tests/
+- requirements.txt
+
+## 5.4 Suggested Frontend Structure
+
+frontend/
+
+- src/
+  - app/
+  - components/
+  - layouts/
+  - modules/
+    - auth/
+    - dashboard/
+    - population/
+    - farmers/
+    - farmer-groups/
+    - farms/
+    - harvests/
+    - traceability/
+    - qr-verification/
+    - maps/
+  - services/
+  - hooks/
+  - utils/
+  - styles/
+  - offline/
+- public/
+- tests/
+
+## 5.5 Suggested Database Entities
+
+Authentication:
+
+- users
+- roles
+- permissions
+- user_roles
+
+Population:
+
+- residents
+- resident_verifications
+- administrative_requests
+
+Agriculture:
+
+- farmers
+- farmer_groups
+- farmer_group_members
+- farms
+- farm_crops
+- harvests
+
+Traceability:
+
+- product_batches
+- batch_events
+- batch_transfers
+- product_packages
+
+Blockchain:
+
+- blockchain_records
+- blockchain_transactions
+
+Supporting:
+
+- audit_logs
+- file_metadata
+- sync_records
+
+Use foreign keys, indexes, constraints, and timestamps consistently.
+
+Do not duplicate personal information unnecessarily between tables.
+
+---
+
+# PART 6. DATA MODEL PRINCIPLES
+
+## 6.1 Identity
+
+Every resident must have an internal UUID.
+
+Every farmer must have a separate Farmer ID.
+
+A resident may also be a farmer.
+
+Do not assume all farmers are registered residents in the prototype until the relationship has been verified and authorized.
+
+## 6.2 Farm Mapping
+
+Farm records should contain:
+
+- Farm ID
+- Owner Farmer ID
+- Location geometry
+- Area
+- Crop types
+- Verification status
+
+Exact farm coordinates must not automatically be public.
+
+## 6.3 Batch Traceability
+
+A batch must have:
+
+- Batch ID
+- Harvest reference
+- Commodity
+- Quantity
+- Unit
+- Production date
+- Current status
+- Public verification token
+
+Batch events must have:
+
+- Event ID
+- Batch ID
+- Event type
+- Event timestamp
+- Responsible actor
+- Event metadata
+- Previous event reference where applicable
+- Integrity hash
+
+## 6.4 Blockchain Data
+
+Only store the minimum information needed for verification:
+
+- Record identifier
+- Hash
+- Contract event reference
+- Transaction hash
+- Block number
+- Confirmation status
+
+Never store:
+
+- NIK
+- Password
+- Phone number
+- Full resident profile
+- Private documents
+- Sensitive personal information
+
+---
+
+# PART 7. DEVELOPMENT ROADMAP
+
+Development must follow this sequence.
+
+## Phase 0: Discovery
+
+- Interview village officers.
+- Interview farmer groups.
+- Identify actual administrative workflows.
+- Identify available population data.
+- Identify farmer data sources.
+- Map spice distribution processes.
+- Validate internet and device conditions.
+
+Deliverables:
+
+- Field research notes.
+- Confirmed requirements.
+- Approved prototype scope.
+
+## Phase 1: Project Foundation
+
+- Create repository.
+- Configure Docker Compose.
+- Configure PostgreSQL and PostGIS.
+- Initialize FastAPI.
+- Initialize React.
+- Configure environment variables.
+- Configure migrations.
+- Configure testing framework.
+
+Deliverable: Running project skeleton.
+
+## Phase 2: Authentication and Authorization
+
+- User management.
+- Login.
+- RBAC.
+- Protected API.
+- Admin dashboard foundation.
+
+Deliverable: Secure multi-role foundation.
+
+## Phase 3: Population Management
+
+- Resident registration.
+- Resident profile.
+- Verification.
+- Search and filtering.
+- Administrative request prototype.
+- Audit logging.
+
+Deliverable: Working population module using synthetic data.
+
+## Phase 4: Farmer and Farm Mapping
+
+- Farmer registration.
+- Farmer groups.
+- Farm registration.
+- Geographical mapping.
+- Crop management.
+- Harvest recording.
+
+Deliverable: Working farmer mapping module.
+
+## Phase 5: Traceability
+
+- Batch creation.
+- Harvest-to-batch relationship.
+- Processing events.
+- Distribution events.
+- Packaging events.
+- Public QR page.
+
+Deliverable: Working end-to-end traceability using test products.
+
+## Phase 6: Blockchain Integration
+
+- Deploy local smart contract.
+- Implement hashing.
+- Register batch records.
+- Store transaction references.
+- Implement verification.
+- Handle pending and failed transactions.
+
+Deliverable: Blockchain-backed integrity verification.
+
+## Phase 7: Offline and PWA
+
+- Service worker.
+- IndexedDB.
+- Offline forms.
+- Sync queue.
+- Conflict handling.
+- Sync status interface.
+
+Deliverable: Offline-capable prototype.
+
+## Phase 8: Testing and Demonstration
+
+- Unit testing.
+- API integration testing.
+- Role permission testing.
+- Blockchain verification testing.
+- Offline testing.
+- QR scanning testing.
+- User acceptance testing.
+
+Deliverable: Demonstrable prototype.
+
+---
+
+# PART 8. AI CODING AGENT INSTRUCTIONS
+
+This section is the permanent instruction for AI coding agents.
+
+## 8.1 General Role
+
+You are a Senior Full-Stack Software Engineer assisting in developing Banda Digital Ecosystem.
+
+Your responsibility is to produce maintainable, secure, tested, and working software.
+
+You must prioritize project consistency over generating large amounts of code.
+
+## 8.2 Mandatory Rules
+
+RULE 1: READ BEFORE CODING.
+
+Before modifying any code:
+
+- Read AGENTS.md.
+- Read README.md.
+- Read the relevant SRS section.
+- Inspect the existing directory structure.
+- Inspect related existing modules.
+- Inspect database models and migrations.
+
+Never assume the project is empty.
+
+RULE 2: DO NOT REWRITE WORKING FEATURES.
+
+- Do not replace existing architecture without permission.
+- Do not delete working components.
+- Do not create duplicate services.
+- Do not introduce new libraries without justification.
+- Do not modify unrelated modules.
+
+RULE 3: WORK IN SMALL TASKS.
+
+- Implement one feature at a time.
+- Explain the intended change.
+- Identify files to be modified.
+- Implement the feature.
+- Run tests.
+- Report results.
+- Update TASKS.md.
+
+RULE 4: DATABASE CONSISTENCY.
+
+- Never modify production data directly.
+- Use Alembic migrations.
+- Preserve existing relationships.
+- Add constraints and indexes where necessary.
+- Never silently drop columns or tables.
+- Do not store personal information on public blockchain.
+
+RULE 5: SECURITY.
+
+- Enforce permissions in backend.
+- Validate all incoming data.
+- Never expose secrets.
+- Never hardcode private keys.
+- Never trust frontend validation alone.
+- Never expose private resident data through public endpoints.
+
+RULE 6: FRONTEND CONSISTENCY.
+
+- Use shared components.
+- Maintain consistent layouts.
+- Maintain responsive behavior.
+- Use loading, empty, error, and success states.
+- Avoid duplicated UI logic.
+- Do not introduce another styling framework without approval.
+
+RULE 7: TESTING.
+
+Every new feature must include appropriate tests.
+
+At minimum:
+
+- Happy path.
+- Invalid input.
+- Unauthorized access.
+- Missing data.
+- Failure handling.
+
+RULE 8: BLOCKCHAIN INTEGRITY.
+
+- Never report an unconfirmed transaction as confirmed.
+- Hash canonicalized records consistently.
+- Keep sensitive data outside blockchain.
+- Preserve historical records.
+- Verify transaction receipts.
+- Handle transaction failures.
+
+RULE 9: DOCUMENTATION.
+
+Update relevant documentation whenever:
+
+- API contracts change.
+- Database schema changes.
+- Environment variables change.
+- Architecture changes.
+- New dependencies are introduced.
+
+RULE 10: BE HONEST.
+
+Never claim a feature works unless it has been implemented and tested.
+
+Never invent test results.
+
+If a requirement is unclear, state the ambiguity and ask for clarification before implementing a potentially destructive change.
+
+## 8.3 Required Workflow for Every Task
+
+1. Understand the requested feature.
+2. Inspect the existing implementation.
+3. Identify dependencies.
+4. Describe the implementation plan.
+5. Identify affected files.
+6. Implement the smallest complete solution.
+7. Run relevant tests.
+8. Fix regressions.
+9. Update documentation.
+10. Update TASKS.md.
+
+## 8.4 Definition of Done
+
+A task is complete only when:
+
+- The requested functionality is implemented.
+- API validation works.
+- Authorization works.
+- Database migrations are included when necessary.
+- Relevant tests pass.
+- Existing features are not broken.
+- Documentation is updated.
+- No unresolved critical errors remain.
+
+---
+
+# PART 9. AI DEVELOPMENT COMMUNICATION
+
+The AI agent must use this report format after every task:
+
+### Implementation Summary
+
+What was implemented?
+
+### Files Changed
+
+List the modified and created files.
+
+### Database Changes
+
+Describe schema and migration changes.
+
+### API Changes
+
+Describe endpoints and request/response changes.
+
+### Tests
+
+List tests executed and actual results.
+
+### Known Issues
+
+List remaining limitations.
+
+### Next Task
+
+Recommend the next logical development task.
+
+---
+
+# PART 10. PROJECT ACCEPTANCE CRITERIA
+
+The MVP is considered demonstrable when:
+
+1. An administrator can log in.
+2. Users have different access permissions.
+3. Authorized officers can register and verify synthetic resident records.
+4. Farmers can be registered.
+5. Farms can be displayed on a map.
+6. Harvest records can be created.
+7. Harvest records can generate product batches.
+8. Batch processing and distribution history can be recorded.
+9. Product QR Codes can be generated.
+10. Consumers can view public product history.
+11. Blockchain records can be verified.
+12. The application can handle offline form submissions and later synchronization.
+13. Sensitive information is not exposed through public interfaces.
+14. The application can be deployed using documented instructions.
+
+---
+
+# PART 11. PROJECT MANAGEMENT
+
+Maintain these files:
+
+- SRS.md: Functional and non-functional requirements.
+- AGENTS.md: Permanent AI development instructions.
+- README.md: Installation and usage instructions.
+- ARCHITECTURE.md: Technical architecture.
+- DATABASE.md: Database schema documentation.
+- API.md: API documentation.
+- TASKS.md: Development backlog.
+- CHANGELOG.md: Version history.
+- .env.example: Environment variable template.
+
+Do not mark a feature as completed until its acceptance criteria have been verified.
+
+---
+
+# FINAL DEVELOPMENT PRINCIPLE
+
+Build a working system, not a collection of disconnected demonstrations.
+
+Prioritize:
+
+1. Correct business logic.
+2. Data integrity.
+3. Security and privacy.
+4. Maintainable architecture.
+5. Usable interface.
+6. Blockchain integration where it provides actual value.
+
+The goal is a sustainable digital ecosystem that can be operated by local stakeholders after the KKN program ends.
+
+## 2. Struktur dokumentasi yang harus kamu buat
+
+Aku menyarankan struktur repository seperti ini:
+
+```
+banda-digital/
+├── AGENTS.md
+├── README.md
+├── SRS.md
+├── ARCHITECTURE.md
+├── DATABASE.md
+├── API.md
+├── TASKS.md
+├── CHANGELOG.md
+├── .env.example
+│
+├── frontend/
+├── backend/
+├── blockchain/
+│   ├── contracts/
+│   ├── scripts/
+│   └── tests/
+│
+├── infrastructure/
+│   └── docker/
+│
+└── docs/
+    ├── research/
+    ├── diagrams/
+    └── decisions/
+```
+
+Catatan: Dokumen panjang di atas adalah spesifikasi terpadu. Saat membuat repository, pecah menjadi file-file terpisah sesuai struktur tersebut. Jangan menaruh seluruh dokumentasi di `AGENTS.md`, karena AI justru akan kesulitan menemukan aturan yang relevan.
+
+## 3. Prompt pertama untuk AI coding agent
+
+Setelah repository dibuat, berikan instruksi berikut:
+
+Kamu bertugas sebagai Senior Software Architect untuk proyek Banda Digital Ecosystem.
+
+Saya sudah menyediakan dokumen spesifikasi proyek.
+
+Sebelum menulis kode:
+
+1. Baca seluruh dokumentasi proyek.
+2. Periksa struktur repository.
+3. Identifikasi kebutuhan teknis yang belum tersedia.
+4. Evaluasi apakah arsitektur sudah konsisten dengan SRS.
+5. Identifikasi risiko keamanan dan privasi.
+6. Buat development backlog berdasarkan dependency antarfitur.
+
+JANGAN langsung membuat seluruh aplikasi.
+
+Tahap pertama hanya:
+
+- Project initialization.
+- Docker Compose.
+- PostgreSQL + PostGIS.
+- FastAPI skeleton.
+- React + Vite + TypeScript skeleton.
+- Environment configuration.
+- Database connection.
+- Health check endpoint.
+- Basic automated tests.
+
+Buat implementasi minimal tetapi benar-benar bisa dijalankan.
+
+Setelah selesai:
+
+- Jalankan seluruh pengujian yang relevan.
+- Laporkan file yang dibuat.
+- Laporkan cara menjalankan aplikasi.
+- Catat pekerjaan berikutnya di TASKS.md.
+
+Jangan mengimplementasikan fitur di luar scope tahap pertama tanpa persetujuan.
+
+## 4. Rekomendasi tools AI yang cocok
+
+Untuk workflow seperti ini:
+
+- Codex: mengerjakan perubahan lintas file, membaca dokumentasi, mengimplementasikan fitur, dan menjalankan pengujian.
+- Claude Code: alternatif coding agent berbasis terminal.
+- VS Code: editor utama.
+- Git: wajib untuk version control.
+- Docker Compose: menjalankan lingkungan development.
+- MCP: tambahan ketika kamu benar-benar membutuhkan koneksi AI dengan tools eksternal.
+
+Aku justru ingin kamu memakai Git sejak hari pertama. Setiap modul yang sudah berhasil dibuat harus memiliki commit yang jelas. Jangan sampai AI memperbaiki satu fitur lalu tiga fitur lain ikut rusak tanpa kamu tahu kapan kejadiannya.
+
+## 5. Urutan implementasi yang aku sarankan
+
+Development checklist
+
+0/9 selesai
+
+1\. Project foundation
+
+Repository, Docker, PostgreSQL, FastAPI, React
+
+2\. Authentication & RBAC
+
+Login, role, permission, session
+
+3\. Population management
+
+Data penduduk sintetis, verifikasi, audit
+
+4\. Farmer mapping
+
+Petani, kelompok tani, perkebunan, peta
+
+5\. Harvest management
+
+Pencatatan panen dan batch
+
+6\. Traceability
+
+Pengolahan, distribusi, QR Code
+
+7\. Blockchain
+
+Hash, smart contract, verification
+
+8\. Offline PWA
+
+IndexedDB, sync queue, conflict handling
+
+9\. Field testing
+
+Pengujian dan demonstrasi bersama masyarakat
+
+## 6. Saran pribadiku: jangan mulai dari blockchain
+
+Aku tahu nama proyeknya membawa blockchain, dan kemungkinan kamu juga tertarik mengerjakan Solidity-nya. Tapi urutan yang benar adalah:
+
+1. Database dan business logic harus benar.
+2. Data petani dan batch harus saling terhubung.
+3. Traceability harus berjalan tanpa blockchain terlebih dahulu.
+4. Baru tambahkan blockchain untuk membuktikan integritas catatan.
+
+Kalau traceability biasa saja belum berjalan, blockchain tidak akan menyelamatkan desain yang berantakan.
+
+Satu hal lagi: karena ini proyek KKN yang akan digunakan masyarakat, jangan memasukkan data NIK, dokumen penduduk, nomor telepon, atau koordinat kebun warga ke AI coding agent maupun layanan AI eksternal. Gunakan data sintetis selama pengembangan.
+
+Target kita bukan membuat aplikasi yang terlihat canggih ketika demo. Target kita membuat aplikasi yang benar-benar bisa digunakan, dipahami, dan diteruskan oleh masyarakat Banda Neira.
