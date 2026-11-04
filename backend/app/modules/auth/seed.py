@@ -44,3 +44,15 @@ async def seed_roles_and_admin(db: AsyncSession) -> None:
         db.add(admin_user)
         await db.commit()
         logger.info("Default admin user created: admin / Admin123!")
+
+
+if __name__ == "__main__":
+    import asyncio
+    from backend.app.database.session import AsyncSessionLocal
+
+    async def main():
+        async with AsyncSessionLocal() as session:
+            await seed_roles_and_admin(session)
+            print("✓ Roles & default admin user seeded successfully: admin / Admin123!")
+
+    asyncio.run(main())
