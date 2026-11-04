@@ -9,7 +9,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 0: Project Inception & Requirements Discovery**
 - [x] **Phase 1: Project Foundation & Skeleton Setup**
 - [x] **Phase 2: Authentication & Authorization (RBAC)**
-- [ ] **Phase 3: Population Management Module**
+- [x] **Phase 3: Population Management Module**
 - [ ] **Phase 4: Farmer & Farm Mapping Module (PostGIS + Leaflet)**
 - [ ] **Phase 5: Harvest & Traceability Subsystem**
 - [ ] **Phase 6: Blockchain Integration & Verification Layer**
@@ -37,12 +37,12 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 2.6 Frontend Auth service and login interface.
 
 ### Phase 3: Population Management
-- [ ] 3.1 `residents` schema and Alembic migration.
-- [ ] 3.2 CRUD endpoints for resident records with Pydantic schemas.
-- [ ] 3.3 Verification workflow (`pending` -> `verified` / `rejected`).
-- [ ] 3.4 Audit log generation on resident mutations.
-- [ ] 3.5 Demographic summary statistics endpoint.
-- [ ] 3.6 Frontend resident management interface and statistics cards.
+- [x] 3.1 `residents`, `administrative_requests`, and `audit_logs` schema with Alembic migration `002_population_and_audit_tables`.
+- [x] 3.2 CRUD endpoints for resident records with Pydantic schemas (`/api/v1/population/residents`).
+- [x] 3.3 Verification workflow (`pending` -> `verified` / `rejected`).
+- [x] 3.4 Audit log generation on resident mutations (`CREATE_RESIDENT`, `UPDATE_RESIDENT`, `VERIFY_RESIDENT`).
+- [x] 3.5 Demographic summary statistics endpoint (`/api/v1/population/statistics`).
+- [x] 3.6 Frontend resident management interface and statistics cards.
 
 ### Phase 4: Farmer & Farm Mapping (PostGIS)
 - [ ] 4.1 Schema for `farmers`, `farmer_groups`, and `farms` with PostGIS geometry columns.

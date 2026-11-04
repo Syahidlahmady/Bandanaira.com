@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from backend.app.core.config import settings
 from backend.app.database.session import check_db_health
 from backend.app.modules.auth.router import router as auth_router
+from backend.app.modules.population.router import router as population_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -17,6 +18,7 @@ app = FastAPI(
 
 # Register routers
 app.include_router(auth_router, prefix=settings.API_V1_STR)
+app.include_router(population_router, prefix=settings.API_V1_STR)
 
 # CORS Middleware
 app.add_middleware(
