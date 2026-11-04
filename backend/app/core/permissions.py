@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Sequence, Union
 import uuid
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -65,7 +65,14 @@ async def get_current_active_user(
     return current_user
 
 
-def require_roles(*allowed_roles: str) -> Callable:
+def require_roles(*roles: Union[str, Sequence[str]]) -> Callable:
+    flattened_roles: List[str] = []
+    for r in roles:
+        if isinstance(r, (list, tuple, set)):
+            flattened_roles.extend(r)
+        else:
+            flattened_roles.append(r)
+
     async def role_checker(
         current_user: User = Depends(get_current_active_user),
     ) -> User:
@@ -73,11 +80,11 @@ def require_roles(*allowed_roles: str) -> Callable:
             return current_user
 
         user_role_names = [role.name for role in current_user.roles]
-        has_permission = any(role in allowed_roles for role in user_role_names)
+        has_permission = any(role in flattened_roles for role in user_role_names)
         if not has_permission:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Operation not permitted. Required roles: {', '.join(allowed_roles)}",
+                detail=f"Operation not permitted. Required roles: {', '.join(flattened_roles)}",
             )
         return current_user
 

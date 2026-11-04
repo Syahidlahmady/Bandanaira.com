@@ -85,6 +85,13 @@ RESTful API specification for **Banda Digital Ecosystem**.
 |---|---|---|---|
 | `GET` | `/api/v1/public/verify/{token}` | Public (No Auth) | Fetch public product batch history, origin, and blockchain hash |
 
+### 2.7 Blockchain Anchoring & Verification (`/api/v1/blockchain`)
+| Method | Endpoint | Roles Allowed | Description |
+|---|---|---|---|
+| `POST` | `/api/v1/blockchain/batches/{id}/anchor` | `admin`, `village_officer`, `farmer_group_admin` | Anchor batch genesis or event hash to smart contract |
+| `GET` | `/api/v1/blockchain/batches/{id}/transactions` | `admin`, `village_officer`, `farmer_group_admin`, `farmer` | List on-chain transaction history for batch |
+| `GET` | `/api/v1/blockchain/batches/{id}/verify` | Public (No Auth) | Cryptographic verification comparing local DB hash with on-chain anchored hash |
+
 ---
 
 ## 3. Query Parameters Standard

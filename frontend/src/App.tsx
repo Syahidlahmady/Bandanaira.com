@@ -19,6 +19,7 @@ import {
   Harvest,
   ProductBatch,
   PublicBatchVerification,
+  BlockchainVerification,
 } from './services/traceability.ts'
 import { FarmMap } from './components/FarmMap.tsx'
 
@@ -67,6 +68,8 @@ export const App: React.FC = () => {
   const [publicVerifyData, setPublicVerifyData] = useState<PublicBatchVerification | null>(null)
   const [verifyTokenInput, setVerifyTokenInput] = useState<string>('')
   const [traceMsg, setTraceMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [verificationModal, setVerificationModal] = useState<BlockchainVerification | null>(null)
+  const [blockchainLoading, setBlockchainLoading] = useState<string | null>(null)
 
   // Form: Resident
   const [popForm, setPopForm] = useState<ResidentCreateInput>({
@@ -354,6 +357,32 @@ export const App: React.FC = () => {
     try {
       const res = await traceabilityService.verifyPublic(token)
       setPublicVerifyData(res)
+    } catch (err: unknown) {
+      if (err instanceof Error) alert(err.message)
+    }
+  }
+
+  const handleAnchorBlockchain = async (batchId: string) => {
+    setBlockchainLoading(batchId)
+    setTraceMsg(null)
+    try {
+      const tx = await traceabilityService.anchorToBlockchain(batchId)
+      setTraceMsg({
+        type: 'success',
+        text: `Batch berhasil dijangkarkan ke Smart Contract EVM! Tx Hash: ${tx.transaction_hash?.substring(0, 18)}... (Blok #${tx.block_number || 'N/A'})`,
+      })
+      fetchTraceabilityData()
+    } catch (err: unknown) {
+      if (err instanceof Error) setTraceMsg({ type: 'error', text: err.message })
+    } finally {
+      setBlockchainLoading(null)
+    }
+  }
+
+  const handleVerifyBlockchain = async (batchId: string) => {
+    try {
+      const res = await traceabilityService.verifyBlockchain(batchId)
+      setVerificationModal(res)
     } catch (err: unknown) {
       if (err instanceof Error) alert(err.message)
     }
@@ -756,29 +785,91 @@ export const App: React.FC = () => {
                     >
                       STATUS: {b.status.toUpperCase()}
                     </span>
+                    <span
+                      style={{
+                        padding: '0.2rem 0.6rem',
+                        borderRadius: '9999px',
+                        fontSize: '0.75rem',
+                        fontWeight: '700',
+                        marginLeft: '0.4rem',
+                        background:
+                          b.blockchain_status === 'confirmed'
+                            ? '#d1fae5'
+                            : b.blockchain_status === 'submitted'
+                            ? '#dbeafe'
+                            : b.blockchain_status === 'failed'
+                            ? '#fee2e2'
+                            : '#fef3c7',
+                        color:
+                          b.blockchain_status === 'confirmed'
+                            ? '#065f46'
+                            : b.blockchain_status === 'submitted'
+                            ? '#1e40af'
+                            : b.blockchain_status === 'failed'
+                            ? '#991b1b'
+                            : '#92400e',
+                        display: 'inline-block',
+                        marginTop: '0.25rem',
+                      }}
+                    >
+                      ⛓️ BLOCKCHAIN: {b.blockchain_status.toUpperCase()}
+                    </span>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                     {b.qr_code_base64 && (
                       <img
                         src={b.qr_code_base64}
                         alt="QR Code"
-                        style={{ width: '80px', height: '80px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                        style={{ width: '70px', height: '70px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
                       />
                     )}
+                    <button
+                      onClick={() => handleAnchorBlockchain(b.id)}
+                      disabled={blockchainLoading === b.id}
+                      style={{
+                        background: '#4f46e5',
+                        color: '#ffffff',
+                        border: 'none',
+                        padding: '0.45rem 0.8rem',
+                        borderRadius: '6px',
+                        fontSize: '0.8rem',
+                        fontWeight: '600',
+                        cursor: blockchainLoading === b.id ? 'not-allowed' : 'pointer',
+                        opacity: blockchainLoading === b.id ? 0.7 : 1,
+                      }}
+                    >
+                      {blockchainLoading === b.id ? 'Menjangkar...' : '⛓️ Jangkar EVM'}
+                    </button>
+                    <button
+                      onClick={() => handleVerifyBlockchain(b.id)}
+                      style={{
+                        background: '#0284c7',
+                        color: '#ffffff',
+                        border: 'none',
+                        padding: '0.45rem 0.8rem',
+                        borderRadius: '6px',
+                        fontSize: '0.8rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      🔍 Verifikasi On-Chain
+                    </button>
                     <button
                       onClick={() => handlePublicVerify(b.public_verification_token)}
                       style={{
                         background: '#059669',
                         color: '#ffffff',
                         border: 'none',
-                        padding: '0.5rem 1rem',
+                        padding: '0.45rem 0.8rem',
                         borderRadius: '6px',
-                        fontSize: '0.85rem',
+                        fontSize: '0.8rem',
                         fontWeight: '600',
+                        cursor: 'pointer',
                       }}
                     >
-                      Buka Verifikasi QR Publik ↗
+                      QR Publik ↗
                     </button>
                   </div>
                 </div>
@@ -973,6 +1064,154 @@ export const App: React.FC = () => {
               }}
             >
               Tutup Jendela Verifikasi
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* BLOCKCHAIN ON-CHAIN CRYPTOGRAPHIC VERIFICATION MODAL */}
+      {verificationModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.65)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+            zIndex: 10000,
+          }}
+        >
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              maxWidth: '680px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              padding: '2rem',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              border: '1px solid #e2e8f0',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+              <div>
+                <span
+                  style={{
+                    background: verificationModal.is_verified ? '#dcfce7' : '#fee2e2',
+                    color: verificationModal.is_verified ? '#15803d' : '#991b1b',
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: '9999px',
+                    fontSize: '0.8rem',
+                    fontWeight: 'bold',
+                    display: 'inline-block',
+                    marginBottom: '0.5rem',
+                  }}
+                >
+                  {verificationModal.is_verified
+                    ? '✓ VERIFIKASI INTEGRITAS BLOCKCHAIN LOLOS'
+                    : '⚠️ HASH TIDAK COCOK / BELUM DIJANGKARKAN'}
+                </span>
+                <h3 style={{ fontSize: '1.4rem', fontWeight: '800', color: '#1e3a8a' }}>
+                  Verifikasi On-Chain Smart Contract EVM
+                </h3>
+                <p style={{ color: '#64748b', fontSize: '0.9rem' }}>
+                  Kode Batch: <b>{verificationModal.batch_code}</b>
+                </p>
+              </div>
+              <button
+                onClick={() => setVerificationModal(null)}
+                style={{
+                  background: '#f1f5f9',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div
+              style={{
+                background: verificationModal.is_verified ? '#f0fdf4' : '#fffbeb',
+                border: `1px solid ${verificationModal.is_verified ? '#bbf7d0' : '#fde68a'}`,
+                padding: '1rem',
+                borderRadius: '8px',
+                marginBottom: '1.25rem',
+                fontSize: '0.9rem',
+                color: verificationModal.is_verified ? '#166534' : '#92400e',
+              }}
+            >
+              {verificationModal.message}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.85rem' }}>
+              <div style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>Hash Basis Data Lokal (Head SHA-256):</span>
+                <code style={{ color: '#4338ca', wordBreak: 'break-all', fontWeight: '600' }}>
+                  {verificationModal.latest_db_hash}
+                </code>
+              </div>
+
+              <div style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>Hash Terjangkar di Smart Contract (On-Chain):</span>
+                <code style={{ color: '#059669', wordBreak: 'break-all', fontWeight: '600' }}>
+                  {verificationModal.on_chain_hash || '(Belum pernah dijangkarkan)'}
+                </code>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
+                <div style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                  <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>Nomor Blok (Block Height):</span>
+                  <b>{verificationModal.block_number ? `#${verificationModal.block_number}` : 'N/A'}</b>
+                </div>
+                <div style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                  <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>EVM Chain ID:</span>
+                  <b>{verificationModal.network_chain_id} (Local Testnet)</b>
+                </div>
+              </div>
+
+              <div style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>Alamat Smart Contract (SpiceRegistry.sol):</span>
+                <code style={{ color: '#334155', wordBreak: 'break-all' }}>
+                  {verificationModal.contract_address}
+                </code>
+              </div>
+
+              {verificationModal.transaction_hash && (
+                <div style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                  <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>Transaction Hash:</span>
+                  <code style={{ color: '#2563eb', wordBreak: 'break-all' }}>
+                    {verificationModal.transaction_hash}
+                  </code>
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={() => setVerificationModal(null)}
+              style={{
+                width: '100%',
+                background: '#1e3a8a',
+                color: '#ffffff',
+                border: 'none',
+                padding: '0.75rem',
+                borderRadius: '8px',
+                fontWeight: 'bold',
+                marginTop: '1.5rem',
+                cursor: 'pointer',
+              }}
+            >
+              Tutup Panel Verifikasi Blockchain
             </button>
           </div>
         </div>

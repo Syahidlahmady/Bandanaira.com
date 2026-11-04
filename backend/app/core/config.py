@@ -21,6 +21,13 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
+    # Blockchain (Local EVM Testnet)
+    BLOCKCHAIN_RPC_URL: str = "http://localhost:8545"
+    BLOCKCHAIN_CHAIN_ID: int = 1337
+    BLOCKCHAIN_CONTRACT_ADDRESS: str = "0x0000000000000000000000000000000000000000"
+    BLOCKCHAIN_DEPLOYER_PRIVATE_KEY: str = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+    BLOCKCHAIN_ENABLED: bool = True
+
     @property
     def cors_origins(self) -> List[str]:
         return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",") if origin.strip()]

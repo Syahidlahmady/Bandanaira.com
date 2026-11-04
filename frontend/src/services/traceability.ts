@@ -58,6 +58,36 @@ export interface PublicBatchVerification {
   qr_code_base64: string
 }
 
+export interface BlockchainTransaction {
+  id: string
+  batch_id: string
+  event_id?: string
+  transaction_hash?: string
+  block_number?: number
+  contract_address: string
+  data_hash: string
+  status: string
+  submitted_at?: string
+  confirmed_at?: string
+  error_message?: string
+  created_at: string
+}
+
+export interface BlockchainVerification {
+  batch_id: string
+  batch_code: string
+  latest_db_hash: string
+  on_chain_hash?: string
+  is_verified: boolean
+  status: string
+  network_chain_id: number
+  contract_address: string
+  block_number?: number
+  transaction_hash?: string
+  verified_at: string
+  message: string
+}
+
 export const traceabilityService = {
   getAuthHeaders(): HeadersInit {
     const token = authService.getAccessToken()
@@ -134,6 +164,36 @@ export const traceabilityService = {
     return res.json()
   },
 
+  async anchorToBlockchain(batchId: string, eventId?: string): Promise<BlockchainTransaction> {
+    const res = await fetch(`${API_BASE}/blockchain/batches/${batchId}/anchor`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(eventId ? { event_id: eventId } : {}),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail || `Gagal menjangkar batch ke blockchain (${res.status})`)
+    }
+    return res.json()
+  },
+
+  async getBlockchainTransactions(batchId: string): Promise<BlockchainTransaction[]> {
+    const res = await fetch(`${API_BASE}/blockchain/batches/${batchId}/transactions`, {
+      headers: this.getAuthHeaders(),
+    })
+    if (!res.ok) throw new Error(`Gagal memuat transaksi blockchain (${res.status})`)
+    return res.json()
+  },
+
+  async verifyBlockchain(batchId: string): Promise<BlockchainVerification> {
+    const res = await fetch(`${API_BASE}/blockchain/batches/${batchId}/verify`)
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail || `Gagal memverifikasi blockchain (${res.status})`)
+    }
+    return res.json()
+  },
+
   async verifyPublic(token: string): Promise<PublicBatchVerification> {
     const res = await fetch(`${API_BASE}/public/verify/${encodeURIComponent(token)}`)
     if (!res.ok) {
@@ -143,3 +203,4 @@ export const traceabilityService = {
     return res.json()
   },
 }
+

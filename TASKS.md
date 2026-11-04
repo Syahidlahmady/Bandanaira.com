@@ -58,11 +58,11 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 5.5 Public QR verification endpoint and frontend responsive product timeline page.
 
 ### Phase 6: Blockchain Integration
-- [ ] 6.1 Solidity smart contract (`SpiceRegistry.sol`) for batch hash anchoring and verification.
-- [ ] 6.2 Local EVM development environment integration.
-- [ ] 6.3 Web3 client service in FastAPI to submit batch hashes and read transaction receipts.
-- [ ] 6.4 Transaction status handling: `Pending`, `Submitted`, `Confirmed`, `Failed`.
-- [ ] 6.5 Hash integrity verification logic comparing DB hash against on-chain hash.
+- [x] 6.1 Solidity smart contract (`SpiceRegistry.sol`) for batch hash anchoring and verification.
+- [x] 6.2 Local EVM development environment integration.
+- [x] 6.3 Web3 client service in FastAPI to submit batch hashes and read transaction receipts.
+- [x] 6.4 Transaction status handling: `Pending`, `Submitted`, `Confirmed`, `Failed`.
+- [x] 6.5 Hash integrity verification logic comparing DB hash against on-chain hash.
 
 ### Phase 7: Offline PWA & Sync Queue
 - [ ] 7.1 Progressive Web App manifest and Service Worker caching.
