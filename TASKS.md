@@ -10,7 +10,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 1: Project Foundation & Skeleton Setup**
 - [x] **Phase 2: Authentication & Authorization (RBAC)**
 - [x] **Phase 3: Population Management Module**
-- [ ] **Phase 4: Farmer & Farm Mapping Module (PostGIS + Leaflet)**
+- [x] **Phase 4: Farmer & Farm Mapping Module (PostGIS + Leaflet)**
 - [ ] **Phase 5: Harvest & Traceability Subsystem**
 - [ ] **Phase 6: Blockchain Integration & Verification Layer**
 - [ ] **Phase 7: Offline Support & PWA (IndexedDB Sync Queue)**
@@ -45,10 +45,10 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 3.6 Frontend resident management interface and statistics cards.
 
 ### Phase 4: Farmer & Farm Mapping (PostGIS)
-- [ ] 4.1 Schema for `farmers`, `farmer_groups`, and `farms` with PostGIS geometry columns.
-- [ ] 4.2 Farmer registration API and group assignment.
-- [ ] 4.3 Farm boundary recording API (Point & Polygon GeoJSON).
-- [ ] 4.4 Frontend interactive map using Leaflet and OpenStreetMap tiles.
+- [x] 4.1 Schema for `farmers`, `farmer_groups`, and `farms` with PostGIS geometry/coordinate support and Alembic migration `003_farmers_and_farms_tables`.
+- [x] 4.2 Farmer registration API (`/api/v1/farmers`) and group management (`/api/v1/farmers/groups`).
+- [x] 4.3 Farm plot registration API (`/api/v1/farms`) and GeoJSON FeatureCollection endpoint (`/api/v1/farms/geojson/all`).
+- [x] 4.4 Frontend interactive map using Leaflet, OpenStreetMap tiles, and commodity status indicators.
 
 ### Phase 5: Harvest & Traceability Subsystem
 - [ ] 5.1 `harvests`, `product_batches`, `batch_harvests`, and `batch_events` schema.

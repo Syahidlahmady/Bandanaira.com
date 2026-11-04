@@ -12,6 +12,8 @@ from backend.app.database.base import Base
 import backend.app.modules.auth.models  # noqa: F401
 import backend.app.modules.audit.models  # noqa: F401
 import backend.app.modules.population.models  # noqa: F401
+import backend.app.modules.farmers.models  # noqa: F401
+import backend.app.modules.farms.models  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
