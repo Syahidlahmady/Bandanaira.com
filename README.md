@@ -27,6 +27,7 @@ Platform digital terintegrasi untuk mendukung digitalisasi pelayanan masyarakat,
 - [DATABASE.md](file:///home/masann/Projects/banda%20neira/penduduk/DATABASE.md) — Desain skema database dan entitas relasional.
 - [API.md](file:///home/masann/Projects/banda%20neira/penduduk/API.md) — Spesifikasi REST API dan format respon.
 - [TASKS.md](file:///home/masann/Projects/banda%20neira/penduduk/TASKS.md) — Roadmap dan progres pengerjaan bertahap.
+- [USER_GUIDE.md](file:///home/masann/Projects/banda%20neira/penduduk/docs/USER_GUIDE.md) — Panduan operasional dan pengguna lengkap.
 
 ---
 
@@ -42,8 +43,14 @@ cp .env.example .env
 docker compose -f infrastructure/docker/docker-compose.yml up -d --build
 ```
 
-### 3. Akses Layanan
-- **Frontend Web:** `http://localhost:5173`
-- **Backend API:** `http://localhost:8000`
-- **API Interactive Docs (Swagger):** `http://localhost:8000/docs`
-- **Health Check Endpoint:** `http://localhost:8000/api/v1/health`
+### 3. Jalankan Database Migrations & Seed Data Demonstrasi
+```bash
+poetry run alembic -c backend/alembic.ini upgrade head
+poetry run python backend/scripts/demo_seed.py
+```
+
+### 4. Akses Layanan
+- **Frontend Web:** `http://localhost:5174` (atau `http://localhost:5173`)
+- **Backend API:** `http://localhost:8005` (atau `http://localhost:8000`)
+- **API Interactive Docs (Swagger):** `http://localhost:8005/docs`
+- **Health Check Endpoint:** `http://localhost:8005/api/v1/health`

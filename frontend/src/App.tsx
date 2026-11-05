@@ -22,6 +22,8 @@ import {
   BlockchainVerification,
 } from './services/traceability.ts'
 import { FarmMap } from './components/FarmMap.tsx'
+import { offlineDB } from './offline/db.ts'
+import { syncManager, SyncQueueItem } from './offline/syncManager.ts'
 
 interface HealthResponse {
   status: string
@@ -38,6 +40,13 @@ export const App: React.FC = () => {
   const [health, setHealth] = useState<HealthResponse | null>(null)
   const [loadingHealth, setLoadingHealth] = useState<boolean>(true)
   const [healthError, setHealthError] = useState<string | null>(null)
+
+  // Offline PWA & Sync states
+  const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true)
+  const [pendingSyncCount, setPendingSyncCount] = useState<number>(0)
+  const [isSyncing, setIsSyncing] = useState<boolean>(false)
+  const [showQueueModal, setShowQueueModal] = useState<boolean>(false)
+  const [queueList, setQueueList] = useState<SyncQueueItem[]>([])
 
   // Auth states
   const [currentUser, setCurrentUser] = useState<User | null>(null)
@@ -125,67 +134,164 @@ export const App: React.FC = () => {
 
   const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8005/api/v1'
 
-  const fetchPopulationData = () => {
+  const fetchPopulationData = async () => {
     setLoadingPop(true)
-    Promise.all([
-      populationService.listResidents(1, 20, searchQuery),
-      populationService.getStatistics(),
-    ])
-      .then(([resList, resStats]) => {
-        setResidents(resList.items)
-        setPopStats(resStats)
-        setLoadingPop(false)
-      })
-      .catch((err: Error) => {
-        setPopMsg({ type: 'error', text: err.message })
-        setLoadingPop(false)
-      })
+    try {
+      const [resList, resStats] = await Promise.all([
+        populationService.listResidents(1, 20, searchQuery),
+        populationService.getStatistics(),
+      ])
+      setResidents(resList.items)
+      setPopStats(resStats)
+      await offlineDB.cacheData('residents', resList.items)
+      await offlineDB.cacheData('popStats', resStats)
+    } catch (err: unknown) {
+      const cached = await offlineDB.getCachedData<Resident[]>('residents')
+      const cachedStats = await offlineDB.getCachedData<PopulationStatistics>('popStats')
+      if (cached && cached.length > 0) {
+        setResidents(cached)
+        if (cachedStats) setPopStats(cachedStats)
+        setPopMsg({ type: 'success', text: '📦 Menampilkan data kependudukan dari cache offline lokal.' })
+      } else {
+        const msg = err instanceof Error ? err.message : 'Gagal memuat data penduduk'
+        setPopMsg({ type: 'error', text: msg })
+      }
+    } finally {
+      setLoadingPop(false)
+    }
   }
 
-  const fetchFarmingData = () => {
-    Promise.all([
-      farmerService.listGroups(),
-      farmerService.listFarmers(),
-      farmerService.listFarms(),
-      farmerService.getFarmsGeoJSON(),
-      farmerService.getStatistics(),
-    ])
-      .then(([groups, farmerList, farmList, geo, fStats]) => {
-        setFarmerGroups(groups)
-        setFarmers(farmerList.items)
-        setFarms(farmList.items)
-        setFarmGeoJSON(geo)
-        setFarmStats(fStats)
-        if (farmerList.items.length > 0) {
-          setFarmForm((prev) => ({ ...prev, farmer_id: prev.farmer_id || farmerList.items[0].id }))
-          setHarvestForm((prev) => ({
-            ...prev,
-            farmer_id: prev.farmer_id || farmerList.items[0].id,
-            farm_id: prev.farm_id || (farmList.items[0]?.id || ''),
-          }))
-        }
-      })
-      .catch((err: Error) => setFarmMsg({ type: 'error', text: err.message }))
+  const fetchFarmingData = async () => {
+    try {
+      const [groups, farmerList, farmList, geo, fStats] = await Promise.all([
+        farmerService.listGroups(),
+        farmerService.listFarmers(),
+        farmerService.listFarms(),
+        farmerService.getFarmsGeoJSON(),
+        farmerService.getStatistics(),
+      ])
+      setFarmerGroups(groups)
+      setFarmers(farmerList.items)
+      setFarms(farmList.items)
+      setFarmGeoJSON(geo)
+      setFarmStats(fStats)
+      await offlineDB.cacheData('farmerGroups', groups)
+      await offlineDB.cacheData('farmers', farmerList.items)
+      await offlineDB.cacheData('farms', farmList.items)
+      await offlineDB.cacheData('farmGeoJSON', geo)
+      await offlineDB.cacheData('farmStats', fStats)
+
+      if (farmerList.items.length > 0) {
+        setFarmForm((prev) => ({ ...prev, farmer_id: prev.farmer_id || farmerList.items[0].id }))
+        setHarvestForm((prev) => ({
+          ...prev,
+          farmer_id: prev.farmer_id || farmerList.items[0].id,
+          farm_id: prev.farm_id || (farmList.items[0]?.id || ''),
+        }))
+      }
+    } catch (err: unknown) {
+      const cachedFarms = await offlineDB.getCachedData<Farm[]>('farms')
+      const cachedFarmers = await offlineDB.getCachedData<Farmer[]>('farmers')
+      const cachedGroups = await offlineDB.getCachedData<FarmerGroup[]>('farmerGroups')
+      const cachedGeo = await offlineDB.getCachedData<FarmGeoJSONFeatureCollection>('farmGeoJSON')
+      const cachedStats = await offlineDB.getCachedData<FarmStatistics>('farmStats')
+
+      if (cachedFarms && cachedFarms.length > 0) {
+        if (cachedGroups) setFarmerGroups(cachedGroups)
+        if (cachedFarmers) setFarmers(cachedFarmers)
+        setFarms(cachedFarms)
+        if (cachedGeo) setFarmGeoJSON(cachedGeo)
+        if (cachedStats) setFarmStats(cachedStats)
+        setFarmMsg({ type: 'success', text: '📦 Menampilkan data lahan & petani dari cache offline lokal.' })
+      } else {
+        const msg = err instanceof Error ? err.message : 'Gagal memuat data pemetaan lahan'
+        setFarmMsg({ type: 'error', text: msg })
+      }
+    }
   }
 
-  const fetchTraceabilityData = () => {
-    Promise.all([traceabilityService.listHarvests(), traceabilityService.listBatches()])
-      .then(([hList, bList]) => {
-        setHarvests(hList.items)
-        setBatches(bList.items)
-        if (hList.items.length > 0 && !batchForm.harvest_id) {
-          setBatchForm((prev) => ({
-            ...prev,
-            harvest_id: hList.items[0].id,
-            allocated_qty: hList.items[0].quantity_kg,
-          }))
-        }
-        if (bList.items.length > 0 && !selectedBatch) {
-          setSelectedBatch(bList.items[0])
-        }
-      })
-      .catch((err: Error) => setTraceMsg({ type: 'error', text: err.message }))
+  const fetchTraceabilityData = async () => {
+    try {
+      const [hList, bList] = await Promise.all([
+        traceabilityService.listHarvests(),
+        traceabilityService.listBatches(),
+      ])
+      setHarvests(hList.items)
+      setBatches(bList.items)
+      await offlineDB.cacheData('harvests', hList.items)
+      await offlineDB.cacheData('batches', bList.items)
+
+      if (hList.items.length > 0 && !batchForm.harvest_id) {
+        setBatchForm((prev) => ({
+          ...prev,
+          harvest_id: hList.items[0].id,
+          allocated_qty: hList.items[0].quantity_kg,
+        }))
+      }
+      if (bList.items.length > 0 && !selectedBatch) {
+        setSelectedBatch(bList.items[0])
+      }
+    } catch (err: unknown) {
+      const cachedHarvests = await offlineDB.getCachedData<Harvest[]>('harvests')
+      const cachedBatches = await offlineDB.getCachedData<ProductBatch[]>('batches')
+      if (cachedHarvests && cachedHarvests.length > 0) {
+        setHarvests(cachedHarvests)
+        if (cachedBatches) setBatches(cachedBatches)
+        setTraceMsg({ type: 'success', text: '📦 Menampilkan catatan panen dari cache offline lokal.' })
+      } else {
+        const msg = err instanceof Error ? err.message : 'Gagal memuat data rantai pasok'
+        setTraceMsg({ type: 'error', text: msg })
+      }
+    }
   }
+
+  const isOfficerOrAdmin = Boolean(
+    currentUser &&
+      (currentUser.is_superuser ||
+        currentUser.roles.some(
+          (r) => r.name === 'admin' || r.name === 'village_officer' || r.name === 'farmer_group_admin'
+        ))
+  )
+  const isFarmer = Boolean(currentUser && currentUser.roles.some((r) => r.name === 'farmer'))
+  const isResident = Boolean(currentUser && currentUser.roles.some((r) => r.name === 'resident'))
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true)
+      syncManager.processSync()
+    }
+    const handleOffline = () => {
+      setIsOnline(false)
+    }
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
+    syncManager.getPendingCount().then(setPendingSyncCount)
+
+    const unsubscribe = syncManager.subscribe((event) => {
+      setPendingSyncCount(event.pendingCount)
+      if (event.type === 'sync_start') {
+        setIsSyncing(true)
+      } else if (event.type === 'sync_complete') {
+        setIsSyncing(false)
+        if (isOfficerOrAdmin) {
+          fetchPopulationData()
+          fetchFarmingData()
+          fetchTraceabilityData()
+        } else if (isFarmer) {
+          fetchFarmingData()
+          fetchTraceabilityData()
+        }
+      }
+    })
+
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+      unsubscribe()
+    }
+  }, [isOfficerOrAdmin, isFarmer])
 
   useEffect(() => {
     fetch(`${apiBase}/health`)
@@ -210,16 +316,6 @@ export const App: React.FC = () => {
         .catch(() => authService.clearTokens())
     }
   }, [apiBase])
-
-  const isOfficerOrAdmin = Boolean(
-    currentUser &&
-      (currentUser.is_superuser ||
-        currentUser.roles.some(
-          (r) => r.name === 'admin' || r.name === 'village_officer' || r.name === 'farmer_group_admin'
-        ))
-  )
-  const isFarmer = Boolean(currentUser && currentUser.roles.some((r) => r.name === 'farmer'))
-  const isResident = Boolean(currentUser && currentUser.roles.some((r) => r.name === 'resident'))
 
   useEffect(() => {
     if (currentUser) {
@@ -259,9 +355,78 @@ export const App: React.FC = () => {
     setSelectedBatch(null)
   }
 
+  const handleManualSync = async () => {
+    setIsSyncing(true)
+    try {
+      const res = await syncManager.processSync()
+      if (res.total > 0) {
+        alert(`Sinkronisasi selesai: ${res.success} berhasil dikirim ke server, ${res.failed} gagal.`)
+      } else {
+        alert('Tidak ada item antrean yang perlu disinkronkan.')
+      }
+    } catch (err: unknown) {
+      console.error('Manual sync error:', err)
+    } finally {
+      setIsSyncing(false)
+    }
+  }
+
+  const handleOpenQueueModal = async () => {
+    const list = await syncManager.getAllQueue()
+    setQueueList(list)
+    setShowQueueModal(true)
+  }
+
+  const handleDeleteQueueItem = async (id: number) => {
+    await syncManager.removeItem(id)
+    const updated = await syncManager.getAllQueue()
+    setQueueList(updated)
+  }
+
+  const handleClearAllQueue = async () => {
+    if (confirm('Yakin ingin mengosongkan seluruh antrean sinkronisasi offline?')) {
+      await syncManager.clearAll()
+      setQueueList([])
+    }
+  }
+
   const handleCreateResident = async (e: React.FormEvent) => {
     e.preventDefault()
     setPopMsg(null)
+
+    if (!navigator.onLine) {
+      await syncManager.enqueue(
+        'resident_create',
+        `${apiBase}/population/residents`,
+        'POST',
+        popForm as unknown as Record<string, unknown>,
+        `Pendaftaran Penduduk: ${popForm.full_name} (${popForm.nik})`
+      )
+      const optimisticResident: Resident = {
+        id: `offline-${Date.now()}`,
+        nik: popForm.nik,
+        full_name: popForm.full_name,
+        gender: popForm.gender,
+        birth_place: popForm.birth_place || 'Banda Neira',
+        address: popForm.address,
+        rt: popForm.rt,
+        rw: popForm.rw,
+        village: 'Lonthoir',
+        occupation: popForm.occupation,
+        phone_number: popForm.phone_number,
+        verification_status: 'pending',
+        created_at: new Date().toISOString(),
+      }
+      setResidents((prev) => [optimisticResident, ...prev])
+      setPopMsg({
+        type: 'success',
+        text: `📦 Mode Offline: Data ${popForm.full_name} disimpan ke antrean lokal! Akan dikirim otomatis ke server saat online.`,
+      })
+      const nextNik = (BigInt(popForm.nik) + 1n).toString()
+      setPopForm({ ...popForm, nik: nextNik, full_name: '' })
+      return
+    }
+
     try {
       await populationService.createResident(popForm)
       setPopMsg({ type: 'success', text: `Penduduk ${popForm.full_name} berhasil didaftarkan!` })
@@ -269,7 +434,21 @@ export const App: React.FC = () => {
       setPopForm({ ...popForm, nik: nextNik, full_name: '' })
       fetchPopulationData()
     } catch (err: unknown) {
-      if (err instanceof Error) setPopMsg({ type: 'error', text: err.message })
+      if (err instanceof TypeError || (err instanceof Error && err.message.toLowerCase().includes('fetch'))) {
+        await syncManager.enqueue(
+          'resident_create',
+          `${apiBase}/population/residents`,
+          'POST',
+          popForm as unknown as Record<string, unknown>,
+          `Pendaftaran Penduduk: ${popForm.full_name} (${popForm.nik})`
+        )
+        setPopMsg({
+          type: 'success',
+          text: `📦 Jaringan bermasalah: Data ${popForm.full_name} diamankan ke antrean offline lokal!`,
+        })
+      } else if (err instanceof Error) {
+        setPopMsg({ type: 'error', text: err.message })
+      }
     }
   }
 
@@ -287,6 +466,41 @@ export const App: React.FC = () => {
   const handleCreateQuickFarmerAndFarm = async (e: React.FormEvent) => {
     e.preventDefault()
     setFarmMsg(null)
+
+    if (!navigator.onLine) {
+      await syncManager.enqueue(
+        'farm_create',
+        `${apiBase}/farmers/farms`,
+        'POST',
+        { ...farmForm, farmer_id: farmForm.farmer_id || (farmers[0]?.id || '') },
+        `Pemetaan Lahan: ${farmForm.name} (${farmForm.farm_code})`
+      )
+      const optimisticFarm: Farm = {
+        id: `offline-${Date.now()}`,
+        farmer_id: farmForm.farmer_id || (farmers[0]?.id || ''),
+        farm_code: farmForm.farm_code,
+        name: farmForm.name,
+        location_description: farmForm.location_description,
+        latitude: farmForm.latitude,
+        longitude: farmForm.longitude,
+        area_sqm: farmForm.area_sqm,
+        primary_commodity: farmForm.primary_commodity,
+        verification_status: 'verified',
+        created_at: new Date().toISOString(),
+      }
+      setFarms((prev) => [optimisticFarm, ...prev])
+      setFarmMsg({
+        type: 'success',
+        text: `📦 Mode Offline: Kebun ${farmForm.name} disimpan ke antrean lokal perangkat!`,
+      })
+      setFarmForm((prev) => ({
+        ...prev,
+        farm_code: `BN-FARM-00${farms.length + 2}`,
+        name: '',
+      }))
+      return
+    }
+
     try {
       let targetFarmerId = farmForm.farmer_id
       if (!targetFarmerId) {
@@ -313,13 +527,59 @@ export const App: React.FC = () => {
       }))
       fetchFarmingData()
     } catch (err: unknown) {
-      if (err instanceof Error) setFarmMsg({ type: 'error', text: err.message })
+      if (err instanceof TypeError || (err instanceof Error && err.message.toLowerCase().includes('fetch'))) {
+        await syncManager.enqueue(
+          'farm_create',
+          `${apiBase}/farmers/farms`,
+          'POST',
+          { ...farmForm, farmer_id: farmForm.farmer_id || (farmers[0]?.id || '') },
+          `Pemetaan Lahan: ${farmForm.name} (${farmForm.farm_code})`
+        )
+        setFarmMsg({
+          type: 'success',
+          text: `📦 Jaringan terputus: Data kebun ${farmForm.name} diamankan ke antrean offline lokal!`,
+        })
+      } else if (err instanceof Error) {
+        setFarmMsg({ type: 'error', text: err.message })
+      }
     }
   }
 
   const handleCreateHarvest = async (e: React.FormEvent) => {
     e.preventDefault()
     setTraceMsg(null)
+
+    if (!navigator.onLine) {
+      await syncManager.enqueue(
+        'harvest_create',
+        `${apiBase}/harvests`,
+        'POST',
+        harvestForm,
+        `Catatan Panen: ${harvestForm.harvest_code} (${harvestForm.commodity} - ${harvestForm.quantity_kg} kg)`
+      )
+      const optimisticHarvest: Harvest = {
+        id: `offline-${Date.now()}`,
+        farm_id: harvestForm.farm_id,
+        farmer_id: harvestForm.farmer_id,
+        harvest_code: harvestForm.harvest_code,
+        commodity: harvestForm.commodity,
+        harvest_date: harvestForm.harvest_date,
+        quantity_kg: harvestForm.quantity_kg,
+        quality_grade: harvestForm.quality_grade,
+        notes: '⏳ Tersimpan di antrean offline lokal',
+      }
+      setHarvests((prev) => [optimisticHarvest, ...prev])
+      setTraceMsg({
+        type: 'success',
+        text: `📦 Mode Offline: Catatan panen ${harvestForm.harvest_code} disimpan ke antrean lokal perangkat! Akan disinkronkan otomatis saat online.`,
+      })
+      setHarvestForm((prev) => ({
+        ...prev,
+        harvest_code: `BN-HRV-2026-00${harvests.length + 2}`,
+      }))
+      return
+    }
+
     try {
       await traceabilityService.createHarvest(harvestForm)
       setTraceMsg({ type: 'success', text: `Hasil panen ${harvestForm.harvest_code} berhasil dicatat!` })
@@ -329,7 +589,33 @@ export const App: React.FC = () => {
       }))
       fetchTraceabilityData()
     } catch (err: unknown) {
-      if (err instanceof Error) setTraceMsg({ type: 'error', text: err.message })
+      if (err instanceof TypeError || (err instanceof Error && err.message.toLowerCase().includes('fetch'))) {
+        await syncManager.enqueue(
+          'harvest_create',
+          `${apiBase}/harvests`,
+          'POST',
+          harvestForm,
+          `Catatan Panen: ${harvestForm.harvest_code} (${harvestForm.commodity} - ${harvestForm.quantity_kg} kg)`
+        )
+        const optimisticHarvest: Harvest = {
+          id: `offline-${Date.now()}`,
+          farm_id: harvestForm.farm_id,
+          farmer_id: harvestForm.farmer_id,
+          harvest_code: harvestForm.harvest_code,
+          commodity: harvestForm.commodity,
+          harvest_date: harvestForm.harvest_date,
+          quantity_kg: harvestForm.quantity_kg,
+          quality_grade: harvestForm.quality_grade,
+          notes: '⏳ Tersimpan di antrean offline lokal',
+        }
+        setHarvests((prev) => [optimisticHarvest, ...prev])
+        setTraceMsg({
+          type: 'success',
+          text: `📦 Jaringan terputus: Data panen ${harvestForm.harvest_code} berhasil diamankan ke antrean offline lokal!`,
+        })
+      } else if (err instanceof Error) {
+        setTraceMsg({ type: 'error', text: err.message })
+      }
     }
   }
 
@@ -359,12 +645,42 @@ export const App: React.FC = () => {
     e.preventDefault()
     if (!selectedBatch) return
     setTraceMsg(null)
+
+    if (!navigator.onLine) {
+      await syncManager.enqueue(
+        'event_create',
+        `${apiBase}/batches/${selectedBatch.id}/events`,
+        'POST',
+        eventForm,
+        `Peristiwa: ${eventForm.event_type} (${selectedBatch.batch_code})`
+      )
+      setTraceMsg({
+        type: 'success',
+        text: `📦 Mode Offline: Peristiwa (${eventForm.event_type}) disimpan ke antrean lokal perangkat!`,
+      })
+      return
+    }
+
     try {
       await traceabilityService.appendEvent(selectedBatch.id, eventForm)
       setTraceMsg({ type: 'success', text: `Peristiwa rantai pasok (${eventForm.event_type}) berhasil dicatat!` })
       fetchTraceabilityData()
     } catch (err: unknown) {
-      if (err instanceof Error) setTraceMsg({ type: 'error', text: err.message })
+      if (err instanceof TypeError || (err instanceof Error && err.message.toLowerCase().includes('fetch'))) {
+        await syncManager.enqueue(
+          'event_create',
+          `${apiBase}/batches/${selectedBatch.id}/events`,
+          'POST',
+          eventForm,
+          `Peristiwa: ${eventForm.event_type} (${selectedBatch.batch_code})`
+        )
+        setTraceMsg({
+          type: 'success',
+          text: `📦 Jaringan terputus: Peristiwa (${eventForm.event_type}) diamankan ke antrean offline lokal!`,
+        })
+      } else if (err instanceof Error) {
+        setTraceMsg({ type: 'error', text: err.message })
+      }
     }
   }
 
@@ -413,6 +729,98 @@ export const App: React.FC = () => {
           Platform Terpadu Kependudukan, Pemetaan Petani & Traceability Rempah Banda Neira
         </p>
       </header>
+
+      {/* Network & Offline PWA Sync Status Banner */}
+      <section
+        style={{
+          background: isOnline ? '#f0fdf4' : '#fffbeb',
+          border: `1px solid ${isOnline ? '#bbf7d0' : '#fde68a'}`,
+          borderRadius: '10px',
+          padding: '0.75rem 1.25rem',
+          marginBottom: '1.5rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '0.75rem',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <span
+            style={{
+              display: 'inline-block',
+              width: '12px',
+              height: '12px',
+              borderRadius: '50%',
+              background: isOnline ? '#16a34a' : '#ea580c',
+              boxShadow: isOnline ? '0 0 8px #16a34a' : '0 0 8px #ea580c',
+            }}
+          />
+          <div>
+            <span style={{ fontSize: '0.92rem', fontWeight: 'bold', color: isOnline ? '#166534' : '#9a3412' }}>
+              {isOnline ? 'Online - Terhubung ke Server Desa' : 'Offline - Mode Lapangan (PWA Aktif)'}
+            </span>
+            <span style={{ display: 'block', fontSize: '0.78rem', color: isOnline ? '#15803d' : '#b45309' }}>
+              {isOnline
+                ? 'Semua data disinkronkan secara langsung dengan basis data desa & smart contract.'
+                : 'Penyimpanan lokal IndexedDB aktif. Anda tetap dapat mencatat panen & identitas.'}
+            </span>
+          </div>
+
+          {pendingSyncCount > 0 && (
+            <span
+              style={{
+                background: '#fef3c7',
+                color: '#b45309',
+                padding: '0.25rem 0.65rem',
+                borderRadius: '9999px',
+                fontSize: '0.8rem',
+                fontWeight: '700',
+                border: '1px solid #fcd34d',
+              }}
+            >
+              📦 {pendingSyncCount} data di antrean lokal
+            </span>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          {pendingSyncCount > 0 && (
+            <button
+              onClick={handleManualSync}
+              disabled={!isOnline || isSyncing}
+              style={{
+                background: isOnline ? '#0284c7' : '#94a3b8',
+                color: '#ffffff',
+                border: 'none',
+                padding: '0.4rem 0.95rem',
+                borderRadius: '6px',
+                fontSize: '0.82rem',
+                fontWeight: '600',
+                cursor: isOnline ? 'pointer' : 'not-allowed',
+              }}
+            >
+              {isSyncing ? '🔄 Menyinkronkan...' : '⚡ Sinkronkan Sekarang'}
+            </button>
+          )}
+          <button
+            onClick={handleOpenQueueModal}
+            style={{
+              background: '#ffffff',
+              color: '#334155',
+              border: '1px solid #cbd5e1',
+              padding: '0.4rem 0.85rem',
+              borderRadius: '6px',
+              fontSize: '0.82rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+            }}
+          >
+            📋 Antrean Offline ({pendingSyncCount})
+          </button>
+        </div>
+      </section>
 
       {/* User Session Bar */}
       <section
@@ -1811,6 +2219,203 @@ export const App: React.FC = () => {
           </div>
         )}
       </section>
+
+      {/* OFFLINE SYNC QUEUE MODAL */}
+      {showQueueModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.65)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+            zIndex: 10000,
+          }}
+        >
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: '16px',
+              maxWidth: '680px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              padding: '2rem',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              border: '1px solid #e2e8f0',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+              <div>
+                <span
+                  style={{
+                    background: '#e0f2fe',
+                    color: '#0369a1',
+                    padding: '0.2rem 0.65rem',
+                    borderRadius: '9999px',
+                    fontSize: '0.78rem',
+                    fontWeight: 'bold',
+                    display: 'inline-block',
+                    marginBottom: '0.4rem',
+                  }}
+                >
+                  IndexedDB Browser Storage
+                </span>
+                <h3 style={{ fontSize: '1.35rem', fontWeight: '800', color: '#1e3a8a' }}>
+                  Antrean Sinkronisasi Lapangan (PWA)
+                </h3>
+                <p style={{ color: '#64748b', fontSize: '0.85rem' }}>
+                  Data yang dicatat saat petugas/petani berada di area kebun tanpa sinyal internet.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowQueueModal(false)}
+                style={{
+                  background: '#f1f5f9',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {queueList.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', background: '#f8fafc', borderRadius: '8px', color: '#64748b' }}>
+                <p style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🎉</p>
+                <p style={{ fontWeight: '600' }}>Antrean kosong</p>
+                <p style={{ fontSize: '0.85rem' }}>Semua data telah tersinkronkan dengan server pusat desa.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                {queueList.map((item) => (
+                  <div
+                    key={item.id}
+                    style={{
+                      padding: '0.85rem',
+                      background: item.status === 'failed' ? '#fef2f2' : '#f8fafc',
+                      borderRadius: '8px',
+                      border: `1px solid ${item.status === 'failed' ? '#fecaca' : '#e2e8f0'}`,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.25rem' }}>
+                        <span
+                          style={{
+                            background: item.status === 'failed' ? '#ef4444' : item.status === 'syncing' ? '#3b82f6' : '#f59e0b',
+                            color: '#ffffff',
+                            padding: '0.1rem 0.45rem',
+                            borderRadius: '4px',
+                            fontSize: '0.7rem',
+                            fontWeight: 'bold',
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          {item.status}
+                        </span>
+                        <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#0f172a' }}>
+                          {item.description}
+                        </span>
+                      </div>
+                      <p style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                        Waktu: {new Date(item.createdAt).toLocaleString('id-ID')} | Percobaan: {item.retryCount}x
+                      </p>
+                      {item.error && (
+                        <p style={{ fontSize: '0.75rem', color: '#b91c1c', marginTop: '0.2rem' }}>
+                          ⚠️ Error: {item.error}
+                        </p>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={() => item.id && handleDeleteQueueItem(item.id)}
+                      style={{
+                        background: '#fee2e2',
+                        color: '#991b1b',
+                        border: '1px solid #fca5a5',
+                        padding: '0.3rem 0.6rem',
+                        borderRadius: '4px',
+                        fontSize: '0.75rem',
+                        cursor: 'pointer',
+                        fontWeight: '600',
+                      }}
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
+              {queueList.length > 0 && (
+                <button
+                  onClick={handleClearAllQueue}
+                  style={{
+                    background: '#f1f5f9',
+                    color: '#64748b',
+                    border: '1px solid #cbd5e1',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '6px',
+                    fontSize: '0.85rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Kosongkan Semua
+                </button>
+              )}
+
+              <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
+                <button
+                  onClick={handleManualSync}
+                  disabled={!isOnline || isSyncing || queueList.length === 0}
+                  style={{
+                    background: isOnline && queueList.length > 0 ? '#1e40af' : '#94a3b8',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '0.5rem 1.25rem',
+                    borderRadius: '6px',
+                    fontSize: '0.85rem',
+                    fontWeight: 'bold',
+                    cursor: isOnline && queueList.length > 0 ? 'pointer' : 'not-allowed',
+                  }}
+                >
+                  {isSyncing ? 'Sedang Sinkronisasi...' : 'Kirim Sekarang ke Server'}
+                </button>
+                <button
+                  onClick={() => setShowQueueModal(false)}
+                  style={{
+                    background: '#f8fafc',
+                    color: '#334155',
+                    border: '1px solid #cbd5e1',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '6px',
+                    fontSize: '0.85rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
