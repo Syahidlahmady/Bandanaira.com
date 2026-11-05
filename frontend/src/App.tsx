@@ -22,6 +22,16 @@ import {
   BlockchainVerification,
 } from './services/traceability.ts'
 import { FarmMap } from './components/FarmMap.tsx'
+import { HeaderNav } from './components/HeaderNav.tsx'
+import { LoginSection } from './components/LoginSection.tsx'
+import { BlockchainModal } from './components/BlockchainModal.tsx'
+import { OfflineQueueModal } from './components/OfflineQueueModal.tsx'
+import { PublicVerifyModal } from './components/PublicVerifyModal.tsx'
+import {
+  MapPin,
+  Users,
+  QrCode,
+} from 'lucide-react'
 import { offlineDB } from './offline/db.ts'
 import { syncManager, SyncQueueItem } from './offline/syncManager.ts'
 
@@ -720,296 +730,57 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: '1120px', margin: '0 auto', padding: '2rem 1rem' }}>
-      <header style={{ marginBottom: '2rem', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '2.25rem', color: '#1e3a8a', fontWeight: '800' }}>
-          Banda Digital Ecosystem
-        </h1>
-        <p style={{ color: '#475569', marginTop: '0.5rem', fontSize: '1.1rem' }}>
-          Platform Terpadu Kependudukan, Pemetaan Petani & Traceability Rempah Banda Neira
-        </p>
-      </header>
+    <div style={{ maxWidth: '1180px', margin: '0 auto', padding: '1.5rem 1rem 3rem' }}>
+      {/* Top Brand Navbar & Offline Status */}
+      <HeaderNav
+        currentUser={currentUser}
+        isOnline={isOnline}
+        pendingSyncCount={pendingSyncCount}
+        isSyncing={isSyncing}
+        onLogout={handleLogout}
+        onManualSync={handleManualSync}
+        onOpenQueueModal={handleOpenQueueModal}
+      />
 
-      {/* Network & Offline PWA Sync Status Banner */}
-      <section
-        style={{
-          background: isOnline ? '#f0fdf4' : '#fffbeb',
-          border: `1px solid ${isOnline ? '#bbf7d0' : '#fde68a'}`,
-          borderRadius: '10px',
-          padding: '0.75rem 1.25rem',
-          marginBottom: '1.5rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '0.75rem',
-          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <span
-            style={{
-              display: 'inline-block',
-              width: '12px',
-              height: '12px',
-              borderRadius: '50%',
-              background: isOnline ? '#16a34a' : '#ea580c',
-              boxShadow: isOnline ? '0 0 8px #16a34a' : '0 0 8px #ea580c',
-            }}
-          />
-          <div>
-            <span style={{ fontSize: '0.92rem', fontWeight: 'bold', color: isOnline ? '#166534' : '#9a3412' }}>
-              {isOnline ? 'Online - Terhubung ke Server Desa' : 'Offline - Mode Lapangan (PWA Aktif)'}
-            </span>
-            <span style={{ display: 'block', fontSize: '0.78rem', color: isOnline ? '#15803d' : '#b45309' }}>
-              {isOnline
-                ? 'Semua data disinkronkan secara langsung dengan basis data desa & smart contract.'
-                : 'Penyimpanan lokal IndexedDB aktif. Anda tetap dapat mencatat panen & identitas.'}
-            </span>
-          </div>
+      {/* Guest Welcome & Persona Switcher if not authenticated */}
+      {!currentUser && (
+        <LoginSection
+          username={username}
+          setUsername={setUsername}
+          password={password}
+          setPassword={setPassword}
+          onLogin={handleLogin}
+          loading={authLoading}
+          error={authError}
+        />
+      )}
 
-          {pendingSyncCount > 0 && (
-            <span
-              style={{
-                background: '#fef3c7',
-                color: '#b45309',
-                padding: '0.25rem 0.65rem',
-                borderRadius: '9999px',
-                fontSize: '0.8rem',
-                fontWeight: '700',
-                border: '1px solid #fcd34d',
-              }}
-            >
-              📦 {pendingSyncCount} data di antrean lokal
-            </span>
-          )}
-        </div>
-
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          {pendingSyncCount > 0 && (
-            <button
-              onClick={handleManualSync}
-              disabled={!isOnline || isSyncing}
-              style={{
-                background: isOnline ? '#0284c7' : '#94a3b8',
-                color: '#ffffff',
-                border: 'none',
-                padding: '0.4rem 0.95rem',
-                borderRadius: '6px',
-                fontSize: '0.82rem',
-                fontWeight: '600',
-                cursor: isOnline ? 'pointer' : 'not-allowed',
-              }}
-            >
-              {isSyncing ? '🔄 Menyinkronkan...' : '⚡ Sinkronkan Sekarang'}
-            </button>
-          )}
-          <button
-            onClick={handleOpenQueueModal}
-            style={{
-              background: '#ffffff',
-              color: '#334155',
-              border: '1px solid #cbd5e1',
-              padding: '0.4rem 0.85rem',
-              borderRadius: '6px',
-              fontSize: '0.82rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-            }}
-          >
-            📋 Antrean Offline ({pendingSyncCount})
-          </button>
-        </div>
-      </section>
-
-      {/* User Session Bar */}
-      <section
-        style={{
-          background: '#ffffff',
-          borderRadius: '12px',
-          padding: '1.25rem',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          marginBottom: '2rem',
-          border: '1px solid #e2e8f0',
-        }}
-      >
-        {currentUser ? (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-            <div>
-              <p style={{ fontSize: '1.05rem', fontWeight: 'bold', color: '#1e3a8a' }}>
-                {currentUser.full_name} (@{currentUser.username})
-              </p>
-              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem', flexWrap: 'wrap' }}>
-                {currentUser.roles.map((r) => (
-                  <span
-                    key={r.id}
-                    style={{
-                      background: '#dbeafe',
-                      color: '#1e40af',
-                      padding: '0.15rem 0.55rem',
-                      borderRadius: '9999px',
-                      fontSize: '0.8rem',
-                      fontWeight: '600',
-                    }}
-                  >
-                    {r.name}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <button
-              onClick={handleLogout}
-              style={{
-                background: '#ef4444',
-                color: '#ffffff',
-                border: 'none',
-                padding: '0.5rem 1rem',
-                borderRadius: '6px',
-                fontWeight: '600',
-              }}
-            >
-              Keluar (Logout)
-            </button>
-          </div>
-        ) : (
-          <div>
-            <h2 style={{ fontSize: '1.15rem', marginBottom: '0.75rem', color: '#0f172a' }}>
-              Masuk ke Sistem Administrasi
-            </h2>
-            <form onSubmit={handleLogin} style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', color: '#475569', marginBottom: '0.2rem' }}>
-                  Username / Email
-                </label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                  style={{ padding: '0.45rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', color: '#475569', marginBottom: '0.2rem' }}>
-                  Password
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  style={{ padding: '0.45rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={authLoading}
-                style={{
-                  background: '#1e40af',
-                  color: '#ffffff',
-                  border: 'none',
-                  padding: '0.5rem 1.25rem',
-                  borderRadius: '6px',
-                  fontWeight: '600',
-                  height: '35px',
-                }}
-              >
-                {authLoading ? 'Memproses...' : 'Masuk (Login)'}
-              </button>
-            </form>
-            {authError && (
-              <p style={{ color: '#dc2626', fontSize: '0.85rem', marginTop: '0.5rem' }}>{authError}</p>
-            )}
-
-            {/* Quick Demo Login Chips */}
-            <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px dashed #cbd5e1' }}>
-              <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '600', display: 'block', marginBottom: '0.4rem' }}>
-                💡 Akun Demo (Klik untuk otomatis mengisi & coba berbagai peran):
-              </span>
-              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                {[
-                  { label: '👑 Admin Sistem', u: 'admin', p: 'Admin123!' },
-                  { label: '🏛️ Petugas Desa', u: 'petugas', p: 'Petugas123!' },
-                  { label: '🌾 Ketua Poktan', u: 'ketua_kelompok', p: 'Ketua123!' },
-                  { label: '🌱 Petani Rempah', u: 'petani', p: 'Petani123!' },
-                  { label: '👤 Warga Biasa', u: 'warga', p: 'Warga123!' },
-                ].map((demo) => (
-                  <button
-                    key={demo.u}
-                    type="button"
-                    onClick={() => {
-                      setUsername(demo.u)
-                      setPassword(demo.p)
-                    }}
-                    style={{
-                      background: '#f1f5f9',
-                      color: '#1e3a8a',
-                      border: '1px solid #cbd5e1',
-                      padding: '0.25rem 0.6rem',
-                      borderRadius: '6px',
-                      fontSize: '0.75rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {demo.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </section>
-
-      {/* Navigation Tabs */}
-      {(isOfficerOrAdmin || isFarmer) && (
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+      {/* Navigation Tabs when authenticated */}
+      {currentUser && (isOfficerOrAdmin || isFarmer) && (
+        <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
           <button
             onClick={() => setActiveTab('traceability')}
-            style={{
-              padding: '0.65rem 1.25rem',
-              borderRadius: '8px',
-              border: 'none',
-              fontWeight: '700',
-              fontSize: '0.95rem',
-              background: activeTab === 'traceability' ? '#7c3aed' : '#e2e8f0',
-              color: activeTab === 'traceability' ? '#ffffff' : '#475569',
-            }}
+            className={`tab-btn ${activeTab === 'traceability' ? 'active' : ''}`}
           >
-            📦 Ketertelusuran & Verifikasi QR (Phase 5 & 6)
+            <QrCode size={16} /> Panen & Traceability Rantai Pasok
           </button>
           <button
             onClick={() => setActiveTab('farming')}
-            style={{
-              padding: '0.65rem 1.25rem',
-              borderRadius: '8px',
-              border: 'none',
-              fontWeight: '700',
-              fontSize: '0.95rem',
-              background: activeTab === 'farming' ? '#059669' : '#e2e8f0',
-              color: activeTab === 'farming' ? '#ffffff' : '#475569',
-            }}
+            className={`tab-btn ${activeTab === 'farming' ? 'active' : ''}`}
           >
-            🗺️ Pemetaan Petani & Kebun (Phase 4)
+            <MapPin size={16} /> Pemetaan Lahan Rempah (GIS)
           </button>
           {isOfficerOrAdmin && (
             <button
               onClick={() => setActiveTab('population')}
-              style={{
-                padding: '0.65rem 1.25rem',
-                borderRadius: '8px',
-                border: 'none',
-                fontWeight: '700',
-                fontSize: '0.95rem',
-                background: activeTab === 'population' ? '#1e40af' : '#e2e8f0',
-                color: activeTab === 'population' ? '#ffffff' : '#475569',
-              }}
+              className={`tab-btn ${activeTab === 'population' ? 'active' : ''}`}
             >
-              👥 Administrasi Kependudukan (Phase 3)
+              <Users size={16} /> Administrasi Kependudukan
             </button>
           )}
         </div>
       )}
+
 
       {/* TAB: TRACEABILITY & QR VERIFICATION */}
       {(isOfficerOrAdmin || isFarmer) && activeTab === 'traceability' && (
@@ -1408,268 +1179,6 @@ export const App: React.FC = () => {
             ))}
           </div>
         </section>
-      )}
-
-      {/* PUBLIC VERIFICATION MODAL / VIEW (OPEN TO ALL CONSUMERS) */}
-      {publicVerifyData && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.6)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1rem',
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              background: '#ffffff',
-              borderRadius: '16px',
-              maxWidth: '650px',
-              width: '100%',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              padding: '2rem',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
-              <div>
-                <span style={{ background: '#dcfce7', color: '#15803d', padding: '0.2rem 0.6rem', borderRadius: '9999px', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                  ✓ VERIFIKASI REMPAH ASLI BANDA NEIRA
-                </span>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: '800', color: '#1e3a8a', marginTop: '0.5rem' }}>
-                  {publicVerifyData.commodity}
-                </h3>
-                <p style={{ color: '#64748b', fontSize: '0.9rem' }}>
-                  Nomor Batch: <b>{publicVerifyData.batch_code}</b>
-                </p>
-              </div>
-              <button
-                onClick={() => setPublicVerifyData(null)}
-                style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', fontWeight: 'bold' }}
-              >
-                ✕
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'center', background: '#f8fafc', padding: '1rem', borderRadius: '10px' }}>
-              <img
-                src={publicVerifyData.qr_code_base64}
-                alt="QR Code"
-                style={{ width: '110px', height: '110px', borderRadius: '8px', border: '1px solid #cbd5e1' }}
-              />
-              <div style={{ fontSize: '0.9rem', lineHeight: '1.6' }}>
-                <p><b>Asal Desa:</b> {publicVerifyData.origin_village}</p>
-                <p><b>Perkebunan Asal:</b> {publicVerifyData.origin_farms.join(', ')}</p>
-                <p><b>Tanggal Produksi:</b> {publicVerifyData.production_date}</p>
-                <p><b>Kuantitas Batch:</b> {publicVerifyData.total_quantity_kg} kg</p>
-                <p><b>Integritas Hash:</b> <span style={{ color: '#059669', fontWeight: 'bold' }}>TERVERIFIKASI ASLI</span></p>
-              </div>
-            </div>
-
-            <h4 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: '#0f172a', marginBottom: '0.75rem' }}>
-              Riwayat Perjalanan Produk (Traceability Timeline)
-            </h4>
-            <div style={{ borderLeft: '2px solid #7c3aed', paddingLeft: '1rem', marginLeft: '0.5rem' }}>
-              {publicVerifyData.timeline.map((item, idx) => (
-                <div key={idx} style={{ marginBottom: '1rem', position: 'relative' }}>
-                  <div
-                    style={{
-                      position: 'absolute',
-                      left: '-1.45rem',
-                      top: '0.2rem',
-                      width: '12px',
-                      height: '12px',
-                      borderRadius: '50%',
-                      background: '#7c3aed',
-                    }}
-                  />
-                  <b style={{ color: '#1e3a8a', textTransform: 'capitalize' }}>{item.event_type}</b>
-                  <span style={{ fontSize: '0.8rem', color: '#64748b', marginLeft: '0.5rem' }}>
-                    ({item.location || 'Banda Neira'}) - {new Date(item.event_timestamp).toLocaleDateString('id-ID')}
-                  </span>
-                  <p style={{ fontSize: '0.875rem', color: '#475569', marginTop: '0.2rem' }}>
-                    {item.description}
-                  </p>
-                  <p style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: '#6d28d9' }}>
-                    Hash: {item.event_hash}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            <button
-              onClick={() => setPublicVerifyData(null)}
-              style={{
-                width: '100%',
-                background: '#1e40af',
-                color: '#ffffff',
-                border: 'none',
-                padding: '0.75rem',
-                borderRadius: '8px',
-                fontWeight: 'bold',
-                marginTop: '1rem',
-              }}
-            >
-              Tutup Jendela Verifikasi
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* BLOCKCHAIN ON-CHAIN CRYPTOGRAPHIC VERIFICATION MODAL */}
-      {verificationModal && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.65)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1rem',
-            zIndex: 10000,
-          }}
-        >
-          <div
-            style={{
-              background: '#ffffff',
-              borderRadius: '16px',
-              maxWidth: '680px',
-              width: '100%',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              padding: '2rem',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-              border: '1px solid #e2e8f0',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
-              <div>
-                <span
-                  style={{
-                    background: verificationModal.is_verified ? '#dcfce7' : '#fee2e2',
-                    color: verificationModal.is_verified ? '#15803d' : '#991b1b',
-                    padding: '0.25rem 0.75rem',
-                    borderRadius: '9999px',
-                    fontSize: '0.8rem',
-                    fontWeight: 'bold',
-                    display: 'inline-block',
-                    marginBottom: '0.5rem',
-                  }}
-                >
-                  {verificationModal.is_verified
-                    ? '✓ VERIFIKASI INTEGRITAS BLOCKCHAIN LOLOS'
-                    : '⚠️ HASH TIDAK COCOK / BELUM DIJANGKARKAN'}
-                </span>
-                <h3 style={{ fontSize: '1.4rem', fontWeight: '800', color: '#1e3a8a' }}>
-                  Verifikasi On-Chain Smart Contract EVM
-                </h3>
-                <p style={{ color: '#64748b', fontSize: '0.9rem' }}>
-                  Kode Batch: <b>{verificationModal.batch_code}</b>
-                </p>
-              </div>
-              <button
-                onClick={() => setVerificationModal(null)}
-                style={{
-                  background: '#f1f5f9',
-                  border: 'none',
-                  borderRadius: '50%',
-                  width: '32px',
-                  height: '32px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
-                }}
-              >
-                ✕
-              </button>
-            </div>
-
-            <div
-              style={{
-                background: verificationModal.is_verified ? '#f0fdf4' : '#fffbeb',
-                border: `1px solid ${verificationModal.is_verified ? '#bbf7d0' : '#fde68a'}`,
-                padding: '1rem',
-                borderRadius: '8px',
-                marginBottom: '1.25rem',
-                fontSize: '0.9rem',
-                color: verificationModal.is_verified ? '#166534' : '#92400e',
-              }}
-            >
-              {verificationModal.message}
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.85rem' }}>
-              <div style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>Hash Basis Data Lokal (Head SHA-256):</span>
-                <code style={{ color: '#4338ca', wordBreak: 'break-all', fontWeight: '600' }}>
-                  {verificationModal.latest_db_hash}
-                </code>
-              </div>
-
-              <div style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>Hash Terjangkar di Smart Contract (On-Chain):</span>
-                <code style={{ color: '#059669', wordBreak: 'break-all', fontWeight: '600' }}>
-                  {verificationModal.on_chain_hash || '(Belum pernah dijangkarkan)'}
-                </code>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
-                <div style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                  <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>Nomor Blok (Block Height):</span>
-                  <b>{verificationModal.block_number ? `#${verificationModal.block_number}` : 'N/A'}</b>
-                </div>
-                <div style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                  <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>EVM Chain ID:</span>
-                  <b>{verificationModal.network_chain_id} (Local Testnet)</b>
-                </div>
-              </div>
-
-              <div style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>Alamat Smart Contract (SpiceRegistry.sol):</span>
-                <code style={{ color: '#334155', wordBreak: 'break-all' }}>
-                  {verificationModal.contract_address}
-                </code>
-              </div>
-
-              {verificationModal.transaction_hash && (
-                <div style={{ background: '#f8fafc', padding: '0.75rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                  <span style={{ color: '#64748b', display: 'block', fontSize: '0.75rem' }}>Transaction Hash:</span>
-                  <code style={{ color: '#2563eb', wordBreak: 'break-all' }}>
-                    {verificationModal.transaction_hash}
-                  </code>
-                </div>
-              )}
-            </div>
-
-            <button
-              onClick={() => setVerificationModal(null)}
-              style={{
-                width: '100%',
-                background: '#1e3a8a',
-                color: '#ffffff',
-                border: 'none',
-                padding: '0.75rem',
-                borderRadius: '8px',
-                fontWeight: 'bold',
-                marginTop: '1.5rem',
-                cursor: 'pointer',
-              }}
-            >
-              Tutup Panel Verifikasi Blockchain
-            </button>
-          </div>
-        </div>
       )}
 
       {/* TAB 2: FARMING */}
@@ -2220,202 +1729,25 @@ export const App: React.FC = () => {
         )}
       </section>
 
-      {/* OFFLINE SYNC QUEUE MODAL */}
-      {showQueueModal && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.65)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1rem',
-            zIndex: 10000,
-          }}
-        >
-          <div
-            style={{
-              background: '#ffffff',
-              borderRadius: '16px',
-              maxWidth: '680px',
-              width: '100%',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              padding: '2rem',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-              border: '1px solid #e2e8f0',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
-              <div>
-                <span
-                  style={{
-                    background: '#e0f2fe',
-                    color: '#0369a1',
-                    padding: '0.2rem 0.65rem',
-                    borderRadius: '9999px',
-                    fontSize: '0.78rem',
-                    fontWeight: 'bold',
-                    display: 'inline-block',
-                    marginBottom: '0.4rem',
-                  }}
-                >
-                  IndexedDB Browser Storage
-                </span>
-                <h3 style={{ fontSize: '1.35rem', fontWeight: '800', color: '#1e3a8a' }}>
-                  Antrean Sinkronisasi Lapangan (PWA)
-                </h3>
-                <p style={{ color: '#64748b', fontSize: '0.85rem' }}>
-                  Data yang dicatat saat petugas/petani berada di area kebun tanpa sinyal internet.
-                </p>
-              </div>
-              <button
-                onClick={() => setShowQueueModal(false)}
-                style={{
-                  background: '#f1f5f9',
-                  border: 'none',
-                  borderRadius: '50%',
-                  width: '32px',
-                  height: '32px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
-                }}
-              >
-                ✕
-              </button>
-            </div>
-
-            {queueList.length === 0 ? (
-              <div style={{ padding: '2rem', textAlign: 'center', background: '#f8fafc', borderRadius: '8px', color: '#64748b' }}>
-                <p style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🎉</p>
-                <p style={{ fontWeight: '600' }}>Antrean kosong</p>
-                <p style={{ fontSize: '0.85rem' }}>Semua data telah tersinkronkan dengan server pusat desa.</p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                {queueList.map((item) => (
-                  <div
-                    key={item.id}
-                    style={{
-                      padding: '0.85rem',
-                      background: item.status === 'failed' ? '#fef2f2' : '#f8fafc',
-                      borderRadius: '8px',
-                      border: `1px solid ${item.status === 'failed' ? '#fecaca' : '#e2e8f0'}`,
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                    }}
-                  >
-                    <div>
-                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.25rem' }}>
-                        <span
-                          style={{
-                            background: item.status === 'failed' ? '#ef4444' : item.status === 'syncing' ? '#3b82f6' : '#f59e0b',
-                            color: '#ffffff',
-                            padding: '0.1rem 0.45rem',
-                            borderRadius: '4px',
-                            fontSize: '0.7rem',
-                            fontWeight: 'bold',
-                            textTransform: 'uppercase',
-                          }}
-                        >
-                          {item.status}
-                        </span>
-                        <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#0f172a' }}>
-                          {item.description}
-                        </span>
-                      </div>
-                      <p style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                        Waktu: {new Date(item.createdAt).toLocaleString('id-ID')} | Percobaan: {item.retryCount}x
-                      </p>
-                      {item.error && (
-                        <p style={{ fontSize: '0.75rem', color: '#b91c1c', marginTop: '0.2rem' }}>
-                          ⚠️ Error: {item.error}
-                        </p>
-                      )}
-                    </div>
-
-                    <button
-                      onClick={() => item.id && handleDeleteQueueItem(item.id)}
-                      style={{
-                        background: '#fee2e2',
-                        color: '#991b1b',
-                        border: '1px solid #fca5a5',
-                        padding: '0.3rem 0.6rem',
-                        borderRadius: '4px',
-                        fontSize: '0.75rem',
-                        cursor: 'pointer',
-                        fontWeight: '600',
-                      }}
-                    >
-                      Hapus
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
-              {queueList.length > 0 && (
-                <button
-                  onClick={handleClearAllQueue}
-                  style={{
-                    background: '#f1f5f9',
-                    color: '#64748b',
-                    border: '1px solid #cbd5e1',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '6px',
-                    fontSize: '0.85rem',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Kosongkan Semua
-                </button>
-              )}
-
-              <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
-                <button
-                  onClick={handleManualSync}
-                  disabled={!isOnline || isSyncing || queueList.length === 0}
-                  style={{
-                    background: isOnline && queueList.length > 0 ? '#1e40af' : '#94a3b8',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '0.5rem 1.25rem',
-                    borderRadius: '6px',
-                    fontSize: '0.85rem',
-                    fontWeight: 'bold',
-                    cursor: isOnline && queueList.length > 0 ? 'pointer' : 'not-allowed',
-                  }}
-                >
-                  {isSyncing ? 'Sedang Sinkronisasi...' : 'Kirim Sekarang ke Server'}
-                </button>
-                <button
-                  onClick={() => setShowQueueModal(false)}
-                  style={{
-                    background: '#f8fafc',
-                    color: '#334155',
-                    border: '1px solid #cbd5e1',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '6px',
-                    fontSize: '0.85rem',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Tutup
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* MODALS */}
+      <BlockchainModal
+        data={verificationModal}
+        onClose={() => setVerificationModal(null)}
+      />
+      <OfflineQueueModal
+        isOpen={showQueueModal}
+        queueList={queueList}
+        isOnline={isOnline}
+        isSyncing={isSyncing}
+        onClose={() => setShowQueueModal(false)}
+        onDelete={handleDeleteQueueItem}
+        onClearAll={handleClearAllQueue}
+        onSync={handleManualSync}
+      />
+      <PublicVerifyModal
+        data={publicVerifyData}
+        onClose={() => setPublicVerifyData(null)}
+      />
     </div>
   )
 }
