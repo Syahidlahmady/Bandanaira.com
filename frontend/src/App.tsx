@@ -5,6 +5,7 @@ import {
   PopulationStatistics,
   Resident,
   ResidentCreateInput,
+  AdministrativeRequestItem,
 } from './services/population.ts'
 import {
   farmerService,
@@ -137,6 +138,9 @@ export const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [selectedOccupationFilter, setSelectedOccupationFilter] = useState<string>('')
   const [popMsg, setPopMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [adminRequests, setAdminRequests] = useState<AdministrativeRequestItem[]>([])
+  const [requestFilterStatus, setRequestFilterStatus] = useState<string>('')
+  const [updatingRequestId, setUpdatingRequestId] = useState<string | null>(null)
 
   // Farming states
   const [farmers, setFarmers] = useState<Farmer[]>([])
@@ -232,7 +236,7 @@ export const App: React.FC = () => {
   const [letterPurposeInput, setLetterPurposeInput] = useState('')
   const [letterSuccessNotice, setLetterSuccessNotice] = useState<string | null>(null)
 
-  const handleSubmitLetter = (e: React.FormEvent) => {
+  const handleSubmitLetter = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!letterPurposeInput.trim()) return
     const newReq = {
@@ -242,11 +246,61 @@ export const App: React.FC = () => {
       date: new Date().toISOString().split('T')[0],
       status: 'menunggu' as const,
     }
-    setLetters([newReq, ...letters])
+    setLetters((prev) => [newReq, ...prev])
+    const sentPurpose = letterPurposeInput.trim()
+    const sentType = letterTypeInput
     setLetterPurposeInput('')
     setShowLetterForm(false)
-    setLetterSuccessNotice(`Permohonan ${letterTypeInput} berhasil dikirim ke kantor desa!`)
+
+    try {
+      if (navigator.onLine) {
+        await populationService.createRequest({
+          request_type: sentType,
+          notes: sentPurpose,
+        })
+        setLetterSuccessNotice(`Permohonan ${sentType} berhasil dikirim ke kantor desa!`)
+      } else {
+        await syncManager.enqueue(
+          'resident_request',
+          `${apiBase}/population/requests`,
+          'POST',
+          { request_type: sentType, notes: sentPurpose },
+          `Permohonan Surat: ${sentType}`
+        )
+        setLetterSuccessNotice(`📦 Mode Offline: Permohonan ${sentType} tersimpan di antrean lokal!`)
+      }
+    } catch {
+      await syncManager.enqueue(
+        'resident_request',
+        `${apiBase}/population/requests`,
+        'POST',
+        { request_type: sentType, notes: sentPurpose },
+        `Permohonan Surat: ${sentType}`
+      )
+      setLetterSuccessNotice(`📦 Permohonan ${sentType} diamankan ke antrean offline lokal!`)
+    }
     setTimeout(() => setLetterSuccessNotice(null), 5000)
+  }
+
+  const handleUpdateRequestStatus = async (id: string, status: 'approved' | 'rejected') => {
+    setUpdatingRequestId(id)
+    try {
+      await populationService.updateRequestStatus(
+        id,
+        status,
+        status === 'approved' ? 'Disetujui oleh petugas desa Banda Neira' : 'Permohonan ditolak / berkas belum lengkap'
+      )
+      setPopMsg({
+        type: 'success',
+        text: `Permohonan surat berhasil di-${status === 'approved' ? 'setujui' : 'tolak'}!`,
+      })
+      await fetchPopulationData()
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Gagal memperbarui status permohonan'
+      setPopMsg({ type: 'error', text: msg })
+    } finally {
+      setUpdatingRequestId(null)
+    }
   }
 
   const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8005/api/v1'
@@ -256,20 +310,25 @@ export const App: React.FC = () => {
     const q = typeof queryOverride === 'string' ? queryOverride : searchQuery
     const occ = typeof occOverride === 'string' ? occOverride : selectedOccupationFilter
     try {
-      const [resList, resStats] = await Promise.all([
+      const [resList, resStats, reqList] = await Promise.all([
         populationService.listResidents(1, 50, q, occ || undefined),
         populationService.getStatistics(),
+        populationService.listRequests(1, 50).catch(() => ({ items: [], total: 0, page: 1, limit: 50 })),
       ])
       setResidents(resList.items)
       setPopStats(resStats)
+      setAdminRequests(reqList.items)
       await offlineDB.cacheData('residents', resList.items)
       await offlineDB.cacheData('popStats', resStats)
+      await offlineDB.cacheData('adminRequests', reqList.items)
     } catch (err: unknown) {
       const cached = await offlineDB.getCachedData<Resident[]>('residents')
       const cachedStats = await offlineDB.getCachedData<PopulationStatistics>('popStats')
+      const cachedRequests = await offlineDB.getCachedData<AdministrativeRequestItem[]>('adminRequests')
       if (cached && cached.length > 0) {
         setResidents(cached)
         if (cachedStats) setPopStats(cachedStats)
+        if (cachedRequests) setAdminRequests(cachedRequests)
         setPopMsg({ type: 'success', text: '📦 Menampilkan data kependudukan dari cache offline lokal.' })
       } else {
         const msg = err instanceof Error ? err.message : 'Gagal memuat data penduduk'
@@ -1976,6 +2035,175 @@ export const App: React.FC = () => {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* KOTAK MASUK PERMOHONAN SURAT WARGA (INBOX DESA BANDA NEIRA) */}
+          <div
+            style={{
+              marginTop: '2rem',
+              paddingTop: '1.5rem',
+              borderTop: '2px dashed #cbd5e1',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <span style={{ fontSize: '1.4rem' }}>📬</span>
+                <div>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#1e3a8a', margin: 0 }}>
+                    Kotak Masuk Permohonan Surat Warga (Inbox Desa)
+                  </h3>
+                  <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0 }}>
+                    Verifikasi dan terbitkan surat keterangan usaha (Petani Pala, Nelayan, Pengolah Fuli) dan domisili.
+                  </p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                {['', 'submitted', 'approved', 'rejected'].map((st) => {
+                  const label = st === '' ? 'Semua' : st === 'submitted' ? 'Menunggu' : st === 'approved' ? 'Disetujui' : 'Ditolak'
+                  const count = st === '' ? adminRequests.length : adminRequests.filter((r) => r.status === st).length
+                  const active = requestFilterStatus === st
+                  return (
+                    <button
+                      key={st}
+                      type="button"
+                      onClick={() => setRequestFilterStatus(st)}
+                      style={{
+                        padding: '0.25rem 0.6rem',
+                        borderRadius: '6px',
+                        fontSize: '0.75rem',
+                        fontWeight: '600',
+                        border: active ? '1px solid #1e40af' : '1px solid #cbd5e1',
+                        background: active ? '#1e40af' : '#f8fafc',
+                        color: active ? '#ffffff' : '#475569',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {label} ({count})
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div style={{ overflowX: 'auto', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+                <thead>
+                  <tr style={{ background: '#f1f5f9', borderBottom: '1px solid #e2e8f0' }}>
+                    <th style={{ padding: '0.65rem' }}>Warga Pemohon</th>
+                    <th style={{ padding: '0.65rem' }}>Profesi</th>
+                    <th style={{ padding: '0.65rem' }}>Jenis Surat yang Diminta</th>
+                    <th style={{ padding: '0.65rem' }}>Keperluan / Catatan</th>
+                    <th style={{ padding: '0.65rem' }}>Status</th>
+                    <th style={{ padding: '0.65rem', textAlign: 'center' }}>Tindakan Perangkat Desa</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {adminRequests
+                    .filter((req) => !requestFilterStatus || req.status === requestFilterStatus)
+                    .map((req) => (
+                      <tr key={req.id} style={{ borderBottom: '1px solid #e2e8f0', background: '#ffffff' }}>
+                        <td style={{ padding: '0.65rem' }}>
+                          <span style={{ fontWeight: '600', color: '#0f172a', display: 'block' }}>
+                            {req.resident_name || 'Warga Terdaftar'}
+                          </span>
+                          <span style={{ fontSize: '0.75rem', color: '#64748b', fontFamily: 'monospace' }}>
+                            {req.resident_nik || '-'}
+                          </span>
+                        </td>
+                        <td style={{ padding: '0.65rem' }}>
+                          {getOccupationBadge(req.resident_occupation)}
+                        </td>
+                        <td style={{ padding: '0.65rem', fontWeight: '500', color: '#1e3a8a' }}>
+                          {req.request_type}
+                        </td>
+                        <td style={{ padding: '0.65rem', color: '#475569', fontSize: '0.8rem', maxWidth: '240px' }}>
+                          {req.notes || '-'}
+                        </td>
+                        <td style={{ padding: '0.65rem' }}>
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              padding: '0.15rem 0.5rem',
+                              borderRadius: '10px',
+                              fontSize: '0.72rem',
+                              fontWeight: '700',
+                              background:
+                                req.status === 'approved'
+                                  ? '#ecfdf5'
+                                  : req.status === 'submitted'
+                                  ? '#fffbeb'
+                                  : '#fef2f2',
+                              color:
+                                req.status === 'approved'
+                                  ? '#047857'
+                                  : req.status === 'submitted'
+                                  ? '#b45309'
+                                  : '#b91c1c',
+                            }}
+                          >
+                            {req.status === 'approved'
+                              ? '✓ DISETUJUI'
+                              : req.status === 'submitted'
+                              ? '⏳ MENUNGGU'
+                              : '✕ DITOLAK'}
+                          </span>
+                        </td>
+                        <td style={{ padding: '0.65rem', textAlign: 'center' }}>
+                          {req.status === 'submitted' ? (
+                            <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
+                              <button
+                                type="button"
+                                disabled={updatingRequestId === req.id}
+                                onClick={() => handleUpdateRequestStatus(req.id, 'approved')}
+                                style={{
+                                  background: '#059669',
+                                  color: '#ffffff',
+                                  border: 'none',
+                                  padding: '0.25rem 0.6rem',
+                                  borderRadius: '5px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: '600',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                {updatingRequestId === req.id ? '...' : '✓ Setujui'}
+                              </button>
+                              <button
+                                type="button"
+                                disabled={updatingRequestId === req.id}
+                                onClick={() => handleUpdateRequestStatus(req.id, 'rejected')}
+                                style={{
+                                  background: '#ef4444',
+                                  color: '#ffffff',
+                                  border: 'none',
+                                  padding: '0.25rem 0.6rem',
+                                  borderRadius: '5px',
+                                  fontSize: '0.75rem',
+                                  fontWeight: '600',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                {updatingRequestId === req.id ? '...' : '✕ Tolak'}
+                              </button>
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                              Selesai Diproses
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  {adminRequests.length === 0 && (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: 'center', padding: '1.5rem', color: '#64748b' }}>
+                        Belum ada permohonan surat dari warga.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
       )}

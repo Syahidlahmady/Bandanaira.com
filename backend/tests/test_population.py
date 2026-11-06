@@ -186,6 +186,59 @@ async def test_create_administrative_request(client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_list_and_update_administrative_request(client: AsyncClient):
+    token = await get_admin_token(client)
+    create_res = await client.post(
+        "/api/v1/population/residents",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "nik": "8171010101900041",
+            "full_name": "Pemohon Nelayan",
+            "gender": "L",
+            "occupation": "Nelayan Tangkap Tradisional",
+        },
+    )
+    resident_id = create_res.json()["id"]
+
+    # 1. Create request
+    create_req = await client.post(
+        "/api/v1/population/requests",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "resident_id": resident_id,
+            "request_type": "Surat Keterangan Usaha Nelayan Tradisional Banda (SKU-N)",
+            "notes": "Keperluan subsidi solar",
+        },
+    )
+    assert create_req.status_code == 201
+    req_id = create_req.json()["id"]
+
+    # 2. List requests
+    list_res = await client.get(
+        "/api/v1/population/requests",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert list_res.status_code == 200
+    list_data = list_res.json()
+    assert list_data["total"] >= 1
+    matched = next((item for item in list_data["items"] if item["id"] == req_id), None)
+    assert matched is not None
+    assert matched["resident_name"] == "Pemohon Nelayan"
+    assert matched["resident_occupation"] == "Nelayan Tangkap Tradisional"
+    assert matched["status"] == "submitted"
+
+    # 3. Update status to approved
+    update_res = await client.patch(
+        f"/api/v1/population/requests/{req_id}/status",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"status": "approved", "notes": "Disetujui kantor desa"},
+    )
+    assert update_res.status_code == 200
+    assert update_res.json()["status"] == "approved"
+    assert update_res.json()["notes"] == "Disetujui kantor desa"
+
+
+@pytest.mark.asyncio
 async def test_population_statistics(client: AsyncClient):
     token = await get_admin_token(client)
     # Add a farmer and verify

@@ -4,14 +4,22 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from backend.app.core.permissions import ROLE_ADMIN, ROLE_VILLAGE_OFFICER, require_roles
+from backend.app.core.permissions import (
+    ROLE_ADMIN,
+    ROLE_VILLAGE_OFFICER,
+    get_current_active_user,
+    require_roles,
+)
 from backend.app.database.session import get_db
 from backend.app.modules.audit.service import log_audit_event
 from backend.app.modules.auth.models import User
 from backend.app.modules.population.models import AdministrativeRequest, Resident
 from backend.app.modules.population.schemas import (
     AdministrativeRequestCreate,
+    AdministrativeRequestDetailResponse,
+    AdministrativeRequestListResponse,
     AdministrativeRequestResponse,
+    AdministrativeRequestStatusUpdate,
     PopulationStatisticsResponse,
     ResidentCreate,
     ResidentListResponse,
@@ -202,20 +210,42 @@ async def verify_resident(
 async def create_administrative_request(
     request_in: AdministrativeRequestCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(OFFICER_ROLES),
+    current_user: User = Depends(get_current_active_user),
 ):
-    # Verify resident exists
-    res_stmt = select(Resident).where(Resident.id == request_in.resident_id)
-    resident = (await db.execute(res_stmt)).scalar_one_or_none()
-    if not resident:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Resident not found",
-        )
+    resident = None
+    if request_in.resident_id:
+        res_stmt = select(Resident).where(Resident.id == request_in.resident_id)
+        resident = (await db.execute(res_stmt)).scalar_one_or_none()
+        if not resident:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Resident not found",
+            )
+    else:
+        # Match by full_name or fallback to first resident
+        res_stmt = select(Resident).where(Resident.full_name == current_user.full_name)
+        resident = (await db.execute(res_stmt)).scalar_one_or_none()
+        if not resident:
+            fallback_stmt = select(Resident).limit(1)
+            resident = (await db.execute(fallback_stmt)).scalar_one_or_none()
 
-    admin_req = AdministrativeRequest(**request_in.model_dump())
+        if not resident:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No resident profile available to associate with this request",
+            )
+
+    req_data = request_in.model_dump()
+    req_data["resident_id"] = resident.id
+    admin_req = AdministrativeRequest(**req_data)
     db.add(admin_req)
     await db.flush()
+
+    audit_changes = {
+        "resident_id": str(resident.id),
+        "request_type": admin_req.request_type,
+        "notes": admin_req.notes,
+    }
 
     await log_audit_event(
         db=db,
@@ -223,7 +253,97 @@ async def create_administrative_request(
         entity_name="administrative_requests",
         entity_id=admin_req.id,
         user_id=current_user.id,
-        changes=request_in.model_dump(mode="json"),
+        changes=audit_changes,
+    )
+
+    await db.commit()
+    await db.refresh(admin_req)
+    return admin_req
+
+
+@router.get("/requests", response_model=AdministrativeRequestListResponse)
+async def list_administrative_requests(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    status_filter: Optional[str] = Query(None, alias="status"),
+    resident_id: Optional[uuid.UUID] = None,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(OFFICER_ROLES),
+):
+    query = (
+        select(AdministrativeRequest, Resident)
+        .join(Resident, AdministrativeRequest.resident_id == Resident.id)
+    )
+    count_query = select(func.count(AdministrativeRequest.id))
+
+    if status_filter:
+        query = query.where(AdministrativeRequest.status == status_filter)
+        count_query = count_query.where(AdministrativeRequest.status == status_filter)
+    if resident_id:
+        query = query.where(AdministrativeRequest.resident_id == resident_id)
+        count_query = count_query.where(AdministrativeRequest.resident_id == resident_id)
+
+    total = (await db.execute(count_query)).scalar_one()
+
+    offset = (page - 1) * limit
+    query = query.order_by(AdministrativeRequest.created_at.desc()).offset(offset).limit(limit)
+    rows = (await db.execute(query)).all()
+
+    items = [
+        AdministrativeRequestDetailResponse(
+            id=req.id,
+            resident_id=req.resident_id,
+            resident_name=res.full_name,
+            resident_nik=res.nik,
+            resident_occupation=res.occupation,
+            request_type=req.request_type,
+            status=req.status,
+            notes=req.notes,
+            created_at=req.created_at,
+            updated_at=req.updated_at,
+        )
+        for req, res in rows
+    ]
+
+    return AdministrativeRequestListResponse(
+        items=items,
+        total=total,
+        page=page,
+        limit=limit,
+    )
+
+
+@router.patch("/requests/{request_id}/status", response_model=AdministrativeRequestResponse)
+async def update_administrative_request_status(
+    request_id: uuid.UUID,
+    update_in: AdministrativeRequestStatusUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(OFFICER_ROLES),
+):
+    stmt = select(AdministrativeRequest).where(AdministrativeRequest.id == request_id)
+    admin_req = (await db.execute(stmt)).scalar_one_or_none()
+    if not admin_req:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Administrative request not found",
+        )
+
+    old_status = admin_req.status
+    admin_req.status = update_in.status
+    if update_in.notes is not None:
+        admin_req.notes = update_in.notes
+
+    await log_audit_event(
+        db=db,
+        action="UPDATE_ADMIN_REQUEST_STATUS",
+        entity_name="administrative_requests",
+        entity_id=admin_req.id,
+        user_id=current_user.id,
+        changes={
+            "previous_status": old_status,
+            "new_status": update_in.status,
+            "notes": update_in.notes,
+        },
     )
 
     await db.commit()

@@ -2,7 +2,7 @@
 
 export interface SyncQueueItem {
   id?: number
-  type: 'harvest_create' | 'event_create' | 'resident_create' | 'farm_create' | 'custom'
+  type: 'harvest_create' | 'event_create' | 'resident_create' | 'farm_create' | 'resident_request' | 'custom'
   endpoint: string
   method: 'POST' | 'PUT' | 'PATCH'
   payload: Record<string, unknown>

@@ -449,6 +449,48 @@ async def seed_all():
                 session.add(chain_tx)
                 await session.flush()
 
+        # 9. ADMINISTRATIVE REQUESTS (Surat Kependudukan Warga)
+        logger.info("📄 Menginisialisasi Permohonan Surat Kependudukan Warga...")
+        admin_reqs_def = [
+            (
+                "8171010404910004",  # Usman Alkatiri
+                "Surat Keterangan Usaha Petani Rempah Pala & Cengkeh (SKU)",
+                "approved",
+                "Disetujui untuk pengajuan modal KUR Pertanian Bank Mandiri Banda",
+            ),
+            (
+                "8171011111880011",  # La Ode Karim
+                "Surat Keterangan Usaha Nelayan Tradisional Banda (SKU-N)",
+                "submitted",
+                "Pengajuan kuota solar bersubsidi perahu nelayan 5 GT di SPDN Banda Neira",
+            ),
+            (
+                "8171011301930013",  # Marni Kelirey
+                "Surat Keterangan Usaha Pengolah / Pedagang Fuli Merah",
+                "submitted",
+                "Pengajuan verifikasi mutu Indikasi Geografis Fuli Merah Banda",
+            ),
+        ]
+
+        for rnik, rtype, rstatus, rnotes in admin_reqs_def:
+            if rnik in residents_dict:
+                r_obj = residents_dict[rnik]
+                chk_req = await session.execute(
+                    select(AdministrativeRequest).where(
+                        AdministrativeRequest.resident_id == r_obj.id,
+                        AdministrativeRequest.request_type == rtype,
+                    )
+                )
+                if not chk_req.scalar_one_or_none():
+                    req_item = AdministrativeRequest(
+                        resident_id=r_obj.id,
+                        request_type=rtype,
+                        status=rstatus,
+                        notes=rnotes,
+                    )
+                    session.add(req_item)
+                    await session.flush()
+
         await session.commit()
         logger.info("✅ Seeding ekosistem Banda Digital selesai dengan sukses!")
 

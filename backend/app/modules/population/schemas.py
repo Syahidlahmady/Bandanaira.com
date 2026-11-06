@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class AdministrativeRequestCreate(BaseModel):
-    resident_id: uuid.UUID
+    resident_id: Optional[uuid.UUID] = None
     request_type: str = Field(..., min_length=3, max_length=100)
     notes: Optional[str] = None
 
@@ -20,6 +20,33 @@ class AdministrativeRequestResponse(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class AdministrativeRequestStatusUpdate(BaseModel):
+    status: str = Field(..., pattern=r"^(submitted|in_review|approved|rejected)$")
+    notes: Optional[str] = None
+
+
+class AdministrativeRequestDetailResponse(BaseModel):
+    id: uuid.UUID
+    resident_id: uuid.UUID
+    resident_name: Optional[str] = None
+    resident_nik: Optional[str] = None
+    resident_occupation: Optional[str] = None
+    request_type: str
+    status: str
+    notes: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AdministrativeRequestListResponse(BaseModel):
+    items: List[AdministrativeRequestDetailResponse]
+    total: int
+    page: int
+    limit: int
 
 
 class ResidentCreate(BaseModel):

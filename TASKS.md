@@ -89,5 +89,6 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 10.2 Resident livelihood tracking backend: Extended `GET /api/v1/population/residents` to support search by occupation (`Resident.occupation.ilike(search_fmt)`) and direct filtering with `occupation` query parameter.
 - [x] 10.3 Population frontend livelihood UI: Added Banda Neira occupation selector dropdown, Sebaran Mata Pencaharian stats chips, quick-filter chips with badge icons (Pala, Nelayan, Cengkeh, Fuli, etc.), search bar integration, and table livelihood badges.
 - [x] 10.4 Citizen self-service portal: Expanded administrative letter requests to support SKU Petani Rempah Pala & Cengkeh, SKU Nelayan Tradisional Banda, and SKU Pengolah Fuli Merah.
-- [x] 10.5 Automated tests and TypeScript verification: 31 backend tests passing (including occupation search/filter tests) and `npm run build` 0 errors.
+- [x] 10.5 Automated tests and TypeScript verification: 32 backend tests passing (including occupation search/filter tests) and `npm run build` 0 errors.
+- [x] 10.6 Integrated Village Office Letter Request Workflow: Added backend `GET /population/requests` and `PATCH /population/requests/{id}/status` endpoints with audit logging, frontend "Kotak Masuk Permohonan Surat Warga (Inbox Desa)" with instant Setujui/Tolak actions, automated test coverage, and offline sync queue integration.
 

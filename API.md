@@ -59,8 +59,10 @@ RESTful API specification for **Banda Digital Ecosystem**.
 | `POST` | `/api/v1/population/residents` | `admin`, `village_officer` | Register new resident profile (synthetic data) |
 | `GET` | `/api/v1/population/residents/{id}` | `admin`, `village_officer` | Get resident detail |
 | `PUT` | `/api/v1/population/residents/{id}` | `admin`, `village_officer` | Update resident data |
-| `POST` | `/api/v1/population/residents/{id}/verify` | `admin`, `village_officer` | Update verification status |
 | `GET` | `/api/v1/population/statistics` | `admin`, `village_officer` | Aggregate demographic statistics |
+| `GET` | `/api/v1/population/requests` | `admin`, `village_officer` | List resident letter/administrative requests with status filter |
+| `POST` | `/api/v1/population/requests` | Authenticated | Submit new administrative letter request (SKU, etc.) |
+| `PATCH` | `/api/v1/population/requests/{id}/status` | `admin`, `village_officer` | Approve or reject resident administrative request |
 
 ### 2.4 Farmers & Farm Mapping (`/api/v1/farmers` & `/api/v1/farms`)
 | Method | Endpoint | Roles Allowed | Description |
