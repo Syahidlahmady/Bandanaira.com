@@ -220,6 +220,9 @@ async def seed_all():
             ("8171010808980008", "Muhammad Ridwan", "L", "Diera", date(1998, 8, 8), "Dusun Diera No. 5", "001", "001", "Diera", "Penyuluh Pertanian Lapangan", "pending"),
             ("8171010909950009", "Zainab Latarissa", "P", "Selamon", date(1995, 9, 9), "Desa Selamon RT 02", "002", "001", "Selamon", "Pendidik / Guru Sekolah", "verified"),
             ("8171011010870010", "Hasan Basri Baadilla", "L", "Banda Neira", date(1987, 10, 10), "Jl. Syahrir No. 4", "001", "003", "Banda Neira", "Pemandu Wisata Sejarah", "verified"),
+            ("8171011111880011", "La Ode Karim", "L", "Banda Neira", date(1988, 11, 11), "Kampung Nelayan Nusantara", "003", "002", "Banda Neira", "Nelayan Tangkap Tradisional", "verified"),
+            ("8171011212850012", "Jafar Rumra", "L", "Selamon", date(1985, 12, 12), "Pesisir Selamon RT 03", "003", "001", "Selamon", "Nelayan Pesisir & Pengering Ikan", "verified"),
+            ("8171011301930013", "Marni Kelirey", "P", "Lonthoir", date(1993, 1, 13), "Desa Lonthoir Tengah", "001", "002", "Lonthoir", "Pengolah & Pengering Fuli Merah", "verified"),
         ]
 
         residents_dict = {}

@@ -97,4 +97,5 @@ RESTful API specification for **Banda Digital Ecosystem**.
 ## 3. Query Parameters Standard
 - Pagination: `?page=1&limit=20`
 - Sorting: `?sort_by=created_at&sort_order=desc`
-- Search: `?search=term`
+- Search: `?search=term` (searches Name, NIK, or Occupation)
+- Population Occupation Filter: `?occupation=Petani+Rempah+Pala` or `?occupation=Nelayan+Tangkap+Tradisional`

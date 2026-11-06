@@ -45,6 +45,71 @@ interface HealthResponse {
   }
 }
 
+const BANDA_OCCUPATIONS = [
+  'Petani Rempah Pala',
+  'Nelayan Tangkap Tradisional',
+  'Petani Cengkeh',
+  'Pengolah & Pengering Fuli Merah',
+  'Pedagang Rempah & Hasil Laut',
+  'Pemandu Wisata Sejarah & Bahari',
+  'Aparatur Desa / ASN',
+  'Pendidik / Guru Sekolah',
+  'Ibu Rumah Tangga',
+  'Wiraswasta / Lainnya',
+]
+
+const getOccupationBadge = (occ?: string) => {
+  if (!occ) return <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>- Belum Diisi -</span>
+  const lower = occ.toLowerCase()
+  if (lower.includes('pala')) {
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '0.2rem 0.55rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '600' }}>
+        🌿 {occ}
+      </span>
+    )
+  }
+  if (lower.includes('nelayan') || lower.includes('laut') || lower.includes('ikan')) {
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', padding: '0.2rem 0.55rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '600' }}>
+        🐟 {occ}
+      </span>
+    )
+  }
+  if (lower.includes('cengkeh')) {
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', padding: '0.2rem 0.55rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '600' }}>
+        🌾 {occ}
+      </span>
+    )
+  }
+  if (lower.includes('fuli') || lower.includes('pengolah') || lower.includes('rempah')) {
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: '#fff1f2', color: '#be123c', border: '1px solid #fecdd3', padding: '0.2rem 0.55rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '600' }}>
+        🌺 {occ}
+      </span>
+    )
+  }
+  if (lower.includes('wisata') || lower.includes('pemandu') || lower.includes('turis')) {
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: '#f5f3ff', color: '#6d28d9', border: '1px solid #ddd6fe', padding: '0.2rem 0.55rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '600' }}>
+        ⛵ {occ}
+      </span>
+    )
+  }
+  if (lower.includes('desa') || lower.includes('asn') || lower.includes('aparatur') || lower.includes('guru') || lower.includes('pendidik')) {
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', padding: '0.2rem 0.55rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '600' }}>
+        🏛️ {occ}
+      </span>
+    )
+  }
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', padding: '0.2rem 0.55rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '500' }}>
+      👤 {occ}
+    </span>
+  )
+}
+
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'farming' | 'population' | 'traceability'>('traceability')
   const [health, setHealth] = useState<HealthResponse | null>(null)
@@ -70,6 +135,7 @@ export const App: React.FC = () => {
   const [popStats, setPopStats] = useState<PopulationStatistics | null>(null)
   const [loadingPop, setLoadingPop] = useState<boolean>(false)
   const [searchQuery, setSearchQuery] = useState<string>('')
+  const [selectedOccupationFilter, setSelectedOccupationFilter] = useState<string>('')
   const [popMsg, setPopMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   // Farming states
@@ -185,11 +251,13 @@ export const App: React.FC = () => {
 
   const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8005/api/v1'
 
-  const fetchPopulationData = async () => {
+  const fetchPopulationData = async (queryOverride?: string, occOverride?: string) => {
     setLoadingPop(true)
+    const q = typeof queryOverride === 'string' ? queryOverride : searchQuery
+    const occ = typeof occOverride === 'string' ? occOverride : selectedOccupationFilter
     try {
       const [resList, resStats] = await Promise.all([
-        populationService.listResidents(1, 20, searchQuery),
+        populationService.listResidents(1, 50, q, occ || undefined),
         populationService.getStatistics(),
       ])
       setResidents(resList.items)
@@ -1514,7 +1582,7 @@ export const App: React.FC = () => {
               </p>
             </div>
             <button
-              onClick={fetchPopulationData}
+              onClick={() => fetchPopulationData()}
               disabled={loadingPop}
               style={{
                 background: '#f1f5f9',
@@ -1597,13 +1665,20 @@ export const App: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Pekerjaan</label>
-                <input
-                  type="text"
-                  value={popForm.occupation || ''}
+                <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>
+                  Mata Pencaharian / Pekerjaan Khas Banda
+                </label>
+                <select
+                  value={popForm.occupation || 'Petani Rempah Pala'}
                   onChange={(e) => setPopForm({ ...popForm, occupation: e.target.value })}
-                  style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
-                />
+                  style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#1e293b' }}
+                >
+                  {BANDA_OCCUPATIONS.map((occ) => (
+                    <option key={occ} value={occ}>
+                      {occ}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div style={{ gridColumn: '1 / -1', marginTop: '0.5rem' }}>
                 <button
@@ -1639,28 +1714,198 @@ export const App: React.FC = () => {
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+          {/* Sebaran Mata Pencaharian Warga Banda Neira */}
+          {popStats && popStats.top_occupations && Object.keys(popStats.top_occupations).length > 0 && (
+            <div
+              style={{
+                background: '#f8fafc',
+                padding: '1rem 1.25rem',
+                borderRadius: '8px',
+                border: '1px solid #e2e8f0',
+                marginBottom: '1rem',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '1.15rem' }}>🏝️</span>
+                  <div>
+                    <h3 style={{ fontSize: '0.92rem', fontWeight: 'bold', color: '#1e3a8a', margin: 0 }}>
+                      Sebaran Mata Pencaharian Warga Kepulauan Banda
+                    </h3>
+                    <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>
+                      Klik kategori pekerjaan di bawah untuk memfilter data penduduk seketika:
+                    </p>
+                  </div>
+                </div>
+                {selectedOccupationFilter && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedOccupationFilter('')
+                      fetchPopulationData(searchQuery, '')
+                    }}
+                    style={{
+                      background: '#fee2e2',
+                      color: '#991b1b',
+                      border: '1px solid #fecaca',
+                      padding: '0.25rem 0.6rem',
+                      borderRadius: '6px',
+                      fontSize: '0.75rem',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    ✕ Hapus Filter ({selectedOccupationFilter})
+                  </button>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedOccupationFilter('')
+                    fetchPopulationData(searchQuery, '')
+                  }}
+                  style={{
+                    padding: '0.35rem 0.75rem',
+                    borderRadius: '20px',
+                    fontSize: '0.78rem',
+                    fontWeight: '600',
+                    border: selectedOccupationFilter === '' ? '2px solid #1e40af' : '1px solid #cbd5e1',
+                    background: selectedOccupationFilter === '' ? '#eff6ff' : '#ffffff',
+                    color: selectedOccupationFilter === '' ? '#1e40af' : '#475569',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                  }}
+                >
+                  <span>Semua Pekerjaan</span>
+                  <span
+                    style={{
+                      background: selectedOccupationFilter === '' ? '#1e40af' : '#e2e8f0',
+                      color: selectedOccupationFilter === '' ? '#ffffff' : '#475569',
+                      borderRadius: '10px',
+                      padding: '0.05rem 0.4rem',
+                      fontSize: '0.7rem',
+                    }}
+                  >
+                    {popStats.total_residents}
+                  </span>
+                </button>
+                {Object.entries(popStats.top_occupations).map(([occ, count]) => {
+                  const isSelected = selectedOccupationFilter === occ
+                  let icon = '👤'
+                  if (occ.toLowerCase().includes('pala')) icon = '🌿'
+                  else if (occ.toLowerCase().includes('nelayan') || occ.toLowerCase().includes('laut')) icon = '🐟'
+                  else if (occ.toLowerCase().includes('cengkeh')) icon = '🌾'
+                  else if (occ.toLowerCase().includes('fuli') || occ.toLowerCase().includes('pengolah')) icon = '🌺'
+                  else if (occ.toLowerCase().includes('wisata')) icon = '⛵'
+                  else if (occ.toLowerCase().includes('desa') || occ.toLowerCase().includes('asn') || occ.toLowerCase().includes('guru')) icon = '🏛️'
+
+                  return (
+                    <button
+                      type="button"
+                      key={occ}
+                      onClick={() => {
+                        const next = isSelected ? '' : occ
+                        setSelectedOccupationFilter(next)
+                        fetchPopulationData(searchQuery, next)
+                      }}
+                      style={{
+                        padding: '0.35rem 0.75rem',
+                        borderRadius: '20px',
+                        fontSize: '0.78rem',
+                        fontWeight: '600',
+                        border: isSelected ? '2px solid #059669' : '1px solid #cbd5e1',
+                        background: isSelected ? '#ecfdf5' : '#ffffff',
+                        color: isSelected ? '#047857' : '#334155',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                      }}
+                    >
+                      <span>{icon}</span>
+                      <span>{occ}</span>
+                      <span
+                        style={{
+                          background: isSelected ? '#059669' : '#e2e8f0',
+                          color: isSelected ? '#ffffff' : '#334155',
+                          borderRadius: '10px',
+                          padding: '0.05rem 0.4rem',
+                          fontSize: '0.7rem',
+                        }}
+                      >
+                        {count}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
             <input
               type="text"
-              placeholder="Cari penduduk berdasarkan Nama atau NIK..."
+              placeholder="Cari warga berdasarkan Nama, NIK, atau Pekerjaan (contoh: pala, nelayan, cengkeh)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && fetchPopulationData()}
-              style={{ flex: 1, padding: '0.45rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+              style={{ flex: 1, minWidth: '240px', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.875rem' }}
             />
+            <select
+              value={selectedOccupationFilter}
+              onChange={(e) => {
+                const val = e.target.value
+                setSelectedOccupationFilter(val)
+                fetchPopulationData(searchQuery, val)
+              }}
+              style={{ padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.85rem', background: '#ffffff', color: '#334155', fontWeight: '500' }}
+            >
+              <option value="">Semua Kategori Pekerjaan</option>
+              {BANDA_OCCUPATIONS.map((occ) => (
+                <option key={occ} value={occ}>
+                  {occ}
+                </option>
+              ))}
+            </select>
             <button
-              onClick={fetchPopulationData}
+              onClick={() => fetchPopulationData()}
               style={{
                 background: '#1e40af',
                 color: '#ffffff',
                 border: 'none',
-                padding: '0.45rem 1rem',
+                padding: '0.5rem 1.25rem',
                 borderRadius: '6px',
                 fontWeight: '600',
+                cursor: 'pointer',
               }}
             >
               Cari
             </button>
+            {(searchQuery || selectedOccupationFilter) && (
+              <button
+                onClick={() => {
+                  setSearchQuery('')
+                  setSelectedOccupationFilter('')
+                  fetchPopulationData('', '')
+                }}
+                style={{
+                  background: '#f1f5f9',
+                  color: '#475569',
+                  border: '1px solid #cbd5e1',
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: '6px',
+                  fontSize: '0.85rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                }}
+              >
+                Reset
+              </button>
+            )}
           </div>
 
           <div style={{ overflowX: 'auto' }}>
@@ -1668,10 +1913,10 @@ export const App: React.FC = () => {
               <thead>
                 <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #e2e8f0' }}>
                   <th style={{ padding: '0.65rem' }}>NIK</th>
-                  <th style={{ padding: '0.65rem' }}>Nama</th>
+                  <th style={{ padding: '0.65rem' }}>Nama Lengkap</th>
                   <th style={{ padding: '0.65rem' }}>Gender</th>
-                  <th style={{ padding: '0.65rem' }}>Pekerjaan</th>
-                  <th style={{ padding: '0.65rem' }}>Status</th>
+                  <th style={{ padding: '0.65rem' }}>Mata Pencaharian (Banda)</th>
+                  <th style={{ padding: '0.65rem' }}>Status Verifikasi</th>
                   <th style={{ padding: '0.65rem' }}>Aksi</th>
                 </tr>
               </thead>
@@ -1679,10 +1924,24 @@ export const App: React.FC = () => {
                 {residents.map((r) => (
                   <tr key={r.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
                     <td style={{ padding: '0.65rem', fontFamily: 'monospace' }}>{r.nik}</td>
-                    <td style={{ padding: '0.65rem', fontWeight: '500' }}>{r.full_name}</td>
-                    <td style={{ padding: '0.65rem' }}>{r.gender}</td>
-                    <td style={{ padding: '0.65rem' }}>{r.occupation || '-'}</td>
-                    <td style={{ padding: '0.65rem' }}>{r.verification_status.toUpperCase()}</td>
+                    <td style={{ padding: '0.65rem', fontWeight: '600', color: '#0f172a' }}>{r.full_name}</td>
+                    <td style={{ padding: '0.65rem' }}>{r.gender === 'L' ? 'Laki-laki' : 'Perempuan'}</td>
+                    <td style={{ padding: '0.65rem' }}>{getOccupationBadge(r.occupation)}</td>
+                    <td style={{ padding: '0.65rem' }}>
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          padding: '0.15rem 0.5rem',
+                          borderRadius: '10px',
+                          fontSize: '0.72rem',
+                          fontWeight: '700',
+                          background: r.verification_status === 'verified' ? '#ecfdf5' : r.verification_status === 'pending' ? '#fffbeb' : '#fef2f2',
+                          color: r.verification_status === 'verified' ? '#047857' : r.verification_status === 'pending' ? '#b45309' : '#b91c1c',
+                        }}
+                      >
+                        {r.verification_status === 'verified' ? '✓ TERVERIFIKASI' : r.verification_status === 'pending' ? '⏳ MENUNGGU' : '✕ DITOLAK'}
+                      </span>
+                    </td>
                     <td style={{ padding: '0.65rem' }}>
                       {r.verification_status !== 'verified' && (
                         <button
@@ -1691,10 +1950,11 @@ export const App: React.FC = () => {
                             background: '#059669',
                             color: '#ffffff',
                             border: 'none',
-                            padding: '0.2rem 0.5rem',
+                            padding: '0.25rem 0.6rem',
                             borderRadius: '4px',
                             fontSize: '0.75rem',
                             fontWeight: '600',
+                            cursor: 'pointer',
                           }}
                         >
                           Verifikasi
@@ -1703,6 +1963,17 @@ export const App: React.FC = () => {
                     </td>
                   </tr>
                 ))}
+                {residents.length === 0 && (
+                  <tr>
+                    <td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
+                      <div style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>🔍</div>
+                      <p style={{ fontWeight: '600', margin: 0 }}>Tidak ada data penduduk yang cocok</p>
+                      <p style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>
+                        Coba periksa kata kunci pencarian atau ubah filter pekerjaan yang dipilih.
+                      </p>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -1754,9 +2025,10 @@ export const App: React.FC = () => {
                 Ajukan permohonan surat keterangan secara digital langsung ke kantor desa tanpa perlu antre fisik.
               </p>
               <ul style={{ fontSize: '0.8rem', color: '#166534', paddingLeft: '1.2rem', lineHeight: '1.6', marginBottom: '0.75rem' }}>
-                <li>Surat Keterangan Usaha Petani Rempah (SKU)</li>
-                <li>Surat Keterangan Domisili Tempat Tinggal</li>
-                <li>Surat Pengantar Pembuatan KTP / Kartu Keluarga</li>
+                <li>Surat Keterangan Usaha Petani Rempah Pala & Cengkeh (SKU)</li>
+                <li>Surat Keterangan Usaha Nelayan Tradisional Banda (SKU-N)</li>
+                <li>Surat Keterangan Usaha Pengolah / Pedagang Fuli Merah</li>
+                <li>Surat Domisili Tempat Tinggal & Administrasi Kependudukan</li>
               </ul>
               <button
                 type="button"
@@ -1793,7 +2065,9 @@ export const App: React.FC = () => {
                     onChange={(e) => setLetterTypeInput(e.target.value)}
                     style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
                   >
-                    <option value="Surat Keterangan Usaha Petani Rempah (SKU)">Surat Keterangan Usaha Petani Rempah (SKU)</option>
+                    <option value="Surat Keterangan Usaha Petani Rempah Pala & Cengkeh (SKU)">Surat Keterangan Usaha Petani Rempah Pala & Cengkeh (SKU)</option>
+                    <option value="Surat Keterangan Usaha Nelayan Tradisional Banda (SKU-N)">Surat Keterangan Usaha Nelayan Tradisional Banda (SKU-N)</option>
+                    <option value="Surat Keterangan Usaha Pengolah / Pedagang Fuli Merah">Surat Keterangan Usaha Pengolah / Pedagang Fuli Merah</option>
                     <option value="Surat Keterangan Domisili Tempat Tinggal">Surat Keterangan Domisili Tempat Tinggal</option>
                     <option value="Surat Pengantar Pembuatan KTP / Kartu Keluarga">Surat Pengantar Pembuatan KTP / Kartu Keluarga</option>
                   </select>

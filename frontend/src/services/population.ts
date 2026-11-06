@@ -58,10 +58,13 @@ export const populationService = {
     }
   },
 
-  async listResidents(page = 1, limit = 20, search?: string): Promise<ResidentListResponse> {
+  async listResidents(page = 1, limit = 20, search?: string, occupation?: string): Promise<ResidentListResponse> {
     let url = `${API_BASE}/population/residents?page=${page}&limit=${limit}`
     if (search) {
       url += `&search=${encodeURIComponent(search)}`
+    }
+    if (occupation) {
+      url += `&occupation=${encodeURIComponent(occupation)}`
     }
     const res = await fetch(url, { headers: this.getAuthHeaders() })
     if (!res.ok) {

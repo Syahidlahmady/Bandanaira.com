@@ -16,6 +16,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 7: Offline Support & PWA (IndexedDB Sync Queue)**
 - [x] **Phase 8: End-to-End Testing & Field Demonstration Readiness**
 - [x] **Phase 9: UI/UX Modernization & Modular Design System**
+- [x] **Phase 10: Security Hardening & Banda Neira Resident Livelihood Tracking**
 
 ---
 
@@ -82,4 +83,11 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 9.2 Modularization of monolithic `App.tsx` into reusable components (`HeaderNav.tsx`, `LoginSection.tsx`, `BlockchainModal.tsx`, `OfflineQueueModal.tsx`, `PublicVerifyModal.tsx`).
 - [x] 9.3 1-click interactive demo persona switcher for testing all 5 roles (`admin`, `village_officer`, `farmer_group_admin`, `farmer`, `resident`).
 - [x] 9.4 Lucide React icon integration with ambient declarations and production bundling validation.
+
+### Phase 10: Security Hardening & Banda Neira Resident Livelihood Tracking
+- [x] 10.1 Real authentication login gate: Form Login Resmi with password verification, Bcrypt/JWT security notices, show/hide toggle, and companion quick-credential assistant for all 5 roles.
+- [x] 10.2 Resident livelihood tracking backend: Extended `GET /api/v1/population/residents` to support search by occupation (`Resident.occupation.ilike(search_fmt)`) and direct filtering with `occupation` query parameter.
+- [x] 10.3 Population frontend livelihood UI: Added Banda Neira occupation selector dropdown, Sebaran Mata Pencaharian stats chips, quick-filter chips with badge icons (Pala, Nelayan, Cengkeh, Fuli, etc.), search bar integration, and table livelihood badges.
+- [x] 10.4 Citizen self-service portal: Expanded administrative letter requests to support SKU Petani Rempah Pala & Cengkeh, SKU Nelayan Tradisional Banda, and SKU Pengolah Fuli Merah.
+- [x] 10.5 Automated tests and TypeScript verification: 31 backend tests passing (including occupation search/filter tests) and `npm run build` 0 errors.
 

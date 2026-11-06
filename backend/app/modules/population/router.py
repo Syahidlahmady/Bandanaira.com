@@ -33,6 +33,7 @@ async def list_residents(
     status_filter: Optional[str] = Query(None, alias="status"),
     rt: Optional[str] = None,
     rw: Optional[str] = None,
+    occupation: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
     _: User = Depends(OFFICER_ROLES),
 ):
@@ -41,10 +42,16 @@ async def list_residents(
     if search:
         search_fmt = f"%{search}%"
         query = query.where(
-            or_(Resident.full_name.ilike(search_fmt), Resident.nik.ilike(search_fmt))
+            or_(
+                Resident.full_name.ilike(search_fmt),
+                Resident.nik.ilike(search_fmt),
+                Resident.occupation.ilike(search_fmt),
+            )
         )
     if status_filter:
         query = query.where(Resident.verification_status == status_filter)
+    if occupation:
+        query = query.where(Resident.occupation.ilike(f"%{occupation}%"))
     if rt:
         query = query.where(Resident.rt == rt)
     if rw:

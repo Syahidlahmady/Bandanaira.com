@@ -97,16 +97,16 @@ async def test_duplicate_nik_rejected(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_list_and_search_residents(client: AsyncClient):
     token = await get_admin_token(client)
-    # Seed 2 residents
+    # Seed residents with diverse occupations
     await client.post(
         "/api/v1/population/residents",
         headers={"Authorization": f"Bearer {token}"},
-        json={"nik": "8171010101900010", "full_name": "Siti Fatimah", "gender": "P"},
+        json={"nik": "8171010101900010", "full_name": "Siti Fatimah", "gender": "P", "occupation": "Petani Rempah Pala"},
     )
     await client.post(
         "/api/v1/population/residents",
         headers={"Authorization": f"Bearer {token}"},
-        json={"nik": "8171010101900020", "full_name": "Budi Santoso", "gender": "L"},
+        json={"nik": "8171010101900020", "full_name": "Budi Santoso", "gender": "L", "occupation": "Nelayan Tangkap Banda"},
     )
 
     # Search for Siti
@@ -118,6 +118,23 @@ async def test_list_and_search_residents(client: AsyncClient):
     search_data = search_res.json()
     assert search_data["total"] >= 1
     assert any("Siti" in item["full_name"] for item in search_data["items"])
+
+    # Search by occupation 'Nelayan'
+    occ_search_res = await client.get(
+        "/api/v1/population/residents?search=Nelayan",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert occ_search_res.status_code == 200
+    occ_data = occ_search_res.json()
+    assert any("Nelayan" in item.get("occupation", "") for item in occ_data["items"])
+
+    # Filter explicitly by occupation parameter
+    occ_filter_res = await client.get(
+        "/api/v1/population/residents?occupation=Nelayan",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert occ_filter_res.status_code == 200
+    assert any("Nelayan" in item.get("occupation", "") for item in occ_filter_res.json()["items"])
 
 
 @pytest.mark.asyncio
