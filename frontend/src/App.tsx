@@ -32,6 +32,7 @@ import {
   MapPin,
   Users,
   QrCode,
+  Mail,
 } from 'lucide-react'
 import { offlineDB } from './offline/db.ts'
 import { syncManager, SyncQueueItem } from './offline/syncManager.ts'
@@ -112,7 +113,7 @@ const getOccupationBadge = (occ?: string) => {
 }
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'farming' | 'population' | 'traceability'>('traceability')
+  const [activeTab, setActiveTab] = useState<'population' | 'letters' | 'farming' | 'traceability'>('population')
   const [health, setHealth] = useState<HealthResponse | null>(null)
   const [loadingHealth, setLoadingHealth] = useState<boolean>(true)
   const [healthError, setHealthError] = useState<string | null>(null)
@@ -141,6 +142,7 @@ export const App: React.FC = () => {
   const [adminRequests, setAdminRequests] = useState<AdministrativeRequestItem[]>([])
   const [requestFilterStatus, setRequestFilterStatus] = useState<string>('')
   const [updatingRequestId, setUpdatingRequestId] = useState<string | null>(null)
+  const [letterActionMsg, setLetterActionMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   // Farming states
   const [farmers, setFarmers] = useState<Farmer[]>([])
@@ -284,19 +286,21 @@ export const App: React.FC = () => {
 
   const handleUpdateRequestStatus = async (id: string, status: 'approved' | 'rejected') => {
     setUpdatingRequestId(id)
+    setLetterActionMsg(null)
     try {
       await populationService.updateRequestStatus(
         id,
         status,
         status === 'approved' ? 'Disetujui oleh petugas desa Banda Neira' : 'Permohonan ditolak / berkas belum lengkap'
       )
-      setPopMsg({
-        type: 'success',
-        text: `Permohonan surat berhasil di-${status === 'approved' ? 'setujui' : 'tolak'}!`,
-      })
+      const notice = `Surat permohonan berhasil di-${status === 'approved' ? 'setujui' : 'tolak'}!`
+      setLetterActionMsg({ type: 'success', text: notice })
+      setPopMsg({ type: 'success', text: notice })
+      setTimeout(() => setLetterActionMsg(null), 5000)
       await fetchPopulationData()
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Gagal memperbarui status permohonan'
+      setLetterActionMsg({ type: 'error', text: msg })
       setPopMsg({ type: 'error', text: msg })
     } finally {
       setUpdatingRequestId(null)
@@ -515,6 +519,11 @@ export const App: React.FC = () => {
     try {
       const response = await authService.login(username, password)
       setCurrentUser(response.user)
+      if (response.user.roles.some((r) => r.name === 'farmer') && !response.user.roles.some((r) => r.name === 'admin' || r.name === 'village_officer')) {
+        setActiveTab('traceability')
+      } else {
+        setActiveTab('population')
+      }
     } catch (err: unknown) {
       if (err instanceof Error) setAuthError(err.message)
     } finally {
@@ -530,10 +539,8 @@ export const App: React.FC = () => {
     try {
       const response = await authService.login(u, p)
       setCurrentUser(response.user)
-      if (response.user.roles.some((r) => r.name === 'farmer')) {
+      if (response.user.roles.some((r) => r.name === 'farmer') && !response.user.roles.some((r) => r.name === 'admin' || r.name === 'village_officer')) {
         setActiveTab('traceability')
-      } else if (response.user.roles.some((r) => r.name === 'resident')) {
-        // resident
       } else {
         setActiveTab('population')
       }
@@ -972,7 +979,28 @@ export const App: React.FC = () => {
             onClick={() => setActiveTab('population')}
             className={`tab-btn ${activeTab === 'population' ? 'active' : ''}`}
           >
-            <Users size={16} /> 👥 Warga & Kependudukan
+            <Users size={16} /> 👥 Warga & Profesi
+          </button>
+          <button
+            onClick={() => setActiveTab('letters')}
+            className={`tab-btn ${activeTab === 'letters' ? 'active' : ''}`}
+          >
+            <Mail size={16} /> 📬 Pelayanan Surat Warga
+            {adminRequests.filter((r) => r.status === 'submitted').length > 0 && (
+              <span
+                style={{
+                  background: '#f59e0b',
+                  color: '#ffffff',
+                  borderRadius: '10px',
+                  padding: '0.1rem 0.5rem',
+                  fontSize: '0.72rem',
+                  fontWeight: '700',
+                  marginLeft: '0.4rem',
+                }}
+              >
+                {adminRequests.filter((r) => r.status === 'submitted').length}
+              </span>
+            )}
           </button>
           <button
             onClick={() => setActiveTab('farming')}
@@ -984,7 +1012,7 @@ export const App: React.FC = () => {
             onClick={() => setActiveTab('traceability')}
             className={`tab-btn ${activeTab === 'traceability' ? 'active' : ''}`}
           >
-            <QrCode size={16} /> 📦 Panen & Label QR Rempah
+            <QrCode size={16} /> 📦 Panen & Mutu Rempah
           </button>
         </div>
       )}
@@ -2036,27 +2064,33 @@ export const App: React.FC = () => {
               </tbody>
             </table>
           </div>
+        </section>
+      )}
 
-          {/* KOTAK MASUK PERMOHONAN SURAT WARGA (INBOX DESA BANDA NEIRA) */}
-          <div
-            style={{
-              marginTop: '2rem',
-              paddingTop: '1.5rem',
-              borderTop: '2px dashed #cbd5e1',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <span style={{ fontSize: '1.4rem' }}>📬</span>
-                <div>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#1e3a8a', margin: 0 }}>
-                    Kotak Masuk Permohonan Surat Warga (Inbox Desa)
-                  </h3>
-                  <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0 }}>
-                    Verifikasi dan terbitkan surat keterangan usaha (Petani Pala, Nelayan, Pengolah Fuli) dan domisili.
-                  </p>
-                </div>
+      {/* TAB: INBOX PELAYANAN SURAT WARGA (DESA BANDA NEIRA) */}
+      {isOfficerOrAdmin && activeTab === 'letters' && (
+        <section
+          style={{
+            background: '#ffffff',
+            borderRadius: '12px',
+            padding: '1.5rem',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            marginBottom: '2rem',
+            border: '1px solid #e2e8f0',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{ fontSize: '2rem', background: '#eff6ff', padding: '0.5rem', borderRadius: '10px' }}>📬</div>
+              <div>
+                <h2 style={{ fontSize: '1.35rem', color: '#1e3a8a', fontWeight: 'bold', margin: 0 }}>
+                  Kotak Masuk Pelayanan Surat Warga (Inbox Desa)
+                </h2>
+                <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '0.2rem 0 0 0' }}>
+                  Verifikasi dan terbitkan surat keterangan usaha (Petani Pala, Nelayan, Pengolah Fuli) dan surat domisili.
+                </p>
               </div>
+            </div>
               <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                 {['', 'submitted', 'approved', 'rejected'].map((st) => {
                   const label = st === '' ? 'Semua' : st === 'submitted' ? 'Menunggu' : st === 'approved' ? 'Disetujui' : 'Ditolak'
@@ -2084,6 +2118,22 @@ export const App: React.FC = () => {
                 })}
               </div>
             </div>
+
+            {letterActionMsg && (
+              <div
+                style={{
+                  marginBottom: '1rem',
+                  padding: '0.65rem',
+                  borderRadius: '6px',
+                  fontSize: '0.875rem',
+                  background: letterActionMsg.type === 'success' ? '#ecfdf5' : '#fef2f2',
+                  color: letterActionMsg.type === 'success' ? '#065f46' : '#991b1b',
+                  border: `1px solid ${letterActionMsg.type === 'success' ? '#a7f3d0' : '#fecaca'}`,
+                }}
+              >
+                {letterActionMsg.text}
+              </div>
+            )}
 
             <div style={{ overflowX: 'auto', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
@@ -2204,7 +2254,6 @@ export const App: React.FC = () => {
                 </tbody>
               </table>
             </div>
-          </div>
         </section>
       )}
 

@@ -18,3 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `TASKS.md`: Project roadmap and step-by-step development tracker.
   - `.env.example`: Template for environment configuration.
   - `README.md`: Project overview and getting started guide.
+- Dedicated Village Letter Inbox tab (`📬 Pelayanan Surat Warga`) with pending counter badge, status filters, and instant approval/rejection actions.
+- Persona-specific workspace separation for field operators:
+  - Perangkat Desa: 4 distinct workspaces (Warga & Profesi, Pelayanan Surat Warga, Peta Kebun & Poktan, Panen & Mutu Rempah).
+  - Petani Rempah: Clean 2-tab view focused on harvest logging and farm geospatial plots with offline cache.
+  - Warga Desa: Isolated self-service portal for SKU & residency certificate requests.
