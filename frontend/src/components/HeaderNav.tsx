@@ -21,6 +21,25 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   onManualSync,
   onOpenQueueModal,
 }) => {
+  const getRoleLabel = (roleName: string) => {
+    switch (roleName) {
+      case 'admin':
+        return 'Administrator Desa'
+      case 'village_officer':
+        return 'Petugas Kantor Desa'
+      case 'farmer_group_admin':
+        return 'Ketua Kelompok Tani'
+      case 'farmer':
+        return 'Petani Rempah Pala'
+      case 'resident':
+        return 'Warga Desa'
+      case 'smart_tourism_admin':
+        return 'Pengelola Wisata'
+      default:
+        return roleName
+    }
+  }
+
   return (
     <header style={{ marginBottom: '1.75rem' }}>
       {/* Top Banner with Brand and Network Pill */}
@@ -42,7 +61,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
               width: '46px',
               height: '46px',
               borderRadius: '12px',
-              background: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)',
+              background: 'linear-gradient(135deg, #1e3a8a 0%, #15803d 100%)',
               color: '#ffffff',
               display: 'flex',
               alignItems: 'center',
@@ -56,10 +75,10 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           </div>
           <div>
             <h1 style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--primary)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-              Banda Digital Ecosystem
+              Desa Digital Banda Neira
             </h1>
             <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
-              Pemerintah Desa Banda Neira &bull; Kepulauan Banda, Maluku Tengah
+              Pelayanan Kependudukan & Rantai Pasok Rempah Pala &bull; Kepulauan Banda
             </p>
           </div>
         </div>
@@ -89,7 +108,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
               }}
             />
             <span style={{ fontSize: '0.825rem', fontWeight: 700, color: isOnline ? '#166534' : '#9a3412' }}>
-              {isOnline ? 'Online (Server Desa)' : 'Offline (Mode PWA)'}
+              {isOnline ? '🟢 Terhubung Sinyal Desa' : '🔴 Tanpa Sinyal (Mode Kebun)'}
             </span>
 
             {pendingSyncCount > 0 && (
@@ -104,7 +123,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                   border: '1px solid #fcd34d',
                 }}
               >
-                📦 {pendingSyncCount}
+                📦 {pendingSyncCount} Catatan di HP
               </span>
             )}
           </div>
@@ -114,19 +133,19 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
               onClick={onManualSync}
               disabled={!isOnline || isSyncing}
               className="btn btn-sm btn-primary"
-              title="Kirim data lokal ke server"
+              title="Kirim catatan tersimpan ke server desa"
             >
               <RefreshCw size={12} className={isSyncing ? 'animate-spin' : ''} />
-              {isSyncing ? 'Sinkron...' : 'Kirim'}
+              {isSyncing ? 'Mengirim...' : 'Kirim ke Server'}
             </button>
           )}
 
           <button
             onClick={onOpenQueueModal}
             className="btn btn-sm btn-secondary"
-            title="Buka daftar antrean lokal"
+            title="Buka daftar data offline di HP"
           >
-            <Layers size={13} /> Antrean ({pendingSyncCount})
+            <Layers size={13} /> Data HP ({pendingSyncCount})
           </button>
         </div>
       </div>
@@ -161,12 +180,12 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                 border: '1px solid #bfdbfe',
               }}
             >
-              {currentUser.full_name.charAt(0)}
+              {currentUser.full_name ? currentUser.full_name.charAt(0) : 'U'}
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)' }}>
-                  {currentUser.full_name}
+                  {currentUser.full_name || currentUser.username}
                 </span>
                 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                   (@{currentUser.username})
@@ -175,7 +194,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
               <div style={{ display: 'flex', gap: '0.35rem', marginTop: '0.2rem', flexWrap: 'wrap' }}>
                 {currentUser.roles.map((r) => (
                   <span key={r.id} className="badge badge-blue" style={{ fontSize: '0.7rem' }}>
-                    <Shield size={10} /> {r.name}
+                    <Shield size={10} /> {getRoleLabel(r.name)}
                   </span>
                 ))}
               </div>
@@ -185,7 +204,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           <button
             onClick={onLogout}
             className="btn btn-sm btn-secondary"
-            style={{ color: 'var(--danger)', borderColor: '#fecaca', background: '#ffffff' }}
+            style={{ color: 'var(--danger)', borderColor: '#fecaca', background: '#ffffff', fontWeight: 600 }}
           >
             <LogOut size={13} /> Keluar (Logout)
           </button>

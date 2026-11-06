@@ -142,6 +142,47 @@ export const App: React.FC = () => {
     description: 'Pengeringan alami sinar matahari selama 5 hari',
   })
 
+  // Letters: Citizen Requests
+  const [letters, setLetters] = useState<
+    Array<{ id: number; type: string; purpose: string; date: string; status: 'menunggu' | 'disetujui' }>
+  >([
+    {
+      id: 1,
+      type: 'Surat Keterangan Usaha Petani Rempah (SKU)',
+      purpose: 'Pengajuan Modal KUR Pertanian di Bank Mandiri Banda',
+      date: '2026-11-04',
+      status: 'disetujui',
+    },
+    {
+      id: 2,
+      type: 'Surat Keterangan Domisili Tempat Tinggal',
+      purpose: 'Persyaratan Berkas Kependudukan',
+      date: '2026-11-05',
+      status: 'menunggu',
+    },
+  ])
+  const [showLetterForm, setShowLetterForm] = useState(false)
+  const [letterTypeInput, setLetterTypeInput] = useState('Surat Keterangan Usaha Petani Rempah (SKU)')
+  const [letterPurposeInput, setLetterPurposeInput] = useState('')
+  const [letterSuccessNotice, setLetterSuccessNotice] = useState<string | null>(null)
+
+  const handleSubmitLetter = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!letterPurposeInput.trim()) return
+    const newReq = {
+      id: Date.now(),
+      type: letterTypeInput,
+      purpose: letterPurposeInput.trim(),
+      date: new Date().toISOString().split('T')[0],
+      status: 'menunggu' as const,
+    }
+    setLetters([newReq, ...letters])
+    setLetterPurposeInput('')
+    setShowLetterForm(false)
+    setLetterSuccessNotice(`Permohonan ${letterTypeInput} berhasil dikirim ke kantor desa!`)
+    setTimeout(() => setLetterSuccessNotice(null), 5000)
+  }
+
   const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8005/api/v1'
 
   const fetchPopulationData = async () => {
@@ -347,6 +388,28 @@ export const App: React.FC = () => {
     try {
       const response = await authService.login(username, password)
       setCurrentUser(response.user)
+    } catch (err: unknown) {
+      if (err instanceof Error) setAuthError(err.message)
+    } finally {
+      setAuthLoading(false)
+    }
+  }
+
+  const handleQuickLogin = async (u: string, p: string) => {
+    setUsername(u)
+    setPassword(p)
+    setAuthLoading(true)
+    setAuthError(null)
+    try {
+      const response = await authService.login(u, p)
+      setCurrentUser(response.user)
+      if (response.user.roles.some((r) => r.name === 'farmer')) {
+        setActiveTab('traceability')
+      } else if (response.user.roles.some((r) => r.name === 'resident')) {
+        // resident
+      } else {
+        setActiveTab('population')
+      }
     } catch (err: unknown) {
       if (err instanceof Error) setAuthError(err.message)
     } finally {
@@ -750,34 +813,52 @@ export const App: React.FC = () => {
           password={password}
           setPassword={setPassword}
           onLogin={handleLogin}
+          onQuickLogin={handleQuickLogin}
+          onVerifySampleBatch={(token) => handlePublicVerify(token)}
+          onPublicVerify={(token) => handlePublicVerify(token)}
           loading={authLoading}
           error={authError}
         />
       )}
 
       {/* Navigation Tabs when authenticated */}
-      {currentUser && (isOfficerOrAdmin || isFarmer) && (
+      {currentUser && isFarmer && !isOfficerOrAdmin && (
         <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
           <button
             onClick={() => setActiveTab('traceability')}
             className={`tab-btn ${activeTab === 'traceability' ? 'active' : ''}`}
           >
-            <QrCode size={16} /> Panen & Traceability Rantai Pasok
+            <QrCode size={16} /> 📦 Catatan Panen Saya
           </button>
           <button
             onClick={() => setActiveTab('farming')}
             className={`tab-btn ${activeTab === 'farming' ? 'active' : ''}`}
           >
-            <MapPin size={16} /> Pemetaan Lahan Rempah (GIS)
+            <MapPin size={16} /> 🗺️ Peta Kebun Saya
           </button>
-          {isOfficerOrAdmin && (
-            <button
-              onClick={() => setActiveTab('population')}
-              className={`tab-btn ${activeTab === 'population' ? 'active' : ''}`}
-            >
-              <Users size={16} /> Administrasi Kependudukan
-            </button>
-          )}
+        </div>
+      )}
+
+      {currentUser && isOfficerOrAdmin && (
+        <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
+          <button
+            onClick={() => setActiveTab('population')}
+            className={`tab-btn ${activeTab === 'population' ? 'active' : ''}`}
+          >
+            <Users size={16} /> 👥 Warga & Kependudukan
+          </button>
+          <button
+            onClick={() => setActiveTab('farming')}
+            className={`tab-btn ${activeTab === 'farming' ? 'active' : ''}`}
+          >
+            <MapPin size={16} /> 🗺️ Peta Kebun & Poktan
+          </button>
+          <button
+            onClick={() => setActiveTab('traceability')}
+            className={`tab-btn ${activeTab === 'traceability' ? 'active' : ''}`}
+          >
+            <QrCode size={16} /> 📦 Panen & Label QR Rempah
+          </button>
         </div>
       )}
 
@@ -797,10 +878,14 @@ export const App: React.FC = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
             <div>
               <h2 style={{ fontSize: '1.35rem', color: '#6d28d9', fontWeight: 'bold' }}>
-                Ketertelusuran Rantai Pasok Rempah & QR Code
+                {isFarmer && !isOfficerOrAdmin
+                  ? 'Catatan Hasil Panen Rempah Petani'
+                  : 'Pengelolaan Panen & Label QR Rempah Pala'}
               </h2>
               <p style={{ fontSize: '0.875rem', color: '#64748b' }}>
-                Pencatatan hasil panen, pembuatan batch, audit trail berantai hash SHA-256, dan verifikasi QR publik.
+                {isFarmer && !isOfficerOrAdmin
+                  ? 'Catat hasil petik buah pala, fuli, atau cengkeh dari kebun Anda. Tetap bisa disimpan walau di kebun tanpa sinyal internet.'
+                  : 'Rekapitulasi panen dari petani, pembuatan batch kemasan berlabel QR resmi, dan kunci keaslian produk.'}
               </p>
             </div>
             <button
@@ -902,84 +987,133 @@ export const App: React.FC = () => {
                 >
                   Simpan Catatan Panen
                 </button>
+                <p style={{ fontSize: '0.75rem', color: '#16a34a', marginTop: '0.4rem', lineHeight: 1.4 }}>
+                  📶 Bekerja Offline: Catatan panen tetap tersimpan di HP walau di kebun tanpa sinyal internet, dan otomatis terkirim saat sinyal kembali.
+                </p>
               </form>
             </div>
 
-            {/* Form Buat Batch Produk */}
-            <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <h3 style={{ fontSize: '1.05rem', color: '#0f172a', marginBottom: '0.75rem', fontWeight: '700' }}>
-                2. Buat Batch Produk & QR Code
-              </h3>
-              <form onSubmit={handleCreateBatch} style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Asal Catatan Panen</label>
-                  <select
-                    value={batchForm.harvest_id}
-                    onChange={(e) => {
-                      const h = harvests.find((item) => item.id === e.target.value)
-                      setBatchForm({
-                        ...batchForm,
-                        harvest_id: e.target.value,
-                        allocated_qty: h?.quantity_kg || batchForm.allocated_qty,
-                        commodity: h?.commodity || batchForm.commodity,
-                      })
+            {/* Form Buat Batch Produk - Khusus Petugas / Admin */}
+            {isOfficerOrAdmin && (
+              <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <h3 style={{ fontSize: '1.05rem', color: '#0f172a', marginBottom: '0.75rem', fontWeight: '700' }}>
+                  2. Buat Batch Kemasan & Label QR
+                </h3>
+                <form onSubmit={handleCreateBatch} style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Asal Catatan Panen</label>
+                    <select
+                      value={batchForm.harvest_id}
+                      onChange={(e) => {
+                        const h = harvests.find((item) => item.id === e.target.value)
+                        setBatchForm({
+                          ...batchForm,
+                          harvest_id: e.target.value,
+                          allocated_qty: h?.quantity_kg || batchForm.allocated_qty,
+                          commodity: h?.commodity || batchForm.commodity,
+                        })
+                      }}
+                      required
+                      style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                    >
+                      <option value="">-- Pilih Panen Terdaftar --</option>
+                      {harvests.map((h) => (
+                        <option key={h.id} value={h.id}>
+                          {h.harvest_code} - {h.commodity} ({h.quantity_kg} kg)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Kode Batch</label>
+                      <input
+                        type="text"
+                        value={batchForm.batch_code}
+                        onChange={(e) => setBatchForm({ ...batchForm, batch_code: e.target.value })}
+                        required
+                        style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Alokasi (kg)</label>
+                      <input
+                        type="number"
+                        value={batchForm.allocated_qty}
+                        onChange={(e) => setBatchForm({ ...batchForm, allocated_qty: Number(e.target.value) })}
+                        required
+                        style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    style={{
+                      background: '#6d28d9',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '0.5rem',
+                      borderRadius: '6px',
+                      fontWeight: '600',
+                      marginTop: '0.5rem',
+                      cursor: 'pointer',
                     }}
-                    required
-                    style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
                   >
-                    <option value="">-- Pilih Panen Terdaftar --</option>
-                    {harvests.map((h) => (
-                      <option key={h.id} value={h.id}>
-                        {h.harvest_code} - {h.commodity} ({h.quantity_kg} kg)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Kode Batch</label>
-                    <input
-                      type="text"
-                      value={batchForm.batch_code}
-                      onChange={(e) => setBatchForm({ ...batchForm, batch_code: e.target.value })}
-                      required
-                      style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Alokasi (kg)</label>
-                    <input
-                      type="number"
-                      value={batchForm.allocated_qty}
-                      onChange={(e) => setBatchForm({ ...batchForm, allocated_qty: Number(e.target.value) })}
-                      required
-                      style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
-                    />
-                  </div>
-                </div>
-                <button
-                  type="submit"
-                  style={{
-                    background: '#6d28d9',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '0.5rem',
-                    borderRadius: '6px',
-                    fontWeight: '600',
-                    marginTop: '0.5rem',
-                  }}
-                >
-                  Generate Batch & QR Token
-                </button>
-              </form>
-            </div>
+                    Terbitkan Batch & Label QR
+                  </button>
+                </form>
+              </div>
+            )}
           </div>
 
-          {/* Active Batches & Event Lifecycle Append */}
-          <div style={{ marginBottom: '1.5rem' }}>
+          {/* DAFTAR RIWAYAT PANEN MASUK (Bisa dilihat Petani & Petugas) */}
+          <div style={{ marginBottom: '1.75rem' }}>
             <h3 style={{ fontSize: '1.1rem', color: '#0f172a', marginBottom: '0.75rem', fontWeight: '700' }}>
-              Daftar Batch & Riwayat Audit Kriptografis (SHA-256)
+              📋 Riwayat Catatan Hasil Panen ({harvests.length} Catatan)
             </h3>
+            {harvests.length === 0 ? (
+              <div style={{ padding: '1.5rem', textAlign: 'center', background: '#f8fafc', borderRadius: '8px', color: '#64748b', border: '1px solid #e2e8f0' }}>
+                Belum ada catatan panen terdaftar. Gunakan formulir di atas untuk mencatat panen hari ini.
+              </div>
+            ) : (
+              <div style={{ overflowX: 'auto', background: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <table className="data-table" style={{ width: '100%', fontSize: '0.85rem' }}>
+                  <thead>
+                    <tr>
+                      <th>Kode Panen</th>
+                      <th>Kebun</th>
+                      <th>Komoditas</th>
+                      <th>Berat (kg)</th>
+                      <th>Kualitas</th>
+                      <th>Tanggal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {harvests.map((h) => {
+                      const farm = farms.find((f) => f.id === h.farm_id)
+                      return (
+                        <tr key={h.id}>
+                          <td><b>{h.harvest_code}</b></td>
+                          <td>{farm ? farm.name : 'Kebun Lonthoir'}</td>
+                          <td><span className="badge badge-green">{h.commodity}</span></td>
+                          <td><b>{h.quantity_kg} kg</b></td>
+                          <td>{h.quality_grade || 'Grade A'}</td>
+                          <td>{h.harvest_date}</td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Active Batches & Event Lifecycle Append - Khusus Petugas / Admin */}
+          {isOfficerOrAdmin && (
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.1rem', color: '#0f172a', marginBottom: '0.75rem', fontWeight: '700' }}>
+                Daftar Batch & Label QR Resmi ({batches.length} Batch)
+              </h3>
             {batches.map((b) => (
               <div
                 key={b.id}
@@ -1178,6 +1312,7 @@ export const App: React.FC = () => {
               </div>
             ))}
           </div>
+          )}
         </section>
       )}
 
@@ -1618,28 +1753,126 @@ export const App: React.FC = () => {
               <p style={{ fontSize: '0.85rem', color: '#15803d', marginBottom: '0.75rem' }}>
                 Ajukan permohonan surat keterangan secara digital langsung ke kantor desa tanpa perlu antre fisik.
               </p>
-              <ul style={{ fontSize: '0.8rem', color: '#166534', paddingLeft: '1.2rem', lineHeight: '1.6' }}>
+              <ul style={{ fontSize: '0.8rem', color: '#166534', paddingLeft: '1.2rem', lineHeight: '1.6', marginBottom: '0.75rem' }}>
                 <li>Surat Keterangan Usaha Petani Rempah (SKU)</li>
                 <li>Surat Keterangan Domisili Tempat Tinggal</li>
                 <li>Surat Pengantar Pembuatan KTP / Kartu Keluarga</li>
               </ul>
               <button
                 type="button"
-                onClick={() => alert('Fitur permohonan surat online aktif! Data permohonan Anda diteruskan ke sistem kantor desa.')}
+                onClick={() => setShowLetterForm(!showLetterForm)}
                 style={{
                   background: '#16a34a',
                   color: '#ffffff',
                   border: 'none',
-                  padding: '0.45rem 1rem',
+                  padding: '0.5rem 1rem',
                   borderRadius: '6px',
                   fontWeight: '600',
                   fontSize: '0.85rem',
-                  marginTop: '0.75rem',
                   cursor: 'pointer',
                 }}
               >
-                + Ajukan Permohonan Surat Baru
+                {showLetterForm ? 'Tutup Formulir' : '+ Ajukan Permohonan Surat Baru'}
               </button>
+            </div>
+          </div>
+
+          {/* Form Pengajuan Surat Interaktif */}
+          {showLetterForm && (
+            <div style={{ marginTop: '1.5rem', background: '#f8fafc', padding: '1.25rem', borderRadius: '10px', border: '1px solid #cbd5e1' }}>
+              <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.75rem' }}>
+                Formulir Pengajuan Surat Mandiri
+              </h4>
+              <form onSubmit={handleSubmitLetter} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', color: '#475569', marginBottom: '0.25rem' }}>
+                    Jenis Surat yang Dibutuhkan
+                  </label>
+                  <select
+                    value={letterTypeInput}
+                    onChange={(e) => setLetterTypeInput(e.target.value)}
+                    style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                  >
+                    <option value="Surat Keterangan Usaha Petani Rempah (SKU)">Surat Keterangan Usaha Petani Rempah (SKU)</option>
+                    <option value="Surat Keterangan Domisili Tempat Tinggal">Surat Keterangan Domisili Tempat Tinggal</option>
+                    <option value="Surat Pengantar Pembuatan KTP / Kartu Keluarga">Surat Pengantar Pembuatan KTP / Kartu Keluarga</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.78rem', color: '#475569', marginBottom: '0.25rem' }}>
+                    Keperluan / Catatan Tambahan
+                  </label>
+                  <input
+                    type="text"
+                    value={letterPurposeInput}
+                    onChange={(e) => setLetterPurposeInput(e.target.value)}
+                    placeholder="Contoh: Untuk persyaratan pengajuan KUR di Bank..."
+                    required
+                    style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    style={{ background: '#16a34a', borderColor: '#15803d', padding: '0.5rem 1.25rem' }}
+                  >
+                    Kirim Permohonan ke Kantor Desa
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowLetterForm(false)}
+                    className="btn btn-secondary"
+                  >
+                    Batal
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {letterSuccessNotice && (
+            <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#ecfdf5', color: '#065f46', borderRadius: '8px', border: '1px solid #a7f3d0', fontSize: '0.85rem' }}>
+              ✅ {letterSuccessNotice}
+            </div>
+          )}
+
+          {/* Daftar Riwayat Permohonan Surat */}
+          <div style={{ marginTop: '1.5rem' }}>
+            <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.75rem' }}>
+              Riwayat Pengajuan Surat Anda ({letters.length})
+            </h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {letters.map((letItem) => (
+                <div
+                  key={letItem.id}
+                  style={{
+                    padding: '0.85rem',
+                    background: '#f8fafc',
+                    borderRadius: '8px',
+                    border: '1px solid #e2e8f0',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '0.5rem',
+                  }}
+                >
+                  <div>
+                    <b style={{ fontSize: '0.9rem', color: '#0f172a', display: 'block' }}>{letItem.type}</b>
+                    <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                      Keperluan: {letItem.purpose} &bull; Tanggal: {letItem.date}
+                    </span>
+                  </div>
+                  <span
+                    className={`badge ${letItem.status === 'disetujui' ? 'badge-green' : 'badge-amber'}`}
+                  >
+                    {letItem.status === 'disetujui' ? '✅ Disetujui (Siap Diambil)' : '⏳ Sedang Ditinjau Petugas'}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </section>
