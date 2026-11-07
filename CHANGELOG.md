@@ -28,4 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enabled `farmer_group_admin` (kelompok tani) to register farm plots in `pending` verification status.
   - Added `PATCH /api/v1/farms/{id}/verification` for `village_officer` and `admin` to verify or reject submitted plots.
   - Interactive Leaflet map pins and badges reflecting verification status (`✓ Terverifikasi`, `⏳ Menunggu Persetujuan`, `✕ Ditolak`).
+- Field Performance & System Optimization:
+  - Frontend Workspace Modularization: Refactored monolithic `App.tsx` (reduced from 3,024 to 1,256 lines) into isolated workspace views (`ResidentsWorkspace`, `LettersWorkspace`, `FarmsGisWorkspace`, `HarvestGradingWorkspace`, `CitizenPortalWorkspace`).
+  - Village Office CSV Data Export: Integrated 1-click export to CSV for residents, farm plots, and harvest records for monthly reporting to Kecamatan Banda.
+  - Official Village Letterhead Printable Format: Added official letter template with Kabupaten Maluku Tengah letterhead, Kepala Desa signature block, and digital verification seal.
+  - Field Entry Auto-Save Drafts: Added automatic localStorage form persistence to prevent data loss in remote field operations.
+
 

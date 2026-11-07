@@ -94,3 +94,11 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 10.7 Field-Ready UI Workspace Separation: Resolved cluttered/mixed-up UI for field use in Banda Neira by cleanly separating Perangkat Desa workflows into 4 focused tabs (👥 Warga & Profesi, 📬 Pelayanan Surat Warga with badge count, 🗺️ Peta Kebun & Poktan, 📦 Panen & Mutu Rempah), streamlining Petani Rempah to only their harvest log and farm map, and isolating Warga Mandiri to their letter portal. Verified with 32/32 pytest and clean TypeScript production build.
 - [x] 10.8 Farm Plot Land Approval & Role-Based GIS Management: Implemented policy where regular farmers (`farmer`) have view-only access to maps and plots, farmer groups (`farmer_group_admin`) submit new plots with `pending` verification status, and village officers (`village_officer`, `admin`) approve/verify proposed plots via `PATCH /api/v1/farms/{id}/verification` with audit logging. Updated FarmMap pins and popup badges with verification indicators. Verified with 33 passing backend tests and clean frontend production build.
 
+### Phase 11: Field Performance & System Optimization
+- [x] 11.1 Frontend Workspace Modularization: Extracted monolithic sections from `App.tsx` (reduced from 3,024 lines to 1,256 lines) into dedicated view modules (`ResidentsWorkspace.tsx`, `LettersWorkspace.tsx`, `FarmsGisWorkspace.tsx`, `HarvestGradingWorkspace.tsx`, `CitizenPortalWorkspace.tsx`, and `OccupationBadge.tsx`).
+- [x] 11.2 Village Office CSV Export: Added 1-click CSV data export for Residents, Farm Plots, and Harvest Records for monthly administrative reporting to Kantor Camat Banda.
+- [x] 11.3 Official Village Printable Letterhead: Implemented official letter print view (Kop Surat Pemerintah Kabupaten Maluku Tengah - Kantor Kepala Desa Banda Neira) for approved letters with print/PDF export.
+- [x] 11.4 Auto-Save Drafts for Remote Field Entry: Added automatic localStorage draft persistence for resident, farm, and harvest forms to prevent data loss in field conditions.
+- [ ] 11.5 PostGIS Native Spatial Geometries & Offline Map Tile Cache.
+
+
