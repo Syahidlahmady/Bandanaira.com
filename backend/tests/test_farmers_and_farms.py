@@ -163,3 +163,86 @@ async def test_duplicate_farm_code_rejected(client: AsyncClient):
         json=farm_payload,
     )
     assert r2.status_code == 409
+
+
+async def get_user_token(client: AsyncClient, username: str, password: str) -> str:
+    res = await client.post(
+        "/api/v1/auth/login",
+        json={"username_or_email": username, "password": password},
+    )
+    return res.json()["access_token"]
+
+
+@pytest.mark.asyncio
+async def test_farm_approval_workflow_and_role_permissions(client: AsyncClient):
+    admin_token = await get_admin_token(client)
+    ketua_token = await get_user_token(client, "ketua_kelompok", "Ketua123!")
+    petani_token = await get_user_token(client, "petani", "Petani123!")
+    petugas_token = await get_user_token(client, "petugas", "Petugas123!")
+
+    # 1. Create a farmer as admin
+    farmer_res = await client.post(
+        "/api/v1/farmers",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"farmer_code": "BN-FRM-099", "name": "Pak Ali Lonthoir"},
+    )
+    assert farmer_res.status_code == 201
+    farmer_id = farmer_res.json()["id"]
+
+    # 2. Regular farmer attempts to add a farm plot -> 403 Forbidden!
+    farm_payload = {
+        "farmer_id": farmer_id,
+        "farm_code": "BN-FARM-PETANI-FAIL",
+        "name": "Kebun Petani Ilegal",
+        "latitude": -4.53,
+        "longitude": 129.89,
+        "area_sqm": 2500.0,
+        "primary_commodity": "Pala",
+    }
+    fail_res = await client.post(
+        "/api/v1/farms",
+        headers={"Authorization": f"Bearer {petani_token}"},
+        json=farm_payload,
+    )
+    assert fail_res.status_code == 403
+
+    # 3. Farmer Group Admin (Kelompok Tani) adds a farm plot -> 201 Created with status='pending'
+    farm_payload["farm_code"] = "BN-FARM-POKTAN-01"
+    farm_payload["name"] = "Kebun Pengajuan Poktan"
+    poktan_res = await client.post(
+        "/api/v1/farms",
+        headers={"Authorization": f"Bearer {ketua_token}"},
+        json=farm_payload,
+    )
+    assert poktan_res.status_code == 201
+    farm_data = poktan_res.json()
+    assert farm_data["verification_status"] == "pending"
+    farm_id = farm_data["id"]
+
+    # 4. Farmer Group Admin cannot approve their own farm plot -> 403 Forbidden!
+    unauthorized_verify = await client.patch(
+        f"/api/v1/farms/{farm_id}/verification",
+        headers={"Authorization": f"Bearer {ketua_token}"},
+        json={"verification_status": "verified", "notes": "Setujui sendiri"},
+    )
+    assert unauthorized_verify.status_code == 403
+
+    # 5. Village Officer (Petugas Kantor Desa) approves the plot -> 200 OK with status='verified'
+    officer_verify = await client.patch(
+        f"/api/v1/farms/{farm_id}/verification",
+        headers={"Authorization": f"Bearer {petugas_token}"},
+        json={"verification_status": "verified", "notes": "Disetujui kantor desa"},
+    )
+    assert officer_verify.status_code == 200
+    assert officer_verify.json()["verification_status"] == "verified"
+
+    # 6. Regular farmer can view the verified plot on GeoJSON
+    geojson_res = await client.get(
+        "/api/v1/farms/geojson/all",
+        headers={"Authorization": f"Bearer {petani_token}"},
+    )
+    assert geojson_res.status_code == 200
+    features = geojson_res.json()["features"]
+    created_feature = next((f for f in features if f["id"] == farm_id), None)
+    assert created_feature is not None
+    assert created_feature["properties"]["verification_status"] == "verified"

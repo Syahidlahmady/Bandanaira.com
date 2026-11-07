@@ -23,3 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Perangkat Desa: 4 distinct workspaces (Warga & Profesi, Pelayanan Surat Warga, Peta Kebun & Poktan, Panen & Mutu Rempah).
   - Petani Rempah: Clean 2-tab view focused on harvest logging and farm geospatial plots with offline cache.
   - Warga Desa: Isolated self-service portal for SKU & residency certificate requests.
+- Farm Plot Land Approval & Role-Based GIS Management:
+  - Enforced read-only map & farm view for `farmer` (petani rempah).
+  - Enabled `farmer_group_admin` (kelompok tani) to register farm plots in `pending` verification status.
+  - Added `PATCH /api/v1/farms/{id}/verification` for `village_officer` and `admin` to verify or reject submitted plots.
+  - Interactive Leaflet map pins and badges reflecting verification status (`✓ Terverifikasi`, `⏳ Menunggu Persetujuan`, `✕ Ditolak`).
+

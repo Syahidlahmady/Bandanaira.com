@@ -21,6 +21,7 @@ from backend.app.modules.farms.schemas import (
     FarmResponse,
     FarmStatisticsResponse,
     FarmUpdate,
+    FarmVerificationUpdate,
     GeoJSONFeature,
     GeoJSONFeatureCollection,
     GeoJSONGeometry,
@@ -28,6 +29,7 @@ from backend.app.modules.farms.schemas import (
 
 router = APIRouter(prefix="/farms", tags=["Farms & Geospatial Mapping"])
 
+VILLAGE_OFFICERS = require_roles(ROLE_ADMIN, ROLE_VILLAGE_OFFICER)
 FARM_MANAGERS = require_roles(ROLE_ADMIN, ROLE_VILLAGE_OFFICER, ROLE_FARMER_GROUP_ADMIN)
 
 
@@ -37,6 +39,7 @@ async def list_farms(
     limit: int = Query(20, ge=1, le=100),
     commodity: Optional[str] = None,
     farmer_id: Optional[uuid.UUID] = None,
+    verification_status: Optional[str] = None,
     search: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
     _: User = Depends(get_current_active_user),
@@ -46,6 +49,8 @@ async def list_farms(
         query = query.where(Farm.primary_commodity.ilike(f"%{commodity}%"))
     if farmer_id:
         query = query.where(Farm.farmer_id == farmer_id)
+    if verification_status:
+        query = query.where(Farm.verification_status == verification_status)
     if search:
         search_fmt = f"%{search}%"
         query = query.where(
@@ -91,7 +96,15 @@ async def create_farm(
             detail="A farm with this code already exists",
         )
 
-    farm = Farm(**farm_in.model_dump())
+    user_role_names = {r.name for r in current_user.roles}
+    is_officer_or_admin = current_user.is_superuser or bool(
+        user_role_names.intersection({ROLE_ADMIN, ROLE_VILLAGE_OFFICER})
+    )
+    # Lahan yang didaftarkan kelompok tani (farmer_group_admin) berstatus 'pending' menunggu persetujuan desa
+    # Pendaftaran langsung oleh petugas desa/admin otomatis 'verified'
+    init_status = "verified" if is_officer_or_admin else "pending"
+
+    farm = Farm(**farm_in.model_dump(), verification_status=init_status)
     db.add(farm)
     await db.flush()
 
@@ -101,7 +114,7 @@ async def create_farm(
         entity_name="farms",
         entity_id=farm.id,
         user_id=current_user.id,
-        changes=farm_in.model_dump(mode="json"),
+        changes={**farm_in.model_dump(mode="json"), "verification_status": init_status},
     )
 
     await db.commit()
@@ -112,12 +125,15 @@ async def create_farm(
 @router.get("/geojson/all", response_model=GeoJSONFeatureCollection)
 async def get_farms_geojson(
     commodity: Optional[str] = None,
+    verification_status: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
     _: User = Depends(get_current_active_user),
 ):
     query = select(Farm)
     if commodity:
         query = query.where(Farm.primary_commodity.ilike(f"%{commodity}%"))
+    if verification_status:
+        query = query.where(Farm.verification_status == verification_status)
 
     result = await db.execute(query)
     farms = result.scalars().all()
@@ -138,6 +154,7 @@ async def get_farms_geojson(
                 "area_sqm": f.area_sqm,
                 "farmer_id": str(f.farmer_id),
                 "location_description": f.location_description,
+                "verification_status": f.verification_status,
             },
         )
         features.append(feature)
@@ -154,6 +171,8 @@ async def get_farm_statistics(
     total_groups = (await db.execute(select(func.count(FarmerGroup.id)))).scalar_one()
     total_farms = (await db.execute(select(func.count(Farm.id)))).scalar_one()
     total_area = (await db.execute(select(func.coalesce(func.sum(Farm.area_sqm), 0.0)))).scalar_one()
+    verified_farms = (await db.execute(select(func.count(Farm.id)).where(Farm.verification_status == "verified"))).scalar_one()
+    pending_farms = (await db.execute(select(func.count(Farm.id)).where(Farm.verification_status == "pending"))).scalar_one()
 
     # Commodity distribution
     comm_stmt = select(Farm.primary_commodity, func.count(Farm.id)).group_by(Farm.primary_commodity)
@@ -166,7 +185,46 @@ async def get_farm_statistics(
         total_farms=total_farms,
         total_area_sqm=float(total_area),
         commodity_distribution=commodity_dist,
+        verified_farms=verified_farms,
+        pending_farms=pending_farms,
     )
+
+
+@router.patch("/{id}/verification", response_model=FarmResponse)
+async def verify_farm(
+    id: uuid.UUID,
+    verification_in: FarmVerificationUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(VILLAGE_OFFICERS),
+):
+    stmt = select(Farm).where(Farm.id == id)
+    farm = (await db.execute(stmt)).scalar_one_or_none()
+    if not farm:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Farm not found",
+        )
+
+    old_status = farm.verification_status
+    farm.verification_status = verification_in.verification_status
+    await db.flush()
+
+    await log_audit_event(
+        db=db,
+        action="VERIFY_FARM",
+        entity_name="farms",
+        entity_id=farm.id,
+        user_id=current_user.id,
+        changes={
+            "old_status": old_status,
+            "new_status": verification_in.verification_status,
+            "notes": verification_in.notes,
+        },
+    )
+
+    await db.commit()
+    await db.refresh(farm)
+    return farm
 
 
 @router.get("/{id}", response_model=FarmResponse)

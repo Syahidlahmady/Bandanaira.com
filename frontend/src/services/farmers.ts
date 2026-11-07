@@ -50,6 +50,7 @@ export interface FarmGeoJSONFeature {
     area_sqm: number
     farmer_id: string
     location_description?: string
+    verification_status?: string
   }
 }
 
@@ -64,6 +65,8 @@ export interface FarmStatistics {
   total_farms: number
   total_area_sqm: number
   commodity_distribution: Record<string, number>
+  verified_farms?: number
+  pending_farms?: number
 }
 
 export const farmerService = {
@@ -150,6 +153,19 @@ export const farmerService = {
   async getStatistics(): Promise<FarmStatistics> {
     const res = await fetch(`${API_BASE}/farms/statistics/summary`, { headers: this.getAuthHeaders() })
     if (!res.ok) throw new Error(`Gagal memuat statistik pertanian (${res.status})`)
+    return res.json()
+  },
+
+  async verifyFarm(farmId: string, status: 'verified' | 'rejected', notes?: string): Promise<Farm> {
+    const res = await fetch(`${API_BASE}/farms/${farmId}/verification`, {
+      method: 'PATCH',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify({ verification_status: status, notes }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail || `Gagal memverifikasi kebun (${res.status})`)
+    }
     return res.json()
   },
 }

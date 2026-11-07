@@ -67,11 +67,13 @@ RESTful API specification for **Banda Digital Ecosystem**.
 ### 2.4 Farmers & Farm Mapping (`/api/v1/farmers` & `/api/v1/farms`)
 | Method | Endpoint | Roles Allowed | Description |
 |---|---|---|---|
-| `GET` | `/api/v1/farmers` | `admin`, `village_officer`, `farmer_group_admin` | List registered farmers |
+| `GET` | `/api/v1/farmers` | Authenticated | List registered farmers |
 | `POST` | `/api/v1/farmers` | `admin`, `village_officer`, `farmer_group_admin` | Register new farmer |
-| `GET` | `/api/v1/farmers/groups` | `admin`, `village_officer`, `farmer_group_admin` | List farmer groups |
-| `GET` | `/api/v1/farms` | `admin`, `village_officer`, `farmer_group_admin` | List farms with GeoJSON boundaries |
-| `POST` | `/api/v1/farms` | `admin`, `village_officer`, `farmer_group_admin` | Register farm plot with coordinates/polygons |
+| `GET` | `/api/v1/farmers/groups` | Authenticated | List farmer groups |
+| `GET` | `/api/v1/farms` | Authenticated | List farms with GeoJSON boundaries and verification filter |
+| `POST` | `/api/v1/farms` | `admin`, `village_officer`, `farmer_group_admin` | Register/propose farm plot with coordinates (farmer groups submit as `pending`; regular farmers view-only) |
+| `PATCH` | `/api/v1/farms/{id}/verification` | `admin`, `village_officer` | Approve (`verified`) or reject (`rejected`) proposed farm plot |
+| `GET` | `/api/v1/farms/geojson/all` | Authenticated | GeoJSON FeatureCollection of farm pins with verification status |
 
 ### 2.5 Harvests & Product Batches (`/api/v1/harvests` & `/api/v1/batches`)
 | Method | Endpoint | Roles Allowed | Description |

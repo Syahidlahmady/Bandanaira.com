@@ -24,7 +24,12 @@ class FarmUpdate(BaseModel):
     polygon_boundary_geojson: Optional[Dict[str, Any]] = None
     area_sqm: Optional[float] = Field(None, ge=0.0)
     primary_commodity: Optional[str] = None
-    verification_status: Optional[str] = Field(None, pattern=r"^(pending|verified)$")
+    verification_status: Optional[str] = Field(None, pattern=r"^(pending|verified|rejected)$")
+
+
+class FarmVerificationUpdate(BaseModel):
+    verification_status: str = Field(..., pattern=r"^(verified|rejected|pending)$")
+    notes: Optional[str] = None
 
 
 class FarmResponse(BaseModel):
@@ -76,3 +81,5 @@ class FarmStatisticsResponse(BaseModel):
     total_farms: int
     total_area_sqm: float
     commodity_distribution: Dict[str, int]
+    verified_farms: int = 0
+    pending_farms: int = 0
