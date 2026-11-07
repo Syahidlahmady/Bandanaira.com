@@ -33,5 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Village Office CSV Data Export: Integrated 1-click export to CSV for residents, farm plots, and harvest records for monthly reporting to Kecamatan Banda.
   - Official Village Letterhead Printable Format: Added official letter template with Kabupaten Maluku Tengah letterhead, Kepala Desa signature block, and digital verification seal.
   - Field Entry Auto-Save Drafts: Added automatic localStorage form persistence to prevent data loss in remote field operations.
+  - Offline Map Tile Caching: Implemented dedicated Service Worker cache bucket (`banda-map-tiles-v1`) with cache-first and opaque response handling for OpenStreetMap tiles, enabling offline GIS mapping in remote mountain areas.
 
 

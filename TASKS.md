@@ -99,6 +99,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 11.2 Village Office CSV Export: Added 1-click CSV data export for Residents, Farm Plots, and Harvest Records for monthly administrative reporting to Kantor Camat Banda.
 - [x] 11.3 Official Village Printable Letterhead: Implemented official letter print view (Kop Surat Pemerintah Kabupaten Maluku Tengah - Kantor Kepala Desa Banda Neira) for approved letters with print/PDF export.
 - [x] 11.4 Auto-Save Drafts for Remote Field Entry: Added automatic localStorage draft persistence for resident, farm, and harvest forms to prevent data loss in field conditions.
-- [ ] 11.5 PostGIS Native Spatial Geometries & Offline Map Tile Cache.
+- [x] 11.5 Offline Map Tile Cache: Service Worker dedicated cache bucket (`banda-map-tiles-v1`) with cache-first and opaque-response handling for Leaflet OpenStreetMap tiles, allowing GIS map usage in remote mountain/off-grid plantations.
+- [ ] 11.6 PostGIS Native Spatial Geometries & Polygon Overlap Validation.
 
 

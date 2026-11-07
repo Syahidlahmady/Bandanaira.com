@@ -1,5 +1,6 @@
 // Banda Digital Ecosystem - Service Worker
-const CACHE_NAME = 'banda-digital-v1'
+const CACHE_NAME = 'banda-digital-v2'
+const MAP_TILES_CACHE = 'banda-map-tiles-v1'
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -21,7 +22,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME) {
+          if (key !== CACHE_NAME && key !== MAP_TILES_CACHE) {
             return caches.delete(key)
           }
         })
@@ -38,6 +39,29 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') {
     return
   }
+
+  // Cache-first for OpenStreetMap tiles (Offline GIS Navigation for Banda Islands)
+  if (url.hostname.includes('tile.openstreetmap.org') || url.hostname.includes('openstreetmap')) {
+    event.respondWith(
+      caches.open(MAP_TILES_CACHE).then((cache) => {
+        return cache.match(event.request).then((cached) => {
+          if (cached) {
+            return cached
+          }
+          return fetch(event.request)
+            .then((networkResponse) => {
+              if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
+                cache.put(event.request, networkResponse.clone())
+              }
+              return networkResponse
+            })
+            .catch(() => cached || new Response('', { status: 408, statusText: 'Offline Map Tile Unavailable' }))
+        })
+      })
+    )
+    return
+  }
+
 
   // Network-first with Cache fallback for API GET requests
   if (url.pathname.startsWith('/api/')) {
