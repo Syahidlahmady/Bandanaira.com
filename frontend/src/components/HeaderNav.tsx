@@ -1,6 +1,18 @@
-import React from 'react'
-import { RefreshCw, LogOut, Shield, Layers } from 'lucide-react'
+import React, { useState } from 'react'
+import {
+  RefreshCw,
+  LogOut,
+  Shield,
+  Layers,
+  Smartphone,
+  Sparkles,
+  CheckCircle2,
+  X,
+  Share2,
+  MoreVertical,
+} from 'lucide-react'
 import { User } from '../services/auth'
+import { usePWA } from '../offline/usePWA'
 
 interface HeaderNavProps {
   currentUser: User | null
@@ -21,6 +33,23 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   onManualSync,
   onOpenQueueModal,
 }) => {
+  const { canInstall, isInstalled, hasUpdate, installApp, updateApp } = usePWA()
+  const [installing, setInstalling] = useState(false)
+  const [showGuideModal, setShowGuideModal] = useState(false)
+
+  const handleInstallClick = async () => {
+    setInstalling(true)
+    try {
+      const installed = await installApp()
+      if (!installed) {
+        // If browser couldn't launch native prompt directly, show guide modal
+        setShowGuideModal(true)
+      }
+    } finally {
+      setInstalling(false)
+    }
+  }
+
   const getRoleLabel = (roleName: string) => {
     switch (roleName) {
       case 'admin':
@@ -42,7 +71,51 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
 
   return (
     <header style={{ marginBottom: '1.75rem' }}>
-      {/* Top Banner with Brand and Network Pill */}
+      {/* Service Worker Update Notification Banner */}
+      {hasUpdate && (
+        <div
+          style={{
+            background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+            border: '1px solid #f59e0b',
+            borderRadius: '10px',
+            padding: '0.75rem 1.15rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '0.85rem',
+            marginBottom: '1rem',
+            boxShadow: 'var(--shadow-sm)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <Sparkles size={20} style={{ color: '#b45309', flexShrink: 0 }} />
+            <div>
+              <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#92400e' }}>
+                Pembaruan Sistem Desa Tersedia!
+              </div>
+              <div style={{ fontSize: '0.775rem', color: '#78350f' }}>
+                Versi baru telah diunduh di latar belakang. Klik tombol untuk memperbarui aplikasi seketika tanpa kehilangan data.
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={updateApp}
+            className="btn btn-sm btn-primary"
+            style={{
+              background: '#d97706',
+              borderColor: '#b45309',
+              color: '#ffffff',
+              fontWeight: 700,
+              boxShadow: '0 2px 4px rgba(217, 119, 6, 0.3)',
+            }}
+          >
+            <RefreshCw size={13} /> Perbarui Sekarang
+          </button>
+        </div>
+      )}
+
+      {/* Top Banner with Brand and Network / PWA Status */}
       <div
         style={{
           display: 'flex',
@@ -83,8 +156,9 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           </div>
         </div>
 
-        {/* Live Network & PWA Sync Indicator Pill */}
+        {/* Live Network, PWA Install & Offline Sync Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+          {/* Signal Indicator */}
           <div
             style={{
               background: isOnline ? 'var(--secondary-light)' : 'var(--accent-gold-light)',
@@ -128,6 +202,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
             )}
           </div>
 
+          {/* Sync Trigger button when pending data exists */}
           {pendingSyncCount > 0 && (
             <button
               onClick={onManualSync}
@@ -140,6 +215,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
             </button>
           )}
 
+          {/* Open Offline Queue Modal */}
           <button
             onClick={onOpenQueueModal}
             className="btn btn-sm btn-secondary"
@@ -147,6 +223,62 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           >
             <Layers size={13} /> Data HP ({pendingSyncCount})
           </button>
+
+          {/* PWA Install Button or Status Indicator */}
+          {canInstall ? (
+            <button
+              onClick={handleInstallClick}
+              disabled={installing}
+              className="btn btn-sm"
+              style={{
+                background: 'linear-gradient(135deg, #15803d 0%, #166534 100%)',
+                color: '#ffffff',
+                borderColor: '#14532d',
+                fontWeight: 700,
+                boxShadow: '0 2px 4px rgba(21, 128, 61, 0.25)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+              }}
+              title="Pasang aplikasi di layar utama HP / Tablet untuk akses instan tanpa kuota"
+            >
+              <Smartphone size={13} />
+              {installing ? 'Memasang...' : '📲 Pasang di HP'}
+            </button>
+          ) : isInstalled ? (
+            <span
+              style={{
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                color: '#15803d',
+                background: '#dcfce7',
+                padding: '0.3rem 0.65rem',
+                borderRadius: 'var(--radius-full)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                border: '1px solid #86efac',
+              }}
+              title="Aplikasi telah terpasang di perangkat Anda"
+            >
+              <CheckCircle2 size={12} /> Aplikasi Terpasang
+            </span>
+          ) : (
+            <button
+              onClick={() => setShowGuideModal(true)}
+              className="btn btn-sm btn-secondary"
+              style={{
+                fontSize: '0.75rem',
+                color: 'var(--text-muted)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+              }}
+              title="Petunjuk memasang aplikasi di ponsel Android / iPhone"
+            >
+              <Smartphone size={12} /> Pasang di HP
+            </button>
+          )}
         </div>
       </div>
 
@@ -208,6 +340,117 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           >
             <LogOut size={13} /> Keluar (Logout)
           </button>
+        </div>
+      )}
+
+      {/* Modal: Panduan Pasang Aplikasi PWA di HP */}
+      {showGuideModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.65)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '1rem',
+          }}
+          onClick={() => setShowGuideModal(false)}
+        >
+          <div
+            className="app-card"
+            style={{
+              maxWidth: '540px',
+              width: '100%',
+              padding: '1.75rem',
+              backgroundColor: '#ffffff',
+              borderRadius: '12px',
+              boxShadow: 'var(--shadow-lg)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <div
+                  style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '10px',
+                    background: '#dcfce7',
+                    color: '#15803d',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Smartphone size={22} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
+                    Pasang Aplikasi di Layar HP
+                  </h3>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.2rem 0 0' }}>
+                    Akses cepat tanpa browser & bekerja saat bertugas di kebun rempah
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowGuideModal(false)}
+                className="btn btn-sm btn-secondary"
+                style={{ padding: '0.35rem', borderRadius: '50%', border: 'none' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.875rem' }}>
+              {/* Android Guide */}
+              <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '0.4rem' }}>
+                  <MoreVertical size={16} /> 1. Pengguna Android (Google Chrome / Edge)
+                </div>
+                <ol style={{ paddingLeft: '1.25rem', margin: 0, lineHeight: 1.5, color: 'var(--text-main)' }}>
+                  <li>Tekan ikon <strong>titik tiga (⋮)</strong> di pojok kanan atas peramban.</li>
+                  <li>Pilih menu <strong>"Tambahkan ke Layar Utama"</strong> atau <strong>"Pasang Aplikasi"</strong>.</li>
+                  <li>Tekan <strong>Install / Tambah</strong>. Ikon Desa Digital akan muncul di layar HP Anda.</li>
+                </ol>
+              </div>
+
+              {/* iOS Guide */}
+              <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '0.4rem' }}>
+                  <Share2 size={16} /> 2. Pengguna iPhone / iPad (Safari)
+                </div>
+                <ol style={{ paddingLeft: '1.25rem', margin: 0, lineHeight: 1.5, color: 'var(--text-main)' }}>
+                  <li>Buka website ini menggunakan peramban <strong>Safari</strong>.</li>
+                  <li>Tekan tombol <strong>Bagikan (Share)</strong> yang berlogo kotak panah ke atas (⎋) di bilah bawah.</li>
+                  <li>Gulir ke bawah dan pilih <strong>"Tambah ke Layar Utama" (Add to Home Screen)</strong>.</li>
+                  <li>Tekan <strong>Tambah (Add)</strong> di pojok kanan atas.</li>
+                </ol>
+              </div>
+
+              {/* Benefits Box */}
+              <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '0.85rem', borderRadius: '8px', fontSize: '0.8rem', color: '#166534' }}>
+                <strong>🌟 Manfaat PWA Desa Banda:</strong>
+                <ul style={{ margin: '0.35rem 0 0', paddingLeft: '1.2rem', lineHeight: 1.4 }}>
+                  <li>Buka aplikasi dalam satu sentuhan langsung tanpa mengetik URL.</li>
+                  <li>Peta GIS Kepulauan Banda tetap tampil meskipun tidak ada sinyal internet.</li>
+                  <li>Catatan panen dan penduduk tersimpan otomatis di memori HP.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
+              <button
+                onClick={() => setShowGuideModal(false)}
+                className="btn btn-primary"
+                style={{ padding: '0.5rem 1.25rem' }}
+              >
+                Saya Mengerti
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </header>
