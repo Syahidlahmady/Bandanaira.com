@@ -16,6 +16,8 @@ from backend.app.modules.auth.models import User
 from backend.app.modules.farmers.models import Farmer, FarmerGroup
 from backend.app.modules.farms.models import Farm
 from backend.app.modules.farms.schemas import (
+    FarmBoundaryValidationRequest,
+    FarmBoundaryValidationResponse,
     FarmCreate,
     FarmListResponse,
     FarmResponse,
@@ -26,6 +28,12 @@ from backend.app.modules.farms.schemas import (
     GeoJSONFeatureCollection,
     GeoJSONGeometry,
 )
+from backend.app.modules.farms.spatial import (
+    calculate_polygon_area_sqm,
+    find_overlapping_farm,
+    validate_polygon_geojson,
+)
+
 
 router = APIRouter(prefix="/farms", tags=["Farms & Geospatial Mapping"])
 
@@ -96,6 +104,30 @@ async def create_farm(
             detail="A farm with this code already exists",
         )
 
+    # Validasi spasial poligon batas kebun jika disertakan
+    if farm_in.polygon_boundary_geojson:
+        try:
+            coords = validate_polygon_geojson(farm_in.polygon_boundary_geojson)
+        except ValueError as err:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Batas poligon tidak valid: {str(err)}",
+            )
+
+        calc_area = calculate_polygon_area_sqm(coords)
+        if farm_in.area_sqm <= 0:
+            farm_in.area_sqm = calc_area
+
+        # Deteksi tumpang tindih (overlap) batas lahan dengan kebun yang sudah terdaftar
+        farms_stmt = select(Farm).where(Farm.polygon_boundary_geojson.is_not(None))
+        existing_farms = (await db.execute(farms_stmt)).scalars().all()
+        overlapping = find_overlapping_farm(farm_in.polygon_boundary_geojson, existing_farms)
+        if overlapping:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Batas poligon lahan bertubrukan (overlap) dengan kebun '{overlapping.name}' ({overlapping.farm_code}). Harap sesuaikan titik batas koordinat.",
+            )
+
     user_role_names = {r.name for r in current_user.roles}
     is_officer_or_admin = current_user.is_superuser or bool(
         user_role_names.intersection({ROLE_ADMIN, ROLE_VILLAGE_OFFICER})
@@ -120,6 +152,50 @@ async def create_farm(
     await db.commit()
     await db.refresh(farm)
     return farm
+
+
+@router.post("/validate-boundary", response_model=FarmBoundaryValidationResponse)
+async def validate_boundary(
+    req: FarmBoundaryValidationRequest,
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(get_current_active_user),
+):
+    """
+    Endpoint uji validasi batas poligon kebun dan deteksi tumpang tindih secara real-time.
+    """
+    try:
+        coords = validate_polygon_geojson(req.polygon_boundary_geojson)
+    except ValueError as err:
+        return FarmBoundaryValidationResponse(
+            is_valid=False,
+            has_overlap=False,
+            message=f"Format poligon tidak valid: {str(err)}",
+        )
+
+    calc_area = calculate_polygon_area_sqm(coords)
+    farms_stmt = select(Farm).where(Farm.polygon_boundary_geojson.is_not(None))
+    existing_farms = (await db.execute(farms_stmt)).scalars().all()
+    overlapping = find_overlapping_farm(
+        req.polygon_boundary_geojson, existing_farms, exclude_farm_id=req.exclude_farm_id
+    )
+
+    if overlapping:
+        return FarmBoundaryValidationResponse(
+            is_valid=True,
+            has_overlap=True,
+            overlapping_farm_id=str(overlapping.id),
+            overlapping_farm_code=overlapping.farm_code,
+            overlapping_farm_name=overlapping.name,
+            calculated_area_sqm=calc_area,
+            message=f"Batas poligon bertubrukan (overlap) dengan plot kebun '{overlapping.name}' ({overlapping.farm_code}).",
+        )
+
+    return FarmBoundaryValidationResponse(
+        is_valid=True,
+        has_overlap=False,
+        calculated_area_sqm=calc_area,
+        message="Batas poligon valid dan bebas dari tumpang tindih dengan plot kebun lain.",
+    )
 
 
 @router.get("/geojson/all", response_model=GeoJSONFeatureCollection)
@@ -155,11 +231,13 @@ async def get_farms_geojson(
                 "farmer_id": str(f.farmer_id),
                 "location_description": f.location_description,
                 "verification_status": f.verification_status,
+                "polygon_boundary_geojson": f.polygon_boundary_geojson,
             },
         )
         features.append(feature)
 
     return GeoJSONFeatureCollection(type="FeatureCollection", features=features)
+
 
 
 @router.get("/statistics/summary", response_model=FarmStatisticsResponse)

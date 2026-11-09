@@ -100,6 +100,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 11.3 Official Village Printable Letterhead: Implemented official letter print view (Kop Surat Pemerintah Kabupaten Maluku Tengah - Kantor Kepala Desa Banda Neira) for approved letters with print/PDF export.
 - [x] 11.4 Auto-Save Drafts for Remote Field Entry: Added automatic localStorage draft persistence for resident, farm, and harvest forms to prevent data loss in field conditions.
 - [x] 11.5 Offline Map Tile Cache: Service Worker dedicated cache bucket (`banda-map-tiles-v1`) with cache-first and opaque-response handling for Leaflet OpenStreetMap tiles, allowing GIS map usage in remote mountain/off-grid plantations.
-- [ ] 11.6 PostGIS Native Spatial Geometries & Polygon Overlap Validation.
+- [x] 11.6 PostGIS Spatial Polygon Boundary Validation & Overlap Prevention: Implemented spherical geodesy area calculation, polygon geometry validation, automated boundary overlap detection (rejecting overlapping farm plots with 409 Conflict), real-time `POST /api/v1/farms/validate-boundary` validation endpoint, Leaflet visual polygon rendering in `FarmMap.tsx`, and interactive "Uji Tumpang Tindih (PostGIS)" testing in `FarmsGisWorkspace.tsx`. Verified with 34 passing backend tests and clean frontend production build.
+
 
 

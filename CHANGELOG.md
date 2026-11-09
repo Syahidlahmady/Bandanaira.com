@@ -34,5 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Official Village Letterhead Printable Format: Added official letter template with Kabupaten Maluku Tengah letterhead, Kepala Desa signature block, and digital verification seal.
   - Field Entry Auto-Save Drafts: Added automatic localStorage form persistence to prevent data loss in remote field operations.
   - Offline Map Tile Caching: Implemented dedicated Service Worker cache bucket (`banda-map-tiles-v1`) with cache-first and opaque response handling for OpenStreetMap tiles, enabling offline GIS mapping in remote mountain areas.
+  - Spatial Polygon Validation & Overlap Prevention: Implemented spherical geodesic area calculation, closed ring validation, and automated polygon overlap detection rejecting conflicting farm boundaries with 409 Conflict, complete with real-time `POST /api/v1/farms/validate-boundary` API and Leaflet visual polygon layer.
+
 
 

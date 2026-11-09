@@ -51,8 +51,25 @@ export interface FarmGeoJSONFeature {
     farmer_id: string
     location_description?: string
     verification_status?: string
+    polygon_boundary_geojson?: Record<string, unknown>
   }
 }
+
+export interface FarmBoundaryValidationRequest {
+  polygon_boundary_geojson: Record<string, unknown>
+  exclude_farm_id?: string
+}
+
+export interface FarmBoundaryValidationResponse {
+  is_valid: boolean
+  has_overlap: boolean
+  overlapping_farm_id?: string
+  overlapping_farm_code?: string
+  overlapping_farm_name?: string
+  calculated_area_sqm: number
+  message: string
+}
+
 
 export interface FarmGeoJSONFeatureCollection {
   type: string
@@ -168,4 +185,18 @@ export const farmerService = {
     }
     return res.json()
   },
+
+  async validateBoundary(data: FarmBoundaryValidationRequest): Promise<FarmBoundaryValidationResponse> {
+    const res = await fetch(`${API_BASE}/farms/validate-boundary`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail || `Gagal memvalidasi batas poligon (${res.status})`)
+    }
+    return res.json()
+  },
 }
+

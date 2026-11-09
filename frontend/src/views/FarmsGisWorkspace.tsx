@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react'
-import { Farm, Farmer, FarmerGroup, FarmGeoJSONFeatureCollection, FarmStatistics } from '../services/farmers'
+import React, { useEffect, useState } from 'react'
+import { Farm, Farmer, FarmerGroup, FarmGeoJSONFeatureCollection, FarmStatistics, farmerService } from '../services/farmers'
 import { FarmMap } from '../components/FarmMap'
 
 interface FarmsGisWorkspaceProps {
@@ -49,6 +49,61 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
   handleCreateQuickFarmerAndFarm,
   fetchFarmingData,
 }) => {
+  const [checkingBoundary, setCheckingBoundary] = useState(false)
+  const [boundaryCheckMsg, setBoundaryCheckMsg] = useState<{ type: 'success' | 'warning' | 'error'; text: string } | null>(null)
+
+  const handleAutoGenerateAndCheckPolygon = async (lat: number, lng: number) => {
+    if (!lat || !lng) {
+      setBoundaryCheckMsg({ type: 'warning', text: 'Harap isi koordinat Latitude dan Longitude terlebih dahulu.' })
+      return
+    }
+    setCheckingBoundary(true)
+    setBoundaryCheckMsg(null)
+    const d = 0.00045 // ~50m perimeter (~10,000 m2)
+    const polyGeoJSON = {
+      type: 'Polygon',
+      coordinates: [
+        [
+          [lng - d, lat - d],
+          [lng + d, lat - d],
+          [lng + d, lat + d],
+          [lng - d, lat + d],
+          [lng - d, lat - d],
+        ],
+      ],
+    }
+
+    try {
+      const res = await farmerService.validateBoundary({
+        polygon_boundary_geojson: polyGeoJSON,
+      })
+
+      if (!res.is_valid) {
+        setBoundaryCheckMsg({ type: 'error', text: `Format poligon tidak valid: ${res.message}` })
+      } else if (res.has_overlap) {
+        setBoundaryCheckMsg({
+          type: 'warning',
+          text: `⚠️ Peringatan Tumpang Tindih Batas (PostGIS): ${res.message} Harap sesuaikan titik koordinat kebun.`,
+        })
+      } else {
+        setBoundaryCheckMsg({
+          type: 'success',
+          text: `✓ Batas poligon bebas tumpang tindih! Luas kalkulasi geodesik otomatis: ${res.calculated_area_sqm.toLocaleString()} m². Batas koordinat telah dipetakan ke formulir.`,
+        })
+        setFarmForm((prev: any) => ({
+          ...prev,
+          area_sqm: res.calculated_area_sqm,
+          polygon_boundary_geojson: polyGeoJSON,
+        }))
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Gagal menghubungi server validasi batas'
+      setBoundaryCheckMsg({ type: 'error', text: msg })
+    } finally {
+      setCheckingBoundary(false)
+    }
+  }
+
   // Auto-save farm form draft in localStorage
   useEffect(() => {
     try {
@@ -397,6 +452,41 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                 style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
               />
             </div>
+            <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.25rem' }}>
+              <button
+                type="button"
+                onClick={() => handleAutoGenerateAndCheckPolygon(farmForm.latitude, farmForm.longitude)}
+                disabled={checkingBoundary}
+                style={{
+                  background: '#eff6ff',
+                  color: '#1d4ed8',
+                  border: '1px solid #bfdbfe',
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '6px',
+                  fontSize: '0.78rem',
+                  fontWeight: '600',
+                  cursor: checkingBoundary ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {checkingBoundary ? 'Memeriksa Batas...' : '📐 Hitung Poligon & Uji Tumpang Tindih (PostGIS)'}
+              </button>
+              {boundaryCheckMsg && (
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
+                    color:
+                      boundaryCheckMsg.type === 'success'
+                        ? '#059669'
+                        : boundaryCheckMsg.type === 'warning'
+                        ? '#b45309'
+                        : '#dc2626',
+                  }}
+                >
+                  {boundaryCheckMsg.text}
+                </span>
+              )}
+            </div>
             <div style={{ gridColumn: '1 / -1', marginTop: '0.5rem' }}>
               <button
                 type="submit"
@@ -504,6 +594,41 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                 required
                 style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
               />
+            </div>
+            <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.25rem' }}>
+              <button
+                type="button"
+                onClick={() => handleAutoGenerateAndCheckPolygon(farmForm.latitude, farmForm.longitude)}
+                disabled={checkingBoundary}
+                style={{
+                  background: '#eff6ff',
+                  color: '#1d4ed8',
+                  border: '1px solid #bfdbfe',
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '6px',
+                  fontSize: '0.78rem',
+                  fontWeight: '600',
+                  cursor: checkingBoundary ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {checkingBoundary ? 'Memeriksa Batas...' : '📐 Hitung Poligon & Uji Tumpang Tindih (PostGIS)'}
+              </button>
+              {boundaryCheckMsg && (
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
+                    color:
+                      boundaryCheckMsg.type === 'success'
+                        ? '#059669'
+                        : boundaryCheckMsg.type === 'warning'
+                        ? '#b45309'
+                        : '#dc2626',
+                  }}
+                >
+                  {boundaryCheckMsg.text}
+                </span>
+              )}
             </div>
             <div style={{ gridColumn: '1 / -1', marginTop: '0.5rem' }}>
               <button

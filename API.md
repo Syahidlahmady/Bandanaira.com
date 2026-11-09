@@ -71,9 +71,11 @@ RESTful API specification for **Banda Digital Ecosystem**.
 | `POST` | `/api/v1/farmers` | `admin`, `village_officer`, `farmer_group_admin` | Register new farmer |
 | `GET` | `/api/v1/farmers/groups` | Authenticated | List farmer groups |
 | `GET` | `/api/v1/farms` | Authenticated | List farms with GeoJSON boundaries and verification filter |
-| `POST` | `/api/v1/farms` | `admin`, `village_officer`, `farmer_group_admin` | Register/propose farm plot with coordinates (farmer groups submit as `pending`; regular farmers view-only) |
+| `POST` | `/api/v1/farms` | `admin`, `village_officer`, `farmer_group_admin` | Register/propose farm plot with coordinates, geodesic area calculation, and boundary overlap prevention |
+| `POST` | `/api/v1/farms/validate-boundary` | Authenticated | Pre-check polygon geometry validity and real-time boundary overlap detection |
 | `PATCH` | `/api/v1/farms/{id}/verification` | `admin`, `village_officer` | Approve (`verified`) or reject (`rejected`) proposed farm plot |
-| `GET` | `/api/v1/farms/geojson/all` | Authenticated | GeoJSON FeatureCollection of farm pins with verification status |
+| `GET` | `/api/v1/farms/geojson/all` | Authenticated | GeoJSON FeatureCollection of farm pins and polygon boundaries with verification status |
+
 
 ### 2.5 Harvests & Product Batches (`/api/v1/harvests` & `/api/v1/batches`)
 | Method | Endpoint | Roles Allowed | Description |

@@ -83,3 +83,19 @@ class FarmStatisticsResponse(BaseModel):
     commodity_distribution: Dict[str, int]
     verified_farms: int = 0
     pending_farms: int = 0
+
+
+class FarmBoundaryValidationRequest(BaseModel):
+    polygon_boundary_geojson: Dict[str, Any]
+    exclude_farm_id: Optional[uuid.UUID] = None
+
+
+class FarmBoundaryValidationResponse(BaseModel):
+    is_valid: bool
+    has_overlap: bool
+    overlapping_farm_id: Optional[str] = None
+    overlapping_farm_code: Optional[str] = None
+    overlapping_farm_name: Optional[str] = None
+    calculated_area_sqm: float = 0.0
+    message: str
+

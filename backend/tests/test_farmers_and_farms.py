@@ -246,3 +246,155 @@ async def test_farm_approval_workflow_and_role_permissions(client: AsyncClient):
     created_feature = next((f for f in features if f["id"] == farm_id), None)
     assert created_feature is not None
     assert created_feature["properties"]["verification_status"] == "verified"
+
+
+@pytest.mark.asyncio
+async def test_spatial_polygon_boundary_and_overlap_validation(client: AsyncClient):
+    token = await get_admin_token(client)
+
+    # 1. Setup group & farmer
+    grp_res = await client.post(
+        "/api/v1/farmers/groups",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"name": "Poktan Pala Spasial Banda"},
+    )
+    group_id = grp_res.json()["id"]
+
+    frm_res = await client.post(
+        "/api/v1/farmers",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"farmer_code": "BN-FRM-SP01", "name": "Pak Ali Spasial", "farmer_group_id": group_id},
+    )
+    farmer_id = frm_res.json()["id"]
+
+    # 2. Polygon 1: Kebun Pala Lonthoir (100m x 100m)
+    # lon, lat: 129.8970, -4.5310
+    poly1 = {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [129.8970, -4.5310],
+                [129.8979, -4.5310],
+                [129.8979, -4.5301],
+                [129.8970, -4.5301],
+                [129.8970, -4.5310],
+            ]
+        ],
+    }
+
+    # Register farm 1 with area_sqm=0 -> should auto-calculate geodesic area
+    farm1_res = await client.post(
+        "/api/v1/farms",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "farmer_id": farmer_id,
+            "farm_code": "BN-FARM-SP01",
+            "name": "Kebun Pala Spasial Lonthoir",
+            "latitude": -4.5310,
+            "longitude": 129.8970,
+            "area_sqm": 0.0,
+            "primary_commodity": "Pala",
+            "polygon_boundary_geojson": poly1,
+        },
+    )
+    assert farm1_res.status_code == 201
+    f1_data = farm1_res.json()
+    assert f1_data["area_sqm"] > 9000.0  # Approx 9980 m²
+
+    # 3. Test validate-boundary endpoint with invalid geometry (<4 coords)
+    invalid_poly = {
+        "type": "Polygon",
+        "coordinates": [[[129.8970, -4.5310], [129.8979, -4.5310]]],
+    }
+    val_inv = await client.post(
+        "/api/v1/farms/validate-boundary",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"polygon_boundary_geojson": invalid_poly},
+    )
+    assert val_inv.status_code == 200
+    assert val_inv.json()["is_valid"] is False
+
+    # 4. Polygon 2 overlapping Polygon 1
+    poly_overlap = {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [129.8975, -4.5315],
+                [129.8985, -4.5315],
+                [129.8985, -4.5305],
+                [129.8975, -4.5305],
+                [129.8975, -4.5315],
+            ]
+        ],
+    }
+
+    # Pre-check via validate-boundary
+    val_over = await client.post(
+        "/api/v1/farms/validate-boundary",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"polygon_boundary_geojson": poly_overlap},
+    )
+    assert val_over.status_code == 200
+    assert val_over.json()["is_valid"] is True
+    assert val_over.json()["has_overlap"] is True
+    assert val_over.json()["overlapping_farm_code"] == "BN-FARM-SP01"
+
+    # Attempt to create farm with overlapping boundary -> 409 Conflict!
+    fail_res = await client.post(
+        "/api/v1/farms",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "farmer_id": farmer_id,
+            "farm_code": "BN-FARM-SP02",
+            "name": "Kebun Tumpang Tindih",
+            "latitude": -4.5315,
+            "longitude": 129.8975,
+            "area_sqm": 0.0,
+            "primary_commodity": "Cengkih",
+            "polygon_boundary_geojson": poly_overlap,
+        },
+    )
+    assert fail_res.status_code == 409
+    assert "bertubrukan (overlap)" in fail_res.json()["detail"]
+
+    # 5. Polygon 3: Non-overlapping (Pulau Ay: lon 129.8300, lat -4.5200)
+    poly_ok = {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [129.8300, -4.5200],
+                [129.8310, -4.5200],
+                [129.8310, -4.5190],
+                [129.8300, -4.5190],
+                [129.8300, -4.5200],
+            ]
+        ],
+    }
+
+    val_ok = await client.post(
+        "/api/v1/farms/validate-boundary",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"polygon_boundary_geojson": poly_ok},
+    )
+    assert val_ok.status_code == 200
+    assert val_ok.json()["is_valid"] is True
+    assert val_ok.json()["has_overlap"] is False
+
+    # Create non-overlapping farm -> 201 Created!
+    ok_res = await client.post(
+        "/api/v1/farms",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "farmer_id": farmer_id,
+            "farm_code": "BN-FARM-SP03",
+            "name": "Kebun Pala Pulau Ay",
+            "latitude": -4.5200,
+            "longitude": 129.8300,
+            "area_sqm": 0.0,
+            "primary_commodity": "Pala",
+            "polygon_boundary_geojson": poly_ok,
+        },
+    )
+    assert ok_res.status_code == 201
+    assert ok_res.json()["area_sqm"] > 9000.0
+

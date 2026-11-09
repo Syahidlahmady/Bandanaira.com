@@ -88,9 +88,32 @@ export const FarmMap: React.FC<FarmMapProps> = ({ features, onSelectFarm }) => {
         }
 
         layerGroupRef.current?.addLayer(marker)
+
+        // Render polygon boundary jika tersedia
+        if (feature.properties.polygon_boundary_geojson) {
+          try {
+            const polyLayer = L.geoJSON(feature.properties.polygon_boundary_geojson as any, {
+              style: {
+                color: borderColor,
+                weight: 2,
+                opacity: 0.85,
+                fillColor: markerColor,
+                fillOpacity: 0.22,
+              },
+            })
+            polyLayer.bindTooltip(`Plot: ${name} (${area_sqm.toLocaleString()} m²)`, {
+              sticky: true,
+              direction: 'top',
+            })
+            layerGroupRef.current?.addLayer(polyLayer)
+          } catch {
+            // ignore invalid polygon draw
+          }
+        }
       })
     }
   }, [features, onSelectFarm])
+
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '420px', borderRadius: '10px', overflow: 'hidden', border: '1px solid #cbd5e1' }}>
