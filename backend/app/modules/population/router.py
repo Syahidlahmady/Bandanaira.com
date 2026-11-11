@@ -99,6 +99,7 @@ async def create_resident(
         )
 
     resident = Resident(**resident_in.model_dump())
+    resident.sync_crypto_nik()
     db.add(resident)
     await db.flush()
 

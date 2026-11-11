@@ -1,9 +1,9 @@
 from datetime import datetime, timezone
-from fastapi import FastAPI, status
+from fastapi import Depends, FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from backend.app.core.config import settings
-from backend.app.database.session import check_db_health
+from backend.app.database.session import check_db_health, get_db
 from backend.app.modules.auth.router import router as auth_router
 from backend.app.modules.farmers.router import router as farmers_router
 from backend.app.modules.farms.router import router as farms_router
@@ -18,6 +18,11 @@ from backend.app.modules.koperasi.router import router as koperasi_router
 from backend.app.modules.iot.router import router as iot_router
 from backend.app.modules.tourism.router import router as tourism_router
 from backend.app.modules.gis.router import router as gis_router, peta_alias_router
+from backend.app.modules.security.router import (
+    router as security_router,
+    warga_alias_router,
+    get_security_audit_report,
+)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -44,6 +49,13 @@ app.include_router(iot_router, prefix=settings.API_V1_STR)
 app.include_router(tourism_router, prefix=settings.API_V1_STR)
 app.include_router(gis_router, prefix=settings.API_V1_STR)
 app.include_router(peta_alias_router, prefix=settings.API_V1_STR)
+app.include_router(security_router, prefix=settings.API_V1_STR)
+app.include_router(warga_alias_router, prefix=settings.API_V1_STR)
+
+
+@app.get(f"{settings.API_V1_STR}/audit-keamanan", tags=["OWASP Top 10 Security (SRS 11)"])
+async def audit_keamanan_alias(db=Depends(get_db)):
+    return await get_security_audit_report(db)
 
 # CORS Middleware
 app.add_middleware(

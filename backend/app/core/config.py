@@ -21,6 +21,11 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
+    # Cryptography & NIK Protection (AES-256-GCM + Blind Index HMAC-SHA256)
+    AES_SECRET_KEY: str = "banda_neira_aes_256_gcm_master_key_32bytes_sec!"
+    HMAC_BLIND_INDEX_PEPPER: str = "banda_neira_hmac_blind_index_pepper_salt_2026_xyz"
+    RATE_LIMIT_NIK_SEARCH_PER_MINUTE: int = 20
+
     # Blockchain (Local EVM Testnet)
     BLOCKCHAIN_RPC_URL: str = "http://localhost:8545"
     BLOCKCHAIN_CHAIN_ID: int = 1337

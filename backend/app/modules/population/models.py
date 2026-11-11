@@ -12,6 +12,8 @@ class Resident(Base, TimestampMixin):
     __tablename__ = "residents"
 
     nik: Mapped[str] = mapped_column(String(16), unique=True, index=True, nullable=False)
+    nik_encrypted: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    nik_blind_index: Mapped[Optional[str]] = mapped_column(String(64), index=True, nullable=True)
     full_name: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
     gender: Mapped[str] = mapped_column(String(10), nullable=False)  # 'L' (Laki-laki) or 'P' (Perempuan)
     birth_place: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
@@ -38,6 +40,13 @@ class Resident(Base, TimestampMixin):
     administrative_requests: Mapped[List["AdministrativeRequest"]] = relationship(
         "AdministrativeRequest", back_populates="resident", cascade="all, delete-orphan", lazy="selectin"
     )
+
+    def sync_crypto_nik(self) -> None:
+        """Sinkronisasi blind index HMAC-SHA256 dan ciphertext AES-256-GCM."""
+        from backend.app.core.crypto_nik import compute_nik_blind_index, encrypt_nik
+        if self.nik and not self.nik.startswith("*"):
+            self.nik_blind_index = compute_nik_blind_index(self.nik)
+            self.nik_encrypted = encrypt_nik(self.nik)
 
     def __repr__(self) -> str:
         return f"<Resident nik={self.nik} name={self.full_name} status={self.verification_status}>"

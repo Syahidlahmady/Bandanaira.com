@@ -221,11 +221,19 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Integrated into `App.tsx` and guest shortcuts in `LoginSection.tsx`. Verified clean build (`npm run build` exits 0).
 
 ### Phase 22: Cryptographic NIK Hardening & OWASP Top 10 Security (Mandat Syahid Ahmad Lahmady)
-- [ ] 22.1 Two-Tier Field-Level Encryption:
-  - AES-256-GCM symmetric encryption for raw NIK storage.
-  - HMAC-SHA256 Blind Index with secret server pepper for fast $O(1)$ exact-match lookup without decrypting the entire database.
-- [ ] 22.2 Rate-Limiting & Anti-Enumeration Protection:
-  - Middleware guarding citizen lookup endpoints against brute-force NIK enumeration.
-- [ ] 22.3 Automated Security Test Suite (`backend/tests/test_security_nik.py`).
+- [x] 22.1 Two-Tier Field-Level Encryption & Database Migration (`backend/app/core/crypto_nik.py` & `backend/migrations/versions/010_nik_cryptographic_hardening.py`):
+  - Implemented AES-256-GCM authenticated encryption (`encrypt_nik` & `decrypt_nik`) with random 12-byte IV for semantic security at rest.
+  - Implemented HMAC-SHA256 Blind Indexing (`compute_nik_blind_index`) with secret server-side pepper for $O(1)$ indexed exact-match search without exposing plaintext NIKs.
+  - Added `nik_encrypted` (Text) and `nik_blind_index` (VARCHAR 64 indexed) columns to `residents` table.
+- [x] 22.2 Rate-Limiting & Anti-Enumeration Protection (OWASP Top 10 A07 & NFR-02):
+  - In-memory sliding window rate limiter (`check_nik_rate_limit`) blocking IP addresses exceeding 20 queries/minute on sensitive NIK search endpoints with HTTP 429.
+  - Implemented secure citizen lookup endpoints: `POST /api/v1/warga/cari-nik` (SRS 11 parity) and `POST /api/v1/security/cari-nik` returning masked NIK (`817101******0001`), blind index, and integrated Koperasi Hatta balance/water quota.
+  - Implemented system-wide security audit report endpoint: `GET /api/v1/audit-keamanan` and `GET /api/v1/security/audit-report` detailing AES, HMAC, rate-limiting, and zero-PII blockchain compliance.
+- [x] 22.3 Automated Security Test Suite (`backend/tests/test_security_nik.py`):
+  - 8 comprehensive tests passing 100% (AES-256 semantic random IV, tamper rejection, deterministic HMAC blind index, NIK masking, blind index search happy path, 404 masked error detail, 429 anti-enumeration rate limiting, and audit-keamanan report). Total backend test suite: 72/72 passing.
+- [x] 22.4 Frontend Security Audit Bento Card (`frontend/src/services/security.ts` & `frontend/src/views/AuditTrailWorkspace.tsx`):
+  - Surfaced live 4-pillar cryptographic security audit card in the centralized audit trail workspace.
+  - Interactive Live Crypto Sandbox playground allowing administrators to input sample NIKs and verify roundtrip AES-256 encryption, HMAC blind index hash, and recovery latency (< 5 ms). Verified clean build (`npm run build` exits 0).
+
 
 
