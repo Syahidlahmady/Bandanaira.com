@@ -17,6 +17,7 @@ import {
   Fingerprint,
   ShoppingBag,
   Scale,
+  Radio,
 } from 'lucide-react'
 
 interface LoginSectionProps {
@@ -31,6 +32,7 @@ interface LoginSectionProps {
   onOpenMarketplace?: () => void
   onOpenPlanner?: () => void
   onOpenKoperasi?: () => void
+  onOpenTelemetry?: () => void
   loading: boolean
   error: string | null
 }
@@ -46,6 +48,7 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
   onOpenMarketplace,
   onOpenPlanner,
   onOpenKoperasi,
+  onOpenTelemetry,
   loading,
   error,
 }) => {
@@ -831,6 +834,27 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
                       }}
                     >
                       <Scale size={15} /> ⚖️ Kasir Koperasi &amp; Bank Sampah
+                    </button>
+                  )}
+
+                  {onOpenTelemetry && (
+                    <button
+                      type="button"
+                      onClick={onOpenTelemetry}
+                      className="btn btn-secondary"
+                      style={{
+                        fontSize: '0.825rem',
+                        padding: '0.55rem 1.15rem',
+                        background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.2))',
+                        border: '1px solid rgba(6, 182, 212, 0.4)',
+                        color: '#67e8f9',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                      }}
+                    >
+                      <Radio size={15} /> 📡 Telemetri IoT &amp; Resiliensi
                     </button>
                   )}
                 </div>

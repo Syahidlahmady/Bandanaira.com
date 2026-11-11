@@ -15,6 +15,7 @@ from backend.app.modules.blockchain.router import router as blockchain_router
 from backend.app.modules.audit.router import router as audit_router
 from backend.app.modules.dss.router import router as dss_router
 from backend.app.modules.koperasi.router import router as koperasi_router
+from backend.app.modules.iot.router import router as iot_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -37,6 +38,7 @@ app.include_router(blockchain_router, prefix=settings.API_V1_STR)
 app.include_router(audit_router, prefix=settings.API_V1_STR)
 app.include_router(dss_router, prefix=settings.API_V1_STR)
 app.include_router(koperasi_router, prefix=settings.API_V1_STR)
+app.include_router(iot_router, prefix=settings.API_V1_STR)
 
 # CORS Middleware
 app.add_middleware(

@@ -36,6 +36,7 @@ import { CitizenPortalWorkspace } from './views/CitizenPortalWorkspace.tsx'
 import { AuditTrailWorkspace } from './views/AuditTrailWorkspace.tsx'
 import { SmartPlannerWorkspace } from './views/SmartPlannerWorkspace.tsx'
 import { KoperasiKasirWorkspace } from './views/KoperasiKasirWorkspace.tsx'
+import { IslandTelemetryWorkspace } from './views/IslandTelemetryWorkspace.tsx'
 import {
   MapPin,
   Users,
@@ -44,6 +45,7 @@ import {
   ShieldCheck,
   Compass,
   Scale,
+  Radio,
 } from 'lucide-react'
 import { offlineDB } from './offline/db.ts'
 import { syncManager, SyncQueueItem } from './offline/syncManager.ts'
@@ -60,7 +62,7 @@ interface HealthResponse {
 
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'population' | 'letters' | 'farming' | 'traceability' | 'koperasi' | 'audit' | 'smart_planner'>('population')
+  const [activeTab, setActiveTab] = useState<'population' | 'letters' | 'farming' | 'traceability' | 'koperasi' | 'iot' | 'audit' | 'smart_planner'>('population')
   const [health, setHealth] = useState<HealthResponse | null>(null)
   const [loadingHealth, setLoadingHealth] = useState<boolean>(true)
   const [healthError, setHealthError] = useState<string | null>(null)
@@ -954,6 +956,7 @@ export const App: React.FC = () => {
           onOpenMarketplace={() => setShowMarketplaceModal(true)}
           onOpenPlanner={() => setActiveTab('smart_planner')}
           onOpenKoperasi={() => setActiveTab('koperasi')}
+          onOpenTelemetry={() => setActiveTab('iot')}
           loading={authLoading}
           error={authError}
         />
@@ -1083,6 +1086,12 @@ export const App: React.FC = () => {
           >
             <Scale size={16} /> ⚖️ Koperasi &amp; Bank Sampah
           </button>
+          <button
+            onClick={() => setActiveTab('iot')}
+            className={`tab-btn ${activeTab === 'iot' ? 'active' : ''}`}
+          >
+            <Radio size={16} /> 📡 Telemetri IoT &amp; Resiliensi
+          </button>
         </div>
       )}
 
@@ -1185,6 +1194,11 @@ export const App: React.FC = () => {
       {/* TAB 7: KOPERASI HATTA, BANK SAMPAH & DISPENSER AIR RO */}
       {activeTab === 'koperasi' && (
         <KoperasiKasirWorkspace />
+      )}
+
+      {/* TAB 8: PUSAT KOMANDO TELEMETRI IoT & RESILIENSI PULAU */}
+      {activeTab === 'iot' && (
+        <IslandTelemetryWorkspace />
       )}
 
       {/* PORTAL KHUSUS WARGA DESA (RESIDENT) */}
