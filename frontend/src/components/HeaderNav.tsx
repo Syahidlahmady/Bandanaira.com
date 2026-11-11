@@ -25,6 +25,7 @@ interface HeaderNavProps {
   onManualSync: () => void
   onOpenQueueModal: () => void
   onOpenMarketplace?: () => void
+  onOpenLanding?: () => void
 }
 
 export const HeaderNav: React.FC<HeaderNavProps> = ({
@@ -36,6 +37,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   onManualSync,
   onOpenQueueModal,
   onOpenMarketplace,
+  onOpenLanding,
 }) => {
   const { canInstall, isInstalled, hasUpdate, installApp, updateApp } = usePWA()
   const [installing, setInstalling] = useState(false)
@@ -145,7 +147,16 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
         }}
       >
         {/* Brand & Identity */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.1rem' }}>
+        <div
+          onClick={onOpenLanding}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1.1rem',
+            cursor: onOpenLanding ? 'pointer' : 'default',
+          }}
+          title={onOpenLanding ? 'Klik untuk kembali ke Beranda Satu Pintu' : undefined}
+        >
           <div
             style={{
               width: '50px',
@@ -276,6 +287,27 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           >
             <Layers size={13} /> Antrean ({pendingSyncCount})
           </button>
+
+          {/* Satu Pintu Landing Button */}
+          {onOpenLanding && (
+            <button
+              onClick={onOpenLanding}
+              className="btn btn-sm btn-secondary"
+              style={{
+                fontSize: '0.785rem',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                background: 'rgba(255, 255, 255, 0.05)',
+                color: '#e2e8f0',
+                fontWeight: 700,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+              }}
+              title="Kembali ke Halaman Beranda Satu Pintu"
+            >
+              🏠 Satu Pintu
+            </button>
+          )}
 
           {/* Decentralized Marketplace Showcase */}
           {onOpenMarketplace && (

@@ -40,6 +40,7 @@ import { IslandTelemetryWorkspace } from './views/IslandTelemetryWorkspace.tsx'
 import { TourismEcoStayWorkspace } from './views/TourismEcoStayWorkspace.tsx'
 import { InteractiveMapWorkspace } from './views/InteractiveMapWorkspace.tsx'
 import { SurveyEtlWorkspace } from './views/SurveyEtlWorkspace.tsx'
+import { LandingPortalWorkspace } from './views/LandingPortalWorkspace.tsx'
 import {
   MapPin,
   Users,
@@ -68,7 +69,7 @@ interface HealthResponse {
 
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'population' | 'letters' | 'farming' | 'traceability' | 'koperasi' | 'iot' | 'tourism' | 'gis' | 'audit' | 'smart_planner' | 'survei'>('population')
+  const [activeTab, setActiveTab] = useState<'landing' | 'population' | 'letters' | 'farming' | 'traceability' | 'koperasi' | 'iot' | 'tourism' | 'gis' | 'audit' | 'smart_planner' | 'survei'>('landing')
   const [health, setHealth] = useState<HealthResponse | null>(null)
   const [loadingHealth, setLoadingHealth] = useState<boolean>(true)
   const [healthError, setHealthError] = useState<string | null>(null)
@@ -534,6 +535,7 @@ export const App: React.FC = () => {
   const handleLogout = () => {
     authService.logout()
     setCurrentUser(null)
+    setActiveTab('landing')
     setResidents([])
     setFarmers([])
     setFarms([])
@@ -937,6 +939,7 @@ export const App: React.FC = () => {
   return (
     <div style={{ maxWidth: '1180px', margin: '0 auto', padding: '1.5rem 1rem 3rem' }}>
       {/* Top Brand Navbar & Offline Status */}
+      {/* Top Brand Navbar & Offline Status */}
       <HeaderNav
         currentUser={currentUser}
         isOnline={isOnline}
@@ -946,41 +949,77 @@ export const App: React.FC = () => {
         onManualSync={handleManualSync}
         onOpenQueueModal={handleOpenQueueModal}
         onOpenMarketplace={() => setShowMarketplaceModal(true)}
+        onOpenLanding={() => setActiveTab('landing')}
       />
 
-      {/* Guest Welcome & Persona Switcher if not authenticated */}
-      {!currentUser && (
-        <LoginSection
-          username={username}
-          setUsername={setUsername}
-          password={password}
-          setPassword={setPassword}
-          onLogin={handleLogin}
-          onQuickLogin={handleQuickLogin}
-          onVerifySampleBatch={(token) => handlePublicVerify(token)}
-          onPublicVerify={(token) => handlePublicVerify(token)}
+      {/* 1. LANDING PORTAL WORKSPACE (Satu Pintu Utama Ekosistem) */}
+      {activeTab === 'landing' && (
+        <LandingPortalWorkspace
+          onNavigate={(tab) => setActiveTab(tab)}
+          onOpenLogin={() => setActiveTab('population')}
           onOpenMarketplace={() => setShowMarketplaceModal(true)}
-          onOpenPlanner={() => setActiveTab('smart_planner')}
-          onOpenKoperasi={() => setActiveTab('koperasi')}
-          onOpenTelemetry={() => setActiveTab('iot')}
-          onOpenTourism={() => setActiveTab('tourism')}
-          onOpenGIS={() => setActiveTab('gis')}
-          onOpenSurvei={() => setActiveTab('survei')}
-          loading={authLoading}
-          error={authError}
+          onPublicVerify={(token) => handlePublicVerify(token)}
+          currentUser={currentUser}
         />
       )}
 
-      {/* Guest Public Workspace Switcher Bar */}
-      {!currentUser && (activeTab === 'gis' || activeTab === 'tourism' || activeTab === 'smart_planner' || activeTab === 'koperasi' || activeTab === 'iot' || activeTab === 'survei') && (
+      {/* 2. Login Portal Section for Non-authenticated Users choosing to login */}
+      {!currentUser && activeTab === 'population' && (
+        <div style={{ marginBottom: '1.75rem' }}>
+          <div style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <button
+              type="button"
+              onClick={() => setActiveTab('landing')}
+              className="btn btn-secondary"
+              style={{
+                background: 'rgba(255, 255, 255, 0.06)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: '#cbd5e1',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+              }}
+            >
+              ← Kembali ke Beranda Satu Pintu
+            </button>
+            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+              Pintu Masuk Terpadu: Petugas Desa, Poktan, Petani, dan Warga
+            </span>
+          </div>
+          <LoginSection
+            username={username}
+            setUsername={setUsername}
+            password={password}
+            setPassword={setPassword}
+            onLogin={handleLogin}
+            onQuickLogin={handleQuickLogin}
+            onVerifySampleBatch={(token) => handlePublicVerify(token)}
+            onPublicVerify={(token) => handlePublicVerify(token)}
+            onOpenMarketplace={() => setShowMarketplaceModal(true)}
+            onOpenPlanner={() => setActiveTab('smart_planner')}
+            onOpenKoperasi={() => setActiveTab('koperasi')}
+            onOpenTelemetry={() => setActiveTab('iot')}
+            onOpenTourism={() => setActiveTab('tourism')}
+            onOpenGIS={() => setActiveTab('gis')}
+            onOpenSurvei={() => setActiveTab('survei')}
+            loading={authLoading}
+            error={authError}
+          />
+        </div>
+      )}
+
+      {/* 3. Guest Public Workspace Switcher Bar when exploring features */}
+      {!currentUser && activeTab !== 'landing' && activeTab !== 'population' && (
         <div className="tab-nav" style={{ marginBottom: '1.75rem', background: 'rgba(15, 23, 42, 0.95)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', padding: '0.4rem' }}>
           <button
             type="button"
-            onClick={() => setActiveTab('population')}
+            onClick={() => setActiveTab('landing')}
             className="tab-btn"
-            style={{ color: '#94a3b8' }}
+            style={{ color: '#38bdf8', fontWeight: 800 }}
           >
-            🔐 Kembali ke Login
+            🏠 Beranda Satu Pintu
           </button>
           <button
             type="button"
@@ -1024,12 +1063,27 @@ export const App: React.FC = () => {
           >
             <Radio size={16} /> 📡 Telemetri IoT &amp; Resiliensi
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('population')}
+            className="tab-btn"
+            style={{ color: '#fbbf24', marginLeft: 'auto', background: 'rgba(245, 158, 11, 0.15)' }}
+          >
+            🔐 Masuk Akun
+          </button>
         </div>
       )}
 
       {/* Floating Island Command Navigation Tabs */}
       {currentUser && isFarmerOnly && (
         <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
+          <button
+            onClick={() => setActiveTab('landing')}
+            className={`tab-btn ${activeTab === 'landing' ? 'active' : ''}`}
+            style={{ color: '#38bdf8', fontWeight: 800 }}
+          >
+            🏠 Satu Pintu
+          </button>
           <button
             onClick={() => setActiveTab('traceability')}
             className={`tab-btn ${activeTab === 'traceability' ? 'active' : ''}`}
@@ -1047,6 +1101,13 @@ export const App: React.FC = () => {
 
       {currentUser && isFarmerGroupAdmin && !isOfficerOrAdmin && (
         <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
+          <button
+            onClick={() => setActiveTab('landing')}
+            className={`tab-btn ${activeTab === 'landing' ? 'active' : ''}`}
+            style={{ color: '#38bdf8', fontWeight: 800 }}
+          >
+            🏠 Satu Pintu
+          </button>
           <button
             onClick={() => setActiveTab('farming')}
             className={`tab-btn ${activeTab === 'farming' ? 'active' : ''}`}
@@ -1079,6 +1140,13 @@ export const App: React.FC = () => {
 
       {currentUser && isOfficerOrAdmin && (
         <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
+          <button
+            onClick={() => setActiveTab('landing')}
+            className={`tab-btn ${activeTab === 'landing' ? 'active' : ''}`}
+            style={{ color: '#38bdf8', fontWeight: 800 }}
+          >
+            🏠 Satu Pintu
+          </button>
           <button
             onClick={() => setActiveTab('population')}
             className={`tab-btn ${activeTab === 'population' ? 'active' : ''}`}

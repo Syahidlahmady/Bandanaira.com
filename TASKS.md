@@ -259,5 +259,19 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 23.6 Production Docker Orchestration (`docker-compose.yml`):
   - Root `docker-compose.yml` orchestrating PostgreSQL 16 + PostGIS 3.4, MongoDB 7.0, FastAPI Python backend, and React Vite frontend.
 
+### Phase 24: Single-Door Island Ecosystem Landing Page Portal (Satu Pintu BST-NIRANA)
+- [x] 24.1 Unified Landing Page Workspace (`frontend/src/views/LandingPortalWorkspace.tsx`):
+  - Built comprehensive, futuristic "Satu Pintu" portal serving as the single gateway for the entire Banda Digital Ecosystem.
+  - Hero banner with ecosystem identity, universal search bar (auto-routing batch tokens, 16-digit NIK, GIS queries, or homestays), and key architectural metrics (7 Layers, 39 Points, SHA-256 Blockchain, AES-256-GCM NIK, 78 Tests Passed).
+  - 4-Zone Bento Grid Navigation Hub:
+    - Pintu 1: Smart Tourism & Budaya Banda (7-Layer GIS, Eco-Stay WA Booking, DSS SAW Mode 1, 177 Cagar Budaya, Marketplace Rempah & Ikan).
+    - Pintu 2: Layanan Warga & Koperasi Hatta (Kiosk Desa, Kuota Air RO, Bank Sampah Sirkular 10L, Surat Desa Otomatis).
+    - Pintu 3: IoT Telemetry & Resiliensi Pulau (TDS Air Minum WHO, PLTS Surya vs Diesel, Solenoid Valve, DSS Krisis Desa Mode 2).
+    - Pintu 4: Riset, Survei & Tata Kelola (Survei NoSQL, Pipa ETL PostGIS, Ketertelusuran Rantai Pasok, Audit OWASP Top 10).
+- [x] 24.2 Global Navigation & Brand Integration (`frontend/src/components/HeaderNav.tsx` & `frontend/src/App.tsx`):
+  - Added clickable brand identity and dedicated "🏠 Satu Pintu" button across the entire navbar and all role-based tabs (Admin, Officer, Farmer Group Admin, Farmer, and Guest).
+  - Set `landing` as default starting view, providing seamless entry points to all features with 1-click return to home.
+  - Verified clean TypeScript build (`npm run build` exits 0 in 4.45s) and full test coverage.
+
 
 
