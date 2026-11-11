@@ -73,8 +73,13 @@ async def get_qr_image(token: str, full_url: Optional[str] = None):
     from io import BytesIO
     import qrcode
     from fastapi.responses import Response
+    from backend.app.modules.qr.service import get_lan_ip
 
-    qr_payload = full_url if (full_url and full_url.strip()) else token
+    lan_ip = get_lan_ip()
+    if full_url and full_url.strip():
+        qr_payload = full_url.replace("localhost", lan_ip).replace("127.0.0.1", lan_ip)
+    else:
+        qr_payload = f"http://{lan_ip}:5175/?verify={token}"
 
     qr = qrcode.QRCode(
         version=1,

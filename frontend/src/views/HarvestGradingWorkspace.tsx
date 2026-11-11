@@ -80,9 +80,11 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
 
   const getBatchQrSrc = (batch: ProductBatch) => {
     if (batch.public_verification_token) {
-      const fullUrl = typeof window !== 'undefined'
-        ? `${window.location.origin}/?verify=${encodeURIComponent(batch.public_verification_token)}`
-        : ''
+      let origin = typeof window !== 'undefined' ? window.location.origin : ''
+      if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+        origin = origin.replace('localhost', '192.168.8.89').replace('127.0.0.1', '192.168.8.89')
+      }
+      const fullUrl = `${origin}/?verify=${encodeURIComponent(batch.public_verification_token)}`
       return `${apiBase}/public/verify/image/${encodeURIComponent(batch.public_verification_token)}?full_url=${encodeURIComponent(fullUrl)}`
     }
     if (batch.qr_code_base64 && batch.qr_code_base64.trim().length > 0) {

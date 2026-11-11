@@ -446,10 +446,13 @@ export const App: React.FC = () => {
         .catch(() => authService.clearTokens())
     }
 
-    // Auto-open public certificate if ?verify=<token> is in the URL (e.g. from camera scan)
+    // Auto-open public certificate if ?verify=<token> or /verify/<token> is in the URL (e.g. from camera scan)
     try {
       const searchParams = new URLSearchParams(window.location.search)
-      const verifyToken = searchParams.get('verify') || searchParams.get('token')
+      let verifyToken = searchParams.get('verify') || searchParams.get('token')
+      if (!verifyToken && window.location.pathname.startsWith('/verify/')) {
+        verifyToken = window.location.pathname.replace('/verify/', '').trim()
+      }
       if (verifyToken) {
         handlePublicVerify(verifyToken)
       }
