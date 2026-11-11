@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Harvest, ProductBatch } from '../services/traceability'
 import { Farm, Farmer } from '../services/farmers'
+import { QrCode, Printer, Download, ExternalLink, X } from 'lucide-react'
 
 interface HarvestGradingWorkspaceProps {
   harvests: Harvest[]
@@ -69,9 +70,25 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
   handlePublicVerify,
   farms,
   isOfficerOrAdmin,
+  isFarmerGroupAdmin,
   isFarmer,
   fetchTraceabilityData,
 }) => {
+  const [previewQrBatch, setPreviewQrBatch] = useState<ProductBatch | null>(null)
+
+  const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8005/api/v1'
+
+  const getBatchQrSrc = (batch: ProductBatch) => {
+    if (batch.qr_code_base64 && batch.qr_code_base64.trim().length > 0) {
+      return batch.qr_code_base64.startsWith('data:image')
+        ? batch.qr_code_base64
+        : `data:image/png;base64,${batch.qr_code_base64}`
+    }
+    if (batch.public_verification_token) {
+      return `${apiBase}/public/verify/image/${encodeURIComponent(batch.public_verification_token)}`
+    }
+    return ''
+  }
   // Auto-save harvest form draft
   useEffect(() => {
     try {
@@ -248,8 +265,8 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
           </form>
         </div>
 
-        {/* Form Buat Batch Produk - Khusus Petugas / Admin */}
-        {isOfficerOrAdmin && (
+        {/* Form Buat Batch Produk - Khusus Petugas / Admin Kelompok Tani */}
+        {(isOfficerOrAdmin || isFarmerGroupAdmin) && (
           <div style={{ background: 'rgba(248, 250, 252, 0.85)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
               <span style={{ fontSize: '1.2rem' }}>📦</span>
@@ -336,11 +353,13 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                   <th>Berat (kg)</th>
                   <th>Kualitas</th>
                   <th>Tanggal</th>
+                  <th>Label QR & Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 {harvests.map((h) => {
                   const farm = farms.find((f) => f.id === h.farm_id)
+                  const matchedBatch = batches.find((b) => b.commodity.toLowerCase() === h.commodity.toLowerCase()) || batches[0]
                   return (
                     <tr key={h.id}>
                       <td style={{ fontWeight: 700, color: 'var(--text-main)', fontFamily: 'monospace' }}>{h.harvest_code}</td>
@@ -355,6 +374,21 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                         <span className="badge badge-emerald">{h.quality_grade || 'Grade A Super'}</span>
                       </td>
                       <td style={{ color: 'var(--text-muted)' }}>{h.harvest_date}</td>
+                      <td>
+                        {matchedBatch ? (
+                          <button
+                            type="button"
+                            onClick={() => setPreviewQrBatch(matchedBatch)}
+                            className="btn btn-sm btn-outline-primary"
+                            style={{ fontSize: '0.75rem', padding: '0.25rem 0.55rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                            title={`Lihat Label QR untuk ${matchedBatch.batch_code}`}
+                          >
+                            <QrCode size={13} /> Label QR ({matchedBatch.batch_code})
+                          </button>
+                        ) : (
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Belum Dibuat Batch</span>
+                        )}
+                      </td>
                     </tr>
                   )
                 })}
@@ -364,20 +398,24 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
         )}
       </div>
 
-      {/* Active Batches & Event Lifecycle Append - Khusus Petugas / Admin */}
-      {isOfficerOrAdmin && (
-        <div style={{ marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-            <div>
-              <h3 style={{ fontSize: '1.2rem', color: 'var(--text-main)', margin: 0, fontWeight: 800 }}>
-                Daftar Batch & Label QR Resmi ({batches.length} Batch)
-              </h3>
-              <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', margin: '0.2rem 0 0' }}>
-                Kemasan produk rempah berlabel QR dengan sertifikat keaslian dan jangkar kriptografis on-chain.
-              </p>
-            </div>
+      {/* Active Batches & Event Lifecycle Append - Terbuka untuk Petani & Petugas */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div>
+            <h3 style={{ fontSize: '1.2rem', color: 'var(--text-main)', margin: 0, fontWeight: 800 }}>
+              Daftar Batch & Label QR Resmi ({batches.length} Batch)
+            </h3>
+            <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', margin: '0.2rem 0 0' }}>
+              Kemasan produk rempah berlabel QR dengan sertifikat keaslian dan jangkar kriptografis on-chain.
+            </p>
           </div>
+        </div>
 
+        {batches.length === 0 ? (
+          <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(248, 250, 252, 0.8)', borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', border: '1px dashed var(--border-color)' }}>
+            Belum ada batch kemasan rempah berlabel QR. {isOfficerOrAdmin || isFarmerGroupAdmin ? 'Gunakan formulir di atas untuk menerbitkan batch baru.' : 'Petugas desa / admin kelompok tani dapat menerbitkan batch resmi dari hasil panen.'}
+          </div>
+        ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             {batches.map((b) => (
               <div
@@ -419,24 +457,97 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                    {b.qr_code_base64 && (
-                      <img
-                        src={b.qr_code_base64}
-                        alt="QR Code"
-                        style={{ width: '68px', height: '68px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}
-                      />
-                    )}
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    {/* High-scan-contrast QR Display Box */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                        background: '#ffffff',
+                        padding: '0.65rem 0.85rem',
+                        borderRadius: 'var(--radius-md)',
+                        border: '1px solid #e2e8f0',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+                      }}
+                    >
+                      <div
+                        style={{ position: 'relative', cursor: 'pointer', textAlign: 'center' }}
+                        onClick={() => setPreviewQrBatch(b)}
+                        title="Klik untuk memperbesar / cetak stiker QR"
+                      >
+                        <img
+                          src={getBatchQrSrc(b)}
+                          alt={`QR Code ${b.batch_code}`}
+                          style={{
+                            width: '84px',
+                            height: '84px',
+                            display: 'block',
+                            borderRadius: '6px',
+                            border: '1px solid #cbd5e1',
+                            backgroundColor: '#ffffff',
+                          }}
+                        />
+                        <div
+                          style={{
+                            position: 'absolute',
+                            bottom: '2px',
+                            left: '2px',
+                            right: '2px',
+                            background: 'rgba(15, 23, 42, 0.8)',
+                            color: '#ffffff',
+                            fontSize: '0.58rem',
+                            fontWeight: 800,
+                            borderRadius: '3px',
+                            padding: '1px 0',
+                          }}
+                        >
+                          🔍 PERBESAR
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                          <span className="badge badge-purple" style={{ fontSize: '0.68rem', padding: '0.15rem 0.4rem' }}>
+                            LABEL RESMI
+                          </span>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                            Token: {b.public_verification_token ? `${b.public_verification_token.substring(0, 8)}...` : '-'}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            onClick={() => setPreviewQrBatch(b)}
+                            className="btn btn-sm btn-outline-primary"
+                            style={{ fontSize: '0.73rem', padding: '0.3rem 0.55rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+                          >
+                            <QrCode size={13} /> Cetak Stiker
+                          </button>
+                          <a
+                            href={getBatchQrSrc(b)}
+                            download={`QR-${b.batch_code}.png`}
+                            className="btn btn-sm btn-secondary"
+                            style={{ fontSize: '0.73rem', padding: '0.3rem 0.55rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', textDecoration: 'none' }}
+                          >
+                            <Download size={13} /> Unduh PNG
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                       <div style={{ display: 'flex', gap: '0.35rem' }}>
-                        <button
-                          onClick={() => handleAnchorBlockchain(b.id)}
-                          disabled={blockchainLoading === b.id}
-                          className="btn btn-sm btn-primary"
-                          style={{ fontSize: '0.78rem', padding: '0.4rem 0.75rem' }}
-                        >
-                          {blockchainLoading === b.id ? '⏳ Menjangkar...' : '⛓️ Jangkar EVM'}
-                        </button>
+                        {(isOfficerOrAdmin || isFarmerGroupAdmin) && (
+                          <button
+                            onClick={() => handleAnchorBlockchain(b.id)}
+                            disabled={blockchainLoading === b.id}
+                            className="btn btn-sm btn-primary"
+                            style={{ fontSize: '0.78rem', padding: '0.4rem 0.75rem' }}
+                          >
+                            {blockchainLoading === b.id ? '⏳ Menjangkar...' : '⛓️ Jangkar EVM'}
+                          </button>
+                        )}
                         <button
                           onClick={() => handleVerifyBlockchain(b.id)}
                           className="btn btn-sm btn-outline-primary"
@@ -493,50 +604,141 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                   </div>
                 </div>
 
-                {/* Quick Append Event */}
-                <form
-                  onSubmit={(e) => {
-                    setSelectedBatch(b)
-                    handleAppendEvent(e)
-                  }}
-                  style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}
-                >
-                  <div style={{ width: '180px' }}>
-                    <label className="form-label">Tambah Tahapan</label>
-                    <select
-                      value={eventForm.event_type}
-                      onChange={(e) => setEventForm({ ...eventForm, event_type: e.target.value })}
-                      className="form-control"
-                      style={{ fontSize: '0.8rem', padding: '0.45rem 0.6rem' }}
-                    >
-                      <option value="drying">Pengeringan (Drying)</option>
-                      <option value="sorting">Sortasi Mutu (Sorting)</option>
-                      <option value="packaging">Pengemasan (Packaging)</option>
-                      <option value="transfer">Distribusi (Transfer)</option>
-                    </select>
-                  </div>
-                  <div style={{ flex: 1, minWidth: '220px' }}>
-                    <label className="form-label">Catatan & Lokasi Tahapan</label>
-                    <input
-                      type="text"
-                      placeholder="Mis. Pengeringan solar dryer Lonthoir..."
-                      value={eventForm.description}
-                      onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
-                      required
-                      className="form-control"
-                      style={{ fontSize: '0.8rem', padding: '0.45rem 0.75rem' }}
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="btn btn-primary"
-                    style={{ fontSize: '0.8rem', padding: '0.5rem 1rem' }}
+                {/* Quick Append Event - Hanya Petugas & Admin Kelompok */}
+                {(isOfficerOrAdmin || isFarmerGroupAdmin) && (
+                  <form
+                    onSubmit={(e) => {
+                      setSelectedBatch(b)
+                      handleAppendEvent(e)
+                    }}
+                    style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}
                   >
-                    + Catat & Rantai Hash
-                  </button>
-                </form>
+                    <div style={{ width: '180px' }}>
+                      <label className="form-label">Tambah Tahapan</label>
+                      <select
+                        value={eventForm.event_type}
+                        onChange={(e) => setEventForm({ ...eventForm, event_type: e.target.value })}
+                        className="form-control"
+                        style={{ fontSize: '0.8rem', padding: '0.45rem 0.6rem' }}
+                      >
+                        <option value="drying">Pengeringan (Drying)</option>
+                        <option value="sorting">Sortasi Mutu (Sorting)</option>
+                        <option value="packaging">Pengemasan (Packaging)</option>
+                        <option value="transfer">Distribusi (Transfer)</option>
+                      </select>
+                    </div>
+                    <div style={{ flex: 1, minWidth: '220px' }}>
+                      <label className="form-label">Catatan & Lokasi Tahapan</label>
+                      <input
+                        type="text"
+                        placeholder="Mis. Pengeringan solar dryer Lonthoir..."
+                        value={eventForm.description}
+                        onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+                        required
+                        className="form-control"
+                        style={{ fontSize: '0.8rem', padding: '0.45rem 0.75rem' }}
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      style={{ fontSize: '0.8rem', padding: '0.5rem 1rem' }}
+                    >
+                      + Catat & Rantai Hash
+                    </button>
+                  </form>
+                )}
               </div>
             ))}
+          </div>
+        )}
+      </div>
+
+      {/* MODAL PRATINJAU & CETAK QR KEMASAN */}
+      {previewQrBatch && (
+        <div className="modal-backdrop" style={{ zIndex: 9999 }}>
+          <div className="modal-content animate-fade-in" style={{ maxWidth: '480px', textAlign: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <QrCode size={20} color="var(--primary)" />
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                  Label QR Kemasan Rempah
+                </h3>
+              </div>
+              <button
+                onClick={() => setPreviewQrBatch(null)}
+                style={{
+                  background: '#f1f5f9',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#64748b',
+                }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ background: '#ffffff', border: '2px solid #e2e8f0', borderRadius: 'var(--radius-lg)', padding: '1.5rem', marginBottom: '1.25rem', boxShadow: 'var(--shadow-sm)' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#1e3a8a', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                INDIKASI GEOGRAFIS RESMI BANDA NEIRA
+              </div>
+              <img
+                src={getBatchQrSrc(previewQrBatch)}
+                alt={`QR Code ${previewQrBatch.batch_code}`}
+                style={{ width: '220px', height: '220px', margin: '0 auto', display: 'block', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+              />
+              <div style={{ marginTop: '0.75rem' }}>
+                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)', fontFamily: 'monospace' }}>
+                  {previewQrBatch.batch_code}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                  {previewQrBatch.commodity} &bull; {previewQrBatch.total_quantity_kg} kg
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--ocean-600)', marginTop: '0.25rem', fontWeight: 600 }}>
+                  Produksi: {previewQrBatch.production_date}
+                </div>
+                <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0.5rem 0 0', lineHeight: 1.4 }}>
+                  Arahkan kamera smartphone ke kode QR ini untuk memeriksa sertifikat keaslian dan bukti rantai pasok on-chain.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <a
+                  href={getBatchQrSrc(previewQrBatch)}
+                  download={`QR-${previewQrBatch.batch_code}.png`}
+                  className="btn btn-primary"
+                  style={{ flex: 1, padding: '0.65rem', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.4rem', textDecoration: 'none' }}
+                >
+                  <Download size={16} /> Unduh PNG
+                </a>
+                <button
+                  onClick={() => window.print()}
+                  className="btn btn-secondary"
+                  style={{ flex: 1, padding: '0.65rem', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                >
+                  <Printer size={16} /> Cetak Stiker
+                </button>
+              </div>
+              <button
+                onClick={() => {
+                  const token = previewQrBatch.public_verification_token
+                  setPreviewQrBatch(null)
+                  handlePublicVerify(token)
+                }}
+                className="btn btn-outline-primary"
+                style={{ padding: '0.6rem', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                <ExternalLink size={16} /> Buka Halaman Verifikasi Publik
+              </button>
+            </div>
           </div>
         </div>
       )}

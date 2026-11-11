@@ -90,6 +90,7 @@ RESTful API specification for **Banda Digital Ecosystem**.
 | Method | Endpoint | Roles Allowed | Description |
 |---|---|---|---|
 | `GET` | `/api/v1/public/verify/{token}` | Public (No Auth) | Fetch public product batch history, origin, and blockchain hash |
+| `GET` | `/api/v1/public/verify/image/{token}` | Public (No Auth) | Stream direct PNG image of QR code for packaging stickers and image tags |
 
 ### 2.7 Blockchain Anchoring & Verification (`/api/v1/blockchain`)
 | Method | Endpoint | Roles Allowed | Description |

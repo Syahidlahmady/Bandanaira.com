@@ -75,18 +75,38 @@ export const PublicVerifyModal: React.FC<PublicVerifyModalProps> = ({ data, onCl
             </div>
           </div>
 
-          {data.qr_code_base64 && (
-            <div style={{ background: '#ffffff', padding: '0.4rem', borderRadius: '8px', textAlign: 'center' }}>
-              <img
-                src={`data:image/png;base64,${data.qr_code_base64}`}
-                alt="QR Code Produk"
-                style={{ width: '84px', height: '84px', display: 'block' }}
-              />
-              <span style={{ fontSize: '0.65rem', color: '#1e3a8a', fontWeight: 700, display: 'block', marginTop: '0.2rem' }}>
-                QR RESMI
-              </span>
-            </div>
-          )}
+          {data.qr_code_base64 && (() => {
+            const qrImageSrc = data.qr_code_base64.startsWith('data:image')
+              ? data.qr_code_base64
+              : `data:image/png;base64,${data.qr_code_base64}`
+            return (
+              <div style={{ background: '#ffffff', padding: '0.5rem', borderRadius: '8px', textAlign: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.15)' }}>
+                <img
+                  src={qrImageSrc}
+                  alt="QR Code Produk"
+                  style={{ width: '92px', height: '92px', display: 'block', borderRadius: '4px' }}
+                />
+                <span style={{ fontSize: '0.65rem', color: '#1e3a8a', fontWeight: 800, display: 'block', marginTop: '0.25rem' }}>
+                  QR RESMI
+                </span>
+                <a
+                  href={qrImageSrc}
+                  download={`QR-${data.batch_code}.png`}
+                  style={{
+                    display: 'inline-block',
+                    marginTop: '0.25rem',
+                    fontSize: '0.68rem',
+                    color: '#2563eb',
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                  }}
+                >
+                  Unduh QR 📥
+                </a>
+              </div>
+            )
+          })()}
         </div>
 
         {/* Origin Farms */}

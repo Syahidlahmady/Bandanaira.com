@@ -121,5 +121,13 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 13.9 Modernized App Shell & Public Section (`App.tsx`): Updated public QR search card, system infrastructure health grid, and added official digital ecosystem footer.
 - [x] 13.10 Verification & Quality Assurance: Verified 0 TypeScript errors (`npm run build` exits 0) and 37/37 passing backend tests (`pytest backend/tests/ -v`).
 
+### Phase 14: Traceability QR Code Reliability & Packaging Label Management
+- [x] 14.1 Fixed Double Data URI Prefix Bug: Resolved corrupted `data:image/png;base64,data:image/png;base64,...` URI formatting in `PublicVerifyModal.tsx` that caused QR codes to fail rendering. Added safe base64 prefix detection and direct "Unduh QR" link.
+- [x] 14.2 Direct PNG Image Endpoint: Added `GET /api/v1/public/verify/image/{token}` in FastAPI backend (`backend/app/modules/qr/router.py`) providing high-performance direct PNG streaming for fast browser loading and packaging stickers without memory decoding overhead.
+- [x] 14.3 Harvest Workspace QR Accessibility: Unlocked "Daftar Batch & Label QR Resmi" in `HarvestGradingWorkspace.tsx` so all agricultural stakeholders (village officers, farmer group leaders, and regular farmers) can view product batches and their packaging QR codes.
+- [x] 14.4 Packaging Label QR Preview Modal: Implemented dedicated high-resolution modal with large 220x220 QR image, official Banda Neira Geographic Indication header, batch metadata, direct "Unduh PNG" download button, "Cetak Stiker" (`window.print()`) button, and public certificate verification shortcut.
+- [x] 14.5 Harvest Table Quick QR Action: Added "Label QR & Aksi" column in the harvest records table linking individual harvest entries to their packaging batch label.
+- [x] 14.6 Verification & Quality Assurance: Verified 0 TypeScript compilation errors (`npm run build` exits 0) and 37/37 passing backend tests (`pytest backend/tests/ -v`).
+
 
 

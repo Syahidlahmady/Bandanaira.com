@@ -60,3 +60,28 @@ async def verify_batch_public(token: str, db: AsyncSession = Depends(get_db)):
         timeline=timeline,
         qr_code_base64=qr_base64,
     )
+
+
+@router.get("/image/{token}")
+async def get_qr_image(token: str):
+    """
+    Returns direct PNG image response for QR code of given token.
+    Publicly accessible, high performance, can be directly used in <img src="..." />.
+    """
+    from io import BytesIO
+    import qrcode
+    from fastapi.responses import Response
+
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=10,
+        border=3,
+    )
+    qr.add_data(token)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    return Response(content=buffer.getvalue(), media_type="image/png")
+
