@@ -372,3 +372,43 @@ async def get_heritage_catalog(
     if island:
         results = [h for h in results if h.island.lower() == island.lower()]
     return results
+
+
+# Router alias sesuai spesifikasi tabel SRS BAB XI
+penginapan_alias_router = APIRouter(tags=["Penginapan & Pemesanan (SRS 11)"])
+
+
+@penginapan_alias_router.get(
+    "/penginapan",
+    response_model=List[AccommodationItemResponse],
+    summary="Daftar Penginapan (Alias SRS 11)"
+)
+async def list_penginapan_alias(
+    island: Optional[str] = Query(None),
+    type: Optional[str] = Query(None),
+    max_price: Optional[float] = Query(None),
+    has_ro_water: Optional[bool] = Query(None),
+    has_solar: Optional[bool] = Query(None),
+    db: AsyncSession = Depends(get_db),
+):
+    return await list_accommodations(
+        island=island,
+        type=type,
+        max_price=max_price,
+        has_ro_water=has_ro_water,
+        has_solar=has_solar,
+        db=db
+    )
+
+
+@penginapan_alias_router.post(
+    "/pemesanan",
+    response_model=BookingItemResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Reservasi Penginapan & Trigger WhatsApp (Alias SRS 11)"
+)
+async def create_pemesanan_alias(
+    payload: BookingCreateInput,
+    db: AsyncSession = Depends(get_db),
+):
+    return await create_booking(payload=payload, db=db)

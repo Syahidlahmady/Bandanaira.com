@@ -39,6 +39,7 @@ import { KoperasiKasirWorkspace } from './views/KoperasiKasirWorkspace.tsx'
 import { IslandTelemetryWorkspace } from './views/IslandTelemetryWorkspace.tsx'
 import { TourismEcoStayWorkspace } from './views/TourismEcoStayWorkspace.tsx'
 import { InteractiveMapWorkspace } from './views/InteractiveMapWorkspace.tsx'
+import { SurveyEtlWorkspace } from './views/SurveyEtlWorkspace.tsx'
 import {
   MapPin,
   Users,
@@ -50,6 +51,7 @@ import {
   Radio,
   Home,
   Layers,
+  Database,
 } from 'lucide-react'
 import { offlineDB } from './offline/db.ts'
 import { syncManager, SyncQueueItem } from './offline/syncManager.ts'
@@ -66,7 +68,7 @@ interface HealthResponse {
 
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'population' | 'letters' | 'farming' | 'traceability' | 'koperasi' | 'iot' | 'tourism' | 'gis' | 'audit' | 'smart_planner'>('population')
+  const [activeTab, setActiveTab] = useState<'population' | 'letters' | 'farming' | 'traceability' | 'koperasi' | 'iot' | 'tourism' | 'gis' | 'audit' | 'smart_planner' | 'survei'>('population')
   const [health, setHealth] = useState<HealthResponse | null>(null)
   const [loadingHealth, setLoadingHealth] = useState<boolean>(true)
   const [healthError, setHealthError] = useState<string | null>(null)
@@ -963,13 +965,14 @@ export const App: React.FC = () => {
           onOpenTelemetry={() => setActiveTab('iot')}
           onOpenTourism={() => setActiveTab('tourism')}
           onOpenGIS={() => setActiveTab('gis')}
+          onOpenSurvei={() => setActiveTab('survei')}
           loading={authLoading}
           error={authError}
         />
       )}
 
       {/* Guest Public Workspace Switcher Bar */}
-      {!currentUser && (activeTab === 'gis' || activeTab === 'tourism' || activeTab === 'smart_planner' || activeTab === 'koperasi' || activeTab === 'iot') && (
+      {!currentUser && (activeTab === 'gis' || activeTab === 'tourism' || activeTab === 'smart_planner' || activeTab === 'koperasi' || activeTab === 'iot' || activeTab === 'survei') && (
         <div className="tab-nav" style={{ marginBottom: '1.75rem', background: 'rgba(15, 23, 42, 0.95)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', padding: '0.4rem' }}>
           <button
             type="button"
@@ -985,6 +988,13 @@ export const App: React.FC = () => {
             className={`tab-btn ${activeTab === 'gis' ? 'active' : ''}`}
           >
             <Layers size={16} /> 🗺️ Peta 7-Layer
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('survei')}
+            className={`tab-btn ${activeTab === 'survei' ? 'active' : ''}`}
+          >
+            <Database size={16} /> 📋 Survei &amp; ETL Hybrid
           </button>
           <button
             type="button"
@@ -1159,6 +1169,12 @@ export const App: React.FC = () => {
           >
             <Layers size={16} /> 🗺️ Peta 7-Layer
           </button>
+          <button
+            onClick={() => setActiveTab('survei')}
+            className={`tab-btn ${activeTab === 'survei' ? 'active' : ''}`}
+          >
+            <Database size={16} /> 📋 Survei &amp; ETL Hybrid
+          </button>
         </div>
       )}
 
@@ -1276,6 +1292,11 @@ export const App: React.FC = () => {
       {/* TAB 10: PETA SPASIAL INTERAKTIF 7-LAYER */}
       {activeTab === 'gis' && (
         <InteractiveMapWorkspace />
+      )}
+
+      {/* TAB 11: SURVEI LAPANGAN DINAMIS & PIPA ETL HYBRID */}
+      {activeTab === 'survei' && (
+        <SurveyEtlWorkspace onNavigateToMap={() => setActiveTab('gis')} />
       )}
 
       {/* PORTAL KHUSUS WARGA DESA (RESIDENT) */}

@@ -158,9 +158,115 @@ Documentation of data models, relationships, and constraints for **Banda Digital
   - `ip_address`: VARCHAR(45) (NULLABLE)
   - `created_at`: TIMESTAMPTZ (DEFAULT now())
 
+### 2.6 Koperasi Hatta & Dispenser Air (Phase 18)
+- **`coop_accounts`**
+  - `id`: UUID (PK)
+  - `nik`: VARCHAR(16) (UNIQUE, NOT NULL)
+  - `balance_rp`: NUMERIC(12, 2) (DEFAULT 0)
+  - `water_quota_liters`: NUMERIC(10, 2) (DEFAULT 0)
+  - `waste_points`: INT (DEFAULT 0)
+  - `total_commodities_kg`: NUMERIC(10, 2) (DEFAULT 0)
+  - `total_plastic_kg`: NUMERIC(10, 2) (DEFAULT 0)
+  - `created_at`, `updated_at`: TIMESTAMPTZ
+- **`coop_transactions`**
+  - `id`: UUID (PK)
+  - `account_id`: UUID (FK -> coop_accounts.id)
+  - `transaction_type`: VARCHAR(50) NOT NULL (`DEPOSIT_COMMODITY`, `DEPOSIT_WASTE`, `REDEEM_WATER`)
+  - `commodity_type`: VARCHAR(50) (NULLABLE)
+  - `weight_kg`: NUMERIC(10, 2) (DEFAULT 0)
+  - `amount_rp`: NUMERIC(12, 2) (DEFAULT 0)
+  - `water_liters`: NUMERIC(10, 2) (DEFAULT 0)
+  - `points_awarded`: INT (DEFAULT 0)
+  - `blockchain_hash`: VARCHAR(64) (Deterministic SHA-256 receipt hash)
+  - `created_at`: TIMESTAMPTZ
+
+### 2.7 IoT Telemetry & Island Resiliency (Phase 19)
+- **`iot_telemetry_logs`**
+  - `id`: UUID (PK)
+  - `station_code`: VARCHAR(50) (NOT NULL, INDEXED)
+  - `station_name`: VARCHAR(100) (NOT NULL)
+  - `island_name`: VARCHAR(50) (NOT NULL)
+  - `raw_water_tds_ppm`: FLOAT (NOT NULL)
+  - `filtered_water_tds_ppm`: FLOAT (NOT NULL)
+  - `clean_tank_level_pct`: FLOAT (NOT NULL)
+  - `daily_dispensed_liters`: FLOAT (NOT NULL)
+  - `valve_status`: VARCHAR(20) (DEFAULT 'OPEN')
+  - `active_power_source`: VARCHAR(40) NOT NULL (`SOLAR_GRAVITY_MIX`, `DIESEL_GRID`)
+  - `solar_voltage_v`: FLOAT (DEFAULT 0)
+  - `solar_current_a`: FLOAT (DEFAULT 0)
+  - `solar_power_watts`: FLOAT (DEFAULT 0)
+  - `battery_soc_pct`: FLOAT (DEFAULT 0)
+  - `diesel_saved_liters_est`: FLOAT (DEFAULT 0)
+  - `alert_flags`: JSON (NULLABLE)
+  - `created_at`: TIMESTAMPTZ
+
+### 2.8 Smart Tourism & Eco-Stay (Phase 20)
+- **`accommodations`**
+  - `id`: UUID (PK)
+  - `name`: VARCHAR(150) (NOT NULL)
+  - `type`: VARCHAR(50) (DEFAULT 'HOMESTAY')
+  - `island_name`: VARCHAR(100) (NOT NULL)
+  - `price_per_night_rp`: NUMERIC(12, 2) (NOT NULL)
+  - `rooms_available`: INT (DEFAULT 5)
+  - `has_clean_ro_water`: BOOLEAN (DEFAULT TRUE)
+  - `has_solar_backup`: BOOLEAN (DEFAULT TRUE)
+  - `eco_stay_badge`: BOOLEAN (DEFAULT TRUE)
+  - `contact_whatsapp`: VARCHAR(20) (NOT NULL)
+  - `created_at`, `updated_at`: TIMESTAMPTZ
+- **`bookings`**
+  - `id`: UUID (PK)
+  - `booking_code`: VARCHAR(30) (UNIQUE, INDEXED)
+  - `accommodation_id`: UUID (FK -> accommodations.id)
+  - `guest_name`: VARCHAR(150) (NOT NULL)
+  - `guest_whatsapp`: VARCHAR(20) (NOT NULL)
+  - `check_in`: DATE, `check_out`: DATE
+  - `total_nights`: INT, `rooms_count`: INT
+  - `total_price_rp`: NUMERIC(12, 2)
+  - `status`: VARCHAR(30) (DEFAULT 'PENDING')
+  - `wa_link`: TEXT (Direct click-to-chat WhatsApp confirmation URL)
+  - `created_at`, `updated_at`: TIMESTAMPTZ
+
+### 2.9 7-Layer Spatial GIS (Phase 21)
+- **`spatial_features`**
+  - `id`: UUID (PK)
+  - `name`: VARCHAR(150) (INDEXED, NOT NULL)
+  - `layer_type`: VARCHAR(50) (INDEXED, NOT NULL) - `LAYER_TOURISM_4A`, `LAYER_HERITAGE`, `LAYER_ACCOMMODATION`, `LAYER_KOPERASI_UMKM`, `LAYER_PUBLIC_SAFETY`, `LAYER_WATER_INFRA`, `LAYER_ENERGY_WASTE`
+  - `category`: VARCHAR(30) (DEFAULT 'publik') - `publik` or `resiliensi`
+  - `island_name`: VARCHAR(50) (INDEXED, NOT NULL)
+  - `latitude`: FLOAT, `longitude`: FLOAT
+  - `geometry_geojson`: JSON (GeoJSON Point/Polygon geometry)
+  - `properties_meta`: JSON (Dynamic properties, TDS, solar mix, historical narrative)
+  - `description`: TEXT
+  - `is_active`: BOOLEAN (DEFAULT TRUE)
+  - `created_at`, `updated_at`: TIMESTAMPTZ
+
+### 2.10 Cryptographic NIK Hardening (Phase 22)
+- Added to **`residents`**:
+  - `nik_encrypted`: TEXT (AES-256-GCM symmetric encryption with 12-byte random IV)
+  - `nik_blind_index`: VARCHAR(64) (HMAC-SHA256 one-way deterministic hash with server secret salt for $O(1)$ search)
+
+### 2.11 Dynamic Field Surveys & NoSQL/PostGIS ETL Pipeline (Phase 23)
+- **`raw_surveys`**
+  - `id`: UUID (PK)
+  - `survey_code`: VARCHAR(30) (UNIQUE, INDEXED)
+  - `collector_name`: VARCHAR(120) (NOT NULL)
+  - `problem_domain`: VARCHAR(40) (INDEXED) - `AIR_DAN_SAMPAH`, `ENERGI`, `EKONOMI`, `WISATA`, `BUDAYA`
+  - `island_name`: VARCHAR(50) (INDEXED, NOT NULL)
+  - `village_name`: VARCHAR(100), `rt_rw`: VARCHAR(30)
+  - `latitude`: FLOAT, `longitude`: FLOAT
+  - `title`: VARCHAR(200) (NOT NULL)
+  - `urgency_level`: VARCHAR(20) (DEFAULT 'SEDANG')
+  - `flexible_attributes`: JSON (Dynamic NoSQL Key-Value pairs without schema restrictions)
+  - `photo_evidence_url`: VARCHAR(255)
+  - `notes`: TEXT
+  - `etl_status`: VARCHAR(30) (DEFAULT 'PENDING') - `PENDING`, `MIGRATED_TO_POSTGRES`, `REJECTED`
+  - `migrated_feature_id`: UUID (FK -> spatial_features.id, SET NULL)
+  - `created_at`, `updated_at`: TIMESTAMPTZ
+
 ---
 
 ## 3. Database Migration Policy
-1. Every schema change must be created via `alembic revision --autogenerate -m "..."`.
+1. Every schema change must be created via Alembic migrations.
 2. Inspect generated migration files before applying with `alembic upgrade head`.
 3. Never drop tables or columns directly in live environments.
+4. All 11 migrations are tracked deterministically in `backend/migrations/versions/`.

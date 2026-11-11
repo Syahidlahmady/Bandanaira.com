@@ -16,13 +16,14 @@ from backend.app.modules.audit.router import router as audit_router
 from backend.app.modules.dss.router import router as dss_router
 from backend.app.modules.koperasi.router import router as koperasi_router
 from backend.app.modules.iot.router import router as iot_router
-from backend.app.modules.tourism.router import router as tourism_router
+from backend.app.modules.tourism.router import router as tourism_router, penginapan_alias_router
 from backend.app.modules.gis.router import router as gis_router, peta_alias_router
 from backend.app.modules.security.router import (
     router as security_router,
     warga_alias_router,
     get_security_audit_report,
 )
+from backend.app.modules.survei.router import router as survei_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -47,10 +48,12 @@ app.include_router(dss_router, prefix=settings.API_V1_STR)
 app.include_router(koperasi_router, prefix=settings.API_V1_STR)
 app.include_router(iot_router, prefix=settings.API_V1_STR)
 app.include_router(tourism_router, prefix=settings.API_V1_STR)
+app.include_router(penginapan_alias_router, prefix=settings.API_V1_STR)
 app.include_router(gis_router, prefix=settings.API_V1_STR)
 app.include_router(peta_alias_router, prefix=settings.API_V1_STR)
 app.include_router(security_router, prefix=settings.API_V1_STR)
 app.include_router(warga_alias_router, prefix=settings.API_V1_STR)
+app.include_router(survei_router, prefix=settings.API_V1_STR)
 
 
 @app.get(f"{settings.API_V1_STR}/audit-keamanan", tags=["OWASP Top 10 Security (SRS 11)"])

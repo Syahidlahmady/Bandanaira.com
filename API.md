@@ -105,6 +105,67 @@ RESTful API specification for **Banda Digital Ecosystem**.
 | `GET` | `/api/v1/audit/logs` | `admin`, `village_officer` | List audit log history with entity, action, and pagination filters |
 | `GET` | `/api/v1/audit/ecosystem-summary` | `admin`, `village_officer`, `farmer_group_admin` | Fetch executive aggregate statistics across population, farmland, harvests, blockchain, and letters |
 
+### 2.9 Decision Support System Dual-Mode SAW (`/api/v1/dss`)
+| Method | Endpoint | Roles Allowed | Description |
+|---|---|---|---|
+| `POST` | `/api/v1/dss/hitung-saw` | Public / Admin | Generic SAW mathematical calculation engine with automatic zero-division protection |
+| `POST` | `/api/v1/dss/rekomendasi-wisata` | Public | Mode 1: Multi-criteria tourism & homestay recommendation ranking based on budget, distance, facilities, and heritage score |
+| `POST` | `/api/v1/dss/prioritas-krisis` | `admin`, `village_officer` | Mode 2: Island crisis zone ranking for prioritizing RO desalination and solar deployments |
+| `GET` | `/api/v1/dss/wisata/alternatives` | Public | Get authentic tourism alternative matrix dataset |
+| `GET` | `/api/v1/dss/krisis/alternatives` | `admin`, `village_officer` | Get authentic village crisis zone alternative matrix dataset |
+
+### 2.10 Koperasi Hatta & Circular Water Dispenser (`/api/v1/koperasi`)
+| Method | Endpoint | Roles Allowed | Description |
+|---|---|---|---|
+| `POST` | `/api/v1/koperasi/transaksi/setor-komoditas` | `admin`, `village_officer` | Record spice/fish commodity deposit with cash/water quota allocation and SHA-256 ledger receipt |
+| `POST` | `/api/v1/koperasi/transaksi/setor-sampah` | `admin`, `village_officer` | Prof. Purwo plastic circular converter (1 kg plastic -> 10 L RO water + 10 points) |
+| `POST` | `/api/v1/koperasi/tebus-air` | Public / Resident | Dispense clean RO drinking water, deducting citizen quota & triggering ESP32 solenoid valve pulse |
+| `GET` | `/api/v1/koperasi/warga/{nik}/profil` | Public / Resident | Retrieve citizen cooperative balance, water quota, waste points, and persona details |
+| `GET` | `/api/v1/koperasi/transaksi` | `admin`, `village_officer` | View complete cooperative transaction ledger with cryptographic receipt hashes |
+| `GET` | `/api/v1/koperasi/rekapitulasi` | `admin`, `village_officer` | Executive summary of total commodities collected, plastic recycled, and water dispensed |
+
+### 2.11 IoT Telemetry & Island Resiliency (`/api/v1/iot`)
+| Method | Endpoint | Roles Allowed | Description |
+|---|---|---|---|
+| `POST` | `/api/v1/iot/telemetri` | IoT Node / Admin | Ingest real-time telemetry packet (raw TDS ppm, filtered TDS ppm, tank level %, solar voltage/current/power, battery SoC) |
+| `GET` | `/api/v1/iot/telemetri/terkini` | Public / Admin | Real-time statuses and alert indicators across all 4 island telemetry stations |
+| `GET` | `/api/v1/iot/telemetri/riwayat` | Public / Admin | Time-series historical telemetry log stream |
+| `GET` | `/api/v1/iot/resiliency-summary` | Public / Admin | Island readiness barometer, WHO water standard compliance, solar energy mix %, and diesel fuel savings |
+| `POST` | `/api/v1/iot/simulate-pulse` | Public / Admin | Trigger simulated realistic ESP32 telemetry pulse across island network |
+
+### 2.12 Smart Tourism, Eco-Stay & Heritage (`/api/v1/tourism` & `/api/v1/penginapan`)
+| Method | Endpoint | Roles Allowed | Description |
+|---|---|---|---|
+| `GET` | `/api/v1/tourism/accommodations` & `/api/v1/penginapan` | Public | List verified accommodations with island, type, max price, RO water, and solar backup filters |
+| `POST` | `/api/v1/tourism/bookings` & `/api/v1/pemesanan` | Public | Create guest booking with automated pricing and deterministic direct click-to-chat WhatsApp link |
+| `GET` | `/api/v1/tourism/bookings/{booking_code}` | Public | Lookup booking details and status by unique code |
+| `GET` | `/api/v1/tourism/heritage-catalog` | Public | 177 Cagar Budaya catalog with historical narratives, photo galleries, and audio guide MP3 stream links |
+
+### 2.13 7-Layer Spatial GIS (`/api/v1/gis` & `/api/v1/peta/geojson`)
+| Method | Endpoint | Roles Allowed | Description |
+|---|---|---|---|
+| `GET` | `/api/v1/gis/layers` & `/api/v1/peta/geojson` | Public | Standard RFC 7946 GeoJSON FeatureCollection across 7 layers with layer_type, category, and island filters |
+| `GET` | `/api/v1/gis/meta` & `/api/v1/peta/layers-meta` | Public | Layer metadata catalog detailing all 7 spatial layers, item counts, and active status |
+| `GET` | `/api/v1/gis/cagar-budaya/{slug}` | Public | Retrieve heritage narrative and audio guide URL by slug |
+| `POST` | `/api/v1/gis/features` | `admin`, `village_officer` | Register new spatial feature with coordinates and metadata |
+
+### 2.14 Cryptographic NIK Hardening & OWASP Top 10 (`/api/v1/security` & `/api/v1/warga`)
+| Method | Endpoint | Roles Allowed | Description |
+|---|---|---|---|
+| `POST` | `/api/v1/warga/cari-nik` & `/api/v1/security/cari-nik` | Public (Rate-Limited) | Search citizen profile by 16-digit NIK using HMAC-SHA256 blind indexing ($O(1)$) with masked NIK and 20 req/min rate limit |
+| `GET` | `/api/v1/audit-keamanan` & `/api/v1/security/audit-report` | Public / Admin | 4-pillar cryptographic security audit report (AES-256-GCM, HMAC Blind Index, Anti-Enumeration, Zero-PII Blockchain) |
+| `POST` | `/api/v1/security/test-crypto-roundtrip` | Public / Admin | Interactive crypto sandbox verifying AES-256 encryption, HMAC blind index, and plaintext recovery |
+
+### 2.15 Dynamic Field Surveys & PostGIS ETL Pipeline (`/api/v1/survei`)
+| Method | Endpoint | Roles Allowed | Description |
+|---|---|---|---|
+| `POST` | `/api/v1/survei/mentah` | Public / Field Surveyor | Save dynamic field survey with flexible key-value attributes (NoSQL/MongoDB staging) |
+| `GET` | `/api/v1/survei/mentah` | Public / Admin | List raw surveys with domain, status, island, and urgency filters |
+| `GET` | `/api/v1/survei/mentah/{id}` | Public / Admin | Detail of specific raw survey document |
+| `POST` | `/api/v1/survei/migrasi-etl` | `admin`, `village_officer` | Execute ETL pipeline validating Banda coordinates and promoting raw surveys to PostGIS 7-layer spatial features |
+| `GET` | `/api/v1/survei/stats` | Public / Admin | Real-time statistics barometer on survey counts, pending migrations, and domain distributions |
+| `POST` | `/api/v1/survei/seed-sample` | Public / Admin | Seed authentic Banda Neira field surveys across all 5 islands |
+
 ---
 
 ## 3. Query Parameters Standard

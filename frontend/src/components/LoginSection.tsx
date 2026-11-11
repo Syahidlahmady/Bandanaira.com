@@ -20,6 +20,7 @@ import {
   Radio,
   Home,
   Layers,
+  Database,
 } from 'lucide-react'
 
 interface LoginSectionProps {
@@ -37,6 +38,7 @@ interface LoginSectionProps {
   onOpenTelemetry?: () => void
   onOpenTourism?: () => void
   onOpenGIS?: () => void
+  onOpenSurvei?: () => void
   loading: boolean
   error: string | null
 }
@@ -55,6 +57,7 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
   onOpenTelemetry,
   onOpenTourism,
   onOpenGIS,
+  onOpenSurvei,
   loading,
   error,
 }) => {
@@ -903,6 +906,27 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
                       }}
                     >
                       <Layers size={15} /> 🗺️ Peta 7-Layer
+                    </button>
+                  )}
+
+                  {onOpenSurvei && (
+                    <button
+                      type="button"
+                      onClick={onOpenSurvei}
+                      className="btn btn-secondary"
+                      style={{
+                        fontSize: '0.825rem',
+                        padding: '0.55rem 1.15rem',
+                        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2))',
+                        border: '1px solid rgba(16, 185, 129, 0.4)',
+                        color: '#6ee7b7',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                      }}
+                    >
+                      <Database size={15} /> 📋 Survei &amp; ETL Hybrid
                     </button>
                   )}
                 </div>

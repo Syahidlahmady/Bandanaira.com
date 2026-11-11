@@ -235,5 +235,29 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Surfaced live 4-pillar cryptographic security audit card in the centralized audit trail workspace.
   - Interactive Live Crypto Sandbox playground allowing administrators to input sample NIKs and verify roundtrip AES-256 encryption, HMAC blind index hash, and recovery latency (< 5 ms). Verified clean build (`npm run build` exits 0).
 
+### Phase 23: Dynamic Field Surveys & Hybrid Database ETL Pipeline (Mandat Syafa Nailah Mufidah & Fauzan Arisanto / SRS 6.1, 9.1 & BAB XI)
+- [x] 23.1 Database Model & Alembic Migration (`backend/app/modules/survei/models.py` & `backend/migrations/versions/011_raw_surveys_table.py`):
+  - Defined `raw_surveys` table for flexible NoSQL/staging survey storage (`survey_code`, `collector_name`, `problem_domain`, `island_name`, `village_name`, `rt_rw`, `latitude`, `longitude`, `title`, `urgency_level`, `flexible_attributes` JSONB, `photo_evidence_url`, `notes`, `etl_status`, `migrated_feature_id`).
+  - Applied migration `011_raw_surveys_table` to PostgreSQL.
+- [x] 23.2 Intelligent ETL Pipeline Engine (`backend/app/modules/survei/etl_pipeline.py`):
+  - Domain mapping engine converting problem domains (`AIR_DAN_SAMPAH`, `ENERGI`, `EKONOMI`, `WISATA`, `BUDAYA`) into 7-Layer PostGIS spatial features (`LAYER_WATER_INFRA`, `LAYER_ENERGY_WASTE`, `LAYER_KOPERASI_UMKM`, `LAYER_TOURISM_4A`, `LAYER_HERITAGE`, `LAYER_ACCOMMODATION`).
+  - Coordinate validation within Banda Neira Bounding Box (Lat [-4.65, -4.45], Lng [129.80, 130.05]).
+  - Automated promotion to `spatial_features` with RFC 7946 GeoJSON output, setting `etl_status = "MIGRATED_TO_POSTGRES"`.
+- [x] 23.3 FastAPI Endpoints & SRS BAB XI Parity (`backend/app/modules/survei/router.py` & `main.py`):
+  - Implemented `POST /api/v1/survei/mentah` (FR-01, BAB XI).
+  - Implemented `GET /api/v1/survei/mentah` (filtering by domain, status, island, urgency).
+  - Implemented `POST /api/v1/survei/migrasi-etl` (FR-02, BAB XI).
+  - Implemented `GET /api/v1/survei/stats` & `POST /api/v1/survei/seed-sample`.
+  - Added SRS 11 endpoint aliases: `GET /api/v1/penginapan` and `POST /api/v1/pemesanan` (+ WhatsApp direct booking link generator).
+- [x] 23.4 Automated Test Suite Coverage (`backend/tests/test_survei_etl.py`):
+  - 6 comprehensive tests passing 100% (happy path submission, bounding box coordinate rejection, authentic survey seeding, ETL pipeline transformation to PostGIS GeoJSON, stats summary, and SRS 11 penginapan/pemesanan aliases).
+  - Full pytest suite: **78/78 tests passing 100%**.
+- [x] 23.5 Frontend Dynamic Survey Form & ETL Manager Workspace (`frontend/src/services/survei.ts` & `frontend/src/views/SurveyEtlWorkspace.tsx`):
+  - Built interactive NoSQL survey form with dynamic key-value field builder and domain presets (TDS sumur payau, timbulan botol plastik, pemadaman PLTS diesel, kebun pala organik, spot selam).
+  - Built visual ETL Migration Manager panel with real-time statistics barometer (Total, Pending, Migrated, Transformation Ratio), domain/status filters, and 1-click batch migration into PostGIS 7-layer map.
+  - Connected into `frontend/src/App.tsx` (Tab 11: `📋 Survei & ETL Hybrid`) and `LoginSection.tsx` guest shortcuts. Verified clean build (`npm run build` exits 0 in 4.21s).
+- [x] 23.6 Production Docker Orchestration (`docker-compose.yml`):
+  - Root `docker-compose.yml` orchestrating PostgreSQL 16 + PostGIS 3.4, MongoDB 7.0, FastAPI Python backend, and React Vite frontend.
+
 
 

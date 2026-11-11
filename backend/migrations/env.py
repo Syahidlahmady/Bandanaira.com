@@ -21,6 +21,7 @@ import backend.app.modules.koperasi.models  # noqa: F401
 import backend.app.modules.iot.models  # noqa: F401
 import backend.app.modules.tourism.models  # noqa: F401
 import backend.app.modules.gis.models  # noqa: F401
+import backend.app.modules.survei.models  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
