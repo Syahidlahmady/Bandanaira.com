@@ -37,6 +37,7 @@ import { AuditTrailWorkspace } from './views/AuditTrailWorkspace.tsx'
 import { SmartPlannerWorkspace } from './views/SmartPlannerWorkspace.tsx'
 import { KoperasiKasirWorkspace } from './views/KoperasiKasirWorkspace.tsx'
 import { IslandTelemetryWorkspace } from './views/IslandTelemetryWorkspace.tsx'
+import { TourismEcoStayWorkspace } from './views/TourismEcoStayWorkspace.tsx'
 import {
   MapPin,
   Users,
@@ -46,6 +47,7 @@ import {
   Compass,
   Scale,
   Radio,
+  Home,
 } from 'lucide-react'
 import { offlineDB } from './offline/db.ts'
 import { syncManager, SyncQueueItem } from './offline/syncManager.ts'
@@ -62,7 +64,7 @@ interface HealthResponse {
 
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'population' | 'letters' | 'farming' | 'traceability' | 'koperasi' | 'iot' | 'audit' | 'smart_planner'>('population')
+  const [activeTab, setActiveTab] = useState<'population' | 'letters' | 'farming' | 'traceability' | 'koperasi' | 'iot' | 'tourism' | 'audit' | 'smart_planner'>('population')
   const [health, setHealth] = useState<HealthResponse | null>(null)
   const [loadingHealth, setLoadingHealth] = useState<boolean>(true)
   const [healthError, setHealthError] = useState<string | null>(null)
@@ -957,6 +959,7 @@ export const App: React.FC = () => {
           onOpenPlanner={() => setActiveTab('smart_planner')}
           onOpenKoperasi={() => setActiveTab('koperasi')}
           onOpenTelemetry={() => setActiveTab('iot')}
+          onOpenTourism={() => setActiveTab('tourism')}
           loading={authLoading}
           error={authError}
         />
@@ -1092,6 +1095,12 @@ export const App: React.FC = () => {
           >
             <Radio size={16} /> 📡 Telemetri IoT &amp; Resiliensi
           </button>
+          <button
+            onClick={() => setActiveTab('tourism')}
+            className={`tab-btn ${activeTab === 'tourism' ? 'active' : ''}`}
+          >
+            <Home size={16} /> 🏡 Eco-Stay &amp; Budaya
+          </button>
         </div>
       )}
 
@@ -1199,6 +1208,11 @@ export const App: React.FC = () => {
       {/* TAB 8: PUSAT KOMANDO TELEMETRI IoT & RESILIENSI PULAU */}
       {activeTab === 'iot' && (
         <IslandTelemetryWorkspace />
+      )}
+
+      {/* TAB 9: SMART TOURISM, ECO-STAY & WARISAN BUDAYA */}
+      {activeTab === 'tourism' && (
+        <TourismEcoStayWorkspace />
       )}
 
       {/* PORTAL KHUSUS WARGA DESA (RESIDENT) */}

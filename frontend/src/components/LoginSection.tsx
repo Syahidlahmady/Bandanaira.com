@@ -18,6 +18,7 @@ import {
   ShoppingBag,
   Scale,
   Radio,
+  Home,
 } from 'lucide-react'
 
 interface LoginSectionProps {
@@ -33,6 +34,7 @@ interface LoginSectionProps {
   onOpenPlanner?: () => void
   onOpenKoperasi?: () => void
   onOpenTelemetry?: () => void
+  onOpenTourism?: () => void
   loading: boolean
   error: string | null
 }
@@ -49,6 +51,7 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
   onOpenPlanner,
   onOpenKoperasi,
   onOpenTelemetry,
+  onOpenTourism,
   loading,
   error,
 }) => {
@@ -855,6 +858,27 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
                       }}
                     >
                       <Radio size={15} /> 📡 Telemetri IoT &amp; Resiliensi
+                    </button>
+                  )}
+
+                  {onOpenTourism && (
+                    <button
+                      type="button"
+                      onClick={onOpenTourism}
+                      className="btn btn-secondary"
+                      style={{
+                        fontSize: '0.825rem',
+                        padding: '0.55rem 1.15rem',
+                        background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2))',
+                        border: '1px solid rgba(245, 158, 11, 0.4)',
+                        color: '#fde68a',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                      }}
+                    >
+                      <Home size={15} /> 🏡 Eco-Stay &amp; Budaya
                     </button>
                   )}
                 </div>

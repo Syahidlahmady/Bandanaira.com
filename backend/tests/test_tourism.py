@@ -1,0 +1,113 @@
+import pytest
+from datetime import date, timedelta
+from httpx import AsyncClient
+
+
+@pytest.mark.asyncio
+async def test_list_accommodations_auto_seed(client: AsyncClient):
+    """Uji pembacaan katalog penginapan dan auto-seeding awal."""
+    res = await client.get("/api/v1/tourism/accommodations")
+    assert res.status_code == 200
+    items = res.json()
+    assert len(items) >= 6
+    names = [i["name"] for i in items]
+    assert "Delfika Homestay & Heritage Villa" in names
+    assert "The Nutmeg Tree Seaside Hotel" in names
+
+
+@pytest.mark.asyncio
+async def test_filter_accommodations(client: AsyncClient):
+    """Uji filter pulau, harga, dan fitur eco-stay."""
+    res = await client.get("/api/v1/tourism/accommodations?island=Pulau+Hatta")
+    assert res.status_code == 200
+    items = res.json()
+    assert len(items) >= 1
+    assert all(i["island_name"] == "Pulau Hatta" for i in items)
+
+    # Filter harga maksimal
+    res_price = await client.get("/api/v1/tourism/accommodations?max_price=300000")
+    assert res_price.status_code == 200
+    price_items = res_price.json()
+    assert all(i["price_per_night_rp"] <= 300000 for i in price_items)
+
+
+@pytest.mark.asyncio
+async def test_create_booking_happy_path(client: AsyncClient):
+    """Uji pembuatan booking homestay dan generator tautan WhatsApp checkout otomatis."""
+    # 1. Ambil 1 homestay
+    res_acc = await client.get("/api/v1/tourism/accommodations")
+    acc = res_acc.json()[0]
+
+    check_in = date.today() + timedelta(days=5)
+    check_out = check_in + timedelta(days=3)
+
+    payload = {
+        "accommodation_id": acc["id"],
+        "guest_name": "Sarah Jenkins",
+        "guest_whatsapp": "6281987654321",
+        "guest_email": "sarah.jenkins@example.com",
+        "check_in": check_in.isoformat(),
+        "check_out": check_out.isoformat(),
+        "rooms_count": 2,
+        "notes": "Mohon kamar lantai atas dengan pemandangan Gunung Api Banda.",
+    }
+
+    res_bkg = await client.post("/api/v1/tourism/bookings", json=payload)
+    assert res_bkg.status_code == 201
+    bkg = res_bkg.json()
+    assert bkg["booking_code"].startswith("BKG-")
+    assert bkg["total_nights"] == 3
+    assert bkg["rooms_count"] == 2
+    # 3 malam * 2 kamar * tarif per malam
+    expected_total = 3 * 2 * acc["price_per_night_rp"]
+    assert bkg["total_price_rp"] == expected_total
+    assert bkg["status"] == "CONFIRMED"
+    assert bkg["wa_link"].startswith("https://wa.me/")
+    assert "Sarah%20Jenkins" in bkg["wa_link"] or "Sarah+Jenkins" in bkg["wa_link"]
+
+    # 2. Cek booking status via booking_code
+    code = bkg["booking_code"]
+    res_check = await client.get(f"/api/v1/tourism/bookings/{code}")
+    assert res_check.status_code == 200
+    assert res_check.json()["guest_name"] == "Sarah Jenkins"
+
+
+@pytest.mark.asyncio
+async def test_create_booking_invalid_dates(client: AsyncClient):
+    """Uji validasi tanggal: check-out tidak boleh sebelum check-in."""
+    res_acc = await client.get("/api/v1/tourism/accommodations")
+    acc = res_acc.json()[0]
+
+    check_in = date.today() + timedelta(days=10)
+    check_out = check_in - timedelta(days=2)  # Salah!
+
+    payload = {
+        "accommodation_id": acc["id"],
+        "guest_name": "Tamu Salah Tanggal",
+        "guest_whatsapp": "6281234567890",
+        "check_in": check_in.isoformat(),
+        "check_out": check_out.isoformat(),
+        "rooms_count": 1,
+    }
+
+    res = await client.post("/api/v1/tourism/bookings", json=payload)
+    assert res.status_code == 400
+    assert "setelah tanggal check-in" in res.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_get_heritage_catalog(client: AsyncClient):
+    """Uji pengambilan katalog 177 Cagar Budaya Banda Neira & Audio Guide."""
+    res = await client.get("/api/v1/tourism/heritage-catalog")
+    assert res.status_code == 200
+    catalog = res.json()
+    assert len(catalog) >= 7
+    slugs = [c["slug"] for c in catalog]
+    assert "benteng-belgica" in slugs
+    assert "rumah-pengasingan-bung-hatta" in slugs
+    assert "benteng-hollandia-lonthoir" in slugs
+
+    # Filter kategori benteng
+    res_benteng = await client.get("/api/v1/tourism/heritage-catalog?category=BENTENG")
+    assert res_benteng.status_code == 200
+    assert all(c["category"] == "BENTENG" for c in res_benteng.json())

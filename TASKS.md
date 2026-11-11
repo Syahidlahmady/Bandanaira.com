@@ -193,4 +193,38 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 19.6 Interactive Command Workspace (`frontend/src/views/IslandTelemetryWorkspace.tsx`): Built futuristic Cyber-HUD command center featuring Island Readiness Barometer (Optimal/Waspada/Kritis), WHO drinking water purity standards, solar vs diesel energy mix, real-time 4-station gauges, and live sensor pulse trigger.
 - [x] 19.7 UI Navigation & Public Guest Integration: Added `📡 Telemetri IoT & Resiliensi` tab in `frontend/src/App.tsx` and quick launch shortcut in `LoginSection.tsx`. Verified 0 TypeScript compilation errors (`npm run build` exits 0).
 
+### Phase 20: Smart Tourism Accommodations (Eco-Stay), WhatsApp Direct Booking, & 177 Cagar Budaya Catalog (Mandat FTI & Pariwisata)
+- [x] 20.1 Database Models & Migration (`backend/app/modules/tourism/models.py` & `backend/migrations/versions/008_tourism_accommodations_and_bookings.py`): Defined `accommodations` (name, island, type, price/night, RO water available, solar energy mix, WhatsApp host contact, amenities) and `bookings` (unique `BKG-YYYYMMDD-XXXX` code, guest name & phone, check-in/out, status, total price, deterministic WhatsApp direct link). Applied migration `008_tourism_accommodations` to PostgreSQL.
+- [x] 20.2 Curated Heritage Catalog & Audio Guides (`backend/app/modules/tourism/heritage_data.py`): Documented 7 authentic historical heritage sites in Banda Neira (Benteng Belgica, Benteng Nassau, Rumah Pengasingan Bung Hatta, Rumah Sutan Sjahrir, Istana Mini VOC, Klenteng Sun Tian Kong, Gereja Tua Banda) with architectural eras, narratives, and streaming audio guide links.
+- [x] 20.3 Pydantic Contracts & Validation Schemas (`backend/app/modules/tourism/schemas.py`): Accommodation filters, booking creation input with date logic validation (check-out > check-in), booking response with pre-filled WhatsApp direct click-to-chat links, and heritage catalog models.
+- [x] 20.4 FastAPI Endpoints (`backend/app/modules/tourism/router.py` & `main.py`): Implemented `GET /api/v1/tourism/accommodations` (with island, type, RO, and solar filtering), `POST /api/v1/tourism/bookings` (automated pricing, code generator, and WhatsApp click-to-chat URL creation), `GET /api/v1/tourism/bookings/{booking_code}`, and `GET /api/v1/tourism/heritage`.
+- [x] 20.5 Automated Test Suite (`backend/tests/test_tourism.py`): 5 comprehensive tests passing 100% (auto-seeding accommodations, multi-criteria filtering, booking happy path with WhatsApp link generation, invalid dates rejection, and heritage catalog listing). Total backend test suite: 58/58 passing.
+- [x] 20.6 Frontend Service & UI Workspace (`frontend/src/services/tourism.ts` & `frontend/src/views/TourismEcoStayWorkspace.tsx`): Built interactive tourism workspace with island/type filter pills, eco-amenity tags (RO water & solar energy badges), instant booking modal with automated nights & pricing calculation, click-to-WhatsApp direct confirmation card, booking lookup tab, and 177 Cagar Budaya audio guide player cards.
+- [x] 20.7 App Navigation Integration: Added `🏖️ Smart Tourism & Eco-Stay` tab in `frontend/src/App.tsx` and quick access button in `LoginSection.tsx`. Verified 0 TypeScript compilation errors (`npm run build` exits 0).
+
+### Phase 21: 7-Layer Spatial GIS Peta Interaktif (Mandat Fauzan Arisanto & SRS 10.1)
+- [ ] 21.1 7-Layer GeoJSON Data Specifications & Endpoints (`backend/app/modules/gis/`):
+  - Layer 1: `LAYER_TOURISM_4A` (Bahari, diving spots, pantai, kuliner khas)
+  - Layer 2: `LAYER_HERITAGE` (Benteng VOC, rumah pengasingan tokoh bangsa, cagar budaya)
+  - Layer 3: `LAYER_ACCOMMODATION` (Eco-stays, hotel, homestay dengan status RO & solar)
+  - Layer 4: `LAYER_KOPERASI_UMKM` (Pusat Koperasi Hatta, bank sampah, 30 petak kebun pala)
+  - Layer 5: `LAYER_PUBLIC_SAFETY` (Dermaga pelabuhan, puskesmas, titik evakuasi tsunami/gempa)
+  - Layer 6: `LAYER_WATER_INFRA` (Sumur payau, tandon komunal, instalasi RO/SWRO dengan link IoT TDS)
+  - Layer 7: `LAYER_ENERGY_WASTE` (PLTD diesel, PLTS surya, bank sampah plastik)
+  - GeoJSON standard RFC 7946 multi-layer API: `GET /api/v1/gis/layers` and `GET /api/v1/gis/layers/{layer_id}`.
+- [ ] 21.2 Automated GIS Test Suite (`backend/tests/test_gis.py`): Validate GeoJSON FeatureCollection structure, coordinate bounds around Banda Neira archipelago, layer filtering, and metadata properties.
+- [ ] 21.3 Interactive GIS Map Workspace (`frontend/src/views/InteractiveMapWorkspace.tsx`):
+  - Leaflet / MapLibre interactive canvas centered on Banda Neira (`-4.524, 129.904`).
+  - Layer switcher drawer with custom toggle pills and counters.
+  - Custom themed SVG marker icons for each of the 7 layers.
+  - Interactive popup modals with direct navigation (e.g., booking button on accommodation pins, audio guide on heritage pins, live TDS on water pins).
+
+### Phase 22: Cryptographic NIK Hardening & OWASP Top 10 Security (Mandat Syahid Ahmad Lahmady)
+- [ ] 22.1 Two-Tier Field-Level Encryption:
+  - AES-256-GCM symmetric encryption for raw NIK storage.
+  - HMAC-SHA256 Blind Index with secret server pepper for fast $O(1)$ exact-match lookup without decrypting the entire database.
+- [ ] 22.2 Rate-Limiting & Anti-Enumeration Protection:
+  - Middleware guarding citizen lookup endpoints against brute-force NIK enumeration.
+- [ ] 22.3 Automated Security Test Suite (`backend/tests/test_security_nik.py`).
+
 
