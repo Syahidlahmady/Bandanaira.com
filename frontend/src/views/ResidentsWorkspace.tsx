@@ -97,53 +97,58 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
   }
 
   return (
-    <section className="app-card animate-fade-in" style={{ padding: '1.75rem', marginBottom: '2rem' }}>
+    <section className="app-card animate-fade-in" style={{ padding: '2rem', marginBottom: '2rem' }}>
       {/* Header Bar */}
       <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '1.5rem',
+          marginBottom: '1.75rem',
           flexWrap: 'wrap',
           gap: '1rem',
           borderBottom: '1px solid var(--border-color)',
-          paddingBottom: '1rem',
+          paddingBottom: '1.25rem',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
           <div
             style={{
-              width: '42px',
-              height: '42px',
-              borderRadius: '12px',
-              background: '#dbeafe',
-              color: '#1e40af',
+              width: '46px',
+              height: '46px',
+              borderRadius: '14px',
+              background: 'rgba(6, 182, 212, 0.15)',
+              color: '#38bdf8',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1px solid #bfdbfe',
+              border: '1px solid rgba(6, 182, 212, 0.35)',
+              boxShadow: '0 0 15px rgba(6, 182, 212, 0.2)',
             }}
           >
-            <Users size={22} />
+            <Users size={24} />
           </div>
           <div>
-            <h2 style={{ fontSize: '1.35rem', color: '#1e3a8a', fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
-              Modul Administrasi Kependudukan Sipil Desa
+            <span style={{ fontSize: '0.72rem', color: '#38bdf8', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              Pemerintahan &amp; Kependudukan
+            </span>
+            <h2 style={{ fontSize: '1.45rem', color: '#f8fafc', fontWeight: 900, margin: 0, letterSpacing: '-0.02em' }}>
+              Administrasi Kependudukan Sipil Desa
             </h2>
-            <p style={{ fontSize: '0.825rem', color: '#64748b', margin: '0.15rem 0 0' }}>
-              Pengelolaan profil identitas warga, penataan profesi khas Banda, verifikasi berkas, & audit mutasi data.
+            <p style={{ fontSize: '0.825rem', color: '#94a3b8', margin: '0.2rem 0 0' }}>
+              Pengelolaan profil identitas warga, penataan profesi khas Banda, verifikasi berkas, &amp; audit mutasi data.
             </p>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
           <button
             onClick={handleExportCSV}
             className="btn btn-sm btn-success"
             title="Unduh seluruh data kependudukan ke file CSV"
+            style={{ fontWeight: 700 }}
           >
-            <Download size={13} /> Ekspor CSV ({residents.length})
+            <Download size={14} /> Ekspor CSV ({residents.length})
           </button>
           <button
             onClick={() => fetchPopulationData()}
@@ -151,87 +156,94 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
             className="btn btn-sm btn-secondary"
             title="Muat ulang data kependudukan dari server"
           >
-            <RefreshCw size={13} className={loadingPop ? 'animate-spin' : ''} />
+            <RefreshCw size={14} className={loadingPop ? 'animate-spin' : ''} />
             {loadingPop ? 'Memuat...' : 'Segarkan Data'}
           </button>
         </div>
       </div>
 
-      {/* KPI Stats Cards */}
+      {/* KPI Stats Bento Grid */}
       {popStats && (
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
             gap: '1rem',
-            marginBottom: '1.5rem',
+            marginBottom: '1.75rem',
           }}
         >
-          <div className="stat-card" style={{ borderTop: '3px solid #1e40af' }}>
+          <div className="stat-card" style={{ borderLeft: '4px solid #06b6d4' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span className="stat-label">Total Penduduk</span>
-              <Users size={16} color="#1e40af" />
+              <Users size={17} color="#38bdf8" />
             </div>
-            <div className="stat-value">{popStats.total_residents} <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>Jiwa</span></div>
+            <div className="stat-value">
+              {popStats.total_residents} <span style={{ fontSize: '0.85rem', fontWeight: 500, color: '#94a3b8' }}>Jiwa</span>
+            </div>
           </div>
 
-          <div className="stat-card" style={{ borderTop: '3px solid #059669' }}>
+          <div className="stat-card" style={{ borderLeft: '4px solid #10b981' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="stat-label">Terverifikasi</span>
-              <ShieldCheck size={16} color="#059669" />
+              <span className="stat-label">Terverifikasi Sah</span>
+              <ShieldCheck size={17} color="#34d399" />
             </div>
-            <div className="stat-value" style={{ color: '#059669' }}>{popStats.total_verified} <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>Warga</span></div>
+            <div className="stat-value" style={{ color: '#34d399' }}>
+              {popStats.total_verified} <span style={{ fontSize: '0.85rem', fontWeight: 500, color: '#94a3b8' }}>Warga</span>
+            </div>
           </div>
 
-          <div className="stat-card" style={{ borderTop: '3px solid #d97706' }}>
+          <div className="stat-card" style={{ borderLeft: '4px solid #f59e0b' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="stat-label">Menunggu</span>
-              <Clock size={16} color="#d97706" />
+              <span className="stat-label">Menunggu Verifikasi</span>
+              <Clock size={17} color="#fbbf24" />
             </div>
-            <div className="stat-value" style={{ color: '#d97706' }}>{popStats.total_pending} <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>Berkas</span></div>
+            <div className="stat-value" style={{ color: '#fbbf24' }}>
+              {popStats.total_pending} <span style={{ fontSize: '0.85rem', fontWeight: 500, color: '#94a3b8' }}>Berkas</span>
+            </div>
           </div>
 
-          <div className="stat-card" style={{ borderTop: '3px solid #64748b' }}>
+          <div className="stat-card" style={{ borderLeft: '4px solid #a855f7' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span className="stat-label">Komposisi Gender</span>
-              <span style={{ fontSize: '0.8rem' }}>⚖️</span>
+              <span style={{ fontSize: '0.85rem' }}>⚖️</span>
             </div>
-            <div className="stat-value" style={{ fontSize: '1.25rem' }}>
+            <div className="stat-value" style={{ fontSize: '1.25rem', color: '#c084fc' }}>
               {popStats.gender_distribution['L'] || 0} L &bull; {popStats.gender_distribution['P'] || 0} P
             </div>
           </div>
         </div>
       )}
 
-      {/* Form Tambah Penduduk (Collapsible Card) */}
+      {/* Form Tambah Penduduk (Collapsible Bento Card) */}
       <details
         style={{
-          marginBottom: '1.5rem',
-          background: 'rgba(248, 250, 252, 0.85)',
-          padding: '1.15rem 1.35rem',
-          borderRadius: 'var(--radius-md)',
-          border: '1px solid #e2e8f0',
+          marginBottom: '1.75rem',
+          background: 'rgba(15, 23, 42, 0.65)',
+          padding: '1.25rem 1.5rem',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid rgba(6, 182, 212, 0.25)',
         }}
       >
         <summary
           style={{
             cursor: 'pointer',
-            fontWeight: 700,
-            color: '#1e40af',
+            fontWeight: 800,
+            color: '#38bdf8',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.45rem',
-            fontSize: '0.9rem',
+            gap: '0.5rem',
+            fontSize: '0.925rem',
+            letterSpacing: '0.01em',
           }}
         >
-          <PlusCircle size={16} /> Tambah Data Penduduk Baru (Pendaftaran Warga)
+          <PlusCircle size={17} /> Form Registrasi Penduduk Baru (Pendaftaran Warga)
         </summary>
         <form
           onSubmit={handleCreateResident}
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: '1rem',
+            gap: '1.15rem',
             marginTop: '1.25rem',
           }}
         >
@@ -287,9 +299,9 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
             <button
               type="submit"
               className="btn btn-success"
-              style={{ fontWeight: 700, padding: '0.65rem 1.4rem' }}
+              style={{ fontWeight: 800, padding: '0.75rem 1.6rem' }}
             >
-              <CheckCircle2 size={15} /> Simpan Data Penduduk
+              <CheckCircle2 size={16} /> Simpan Data Penduduk
             </button>
           </div>
         </form>
@@ -299,20 +311,20 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
         <div
           className="animate-fade-in"
           style={{
-            marginBottom: '1.25rem',
-            padding: '0.75rem 1rem',
+            marginBottom: '1.5rem',
+            padding: '0.85rem 1.15rem',
             borderRadius: 'var(--radius-md)',
-            fontSize: '0.85rem',
-            background: popMsg.type === 'success' ? '#ecfdf5' : '#fef2f2',
-            color: popMsg.type === 'success' ? '#065f46' : '#991b1b',
-            border: `1px solid ${popMsg.type === 'success' ? '#a7f3d0' : '#fecaca'}`,
+            fontSize: '0.875rem',
+            background: popMsg.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+            color: popMsg.type === 'success' ? '#a7f3d0' : '#fca5a5',
+            border: `1px solid ${popMsg.type === 'success' ? 'rgba(16, 185, 129, 0.35)' : 'rgba(239, 68, 68, 0.35)'}`,
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem',
+            gap: '0.6rem',
             fontWeight: 600,
           }}
         >
-          {popMsg.type === 'success' ? <CheckCircle2 size={16} /> : <X size={16} />}
+          {popMsg.type === 'success' ? <CheckCircle2 size={17} color="#34d399" /> : <X size={17} color="#f87171" />}
           {popMsg.text}
         </div>
       )}
@@ -321,11 +333,11 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
       {popStats && popStats.top_occupations && Object.keys(popStats.top_occupations).length > 0 && (
         <div
           style={{
-            background: 'rgba(248, 250, 252, 0.9)',
-            padding: '1.15rem 1.25rem',
-            borderRadius: 'var(--radius-md)',
-            border: '1px solid #e2e8f0',
-            marginBottom: '1.25rem',
+            background: 'rgba(15, 23, 42, 0.65)',
+            padding: '1.25rem 1.4rem',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            marginBottom: '1.5rem',
           }}
         >
           <div
@@ -333,18 +345,18 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              marginBottom: '0.85rem',
+              marginBottom: '1rem',
               flexWrap: 'wrap',
-              gap: '0.6rem',
+              gap: '0.75rem',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1.25rem' }}>🏝️</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <span style={{ fontSize: '1.35rem' }}>🏝️</span>
               <div>
-                <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#1e3a8a', margin: 0 }}>
+                <h3 style={{ fontSize: '0.975rem', fontWeight: 800, color: '#f8fafc', margin: 0 }}>
                   Sebaran Mata Pencaharian Warga Kepulauan Banda
                 </h3>
-                <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>
+                <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: 0 }}>
                   Klik chip profesi di bawah untuk memfilter daftar penduduk seketika:
                 </p>
               </div>
@@ -358,17 +370,17 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
                 }}
                 className="btn btn-sm btn-secondary"
                 style={{
-                  color: '#991b1b',
-                  borderColor: '#fecaca',
-                  background: '#fef2f2',
+                  color: '#fca5a5',
+                  borderColor: 'rgba(239, 68, 68, 0.4)',
+                  background: 'rgba(239, 68, 68, 0.15)',
                 }}
               >
-                <X size={12} /> Hapus Filter ({selectedOccupationFilter})
+                <X size={13} /> Hapus Filter ({selectedOccupationFilter})
               </button>
             )}
           </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.55rem' }}>
             <button
               type="button"
               onClick={() => {
@@ -376,29 +388,29 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
                 fetchPopulationData(searchQuery, '')
               }}
               style={{
-                padding: '0.4rem 0.85rem',
+                padding: '0.45rem 0.95rem',
                 borderRadius: 'var(--radius-full)',
                 fontSize: '0.78rem',
                 fontWeight: 700,
-                border: selectedOccupationFilter === '' ? '2px solid #1e40af' : '1px solid #cbd5e1',
-                background: selectedOccupationFilter === '' ? '#eff6ff' : '#ffffff',
-                color: selectedOccupationFilter === '' ? '#1e40af' : '#475569',
+                border: selectedOccupationFilter === '' ? '2px solid #06b6d4' : '1px solid rgba(255, 255, 255, 0.12)',
+                background: selectedOccupationFilter === '' ? 'rgba(6, 182, 212, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                color: selectedOccupationFilter === '' ? '#38bdf8' : '#cbd5e1',
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.4rem',
-                boxShadow: 'var(--shadow-xs)',
+                gap: '0.45rem',
+                transition: 'all 0.2s',
               }}
             >
               <span>Semua Pekerjaan</span>
               <span
                 style={{
-                  background: selectedOccupationFilter === '' ? '#1e40af' : '#e2e8f0',
-                  color: selectedOccupationFilter === '' ? '#ffffff' : '#475569',
+                  background: selectedOccupationFilter === '' ? '#06b6d4' : 'rgba(255, 255, 255, 0.12)',
+                  color: selectedOccupationFilter === '' ? '#080c14' : '#cbd5e1',
                   borderRadius: '10px',
                   padding: '0.1rem 0.45rem',
                   fontSize: '0.7rem',
-                  fontWeight: 700,
+                  fontWeight: 800,
                 }}
               >
                 {popStats.total_residents}
@@ -425,30 +437,30 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
                     fetchPopulationData(searchQuery, next)
                   }}
                   style={{
-                    padding: '0.4rem 0.85rem',
+                    padding: '0.45rem 0.95rem',
                     borderRadius: 'var(--radius-full)',
                     fontSize: '0.78rem',
                     fontWeight: 700,
-                    border: isSelected ? '2px solid #059669' : '1px solid #cbd5e1',
-                    background: isSelected ? '#ecfdf5' : '#ffffff',
-                    color: isSelected ? '#047857' : '#334155',
+                    border: isSelected ? '2px solid #10b981' : '1px solid rgba(255, 255, 255, 0.12)',
+                    background: isSelected ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                    color: isSelected ? '#34d399' : '#cbd5e1',
                     cursor: 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '0.4rem',
-                    boxShadow: 'var(--shadow-xs)',
+                    gap: '0.45rem',
+                    transition: 'all 0.2s',
                   }}
                 >
                   <span>{icon}</span>
                   <span>{occ}</span>
                   <span
                     style={{
-                      background: isSelected ? '#059669' : '#e2e8f0',
-                      color: isSelected ? '#ffffff' : '#334155',
+                      background: isSelected ? '#10b981' : 'rgba(255, 255, 255, 0.12)',
+                      color: isSelected ? '#080c14' : '#cbd5e1',
                       borderRadius: '10px',
                       padding: '0.1rem 0.45rem',
                       fontSize: '0.7rem',
-                      fontWeight: 700,
+                      fontWeight: 800,
                     }}
                   >
                     {count}
@@ -461,16 +473,16 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
       )}
 
       {/* Search & Filter Bar */}
-      <div style={{ display: 'flex', gap: '0.65rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
         <div style={{ position: 'relative', flex: 1, minWidth: '260px' }}>
           <Search
-            size={16}
+            size={17}
             style={{
               position: 'absolute',
-              left: '12px',
+              left: '14px',
               top: '50%',
               transform: 'translateY(-50%)',
-              color: '#94a3b8',
+              color: '#64748b',
             }}
           />
           <input
@@ -480,7 +492,7 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && fetchPopulationData()}
             className="form-control"
-            style={{ paddingLeft: '2.4rem' }}
+            style={{ paddingLeft: '2.65rem' }}
           />
         </div>
 
@@ -492,7 +504,7 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
             fetchPopulationData(searchQuery, val)
           }}
           className="form-control"
-          style={{ width: 'auto', minWidth: '200px' }}
+          style={{ width: 'auto', minWidth: '220px' }}
         >
           <option value="">Semua Kategori Pekerjaan</option>
           {BANDA_OCCUPATIONS.map((occ) => (
@@ -505,8 +517,9 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
         <button
           onClick={() => fetchPopulationData()}
           className="btn btn-primary"
+          style={{ padding: '0.65rem 1.4rem' }}
         >
-          <Search size={14} /> Cari
+          <Search size={15} /> Cari
         </button>
 
         {(searchQuery || selectedOccupationFilter) && (
@@ -523,7 +536,7 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
         )}
       </div>
 
-      {/* Residents Table */}
+      {/* Residents Cyber Data Table */}
       <div className="table-responsive">
         <table className="data-table">
           <thead>
@@ -539,17 +552,17 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
           <tbody>
             {residents.map((r) => (
               <tr key={r.id}>
-                <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: '#334155', fontWeight: 600 }}>
+                <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.825rem', color: '#38bdf8', fontWeight: 600 }}>
                   {r.nik}
                 </td>
-                <td style={{ fontWeight: 700, color: '#0f172a' }}>{r.full_name}</td>
-                <td style={{ color: '#475569' }}>{r.gender === 'L' ? 'Laki-laki' : 'Perempuan'}</td>
+                <td style={{ fontWeight: 700, color: '#f8fafc' }}>{r.full_name}</td>
+                <td style={{ color: '#cbd5e1' }}>{r.gender === 'L' ? 'Laki-laki' : 'Perempuan'}</td>
                 <td>{getOccupationBadge(r.occupation)}</td>
                 <td>
                   <span
                     className={`badge ${
                       r.verification_status === 'verified'
-                        ? 'badge-green'
+                        ? 'badge-emerald'
                         : r.verification_status === 'pending'
                         ? 'badge-amber'
                         : 'badge-red'
@@ -575,7 +588,7 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
                     <button
                       onClick={() => handleVerifyResident(r.id, 'verified')}
                       className="btn btn-sm btn-success"
-                      style={{ padding: '0.25rem 0.65rem', fontSize: '0.75rem' }}
+                      style={{ padding: '0.3rem 0.75rem', fontSize: '0.78rem' }}
                       title="Verifikasi keabsahan identitas warga"
                     >
                       Verifikasi
@@ -586,12 +599,12 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
             ))}
             {residents.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '2.5rem', color: '#64748b' }}>
-                  <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔍</div>
-                  <p style={{ fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                <td colSpan={6} style={{ textAlign: 'center', padding: '3rem 1.5rem', color: '#94a3b8' }}>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🔍</div>
+                  <p style={{ fontWeight: 800, margin: 0, color: '#f8fafc', fontSize: '1rem' }}>
                     Tidak ada data penduduk yang cocok
                   </p>
-                  <p style={{ fontSize: '0.8rem', marginTop: '0.25rem', color: 'var(--text-muted)' }}>
+                  <p style={{ fontSize: '0.825rem', marginTop: '0.35rem', color: '#94a3b8' }}>
                     Coba periksa kata kunci pencarian atau ubah filter kategori pekerjaan yang dipilih.
                   </p>
                 </td>

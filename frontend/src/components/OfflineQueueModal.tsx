@@ -27,32 +27,33 @@ export const OfflineQueueModal: React.FC<OfflineQueueModalProps> = ({
 
   return (
     <div className="modal-backdrop">
-      <div className="modal-content">
+      <div className="modal-content" style={{ background: 'var(--bg-surface)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
           <div>
-            <span className="badge badge-blue" style={{ marginBottom: '0.4rem' }}>
-              <Database size={12} /> Browser IndexedDB Storage
+            <span className="badge badge-blue" style={{ marginBottom: '0.45rem' }}>
+              <Database size={13} /> Browser IndexedDB Storage
             </span>
-            <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--primary)' }}>
+            <h3 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#f8fafc', margin: 0, letterSpacing: '-0.02em' }}>
               Antrean Sinkronisasi Lapangan (PWA)
             </h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+            <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.25rem' }}>
               Data tersimpan di perangkat lokal saat berada di area kebun tanpa sinyal internet.
             </p>
           </div>
           <button
             onClick={onClose}
             style={{
-              background: '#f1f5f9',
-              border: 'none',
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
               borderRadius: '50%',
-              width: '32px',
-              height: '32px',
+              width: '34px',
+              height: '34px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#64748b',
+              color: '#94a3b8',
+              transition: 'all 0.2s',
             }}
           >
             <X size={18} />
@@ -60,13 +61,37 @@ export const OfflineQueueModal: React.FC<OfflineQueueModalProps> = ({
         </div>
 
         {queueList.length === 0 ? (
-          <div style={{ padding: '2.5rem 1rem', textAlign: 'center', background: '#f8fafc', borderRadius: 'var(--radius-md)', border: '1px dashed var(--border-color)' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--secondary-light)', color: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem' }}>
-              <CheckCircle2 size={28} />
+          <div
+            style={{
+              padding: '2.5rem 1.5rem',
+              textAlign: 'center',
+              background: 'rgba(15, 23, 42, 0.65)',
+              borderRadius: 'var(--radius-lg)',
+              border: '1px dashed rgba(16, 185, 129, 0.35)',
+            }}
+          >
+            <div
+              style={{
+                width: '52px',
+                height: '52px',
+                borderRadius: '50%',
+                background: 'rgba(16, 185, 129, 0.15)',
+                color: '#34d399',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 0.85rem',
+                border: '1px solid rgba(16, 185, 129, 0.35)',
+                boxShadow: '0 0 15px rgba(16, 185, 129, 0.2)',
+              }}
+            >
+              <CheckCircle2 size={30} />
             </div>
-            <h4 style={{ fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.25rem' }}>Semua Data Tersinkronkan!</h4>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              Tidak ada data yang tertahan di memori lokal perangkat. Seluruh catatan telah aman di server desa.
+            <h4 style={{ fontWeight: 800, color: '#f8fafc', marginBottom: '0.35rem', fontSize: '1.05rem' }}>
+              Semua Data Tersinkronkan!
+            </h4>
+            <p style={{ fontSize: '0.85rem', color: '#94a3b8', maxWidth: '380px', margin: '0 auto' }}>
+              Tidak ada data yang tertahan di memori lokal perangkat. Seluruh catatan panen &amp; administrasi telah aman di server desa.
             </p>
           </div>
         ) : (
@@ -75,10 +100,10 @@ export const OfflineQueueModal: React.FC<OfflineQueueModalProps> = ({
               <div
                 key={item.id}
                 style={{
-                  padding: '0.85rem',
-                  background: item.status === 'failed' ? 'var(--danger-light)' : '#f8fafc',
+                  padding: '0.9rem 1rem',
+                  background: item.status === 'failed' ? 'rgba(239, 68, 68, 0.12)' : 'rgba(15, 23, 42, 0.65)',
                   borderRadius: 'var(--radius-md)',
-                  border: `1px solid ${item.status === 'failed' ? '#fecaca' : 'var(--border-color)'}`,
+                  border: `1px solid ${item.status === 'failed' ? 'rgba(239, 68, 68, 0.35)' : 'rgba(255, 255, 255, 0.08)'}`,
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
@@ -98,15 +123,15 @@ export const OfflineQueueModal: React.FC<OfflineQueueModalProps> = ({
                     >
                       {item.status}
                     </span>
-                    <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                    <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#f8fafc' }}>
                       {item.description}
                     </span>
                   </div>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <Clock size={12} /> {new Date(item.createdAt).toLocaleString('id-ID')} &bull; Percobaan: {item.retryCount}x
+                  <p style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.35rem', margin: 0 }}>
+                    <Clock size={12} color="#64748b" /> {new Date(item.createdAt).toLocaleString('id-ID')} &bull; Percobaan: {item.retryCount}x
                   </p>
                   {item.error && (
-                    <p style={{ fontSize: '0.75rem', color: 'var(--danger)', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                    <p style={{ fontSize: '0.75rem', color: '#f87171', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.3rem', margin: '0.25rem 0 0' }}>
                       <AlertCircle size={12} /> {item.error}
                     </p>
                   )}
@@ -116,9 +141,9 @@ export const OfflineQueueModal: React.FC<OfflineQueueModalProps> = ({
                   onClick={() => item.id && onDelete(item.id)}
                   className="btn btn-sm"
                   style={{
-                    background: '#fee2e2',
-                    color: '#991b1b',
-                    border: '1px solid #fca5a5',
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    color: '#f87171',
+                    border: '1px solid rgba(239, 68, 68, 0.35)',
                     flexShrink: 0,
                   }}
                   title="Hapus dari antrean"
@@ -130,7 +155,7 @@ export const OfflineQueueModal: React.FC<OfflineQueueModalProps> = ({
           </div>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap', borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '1.25rem' }}>
           {queueList.length > 0 && (
             <button
               onClick={onClearAll}

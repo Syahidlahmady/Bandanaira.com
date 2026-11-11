@@ -39,48 +39,52 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
   }
 
   return (
-    <section className="app-card animate-fade-in" style={{ padding: '1.75rem', marginBottom: '2rem' }}>
+    <section className="app-card animate-fade-in" style={{ padding: '2rem', marginBottom: '2rem' }}>
       {/* Header Bar */}
       <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '1.5rem',
+          marginBottom: '1.75rem',
           flexWrap: 'wrap',
           gap: '1rem',
           borderBottom: '1px solid var(--border-color)',
-          paddingBottom: '1rem',
+          paddingBottom: '1.25rem',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
           <div
             style={{
-              width: '42px',
-              height: '42px',
-              borderRadius: '12px',
-              background: '#fef3c7',
-              color: '#b45309',
+              width: '46px',
+              height: '46px',
+              borderRadius: '14px',
+              background: 'rgba(245, 158, 11, 0.15)',
+              color: '#fbbf24',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1px solid #fde68a',
+              border: '1px solid rgba(245, 158, 11, 0.35)',
+              boxShadow: '0 0 15px rgba(245, 158, 11, 0.2)',
             }}
           >
-            <Mail size={22} />
+            <Mail size={24} />
           </div>
           <div>
-            <h2 style={{ fontSize: '1.35rem', color: '#1e3a8a', fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
+            <span style={{ fontSize: '0.72rem', color: '#fbbf24', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              Pelayanan Administrasi
+            </span>
+            <h2 style={{ fontSize: '1.45rem', color: '#f8fafc', fontWeight: 900, margin: 0, letterSpacing: '-0.02em' }}>
               Kotak Masuk Pelayanan Surat Warga (Inbox Desa)
             </h2>
-            <p style={{ fontSize: '0.825rem', color: '#64748b', margin: '0.15rem 0 0' }}>
+            <p style={{ fontSize: '0.825rem', color: '#94a3b8', margin: '0.2rem 0 0' }}>
               Verifikasi dan terbitkan surat keterangan usaha (Petani Pala, Nelayan, Pengolah Fuli) dan surat domisili warga.
             </p>
           </div>
         </div>
 
         {/* Filter Tabs */}
-        <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           {[
             { st: '', label: 'Semua' },
             { st: 'submitted', label: 'Menunggu' },
@@ -95,30 +99,29 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
                 type="button"
                 onClick={() => setRequestFilterStatus(st)}
                 style={{
-                  padding: '0.35rem 0.75rem',
+                  padding: '0.45rem 0.95rem',
                   borderRadius: 'var(--radius-full)',
                   fontSize: '0.78rem',
                   fontWeight: 700,
-                  border: active ? '2px solid #1e40af' : '1px solid #cbd5e1',
-                  background: active ? '#eff6ff' : '#ffffff',
-                  color: active ? '#1e40af' : '#475569',
+                  border: active ? '2px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.12)',
+                  background: active ? 'rgba(245, 158, 11, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                  color: active ? '#fbbf24' : '#cbd5e1',
                   cursor: 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.4rem',
-                  boxShadow: 'var(--shadow-xs)',
-                  transition: 'all 0.15s ease',
+                  gap: '0.45rem',
+                  transition: 'all 0.2s',
                 }}
               >
                 <span>{label}</span>
                 <span
                   style={{
-                    background: active ? '#1e40af' : '#e2e8f0',
-                    color: active ? '#ffffff' : '#475569',
+                    background: active ? '#f59e0b' : 'rgba(255, 255, 255, 0.12)',
+                    color: active ? '#080c14' : '#cbd5e1',
                     borderRadius: '10px',
-                    padding: '0.05rem 0.45rem',
+                    padding: '0.1rem 0.45rem',
                     fontSize: '0.7rem',
-                    fontWeight: 700,
+                    fontWeight: 800,
                   }}
                 >
                   {count}
@@ -133,20 +136,20 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
         <div
           className="animate-fade-in"
           style={{
-            marginBottom: '1.25rem',
-            padding: '0.75rem 1rem',
+            marginBottom: '1.5rem',
+            padding: '0.85rem 1.15rem',
             borderRadius: 'var(--radius-md)',
-            fontSize: '0.85rem',
-            background: letterActionMsg.type === 'success' ? '#ecfdf5' : '#fef2f2',
-            color: letterActionMsg.type === 'success' ? '#065f46' : '#991b1b',
-            border: `1px solid ${letterActionMsg.type === 'success' ? '#a7f3d0' : '#fecaca'}`,
+            fontSize: '0.875rem',
+            background: letterActionMsg.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+            color: letterActionMsg.type === 'success' ? '#a7f3d0' : '#fca5a5',
+            border: `1px solid ${letterActionMsg.type === 'success' ? 'rgba(16, 185, 129, 0.35)' : 'rgba(239, 68, 68, 0.35)'}`,
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem',
+            gap: '0.6rem',
             fontWeight: 600,
           }}
         >
-          {letterActionMsg.type === 'success' ? <CheckCircle2 size={16} /> : <X size={16} />}
+          {letterActionMsg.type === 'success' ? <CheckCircle2 size={17} color="#34d399" /> : <X size={17} color="#f87171" />}
           {letterActionMsg.text}
         </div>
       )}
@@ -170,7 +173,7 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
               .map((req) => (
                 <tr key={req.id}>
                   <td>
-                    <span style={{ fontWeight: 700, color: '#0f172a', display: 'block' }}>
+                    <span style={{ fontWeight: 700, color: '#f8fafc', display: 'block' }}>
                       {req.resident_name || 'Warga Terdaftar'}
                     </span>
                     <span style={{ fontSize: '0.75rem', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
@@ -178,20 +181,20 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
                     </span>
                   </td>
                   <td>{getOccupationBadge(req.resident_occupation)}</td>
-                  <td style={{ fontWeight: 600, color: '#1e3a8a' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                      <FileText size={14} color="#1e40af" />
+                  <td style={{ fontWeight: 600, color: '#38bdf8' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <FileText size={15} color="#38bdf8" />
                       {req.request_type}
                     </div>
                   </td>
-                  <td style={{ color: '#475569', fontSize: '0.825rem', maxWidth: '240px', lineHeight: 1.4 }}>
+                  <td style={{ color: '#cbd5e1', fontSize: '0.825rem', maxWidth: '240px', lineHeight: 1.45 }}>
                     {req.notes || '-'}
                   </td>
                   <td>
                     <span
                       className={`badge ${
                         req.status === 'approved'
-                          ? 'badge-green'
+                          ? 'badge-emerald'
                           : req.status === 'submitted'
                           ? 'badge-amber'
                           : 'badge-red'
@@ -214,24 +217,24 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
                   </td>
                   <td style={{ textAlign: 'center' }}>
                     {req.status === 'submitted' ? (
-                      <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
+                      <div style={{ display: 'inline-flex', gap: '0.45rem' }}>
                         <button
                           type="button"
                           disabled={updatingRequestId === req.id}
                           onClick={() => handleUpdateRequestStatus(req.id, 'approved')}
                           className="btn btn-sm btn-success"
-                          style={{ padding: '0.25rem 0.65rem' }}
+                          style={{ padding: '0.3rem 0.75rem' }}
                         >
-                          <Check size={12} /> {updatingRequestId === req.id ? '...' : 'Setujui'}
+                          <Check size={13} /> {updatingRequestId === req.id ? '...' : 'Setujui'}
                         </button>
                         <button
                           type="button"
                           disabled={updatingRequestId === req.id}
                           onClick={() => handleUpdateRequestStatus(req.id, 'rejected')}
                           className="btn btn-sm btn-danger"
-                          style={{ padding: '0.25rem 0.65rem' }}
+                          style={{ padding: '0.3rem 0.75rem' }}
                         >
-                          <X size={12} /> {updatingRequestId === req.id ? '...' : 'Tolak'}
+                          <X size={13} /> {updatingRequestId === req.id ? '...' : 'Tolak'}
                         </button>
                       </div>
                     ) : req.status === 'approved' ? (
@@ -239,9 +242,9 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
                         type="button"
                         onClick={() => handlePrint(req)}
                         className="btn btn-sm btn-primary"
-                        style={{ padding: '0.25rem 0.65rem' }}
+                        style={{ padding: '0.3rem 0.75rem' }}
                       >
-                        <Printer size={12} /> Cetak Surat
+                        <Printer size={13} /> Cetak Surat
                       </button>
                     ) : (
                       <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontStyle: 'italic' }}>
@@ -253,12 +256,12 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
               ))}
             {adminRequests.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '2.5rem', color: '#64748b' }}>
-                  <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📬</div>
-                  <p style={{ fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                <td colSpan={6} style={{ textAlign: 'center', padding: '3rem 1.5rem', color: '#94a3b8' }}>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📬</div>
+                  <p style={{ fontWeight: 800, margin: 0, color: '#f8fafc', fontSize: '1rem' }}>
                     Belum ada permohonan surat masuk
                   </p>
-                  <p style={{ fontSize: '0.8rem', marginTop: '0.25rem', color: 'var(--text-muted)' }}>
+                  <p style={{ fontSize: '0.825rem', marginTop: '0.35rem', color: '#94a3b8' }}>
                     Warga dapat mengajukan permohonan SKU atau surat domisili secara mandiri melalui Portal Warga.
                   </p>
                 </td>
@@ -268,7 +271,7 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
         </table>
       </div>
 
-      {/* MODAL CETAK SURAT RESMI DESA */}
+      {/* MODAL CETAK SURAT RESMI DESA (Official Paper Output) */}
       {printLetter && (
         <div
           className="modal-backdrop"
@@ -277,9 +280,11 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
           <div
             className="modal-content animate-fade-in"
             style={{
-              maxWidth: '700px',
+              maxWidth: '720px',
               fontFamily: 'serif',
               color: '#0f172a',
+              background: '#ffffff',
+              padding: '2.5rem',
             }}
             onClick={(e) => e.stopPropagation()}
           >

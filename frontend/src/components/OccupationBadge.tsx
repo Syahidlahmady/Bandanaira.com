@@ -14,52 +14,148 @@ export const BANDA_OCCUPATIONS = [
 ]
 
 export const getOccupationBadge = (occ?: string): React.ReactNode => {
-  if (!occ) return <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>- Belum Diisi -</span>
+  if (!occ) return <span style={{ color: '#64748b', fontSize: '0.8rem' }}>- Belum Diisi -</span>
   const lower = occ.toLowerCase()
   if (lower.includes('pala')) {
     return (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '0.2rem 0.55rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '600' }}>
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.35rem',
+          background: 'rgba(16, 185, 129, 0.15)',
+          color: '#34d399',
+          border: '1px solid rgba(16, 185, 129, 0.35)',
+          padding: '0.2rem 0.6rem',
+          borderRadius: '12px',
+          fontSize: '0.75rem',
+          fontWeight: 700,
+          boxShadow: '0 0 10px rgba(16, 185, 129, 0.1)',
+        }}
+      >
         🌿 {occ}
       </span>
     )
   }
   if (lower.includes('nelayan') || lower.includes('laut') || lower.includes('ikan')) {
     return (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', padding: '0.2rem 0.55rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '600' }}>
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.35rem',
+          background: 'rgba(6, 182, 212, 0.15)',
+          color: '#38bdf8',
+          border: '1px solid rgba(6, 182, 212, 0.35)',
+          padding: '0.2rem 0.6rem',
+          borderRadius: '12px',
+          fontSize: '0.75rem',
+          fontWeight: 700,
+          boxShadow: '0 0 10px rgba(6, 182, 212, 0.1)',
+        }}
+      >
         🐟 {occ}
       </span>
     )
   }
   if (lower.includes('cengkeh')) {
     return (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', padding: '0.2rem 0.55rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '600' }}>
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.35rem',
+          background: 'rgba(245, 158, 11, 0.15)',
+          color: '#fbbf24',
+          border: '1px solid rgba(245, 158, 11, 0.35)',
+          padding: '0.2rem 0.6rem',
+          borderRadius: '12px',
+          fontSize: '0.75rem',
+          fontWeight: 700,
+          boxShadow: '0 0 10px rgba(245, 158, 11, 0.1)',
+        }}
+      >
         🌾 {occ}
       </span>
     )
   }
   if (lower.includes('fuli') || lower.includes('pengolah') || lower.includes('rempah')) {
     return (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: '#fff1f2', color: '#be123c', border: '1px solid #fecdd3', padding: '0.2rem 0.55rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '600' }}>
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.35rem',
+          background: 'rgba(244, 63, 94, 0.15)',
+          color: '#fb7185',
+          border: '1px solid rgba(244, 63, 94, 0.35)',
+          padding: '0.2rem 0.6rem',
+          borderRadius: '12px',
+          fontSize: '0.75rem',
+          fontWeight: 700,
+          boxShadow: '0 0 10px rgba(244, 63, 94, 0.1)',
+        }}
+      >
         🌺 {occ}
       </span>
     )
   }
   if (lower.includes('wisata') || lower.includes('pemandu') || lower.includes('turis')) {
     return (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: '#f5f3ff', color: '#6d28d9', border: '1px solid #ddd6fe', padding: '0.2rem 0.55rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '600' }}>
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.35rem',
+          background: 'rgba(168, 85, 247, 0.15)',
+          color: '#c084fc',
+          border: '1px solid rgba(168, 85, 247, 0.35)',
+          padding: '0.2rem 0.6rem',
+          borderRadius: '12px',
+          fontSize: '0.75rem',
+          fontWeight: 700,
+          boxShadow: '0 0 10px rgba(168, 85, 247, 0.1)',
+        }}
+      >
         ⛵ {occ}
       </span>
     )
   }
   if (lower.includes('desa') || lower.includes('asn') || lower.includes('aparatur') || lower.includes('guru') || lower.includes('pendidik')) {
     return (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', padding: '0.2rem 0.55rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '600' }}>
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.35rem',
+          background: 'rgba(148, 163, 184, 0.15)',
+          color: '#e2e8f0',
+          border: '1px solid rgba(148, 163, 184, 0.35)',
+          padding: '0.2rem 0.6rem',
+          borderRadius: '12px',
+          fontSize: '0.75rem',
+          fontWeight: 700,
+        }}
+      >
         🏛️ {occ}
       </span>
     )
   }
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', padding: '0.2rem 0.55rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '500' }}>
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '0.35rem',
+        background: 'rgba(255, 255, 255, 0.08)',
+        color: '#cbd5e1',
+        border: '1px solid rgba(255, 255, 255, 0.12)',
+        padding: '0.2rem 0.6rem',
+        borderRadius: '12px',
+        fontSize: '0.75rem',
+        fontWeight: 500,
+      }}
+    >
       👤 {occ}
     </span>
   )

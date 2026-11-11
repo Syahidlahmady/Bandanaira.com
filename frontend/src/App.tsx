@@ -949,8 +949,7 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* Navigation Tabs when authenticated */}
-      {/* Navigation Tabs when authenticated */}
+      {/* Floating Island Command Navigation Tabs */}
       {currentUser && isFarmerOnly && (
         <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
           <button
@@ -1173,16 +1172,24 @@ export const App: React.FC = () => {
       )}
 
       {/* Public Search Token Section for Consumers */}
-      <section className="app-card animate-fade-in" style={{ marginBottom: '2rem' }}>
+      <section
+        className="app-card animate-fade-in"
+        style={{
+          marginBottom: '2rem',
+          border: '1px solid rgba(6, 182, 212, 0.35)',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 20px rgba(6, 182, 212, 0.1)',
+          padding: '2rem',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.5rem' }}>
-          <span className="badge badge-emerald">Indikasi Geografis Terbuka</span>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>&bull; Konsumen & Wisatawan</span>
+          <span className="badge badge-blue">INDIKASI GEOGRAFIS TERBUKA</span>
+          <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>&bull; Konsumen Global &amp; Wisatawan</span>
         </div>
-        <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', marginBottom: '0.35rem', fontWeight: 800 }}>
+        <h3 style={{ fontSize: '1.35rem', color: '#f8fafc', marginBottom: '0.35rem', fontWeight: 900 }}>
           🔍 Verifikasi Mandiri Asal Rempah (Scan QR Publik)
         </h3>
-        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-          Konsumen dapat memeriksa keaslian asal rempah Banda Neira tanpa harus mendaftar atau masuk ke sistem.
+        <p style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '1.25rem' }}>
+          Konsumen dapat memeriksa keaslian asal rempah Pala Banda Neira tanpa harus mendaftar atau masuk ke akun desa.
         </p>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <input
@@ -1196,7 +1203,7 @@ export const App: React.FC = () => {
           <button
             onClick={() => handlePublicVerify(verifyTokenInput)}
             className="btn btn-primary"
-            style={{ padding: '0.55rem 1.4rem' }}
+            style={{ padding: '0.65rem 1.6rem', fontWeight: 800 }}
           >
             Verifikasi Produk
           </button>
@@ -1204,60 +1211,67 @@ export const App: React.FC = () => {
       </section>
 
       {/* System Status Section */}
-      <section className="app-card animate-fade-in" style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+      <section
+        className="app-card animate-fade-in"
+        style={{
+          marginBottom: '2rem',
+          border: '1px solid var(--border-color)',
+          padding: '2rem',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
           <div>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
-              Status Infrastruktur Sistem
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 900, margin: 0, color: '#f8fafc', letterSpacing: '-0.02em' }}>
+              Telemetri Infrastruktur Sistem
             </h2>
-            <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', margin: '0.2rem 0 0' }}>
+            <p style={{ fontSize: '0.825rem', color: '#94a3b8', margin: '0.25rem 0 0' }}>
               Ketersediaan backend API, mesin geospasial PostGIS, dan persistensi terdistribusi.
             </p>
           </div>
           <span className="badge badge-emerald">
-            ● Sistem Aktif
+            ● SISTEM OPERASIONAL LENGKAP
           </span>
         </div>
 
-        {loadingHealth && <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Memeriksa koneksi layanan backend...</p>}
+        {loadingHealth && <p style={{ color: '#94a3b8', fontSize: '0.875rem' }}>Memeriksa koneksi layanan backend...</p>}
         {healthError && (
-          <div style={{ color: '#b91c1c', background: 'var(--danger-light)', padding: '0.85rem 1.25rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem', border: '1px solid #fecaca', fontSize: '0.875rem' }}>
+          <div style={{ color: '#fca5a5', background: 'rgba(239, 68, 68, 0.15)', padding: '0.85rem 1.25rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem', border: '1px solid rgba(239, 68, 68, 0.35)', fontSize: '0.875rem', fontWeight: 600 }}>
             ⚠️ Backend offline: {healthError}
           </div>
         )}
         {health && (
           <div className="stat-grid">
-            <div className="stat-card" style={{ borderTop: '4px solid var(--emerald-600)' }}>
+            <div className="stat-card" style={{ borderLeft: '4px solid #10b981' }}>
               <span className="stat-label">API Gateway</span>
-              <div className="stat-value" style={{ color: 'var(--emerald-600)', fontSize: '1.2rem' }}>
+              <div className="stat-value" style={{ color: '#34d399', fontSize: '1.25rem' }}>
                 {health.services.api.toUpperCase()}
               </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Versi: v{health.version}</span>
+              <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontFamily: 'var(--font-mono)' }}>Versi: v{health.version}</span>
             </div>
-            <div className="stat-card" style={{ borderTop: `4px solid ${health.services.database === 'connected' ? 'var(--ocean-600)' : 'var(--amber-600)'}` }}>
+            <div className="stat-card" style={{ borderLeft: `4px solid ${health.services.database === 'connected' ? '#06b6d4' : '#f59e0b'}` }}>
               <span className="stat-label">Database Engine</span>
-              <div className="stat-value" style={{ color: health.services.database === 'connected' ? 'var(--ocean-600)' : 'var(--amber-600)', fontSize: '1.2rem' }}>
+              <div className="stat-value" style={{ color: health.services.database === 'connected' ? '#38bdf8' : '#fbbf24', fontSize: '1.25rem' }}>
                 {health.services.database.toUpperCase()}
               </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>PostgreSQL & PostGIS</span>
+              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>PostgreSQL 15 &amp; PostGIS 3</span>
             </div>
-            <div className="stat-card" style={{ borderTop: '4px solid #7c3aed' }}>
+            <div className="stat-card" style={{ borderLeft: '4px solid #a855f7' }}>
               <span className="stat-label">Status Global</span>
-              <div className="stat-value" style={{ color: '#7c3aed', fontSize: '1.2rem' }}>
+              <div className="stat-value" style={{ color: '#c084fc', fontSize: '1.25rem' }}>
                 {health.status.toUpperCase()}
               </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Ecosystem Operational</span>
+              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Ecosystem Operational</span>
             </div>
           </div>
         )}
       </section>
 
       {/* Footer */}
-      <footer style={{ textAlign: 'center', padding: '1.5rem 0', color: 'var(--text-muted)', fontSize: '0.825rem', borderTop: '1px solid var(--border-color)', marginTop: '2rem' }}>
-        <p style={{ margin: 0 }}>
-          <b>Ekosistem Digital Banda Neira</b> &bull; Tata Kelola Kependudukan & Ketertelusuran Rempah Berbasis PostGIS & Blockchain
+      <footer style={{ textAlign: 'center', padding: '2rem 0', color: '#64748b', fontSize: '0.825rem', borderTop: '1px solid rgba(255, 255, 255, 0.08)', marginTop: '2.5rem' }}>
+        <p style={{ margin: 0, color: '#94a3b8' }}>
+          <b style={{ color: '#f8fafc' }}>Ekosistem Digital Banda Neira</b> &bull; Tata Kelola Kependudukan &amp; Ketertelusuran Rempah Berbasis PostGIS &amp; Blockchain
         </p>
-        <p style={{ margin: '0.35rem 0 0', opacity: 0.8 }}>
+        <p style={{ margin: '0.4rem 0 0', opacity: 0.8 }}>
           Kepulauan Banda, Maluku Tengah &bull; PWA Offline First &bull; Dilindungi Hak Cipta &copy; {new Date().getFullYear()}
         </p>
       </footer>

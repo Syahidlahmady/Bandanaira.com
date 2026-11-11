@@ -223,9 +223,9 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
               ✓ {farms.filter((f) => f.verification_status === 'verified').length} Terverifikasi
             </span>
           </div>
-          <div className="stat-card" style={{ borderTop: '4px solid #0f172a' }}>
+          <div className="stat-card" style={{ borderTop: '4px solid #38bdf8' }}>
             <span className="stat-label">Total Luas Lahan</span>
-            <div className="stat-value" style={{ color: '#0f172a' }}>
+            <div className="stat-value" style={{ color: '#38bdf8' }}>
               {farmStats.total_area_sqm.toLocaleString()} m²
             </div>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Hasil geodesik PostGIS</span>
@@ -615,7 +615,7 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.35rem', background: '#f1f5f9', padding: '0.25rem', borderRadius: 'var(--radius-sm)' }}>
+          <div style={{ display: 'flex', gap: '0.4rem', background: 'rgba(255, 255, 255, 0.05)', padding: '0.3rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
             {['', 'pending', 'verified'].map((st) => {
               const label = st === '' ? 'Semua' : st === 'pending' ? 'Menunggu Persetujuan' : 'Disetujui'
               const count = st === '' ? farms.length : farms.filter((f) => f.verification_status === st).length
@@ -626,14 +626,13 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                   type="button"
                   onClick={() => setFarmStatusFilter(st)}
                   style={{
-                    padding: '0.35rem 0.75rem',
+                    padding: '0.4rem 0.85rem',
                     borderRadius: 'var(--radius-sm)',
                     fontSize: '0.78rem',
-                    fontWeight: 600,
-                    border: 'none',
-                    background: active ? '#ffffff' : 'transparent',
-                    color: active ? 'var(--primary)' : 'var(--text-muted)',
-                    boxShadow: active ? 'var(--shadow-sm)' : 'none',
+                    fontWeight: 700,
+                    border: active ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid transparent',
+                    background: active ? 'rgba(16, 185, 129, 0.2)' : 'transparent',
+                    color: active ? '#34d399' : '#94a3b8',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
                   }}

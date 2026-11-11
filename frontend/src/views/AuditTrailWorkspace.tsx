@@ -354,11 +354,11 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
                       <tr>
                         <td style={{ color: '#475569', fontWeight: 500 }}>{formattedTime}</td>
                         <td>
-                          <div style={{ fontWeight: 600, color: '#1e293b' }}>
+                          <div style={{ fontWeight: 600, color: '#f8fafc' }}>
                             {log.user?.full_name || log.user?.username || 'Sistem / Publik'}
                           </div>
                           {log.user?.username && (
-                            <div style={{ fontSize: '0.725rem', color: '#64748b' }}>@{log.user.username}</div>
+                            <div style={{ fontSize: '0.725rem', color: '#94a3b8' }}>@{log.user.username}</div>
                           )}
                         </td>
                         <td>
@@ -366,12 +366,12 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
                             style={{
                               fontWeight: 700,
                               color: formatActionColor(log.action),
-                              fontFamily: 'monospace',
+                              fontFamily: 'var(--font-mono)',
                               fontSize: '0.75rem',
-                              background: '#f8fafc',
-                              padding: '0.2rem 0.45rem',
-                              borderRadius: '4px',
-                              border: '1px solid #e2e8f0',
+                              background: 'rgba(255, 255, 255, 0.06)',
+                              padding: '0.2rem 0.5rem',
+                              borderRadius: '6px',
+                              border: '1px solid rgba(255, 255, 255, 0.1)',
                             }}
                           >
                             {log.action}
@@ -424,9 +424,10 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
               maxWidth: '620px',
               width: '100%',
               padding: '1.75rem',
-              backgroundColor: '#ffffff',
+              backgroundColor: 'var(--bg-surface)',
+              border: '1px solid rgba(6, 182, 212, 0.35)',
+              boxShadow: '0 0 25px rgba(6, 182, 212, 0.15)',
               borderRadius: '12px',
-              boxShadow: 'var(--shadow-lg)',
             }}
             onClick={(e) => e.stopPropagation()}
           >

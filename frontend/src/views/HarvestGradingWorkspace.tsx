@@ -344,7 +344,7 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
           📋 Riwayat Catatan Hasil Panen ({harvests.length} Catatan)
         </h3>
         {harvests.length === 0 ? (
-          <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(248, 250, 252, 0.8)', borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', border: '1px dashed var(--border-color)' }}>
+          <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(15, 23, 42, 0.5)', borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', border: '1px dashed var(--border-color)' }}>
             Belum ada catatan panen terdaftar. Gunakan formulir di atas untuk mencatat panen hari ini.
           </div>
         ) : (
@@ -417,7 +417,7 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
         </div>
 
         {batches.length === 0 ? (
-          <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(248, 250, 252, 0.8)', borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', border: '1px dashed var(--border-color)' }}>
+          <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(15, 23, 42, 0.5)', borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', border: '1px dashed var(--border-color)' }}>
             Belum ada batch kemasan rempah berlabel QR. {isOfficerOrAdmin || isFarmerGroupAdmin ? 'Gunakan formulir di atas untuk menerbitkan batch baru.' : 'Petugas desa / admin kelompok tani dapat menerbitkan batch resmi dari hasil panen.'}
           </div>
         ) : (
@@ -426,11 +426,11 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
               <div
                 key={b.id}
                 style={{
-                  border: selectedBatch?.id === b.id ? '2px solid var(--ocean-600)' : '1px solid var(--border-color)',
+                  border: selectedBatch?.id === b.id ? '2px solid #06b6d4' : '1px solid rgba(255, 255, 255, 0.08)',
                   borderRadius: 'var(--radius-lg)',
                   padding: '1.35rem',
-                  background: 'rgba(255, 255, 255, 0.95)',
-                  boxShadow: selectedBatch?.id === b.id ? 'var(--shadow-md)' : 'var(--shadow-sm)',
+                  background: 'rgba(15, 23, 42, 0.65)',
+                  boxShadow: selectedBatch?.id === b.id ? '0 0 20px rgba(6, 182, 212, 0.2)' : 'var(--shadow-sm)',
                   transition: 'all 0.2s ease',
                 }}
               >
@@ -673,16 +673,17 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
               <button
                 onClick={() => setPreviewQrBatch(null)}
                 style={{
-                  background: '#f1f5f9',
-                  border: 'none',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
                   borderRadius: '50%',
-                  width: '32px',
-                  height: '32px',
+                  width: '34px',
+                  height: '34px',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#64748b',
+                  color: '#94a3b8',
+                  transition: 'all 0.2s',
                 }}
               >
                 <X size={18} />
