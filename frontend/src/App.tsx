@@ -27,6 +27,7 @@ import { LoginSection } from './components/LoginSection.tsx'
 import { BlockchainModal } from './components/BlockchainModal.tsx'
 import { OfflineQueueModal } from './components/OfflineQueueModal.tsx'
 import { PublicVerifyModal } from './components/PublicVerifyModal.tsx'
+import { VerifiedMarketplaceModal } from './components/VerifiedMarketplaceModal.tsx'
 import { ResidentsWorkspace } from './views/ResidentsWorkspace.tsx'
 import { LettersWorkspace } from './views/LettersWorkspace.tsx'
 import { FarmsGisWorkspace } from './views/FarmsGisWorkspace.tsx'
@@ -105,6 +106,7 @@ export const App: React.FC = () => {
   const [traceMsg, setTraceMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [verificationModal, setVerificationModal] = useState<BlockchainVerification | null>(null)
   const [blockchainLoading, setBlockchainLoading] = useState<string | null>(null)
+  const [showMarketplaceModal, setShowMarketplaceModal] = useState<boolean>(false)
 
   // Form: Resident
   const [popForm, setPopForm] = useState<ResidentCreateInput>({
@@ -931,6 +933,7 @@ export const App: React.FC = () => {
         onLogout={handleLogout}
         onManualSync={handleManualSync}
         onOpenQueueModal={handleOpenQueueModal}
+        onOpenMarketplace={() => setShowMarketplaceModal(true)}
       />
 
       {/* Guest Welcome & Persona Switcher if not authenticated */}
@@ -944,6 +947,7 @@ export const App: React.FC = () => {
           onQuickLogin={handleQuickLogin}
           onVerifySampleBatch={(token) => handlePublicVerify(token)}
           onPublicVerify={(token) => handlePublicVerify(token)}
+          onOpenMarketplace={() => setShowMarketplaceModal(true)}
           loading={authLoading}
           error={authError}
         />
@@ -1294,6 +1298,11 @@ export const App: React.FC = () => {
       <PublicVerifyModal
         data={publicVerifyData}
         onClose={() => setPublicVerifyData(null)}
+      />
+      <VerifiedMarketplaceModal
+        isOpen={showMarketplaceModal}
+        onClose={() => setShowMarketplaceModal(false)}
+        onVerifyProduct={(token) => handlePublicVerify(token)}
       />
     </div>
   )

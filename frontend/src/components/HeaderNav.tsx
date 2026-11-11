@@ -11,6 +11,7 @@ import {
   Share2,
   MoreVertical,
   MapPin,
+  ShoppingBag,
 } from 'lucide-react'
 import { User } from '../services/auth'
 import { usePWA } from '../offline/usePWA'
@@ -23,6 +24,7 @@ interface HeaderNavProps {
   onLogout: () => void
   onManualSync: () => void
   onOpenQueueModal: () => void
+  onOpenMarketplace?: () => void
 }
 
 export const HeaderNav: React.FC<HeaderNavProps> = ({
@@ -33,6 +35,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   onLogout,
   onManualSync,
   onOpenQueueModal,
+  onOpenMarketplace,
 }) => {
   const { canInstall, isInstalled, hasUpdate, installApp, updateApp } = usePWA()
   const [installing, setInstalling] = useState(false)
@@ -273,6 +276,26 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           >
             <Layers size={13} /> Antrean ({pendingSyncCount})
           </button>
+
+          {/* Decentralized Marketplace Showcase */}
+          {onOpenMarketplace && (
+            <button
+              onClick={onOpenMarketplace}
+              className="btn btn-sm btn-outline-primary"
+              style={{
+                borderColor: 'rgba(6, 182, 212, 0.45)',
+                color: '#38bdf8',
+                background: 'rgba(6, 182, 212, 0.12)',
+                fontWeight: 700,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+              }}
+              title="Buka Marketplace Produk Rempah & Ikan Terverifikasi Blockchain"
+            >
+              <ShoppingBag size={13} /> 🛍️ Marketplace Rempah &amp; Ikan
+            </button>
+          )}
 
           {/* PWA Install Button or Status Indicator */}
           {canInstall ? (

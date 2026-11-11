@@ -1,0 +1,110 @@
+{
+  "timestamp": "2026-11-11T13:28:25.395626+00:00",
+  "specialist": "Khoirul Anam",
+  "role": "Blockchain & Traceability Specialist",
+  "network": "EVM Local Testnet (Chain ID: 1337)",
+  "contract_address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "total_transactions": 8,
+  "receipts": [
+    {
+      "tx_hash": "0x90c9a14d35672e91a893c3d1c0fc406c8f8b40ed8a8789c7073d64b03af71035",
+      "block_number": 18492041,
+      "action": "REGISTER_BATCH (SPICE)",
+      "batch_code": "BN-BTC-2026-001",
+      "gas_used": 142850,
+      "status": "CONFIRMED",
+      "root_hash": "0xd1d6e1b4266ca7e899e7024adbb37f32a96d0075db0050dfd9c62907a2e1c5a1",
+      "ipfs_cid": "QmPalaBandaSuperGradeALonthoir2026CertCid"
+    },
+    {
+      "tx_hash": "0x52f7836c3788bd37a3b2cbdd6111e58f97ab9712f72888f5b252f4351ffc6b11",
+      "block_number": 18492042,
+      "action": "APPEND_EVENT (drying)",
+      "batch_code": "BN-BTC-2026-001",
+      "gas_used": 68420,
+      "status": "CONFIRMED",
+      "event_hash": "0x37d234be7386ab075242c003f4abd68a1752d1a785490cc546ea7c7beff657ae",
+      "sequence": 2
+    },
+    {
+      "tx_hash": "0x298799a5972bfd4c080c26b5410f7472e63085a9567fb54c987fceebd0b8c9fb",
+      "block_number": 18492043,
+      "action": "APPEND_EVENT (quality_certification)",
+      "batch_code": "BN-BTC-2026-001",
+      "gas_used": 68420,
+      "status": "CONFIRMED",
+      "event_hash": "0xe6083657284f68a10f700ba99593806a2c0ac13a81f22033be32ec496a74d58c",
+      "sequence": 3
+    },
+    {
+      "tx_hash": "0x8996d7afe78da866df9c8bbc3edfc64e2df3ff86d37068bdb5edd21dbd664356",
+      "block_number": 18492044,
+      "action": "REGISTER_BATCH (MARINE)",
+      "batch_code": "BN-BTC-2026-003",
+      "gas_used": 142850,
+      "status": "CONFIRMED",
+      "root_hash": "0x2306252ae7a85d9b0211919f0ba38eeae36d7243fb4cff4e48e581fc717cc3e0",
+      "ipfs_cid": "QmCakalangAsarTraditionalBandaFishingCert2026"
+    },
+    {
+      "tx_hash": "0xfe4caae146de50ca0e9ec85294e6b093a9def9bb1e37c601d33c3daff6e5988f",
+      "block_number": 18492045,
+      "action": "APPEND_EVENT (smoking_processing)",
+      "batch_code": "BN-BTC-2026-003",
+      "gas_used": 68420,
+      "status": "CONFIRMED",
+      "event_hash": "0xc8e1b504018cb5f61bf52174c95a373a6a287e33d6ebcf41c32cd8f8dcc8728c",
+      "sequence": 2
+    },
+    {
+      "tx_hash": "0xaf3fe1b0b17b32e7c86b9b958f2ffc93522e9b9c91a986ac33f439e579d2b825",
+      "block_number": 18492046,
+      "action": "APPEND_EVENT (lab_freshness_testing)",
+      "batch_code": "BN-BTC-2026-003",
+      "gas_used": 68420,
+      "status": "CONFIRMED",
+      "event_hash": "0xabfe38d4b45e172a663b11b2d0c3c5debc37b9f8cd287e5a24278732237e7342",
+      "sequence": 3
+    },
+    {
+      "tx_hash": "0x2e0d394e01d1e5fb7603e9f4f3eb9671acb49c41fc8d04f8d3f50a7ba15f1354",
+      "block_number": 18492047,
+      "action": "TRANSFER_OWNERSHIP",
+      "batch_code": "BN-BTC-2026-003",
+      "previous_owner": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+      "new_owner": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+      "gas_used": 45100,
+      "status": "CONFIRMED"
+    },
+    {
+      "tx_hash": "0xd16a9f1b62082b7524e59e3eec47aba29c134d4aded7e89ddd23b75a72e56ce2",
+      "block_number": 18492048,
+      "action": "REGISTER_BATCH (MARINE)",
+      "batch_code": "BN-BTC-2026-004",
+      "gas_used": 142850,
+      "status": "CONFIRMED",
+      "root_hash": "0x558ad5b2723f475845a37ef975153775b8b947c74f4345d8fb0646343b260d5a",
+      "ipfs_cid": "QmYellowfinTunaGradeSashimiBandaSeaCert2026"
+    }
+  ],
+  "verification_audit": {
+    "valid_check": {
+      "verified": true,
+      "batch_code": "BN-BTC-2026-001",
+      "on_chain_hash": "0xe6083657284f68a10f700ba99593806a2c0ac13a81f22033be32ec496a74d58c",
+      "local_hash": "0xe6083657284f68a10f700ba99593806a2c0ac13a81f22033be32ec496a74d58c",
+      "events_count": 3,
+      "ipfs_cid": "QmPalaBandaSuperGradeALonthoir2026CertCid",
+      "message": "Cryptographic Hash Matched: Authenticity Verified On-Chain!"
+    },
+    "tamper_check": {
+      "verified": false,
+      "batch_code": "BN-BTC-2026-001",
+      "on_chain_hash": "0xe6083657284f68a10f700ba99593806a2c0ac13a81f22033be32ec496a74d58c",
+      "local_hash": "0xdeadbeefbadc0de0000000000000000000000000000000000000000000000000",
+      "events_count": 3,
+      "ipfs_cid": "QmPalaBandaSuperGradeALonthoir2026CertCid",
+      "message": "SECURITY ALERT: Hash Mismatch / Data Tampering Detected!"
+    }
+  }
+}

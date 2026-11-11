@@ -18,6 +18,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 9: UI/UX Modernization & Modular Design System**
 - [x] **Phase 10: Security Hardening & Banda Neira Resident Livelihood Tracking**
 - [x] **Phase 15: Radical Neo-Obsidian Cyber-Emerald & Bento Grid System Overhaul ("Rombak Total Style & Gaya")**
+- [x] **Phase 16: Multi-Commodity Traceability, Smart Contract EVM, Verified Marketplace & DSR Scopus Documentation (Mandat Khoirul Anam)**
 
 ---
 
@@ -136,3 +137,26 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 15.4 Bento Modular Workspaces Polish: Eliminated all clashing hardcoded light backgrounds across all 6 workspaces (`ResidentsWorkspace`, `LettersWorkspace`, `FarmsGisWorkspace`, `HarvestGradingWorkspace`, `CitizenPortalWorkspace`, `AuditTrailWorkspace`), converting metrics to Bento grids with glowing accents.
 - [x] 15.5 Dark Holographic Modals: Transformed `PublicVerifyModal.tsx`, `BlockchainModal.tsx`, and `OfflineQueueModal.tsx` into dark glass inspection consoles with glowing timeline nodes and high-contrast QR display boxes for seamless camera scanning.
 - [x] 15.6 Production Build & Test Suite Verification: 0 TypeScript compilation errors (`npm run build` exits 0) and 37/37 passing backend tests (`pytest backend/tests/ -v`).
+
+### Phase 16: Multi-Commodity Traceability, Smart Contract EVM, Verified Marketplace & DSR Scopus Documentation (Mandat Khoirul Anam)
+- [x] 16.1 Multi-Commodity Smart Contract (`blockchain/contracts/BandaTraceabilityRegistry.sol` & ABI): Solidity 0.8.20 contract supporting `CommodityCategory { SPICE, MARINE }`, RBAC (`onlyProducer`, `onlyInspector`, `onlyBatchOwnerOrAuthorized`), zero-PII compliance, chained event logging, and on-chain verification function `verifyBatchHash`. Standard ABI generated in `blockchain/contracts/BandaTraceabilityRegistryABI.json`.
+- [x] 16.2 Testnet Cryptographic Simulation Engine (`backend/scripts/run_blockchain_testnet_simulation.py`): Executed 10 sequential on-chain transactions spanning Pala Banda Grade A (`BN-BTC-2026-001`), Ikan Asar Cakalang Tradisional (`BN-BTC-2026-003`), Yellowfin Tuna Sashimi (`BN-BTC-2026-004`), custody transfer to MSME Syafa Mart, happy path verification (MATCH), and tamper attack simulation (REJECTED/TAMPER DETECTED). Receipts stored in `docs/mandat_anam/testnet_simulation_receipts.json`.
+- [x] 16.3 Decentralized Verified Marketplace Showcase (`frontend/src/components/VerifiedMarketplaceModal.tsx`): Built rich marketplace modal showcasing 5 authentic Banda products with category filtering (Rempah, Perikanan, Olahan), weight/stock info, producer origin, IPFS CIDs, and 1-click on-chain proof verification opening `PublicVerifyModal`.
+- [x] 16.4 App & Navigation Integration: Integrated "🛍️ Marketplace Rempah & Ikan" triggers into `HeaderNav.tsx` and public search section of `LoginSection.tsx`, connected state in `frontend/src/App.tsx`.
+- [x] 16.5 Comprehensive Mandate Documentation Suite (`docs/mandat_anam/`):
+  - [x] `01_DOKUMEN_REQUIREMENTS_DAN_PEMETAAN_RANTAI_PASOK.md` (Multi-commodity supply chain mapping, CTEs/KDEs, actors).
+  - [x] `02_DOKUMEN_ARSITEKTUR_TRACEABILITY.md` (Hybrid On-Chain/Off-Chain, PostGIS, IPFS, sequence diagrams).
+  - [x] `03_DESAIN_DAN_SOURCE_CODE_SMART_CONTRACT.md` (Smart contract architecture, RBAC, full Solidity source code).
+  - [x] `04_DOKUMENTASI_DEPLOYMENT_TESTNET.md` (Hardhat/Sepolia/Amoy deployment, gas cost analysis).
+  - [x] `05_LAPORAN_UNIT_TEST_DAN_UJI_TRANSAKSI.md` (10-transaction test report & tamper detection audit).
+  - [x] `06_API_TRACEABILITY_DAN_INTEGRASI.md` (REST API endpoints specification, payloads, responses).
+  - [x] `07_DASHBOARD_MONITORING_TRACEABILITY.md` (Monitoring interface, batch workflow, timeline drawer).
+  - [x] `08_FITUR_VERIFIKASI_QR_DAN_KODE_BATCH.md` (Public QR verification, direct PNG stream, token resolution).
+  - [x] `09_CHECKLIST_KEAMANAN_SMART_CONTRACT.md` (SWC vulnerability checklist, CEI pattern, Zero-PII compliance).
+  - [x] `10_PANDUAN_PENGGUNA_ADMIN_DAN_UMKM.md` (User manual for village admins, Poktan, fishermen, and MSMEs).
+  - [x] `11_DRAFT_ARTIKEL_ILMIAH_DSR_SCOPUS.md` (Full academic research paper draft following Design Science Research 6-stage framework).
+  - [x] `12_LAPORAN_HANDOVER_FASTTRACK_14_HARI.md` (Executive handover report, milestone scorecard, asset inventory).
+  - [x] `13_DATA_DICTIONARY_DAN_MODEL_DATA.md` (PostgreSQL tables, Pydantic schemas, IPFS JSON metadata).
+  - [x] `14_LOG_INTEGRASI_LINTAS_MODUL.md` (Cross-module coordination with Hidayah, Fauzan, Syafa, Syahid, Restiadi).
+- [x] 16.6 Full Verification & Quality Assurance: Verified 0 TypeScript compilation errors (`npm run build` exits 0) and 37/37 passing backend tests (`pytest backend/tests/ -v`).
+

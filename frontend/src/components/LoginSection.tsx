@@ -15,6 +15,7 @@ import {
   Compass,
   Cpu,
   Fingerprint,
+  ShoppingBag,
 } from 'lucide-react'
 
 interface LoginSectionProps {
@@ -26,6 +27,7 @@ interface LoginSectionProps {
   onQuickLogin?: (u: string, p: string) => void
   onVerifySampleBatch?: (token: string) => void
   onPublicVerify?: (token: string) => void
+  onOpenMarketplace?: () => void
   loading: boolean
   error: string | null
 }
@@ -38,6 +40,7 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
   onLogin,
   onVerifySampleBatch,
   onPublicVerify,
+  onOpenMarketplace,
   loading,
   error,
 }) => {
@@ -752,6 +755,38 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
                 🌺 Fuli Merah Belgica (Uji Cek)
               </button>
             </div>
+
+            {onOpenMarketplace && (
+              <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
+                    <ShoppingBag size={18} />
+                  </div>
+                  <div>
+                    <div style={{ color: '#f8fafc', fontSize: '0.875rem', fontWeight: 700 }}>Marketplace Produk Banda Terverifikasi On-Chain</div>
+                    <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>Pala, fuli merah, sirup buah pala, ikan asar cakalang, dan tuna sirip kuning dengan QR batch</div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={onOpenMarketplace}
+                  className="btn btn-secondary"
+                  style={{
+                    fontSize: '0.825rem',
+                    padding: '0.55rem 1.15rem',
+                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2))',
+                    border: '1px solid rgba(16, 185, 129, 0.4)',
+                    color: '#a7f3d0',
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                  }}
+                >
+                  <ShoppingBag size={15} /> Buka Katalog Marketplace
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
