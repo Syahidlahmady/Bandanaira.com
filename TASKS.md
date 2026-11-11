@@ -203,7 +203,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 20.7 App Navigation Integration: Added `🏖️ Smart Tourism & Eco-Stay` tab in `frontend/src/App.tsx` and quick access button in `LoginSection.tsx`. Verified 0 TypeScript compilation errors (`npm run build` exits 0).
 
 ### Phase 21: 7-Layer Spatial GIS Peta Interaktif (Mandat Fauzan Arisanto & SRS 10.1)
-- [ ] 21.1 7-Layer GeoJSON Data Specifications & Endpoints (`backend/app/modules/gis/`):
+- [x] 21.1 7-Layer GeoJSON Data Specifications & Endpoints (`backend/app/modules/gis/`):
   - Layer 1: `LAYER_TOURISM_4A` (Bahari, diving spots, pantai, kuliner khas)
   - Layer 2: `LAYER_HERITAGE` (Benteng VOC, rumah pengasingan tokoh bangsa, cagar budaya)
   - Layer 3: `LAYER_ACCOMMODATION` (Eco-stays, hotel, homestay dengan status RO & solar)
@@ -211,13 +211,14 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Layer 5: `LAYER_PUBLIC_SAFETY` (Dermaga pelabuhan, puskesmas, titik evakuasi tsunami/gempa)
   - Layer 6: `LAYER_WATER_INFRA` (Sumur payau, tandon komunal, instalasi RO/SWRO dengan link IoT TDS)
   - Layer 7: `LAYER_ENERGY_WASTE` (PLTD diesel, PLTS surya, bank sampah plastik)
-  - GeoJSON standard RFC 7946 multi-layer API: `GET /api/v1/gis/layers` and `GET /api/v1/gis/layers/{layer_id}`.
-- [ ] 21.2 Automated GIS Test Suite (`backend/tests/test_gis.py`): Validate GeoJSON FeatureCollection structure, coordinate bounds around Banda Neira archipelago, layer filtering, and metadata properties.
-- [ ] 21.3 Interactive GIS Map Workspace (`frontend/src/views/InteractiveMapWorkspace.tsx`):
-  - Leaflet / MapLibre interactive canvas centered on Banda Neira (`-4.524, 129.904`).
-  - Layer switcher drawer with custom toggle pills and counters.
-  - Custom themed SVG marker icons for each of the 7 layers.
-  - Interactive popup modals with direct navigation (e.g., booking button on accommodation pins, audio guide on heritage pins, live TDS on water pins).
+  - GeoJSON standard RFC 7946 multi-layer API: `GET /api/v1/gis/layers`, `GET /api/v1/peta/geojson`, `GET /api/v1/gis/meta`, dan `GET /api/v1/gis/cagar-budaya/{slug}`.
+- [x] 21.2 Automated GIS Test Suite (`backend/tests/test_gis.py`): 6 comprehensive tests passing 100% (auto-seeding 28 authentic spatial features, multi-layer & island filtering, metadata 7-layer summary, heritage audio guide slug retrieval, alias SRS 11 parity, and RBAC feature creation). Total backend test suite: 64/64 passing.
+- [x] 21.3 Interactive GIS Map Workspace (`frontend/src/views/InteractiveMapWorkspace.tsx`):
+  - Leaflet interactive canvas centered on Banda Neira (`-4.524, 129.904`).
+  - Layer switcher with 7 toggle pills, category tabs (Pariwisata vs Resiliensi), and counter badges.
+  - Custom themed SVG marker pins with distinct colors and glowing radar pulses for each layer.
+  - Interactive popup modals & inspection sidebar with direct actions (WhatsApp booking, audio guide, live TDS gauge, and recycling stats).
+  - Integrated into `App.tsx` and guest shortcuts in `LoginSection.tsx`. Verified clean build (`npm run build` exits 0).
 
 ### Phase 22: Cryptographic NIK Hardening & OWASP Top 10 Security (Mandat Syahid Ahmad Lahmady)
 - [ ] 22.1 Two-Tier Field-Level Encryption:

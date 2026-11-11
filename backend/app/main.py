@@ -17,6 +17,7 @@ from backend.app.modules.dss.router import router as dss_router
 from backend.app.modules.koperasi.router import router as koperasi_router
 from backend.app.modules.iot.router import router as iot_router
 from backend.app.modules.tourism.router import router as tourism_router
+from backend.app.modules.gis.router import router as gis_router, peta_alias_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -41,6 +42,8 @@ app.include_router(dss_router, prefix=settings.API_V1_STR)
 app.include_router(koperasi_router, prefix=settings.API_V1_STR)
 app.include_router(iot_router, prefix=settings.API_V1_STR)
 app.include_router(tourism_router, prefix=settings.API_V1_STR)
+app.include_router(gis_router, prefix=settings.API_V1_STR)
+app.include_router(peta_alias_router, prefix=settings.API_V1_STR)
 
 # CORS Middleware
 app.add_middleware(

@@ -19,6 +19,7 @@ import {
   Scale,
   Radio,
   Home,
+  Layers,
 } from 'lucide-react'
 
 interface LoginSectionProps {
@@ -35,6 +36,7 @@ interface LoginSectionProps {
   onOpenKoperasi?: () => void
   onOpenTelemetry?: () => void
   onOpenTourism?: () => void
+  onOpenGIS?: () => void
   loading: boolean
   error: string | null
 }
@@ -52,6 +54,7 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
   onOpenKoperasi,
   onOpenTelemetry,
   onOpenTourism,
+  onOpenGIS,
   loading,
   error,
 }) => {
@@ -879,6 +882,27 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
                       }}
                     >
                       <Home size={15} /> 🏡 Eco-Stay &amp; Budaya
+                    </button>
+                  )}
+
+                  {onOpenGIS && (
+                    <button
+                      type="button"
+                      onClick={onOpenGIS}
+                      className="btn btn-secondary"
+                      style={{
+                        fontSize: '0.825rem',
+                        padding: '0.55rem 1.15rem',
+                        background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(16, 185, 129, 0.2))',
+                        border: '1px solid rgba(6, 182, 212, 0.4)',
+                        color: '#67e8f9',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                      }}
+                    >
+                      <Layers size={15} /> 🗺️ Peta 7-Layer
                     </button>
                   )}
                 </div>

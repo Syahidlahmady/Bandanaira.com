@@ -38,6 +38,7 @@ import { SmartPlannerWorkspace } from './views/SmartPlannerWorkspace.tsx'
 import { KoperasiKasirWorkspace } from './views/KoperasiKasirWorkspace.tsx'
 import { IslandTelemetryWorkspace } from './views/IslandTelemetryWorkspace.tsx'
 import { TourismEcoStayWorkspace } from './views/TourismEcoStayWorkspace.tsx'
+import { InteractiveMapWorkspace } from './views/InteractiveMapWorkspace.tsx'
 import {
   MapPin,
   Users,
@@ -48,6 +49,7 @@ import {
   Scale,
   Radio,
   Home,
+  Layers,
 } from 'lucide-react'
 import { offlineDB } from './offline/db.ts'
 import { syncManager, SyncQueueItem } from './offline/syncManager.ts'
@@ -64,7 +66,7 @@ interface HealthResponse {
 
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'population' | 'letters' | 'farming' | 'traceability' | 'koperasi' | 'iot' | 'tourism' | 'audit' | 'smart_planner'>('population')
+  const [activeTab, setActiveTab] = useState<'population' | 'letters' | 'farming' | 'traceability' | 'koperasi' | 'iot' | 'tourism' | 'gis' | 'audit' | 'smart_planner'>('population')
   const [health, setHealth] = useState<HealthResponse | null>(null)
   const [loadingHealth, setLoadingHealth] = useState<boolean>(true)
   const [healthError, setHealthError] = useState<string | null>(null)
@@ -960,9 +962,59 @@ export const App: React.FC = () => {
           onOpenKoperasi={() => setActiveTab('koperasi')}
           onOpenTelemetry={() => setActiveTab('iot')}
           onOpenTourism={() => setActiveTab('tourism')}
+          onOpenGIS={() => setActiveTab('gis')}
           loading={authLoading}
           error={authError}
         />
+      )}
+
+      {/* Guest Public Workspace Switcher Bar */}
+      {!currentUser && (activeTab === 'gis' || activeTab === 'tourism' || activeTab === 'smart_planner' || activeTab === 'koperasi' || activeTab === 'iot') && (
+        <div className="tab-nav" style={{ marginBottom: '1.75rem', background: 'rgba(15, 23, 42, 0.95)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', padding: '0.4rem' }}>
+          <button
+            type="button"
+            onClick={() => setActiveTab('population')}
+            className="tab-btn"
+            style={{ color: '#94a3b8' }}
+          >
+            🔐 Kembali ke Login
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('gis')}
+            className={`tab-btn ${activeTab === 'gis' ? 'active' : ''}`}
+          >
+            <Layers size={16} /> 🗺️ Peta 7-Layer
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('tourism')}
+            className={`tab-btn ${activeTab === 'tourism' ? 'active' : ''}`}
+          >
+            <Home size={16} /> 🏡 Eco-Stay &amp; Budaya
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('smart_planner')}
+            className={`tab-btn ${activeTab === 'smart_planner' ? 'active' : ''}`}
+          >
+            <Compass size={16} /> 🧭 Perencana Cerdas (DSS)
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('koperasi')}
+            className={`tab-btn ${activeTab === 'koperasi' ? 'active' : ''}`}
+          >
+            <Scale size={16} /> ⚖️ Koperasi &amp; Bank Sampah
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('iot')}
+            className={`tab-btn ${activeTab === 'iot' ? 'active' : ''}`}
+          >
+            <Radio size={16} /> 📡 Telemetri IoT &amp; Resiliensi
+          </button>
+        </div>
       )}
 
       {/* Floating Island Command Navigation Tabs */}
@@ -1101,6 +1153,12 @@ export const App: React.FC = () => {
           >
             <Home size={16} /> 🏡 Eco-Stay &amp; Budaya
           </button>
+          <button
+            onClick={() => setActiveTab('gis')}
+            className={`tab-btn ${activeTab === 'gis' ? 'active' : ''}`}
+          >
+            <Layers size={16} /> 🗺️ Peta 7-Layer
+          </button>
         </div>
       )}
 
@@ -1213,6 +1271,11 @@ export const App: React.FC = () => {
       {/* TAB 9: SMART TOURISM, ECO-STAY & WARISAN BUDAYA */}
       {activeTab === 'tourism' && (
         <TourismEcoStayWorkspace />
+      )}
+
+      {/* TAB 10: PETA SPASIAL INTERAKTIF 7-LAYER */}
+      {activeTab === 'gis' && (
+        <InteractiveMapWorkspace />
       )}
 
       {/* PORTAL KHUSUS WARGA DESA (RESIDENT) */}
