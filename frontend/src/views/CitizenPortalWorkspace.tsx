@@ -27,49 +27,65 @@ export const CitizenPortalWorkspace: React.FC<CitizenPortalWorkspaceProps> = ({
   letterSuccessNotice,
 }) => {
   return (
-    <section
-      style={{
-        background: '#ffffff',
-        borderRadius: '12px',
-        padding: '1.75rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        marginBottom: '2rem',
-        border: '1px solid #e2e8f0',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
-        <div style={{ fontSize: '2.5rem' }}>🏛️</div>
+    <section className="app-card animate-fade-in" style={{ marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+        <div style={{ width: '56px', height: '56px', borderRadius: 'var(--radius-md)', background: 'linear-gradient(135deg, var(--ocean-600) 0%, var(--primary) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem', color: '#ffffff', boxShadow: 'var(--shadow-sm)' }}>
+          🏛️
+        </div>
         <div>
-          <h2 style={{ fontSize: '1.4rem', color: '#1e3a8a', fontWeight: 'bold' }}>
-            Portal Pelayanan Mandiri Warga Banda Neira
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
+            <span className="badge badge-blue">Portal Layanan Mandiri</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Desa Banda Neira</span>
+          </div>
+          <h2 style={{ fontSize: '1.45rem', color: 'var(--text-main)', fontWeight: 800, margin: 0 }}>
+            Pelayanan Administrasi Warga
           </h2>
-          <p style={{ fontSize: '0.9rem', color: '#64748b' }}>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
             Akses layanan administrasi surat kependudukan, pengajuan berkas, dan verifikasi identitas warga desa.
           </p>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
-        <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-          <h3 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: '#0f172a', marginBottom: '0.5rem' }}>
-            👤 Profil Kependudukan Anda
-          </h3>
-          <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: '1.6' }}>
-            <b>Nama Lengkap:</b> {currentUser?.full_name}<br />
-            <b>Email Terdaftar:</b> {currentUser?.email}<br />
-            <b>Peran Sistem:</b> Warga Terdaftar (Resident)<br />
-            <b>Status Identitas:</b> <span style={{ color: '#059669', fontWeight: 'bold' }}>✓ TERDAFTAR DI DESA</span>
-          </p>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginTop: '1rem' }}>
+        <div style={{ background: 'rgba(248, 250, 252, 0.85)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <span style={{ fontSize: '1.2rem' }}>👤</span>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
+              Profil Kependudukan Anda
+            </h3>
+          </div>
+          <div style={{ fontSize: '0.875rem', color: 'var(--text-main)', lineHeight: '1.8', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+            <div>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem', display: 'block' }}>Nama Lengkap</span>
+              <b>{currentUser?.full_name}</b>
+            </div>
+            <div>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem', display: 'block' }}>Email Terdaftar</span>
+              <span style={{ fontFamily: 'monospace', fontSize: '0.825rem' }}>{currentUser?.email}</span>
+            </div>
+            <div>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem', display: 'block' }}>Peran Sistem</span>
+              <span>Warga Terdaftar (Resident)</span>
+            </div>
+            <div style={{ marginTop: '0.25rem' }}>
+              <span className="badge badge-emerald">
+                ✓ IDENTITAS TERDAFTAR DI DESA
+              </span>
+            </div>
+          </div>
         </div>
 
-        <div style={{ background: '#f0fdf4', padding: '1.25rem', borderRadius: '10px', border: '1px solid #bbf7d0' }}>
-          <h3 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: '#166534', marginBottom: '0.5rem' }}>
-            📝 Layanan Surat Administrasi Desa
-          </h3>
-          <p style={{ fontSize: '0.85rem', color: '#15803d', marginBottom: '0.75rem' }}>
+        <div style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.08) 0%, rgba(16, 185, 129, 0.03) 100%)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(5, 150, 105, 0.25)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <span style={{ fontSize: '1.2rem' }}>📝</span>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#166534', margin: 0 }}>
+              Layanan Surat Administrasi Desa
+            </h3>
+          </div>
+          <p style={{ fontSize: '0.85rem', color: '#15803d', marginBottom: '0.75rem', lineHeight: 1.5 }}>
             Ajukan permohonan surat keterangan secara digital langsung ke kantor desa tanpa perlu antre fisik.
           </p>
-          <ul style={{ fontSize: '0.8rem', color: '#166534', paddingLeft: '1.2rem', lineHeight: '1.6', marginBottom: '0.75rem' }}>
+          <ul style={{ fontSize: '0.8rem', color: '#166534', paddingLeft: '1.2rem', lineHeight: '1.6', marginBottom: '1rem' }}>
             <li>Surat Keterangan Usaha Petani Rempah Pala & Cengkeh (SKU)</li>
             <li>Surat Keterangan Usaha Nelayan Tradisional Banda (SKU-N)</li>
             <li>Surat Keterangan Usaha Pengolah / Pedagang Fuli Merah</li>
@@ -78,37 +94,27 @@ export const CitizenPortalWorkspace: React.FC<CitizenPortalWorkspaceProps> = ({
           <button
             type="button"
             onClick={() => setShowLetterForm(!showLetterForm)}
-            style={{
-              background: '#16a34a',
-              color: '#ffffff',
-              border: 'none',
-              padding: '0.5rem 1rem',
-              borderRadius: '6px',
-              fontWeight: '600',
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-            }}
+            className="btn btn-success"
+            style={{ marginTop: 'auto', alignSelf: 'flex-start', padding: '0.55rem 1.25rem' }}
           >
-            {showLetterForm ? 'Tutup Formulir' : '+ Ajukan Permohonan Surat Baru'}
+            {showLetterForm ? '✕ Tutup Formulir' : '➕ Ajukan Permohonan Surat Baru'}
           </button>
         </div>
       </div>
 
       {/* Form Pengajuan Surat Interaktif */}
       {showLetterForm && (
-        <div style={{ marginTop: '1.5rem', background: '#f8fafc', padding: '1.25rem', borderRadius: '10px', border: '1px solid #cbd5e1' }}>
-          <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.75rem' }}>
+        <div style={{ marginTop: '1.5rem', background: 'rgba(248, 250, 252, 0.9)', padding: '1.35rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
+          <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '1rem' }}>
             Formulir Pengajuan Surat Mandiri
           </h4>
-          <form onSubmit={handleSubmitLetter} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: '#475569', marginBottom: '0.25rem' }}>
-                Jenis Surat yang Dibutuhkan
-              </label>
+          <form onSubmit={handleSubmitLetter} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="form-group">
+              <label className="form-label">Jenis Surat yang Dibutuhkan</label>
               <select
                 value={letterTypeInput}
                 onChange={(e) => setLetterTypeInput(e.target.value)}
-                style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                className="form-control"
               >
                 <option value="Surat Keterangan Usaha Petani Rempah Pala & Cengkeh (SKU)">Surat Keterangan Usaha Petani Rempah Pala & Cengkeh (SKU)</option>
                 <option value="Surat Keterangan Usaha Nelayan Tradisional Banda (SKU-N)">Surat Keterangan Usaha Nelayan Tradisional Banda (SKU-N)</option>
@@ -118,25 +124,23 @@ export const CitizenPortalWorkspace: React.FC<CitizenPortalWorkspaceProps> = ({
               </select>
             </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: '#475569', marginBottom: '0.25rem' }}>
-                Keperluan / Catatan Tambahan
-              </label>
+            <div className="form-group">
+              <label className="form-label">Keperluan / Catatan Tambahan</label>
               <input
                 type="text"
                 value={letterPurposeInput}
                 onChange={(e) => setLetterPurposeInput(e.target.value)}
-                placeholder="Contoh: Untuk persyaratan pengajuan KUR di Bank..."
+                placeholder="Contoh: Untuk persyaratan pengajuan KUR Pertanian di Bank Mandiri Banda..."
                 required
-                style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                className="form-control"
               />
             </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
               <button
                 type="submit"
                 className="btn btn-primary"
-                style={{ background: '#16a34a', borderColor: '#15803d', padding: '0.5rem 1.25rem' }}
+                style={{ padding: '0.55rem 1.4rem' }}
               >
                 Kirim Permohonan ke Kantor Desa
               </button>
@@ -153,40 +157,41 @@ export const CitizenPortalWorkspace: React.FC<CitizenPortalWorkspaceProps> = ({
       )}
 
       {letterSuccessNotice && (
-        <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#ecfdf5', color: '#065f46', borderRadius: '8px', border: '1px solid #a7f3d0', fontSize: '0.85rem' }}>
+        <div style={{ marginTop: '1.25rem', padding: '0.85rem 1.25rem', background: 'var(--secondary-light)', color: '#065f46', borderRadius: 'var(--radius-md)', border: '1px solid #a7f3d0', fontSize: '0.875rem', fontWeight: 600 }}>
           ✅ {letterSuccessNotice}
         </div>
       )}
 
       {/* Daftar Riwayat Permohonan Surat */}
-      <div style={{ marginTop: '1.5rem' }}>
-        <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.75rem' }}>
+      <div style={{ marginTop: '2rem' }}>
+        <h4 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main)', marginBottom: '0.85rem' }}>
           Riwayat Pengajuan Surat Anda ({letters.length})
         </h4>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {letters.map((letItem) => (
             <div
               key={letItem.id}
               style={{
-                padding: '0.85rem',
-                background: '#f8fafc',
-                borderRadius: '8px',
-                border: '1px solid #e2e8f0',
+                padding: '1rem 1.25rem',
+                background: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border-color)',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 flexWrap: 'wrap',
-                gap: '0.5rem',
+                gap: '0.75rem',
+                boxShadow: 'var(--shadow-sm)',
               }}
             >
               <div>
-                <b style={{ fontSize: '0.9rem', color: '#0f172a', display: 'block' }}>{letItem.type}</b>
-                <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                <b style={{ fontSize: '0.95rem', color: 'var(--text-main)', display: 'block' }}>{letItem.type}</b>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                   Keperluan: {letItem.purpose} &bull; Tanggal: {letItem.date}
                 </span>
               </div>
               <span
-                className={`badge ${letItem.status === 'disetujui' ? 'badge-green' : 'badge-amber'}`}
+                className={`badge ${letItem.status === 'disetujui' ? 'badge-emerald' : 'badge-amber'}`}
               >
                 {letItem.status === 'disetujui' ? '✅ Disetujui (Siap Diambil)' : '⏳ Sedang Ditinjau Petugas'}
               </span>

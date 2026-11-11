@@ -156,26 +156,23 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
   }
 
   return (
-    <section
-      style={{
-        background: '#ffffff',
-        borderRadius: '12px',
-        padding: '1.5rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        marginBottom: '2rem',
-        border: '1px solid #e2e8f0',
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+    <section className="app-card animate-fade-in" style={{ marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.35rem', color: '#065f46', fontWeight: 'bold' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+            <span className="badge badge-emerald">GIS & PostGIS Spasial</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              &bull; Wilayah Kepulauan Banda
+            </span>
+          </div>
+          <h2 style={{ fontSize: '1.45rem', color: 'var(--text-main)', fontWeight: 800, margin: 0 }}>
             {isFarmerOnly
               ? 'Peta Sebaran Lahan Perkebunan Rempah'
               : isFarmerGroupAdmin && !isOfficerOrAdmin
               ? 'Peta & Pengajuan Plot Kebun Kelompok Tani'
               : 'Pemetaan Spasial & Verifikasi Lahan Rempah'}
           </h2>
-          <p style={{ fontSize: '0.875rem', color: '#64748b' }}>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
             {isFarmerOnly
               ? 'Visualisasi titik koordinat kebun pala & cengkih Banda Neira. Mode tinjau data petani.'
               : isFarmerGroupAdmin && !isOfficerOrAdmin
@@ -183,71 +180,55 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
               : 'Visualisasi titik koordinat kebun pala & cengkih Banda Neira menggunakan PostGIS dan validasi persetujuan desa.'}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <button
             onClick={handleExportFarmsCSV}
-            style={{
-              background: '#047857',
-              color: '#ffffff',
-              border: 'none',
-              padding: '0.4rem 0.8rem',
-              borderRadius: '6px',
-              fontSize: '0.85rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-            }}
+            className="btn btn-outline-primary"
+            style={{ fontSize: '0.85rem', padding: '0.5rem 0.9rem' }}
           >
             📥 Export CSV ({farms.length})
           </button>
           <button
             onClick={fetchFarmingData}
-            style={{
-              background: '#f1f5f9',
-              color: '#334155',
-              border: '1px solid #cbd5e1',
-              padding: '0.4rem 0.8rem',
-              borderRadius: '6px',
-              fontSize: '0.85rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-            }}
+            className="btn btn-secondary"
+            style={{ fontSize: '0.85rem', padding: '0.5rem 0.9rem' }}
           >
-            Segarkan Peta
+            🔄 Segarkan Peta
           </button>
         </div>
       </div>
 
       {farmStats && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-          <div style={{ padding: '0.85rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Petani Terdaftar</span>
-            <p style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#047857', marginTop: '0.2rem' }}>
+        <div className="stat-grid" style={{ marginBottom: '1.5rem' }}>
+          <div className="stat-card" style={{ borderTop: '4px solid var(--emerald-600)' }}>
+            <span className="stat-label">Petani Terdaftar</span>
+            <div className="stat-value" style={{ color: 'var(--emerald-600)' }}>
               {farmStats.total_farmers}
-            </p>
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Profil pekebun aktif</span>
           </div>
-          <div style={{ padding: '0.85rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Kelompok Tani</span>
-            <p style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#1e3a8a', marginTop: '0.2rem' }}>
+          <div className="stat-card" style={{ borderTop: '4px solid var(--ocean-600)' }}>
+            <span className="stat-label">Kelompok Tani</span>
+            <div className="stat-value" style={{ color: 'var(--ocean-600)' }}>
               {farmStats.total_farmer_groups}
-            </p>
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Poktan terdata desa</span>
           </div>
-          <div style={{ padding: '0.85rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Total Plot Kebun</span>
-            <p style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#7c3aed', marginTop: '0.2rem' }}>
+          <div className="stat-card" style={{ borderTop: '4px solid #7c3aed' }}>
+            <span className="stat-label">Total Plot Kebun</span>
+            <div className="stat-value" style={{ color: '#7c3aed' }}>
               {farmStats.total_farms}
-            </p>
-            <span style={{ fontSize: '0.72rem', color: '#059669', fontWeight: 600 }}>
+            </div>
+            <span className="badge badge-emerald" style={{ marginTop: '0.25rem', display: 'inline-block' }}>
               ✓ {farms.filter((f) => f.verification_status === 'verified').length} Terverifikasi
             </span>
           </div>
-          <div style={{ padding: '0.85rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Total Luas Lahan</span>
-            <p style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#0f172a', marginTop: '0.2rem' }}>
+          <div className="stat-card" style={{ borderTop: '4px solid #0f172a' }}>
+            <span className="stat-label">Total Luas Lahan</span>
+            <div className="stat-value" style={{ color: '#0f172a' }}>
               {farmStats.total_area_sqm.toLocaleString()} m²
-            </p>
+            </div>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Hasil geodesik PostGIS</span>
           </div>
         </div>
       )}
@@ -255,37 +236,34 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
       {isOfficerOrAdmin && farms.filter((f) => f.verification_status === 'pending').length > 0 && (
         <div
           style={{
-            background: '#fffbeb',
-            border: '1px solid #fde68a',
-            borderRadius: '8px',
-            padding: '0.75rem 1rem',
+            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.05) 100%)',
+            border: '1px solid rgba(245, 158, 11, 0.3)',
+            borderRadius: 'var(--radius-md)',
+            padding: '0.85rem 1.25rem',
             marginBottom: '1.25rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             flexWrap: 'wrap',
-            gap: '0.5rem',
+            gap: '0.75rem',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1.2rem' }}>⏳</span>
-            <span style={{ fontSize: '0.85rem', color: '#b45309', fontWeight: '600' }}>
-              Terdapat {farms.filter((f) => f.verification_status === 'pending').length} plot kebun yang diajukan oleh kelompok tani dan menunggu persetujuan Kantor Desa.
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span style={{ fontSize: '1.5rem' }}>⏳</span>
+            <div>
+              <div style={{ fontSize: '0.875rem', color: '#b45309', fontWeight: 700 }}>
+                Menunggu Verifikasi Persetujuan Kantor Desa
+              </div>
+              <div style={{ fontSize: '0.8rem', color: '#92400e' }}>
+                Terdapat <b>{farms.filter((f) => f.verification_status === 'pending').length}</b> plot kebun yang diajukan oleh kelompok tani dan memerlukan pemeriksaan.
+              </div>
+            </div>
           </div>
           <button
             type="button"
             onClick={() => setFarmStatusFilter('pending')}
-            style={{
-              background: '#b45309',
-              color: '#ffffff',
-              border: 'none',
-              padding: '0.25rem 0.6rem',
-              borderRadius: '5px',
-              fontSize: '0.75rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-            }}
+            className="btn btn-primary"
+            style={{ fontSize: '0.8rem', padding: '0.4rem 0.85rem', background: '#d97706', borderColor: '#b45309' }}
           >
             Tinjau Sekarang ↓
           </button>
@@ -295,11 +273,12 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
       {farmMsg && (
         <div
           style={{
-            marginBottom: '1rem',
-            padding: '0.65rem',
-            borderRadius: '6px',
+            marginBottom: '1.25rem',
+            padding: '0.85rem 1rem',
+            borderRadius: 'var(--radius-md)',
             fontSize: '0.875rem',
-            background: farmMsg.type === 'success' ? '#ecfdf5' : '#fef2f2',
+            fontWeight: 500,
+            background: farmMsg.type === 'success' ? 'var(--secondary-light)' : 'var(--danger-light)',
             color: farmMsg.type === 'success' ? '#065f46' : '#991b1b',
             border: `1px solid ${farmMsg.type === 'success' ? '#a7f3d0' : '#fecaca'}`,
           }}
@@ -308,7 +287,7 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
         </div>
       )}
 
-      <div style={{ marginBottom: '1.5rem' }}>
+      <div style={{ marginBottom: '1.5rem', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
         <FarmMap features={farmGeoJSON.features} />
       </div>
 
@@ -316,18 +295,18 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
       {isFarmerOnly && (
         <div
           style={{
-            background: '#f0fdf4',
-            border: '1px solid #bbf7d0',
-            borderRadius: '8px',
-            padding: '0.85rem 1rem',
+            background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.08) 0%, rgba(16, 185, 129, 0.03) 100%)',
+            border: '1px solid rgba(5, 150, 105, 0.25)',
+            borderRadius: 'var(--radius-md)',
+            padding: '1rem 1.25rem',
             marginBottom: '1.5rem',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.65rem',
+            gap: '0.75rem',
           }}
         >
-          <span style={{ fontSize: '1.4rem' }}>ℹ️</span>
-          <div style={{ fontSize: '0.85rem', color: '#166534', lineHeight: 1.5 }}>
+          <span style={{ fontSize: '1.6rem' }}>ℹ️</span>
+          <div style={{ fontSize: '0.875rem', color: '#166534', lineHeight: 1.5 }}>
             <b>Mode Tinjau Petani:</b> Petani hanya dapat melihat data dan sebaran plot lahan kebun. Penambahan atau pemetaan lahan baru didaftarkan secara kolektif oleh <b>Pengurus Kelompok Tani</b> dan memerlukan persetujuan verifikasi resmi dari <b>Petugas Kantor Desa Banda Neira</b>.
           </div>
         </div>
@@ -338,25 +317,25 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
         <details
           style={{
             marginBottom: '1.5rem',
-            background: '#f8fafc',
-            padding: '1rem',
-            borderRadius: '8px',
-            border: '1px solid #cbd5e1',
+            background: 'rgba(248, 250, 252, 0.8)',
+            padding: '1.25rem',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--border-color)',
           }}
           open
         >
-          <summary style={{ cursor: 'pointer', fontWeight: '600', color: '#047857' }}>
-            + Ajukan Plot Kebun Baru (Kelompok Tani ke Kantor Desa)
+          <summary style={{ cursor: 'pointer', fontWeight: 700, color: 'var(--primary)', fontSize: '0.95rem' }}>
+            🌾 Ajukan Plot Kebun Baru (Kelompok Tani ke Kantor Desa)
           </summary>
           <div
             style={{
-              marginTop: '0.6rem',
-              marginBottom: '0.75rem',
-              padding: '0.6rem 0.85rem',
-              background: '#fffbeb',
-              borderRadius: '6px',
-              border: '1px solid #fde68a',
-              fontSize: '0.8rem',
+              marginTop: '0.75rem',
+              marginBottom: '1rem',
+              padding: '0.75rem 1rem',
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.05) 100%)',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid rgba(245, 158, 11, 0.25)',
+              fontSize: '0.85rem',
               color: '#b45309',
               lineHeight: 1.5,
             }}
@@ -368,16 +347,16 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: '0.75rem',
+              gap: '1rem',
               marginTop: '0.5rem',
             }}
           >
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Petani Pemilik Lahan</label>
+            <div className="form-group">
+              <label className="form-label">Petani Pemilik Lahan</label>
               <select
                 value={farmForm.farmer_id}
                 onChange={(e) => setFarmForm({ ...farmForm, farmer_id: e.target.value })}
-                style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                className="form-control"
               >
                 <option value="">-- Pilih Petani Anggota Poktan --</option>
                 {farmers.map((frm) => (
@@ -387,69 +366,69 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                 ))}
               </select>
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Kode Plot Kebun</label>
+            <div className="form-group">
+              <label className="form-label">Kode Plot Kebun</label>
               <input
                 type="text"
                 value={farmForm.farm_code}
                 onChange={(e) => setFarmForm({ ...farmForm, farm_code: e.target.value })}
                 required
-                style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                className="form-control"
               />
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Nama Kebun</label>
+            <div className="form-group">
+              <label className="form-label">Nama Kebun</label>
               <input
                 type="text"
                 placeholder="Mis. Kebun Pala Lonthoir Timur"
                 value={farmForm.name}
                 onChange={(e) => setFarmForm({ ...farmForm, name: e.target.value })}
                 required
-                style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                className="form-control"
               />
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Komoditas Utama</label>
+            <div className="form-group">
+              <label className="form-label">Komoditas Utama</label>
               <select
                 value={farmForm.primary_commodity}
                 onChange={(e) => setFarmForm({ ...farmForm, primary_commodity: e.target.value })}
-                style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                className="form-control"
               >
                 <option value="Pala">Pala</option>
                 <option value="Cengkih">Cengkih</option>
                 <option value="Kayu Manis">Kayu Manis</option>
               </select>
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Luas Lahan (m²)</label>
+            <div className="form-group">
+              <label className="form-label">Luas Lahan (m²)</label>
               <input
                 type="number"
                 value={farmForm.area_sqm}
                 onChange={(e) => setFarmForm({ ...farmForm, area_sqm: Number(e.target.value) })}
                 required
-                style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                className="form-control"
               />
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Latitude</label>
+            <div className="form-group">
+              <label className="form-label">Latitude</label>
               <input
                 type="number"
                 step="any"
                 value={farmForm.latitude}
                 onChange={(e) => setFarmForm({ ...farmForm, latitude: parseFloat(e.target.value) })}
                 required
-                style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                className="form-control"
               />
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Longitude</label>
+            <div className="form-group">
+              <label className="form-label">Longitude</label>
               <input
                 type="number"
                 step="any"
                 value={farmForm.longitude}
                 onChange={(e) => setFarmForm({ ...farmForm, longitude: parseFloat(e.target.value) })}
                 required
-                style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                className="form-control"
               />
             </div>
             <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.25rem' }}>
@@ -457,30 +436,22 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                 type="button"
                 onClick={() => handleAutoGenerateAndCheckPolygon(farmForm.latitude, farmForm.longitude)}
                 disabled={checkingBoundary}
-                style={{
-                  background: '#eff6ff',
-                  color: '#1d4ed8',
-                  border: '1px solid #bfdbfe',
-                  padding: '0.35rem 0.75rem',
-                  borderRadius: '6px',
-                  fontSize: '0.78rem',
-                  fontWeight: '600',
-                  cursor: checkingBoundary ? 'not-allowed' : 'pointer',
-                }}
+                className="btn btn-outline-primary"
+                style={{ fontSize: '0.8rem', padding: '0.45rem 0.9rem' }}
               >
-                {checkingBoundary ? 'Memeriksa Batas...' : '📐 Hitung Poligon & Uji Tumpang Tindih (PostGIS)'}
+                {checkingBoundary ? '⏳ Memeriksa Batas...' : '📐 Hitung Poligon & Uji Tumpang Tindih (PostGIS)'}
               </button>
               {boundaryCheckMsg && (
                 <span
                   style={{
-                    fontSize: '0.75rem',
-                    fontWeight: '600',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
                     color:
                       boundaryCheckMsg.type === 'success'
-                        ? '#059669'
+                        ? 'var(--emerald-600)'
                         : boundaryCheckMsg.type === 'warning'
                         ? '#b45309'
-                        : '#dc2626',
+                        : 'var(--rose-600)',
                   }}
                 >
                   {boundaryCheckMsg.text}
@@ -490,15 +461,8 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
             <div style={{ gridColumn: '1 / -1', marginTop: '0.5rem' }}>
               <button
                 type="submit"
-                style={{
-                  background: '#047857',
-                  color: '#ffffff',
-                  border: 'none',
-                  padding: '0.5rem 1.25rem',
-                  borderRadius: '6px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                }}
+                className="btn btn-primary"
+                style={{ padding: '0.55rem 1.4rem' }}
               >
                 Kirim Pengajuan Plot ke Kantor Desa
               </button>
@@ -512,87 +476,87 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
         <details
           style={{
             marginBottom: '1.5rem',
-            background: '#f8fafc',
-            padding: '1rem',
-            borderRadius: '8px',
-            border: '1px solid #e2e8f0',
+            background: 'rgba(248, 250, 252, 0.8)',
+            padding: '1.25rem',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--border-color)',
           }}
         >
-          <summary style={{ cursor: 'pointer', fontWeight: '600', color: '#047857' }}>
-            + Tambah / Petakan Plot Kebun Baru Langsung (Kantor Desa)
+          <summary style={{ cursor: 'pointer', fontWeight: 700, color: 'var(--primary)', fontSize: '0.95rem' }}>
+            ➕ Tambah / Petakan Plot Kebun Baru Langsung (Kantor Desa)
           </summary>
           <form
             onSubmit={handleCreateQuickFarmerAndFarm}
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: '0.75rem',
+              gap: '1rem',
               marginTop: '1rem',
             }}
           >
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Kode Kebun</label>
+            <div className="form-group">
+              <label className="form-label">Kode Kebun</label>
               <input
                 type="text"
                 value={farmForm.farm_code}
                 onChange={(e) => setFarmForm({ ...farmForm, farm_code: e.target.value })}
                 required
-                style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                className="form-control"
               />
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Nama Kebun</label>
+            <div className="form-group">
+              <label className="form-label">Nama Kebun</label>
               <input
                 type="text"
                 placeholder="Mis. Kebun Pala Selamon"
                 value={farmForm.name}
                 onChange={(e) => setFarmForm({ ...farmForm, name: e.target.value })}
                 required
-                style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                className="form-control"
               />
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Komoditas</label>
+            <div className="form-group">
+              <label className="form-label">Komoditas</label>
               <select
                 value={farmForm.primary_commodity}
                 onChange={(e) => setFarmForm({ ...farmForm, primary_commodity: e.target.value })}
-                style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                className="form-control"
               >
                 <option value="Pala">Pala</option>
                 <option value="Cengkih">Cengkih</option>
                 <option value="Kayu Manis">Kayu Manis</option>
               </select>
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Luas (m²)</label>
+            <div className="form-group">
+              <label className="form-label">Luas (m²)</label>
               <input
                 type="number"
                 value={farmForm.area_sqm}
                 onChange={(e) => setFarmForm({ ...farmForm, area_sqm: Number(e.target.value) })}
                 required
-                style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                className="form-control"
               />
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Latitude</label>
+            <div className="form-group">
+              <label className="form-label">Latitude</label>
               <input
                 type="number"
                 step="any"
                 value={farmForm.latitude}
                 onChange={(e) => setFarmForm({ ...farmForm, latitude: parseFloat(e.target.value) })}
                 required
-                style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                className="form-control"
               />
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Longitude</label>
+            <div className="form-group">
+              <label className="form-label">Longitude</label>
               <input
                 type="number"
                 step="any"
                 value={farmForm.longitude}
                 onChange={(e) => setFarmForm({ ...farmForm, longitude: parseFloat(e.target.value) })}
                 required
-                style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                className="form-control"
               />
             </div>
             <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.25rem' }}>
@@ -600,30 +564,22 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                 type="button"
                 onClick={() => handleAutoGenerateAndCheckPolygon(farmForm.latitude, farmForm.longitude)}
                 disabled={checkingBoundary}
-                style={{
-                  background: '#eff6ff',
-                  color: '#1d4ed8',
-                  border: '1px solid #bfdbfe',
-                  padding: '0.35rem 0.75rem',
-                  borderRadius: '6px',
-                  fontSize: '0.78rem',
-                  fontWeight: '600',
-                  cursor: checkingBoundary ? 'not-allowed' : 'pointer',
-                }}
+                className="btn btn-outline-primary"
+                style={{ fontSize: '0.8rem', padding: '0.45rem 0.9rem' }}
               >
-                {checkingBoundary ? 'Memeriksa Batas...' : '📐 Hitung Poligon & Uji Tumpang Tindih (PostGIS)'}
+                {checkingBoundary ? '⏳ Memeriksa Batas...' : '📐 Hitung Poligon & Uji Tumpang Tindih (PostGIS)'}
               </button>
               {boundaryCheckMsg && (
                 <span
                   style={{
-                    fontSize: '0.75rem',
-                    fontWeight: '600',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
                     color:
                       boundaryCheckMsg.type === 'success'
-                        ? '#059669'
+                        ? 'var(--emerald-600)'
                         : boundaryCheckMsg.type === 'warning'
                         ? '#b45309'
-                        : '#dc2626',
+                        : 'var(--rose-600)',
                   }}
                 >
                   {boundaryCheckMsg.text}
@@ -633,15 +589,8 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
             <div style={{ gridColumn: '1 / -1', marginTop: '0.5rem' }}>
               <button
                 type="submit"
-                style={{
-                  background: '#047857',
-                  color: '#ffffff',
-                  border: 'none',
-                  padding: '0.5rem 1.25rem',
-                  borderRadius: '6px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                }}
+                className="btn btn-primary"
+                style={{ padding: '0.55rem 1.4rem' }}
               >
                 Simpan & Sahkan di Peta
               </button>
@@ -652,21 +601,21 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
 
       {/* Tabel Daftar Plot Kebun & Status Verifikasi Desa */}
       <div style={{ marginTop: '1.5rem', marginBottom: '1rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
           <div>
-            <h3 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: '#0f172a', margin: 0 }}>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
               {isOfficerOrAdmin
                 ? `Daftar Plot Kebun & Verifikasi Kantor Desa (${farms.length} Plot)`
                 : `Daftar Sebaran Plot Kebun Rempah (${farms.length} Plot)`}
             </h3>
-            <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0 }}>
+            <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', margin: '0.2rem 0 0' }}>
               {isOfficerOrAdmin
                 ? 'Verifikasi dan sahkan pendaftaran lahan dari kelompok tani Banda Neira.'
                 : 'Informasi luasan, komoditas, dan status persetujuan lahan oleh Kantor Desa.'}
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.35rem' }}>
+          <div style={{ display: 'flex', gap: '0.35rem', background: '#f1f5f9', padding: '0.25rem', borderRadius: 'var(--radius-sm)' }}>
             {['', 'pending', 'verified'].map((st) => {
               const label = st === '' ? 'Semua' : st === 'pending' ? 'Menunggu Persetujuan' : 'Disetujui'
               const count = st === '' ? farms.length : farms.filter((f) => f.verification_status === st).length
@@ -677,14 +626,16 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                   type="button"
                   onClick={() => setFarmStatusFilter(st)}
                   style={{
-                    padding: '0.25rem 0.6rem',
-                    borderRadius: '6px',
-                    fontSize: '0.75rem',
-                    fontWeight: '600',
-                    border: active ? '2px solid #047857' : '1px solid #cbd5e1',
-                    background: active ? '#047857' : '#f8fafc',
-                    color: active ? '#ffffff' : '#334155',
+                    padding: '0.35rem 0.75rem',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '0.78rem',
+                    fontWeight: 600,
+                    border: 'none',
+                    background: active ? '#ffffff' : 'transparent',
+                    color: active ? 'var(--primary)' : 'var(--text-muted)',
+                    boxShadow: active ? 'var(--shadow-sm)' : 'none',
                     cursor: 'pointer',
+                    transition: 'all 0.2s ease',
                   }}
                 >
                   {label} ({count})
@@ -694,60 +645,48 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
           </div>
         </div>
 
-        <div style={{ overflowX: 'auto', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+        <div className="table-responsive">
+          <table className="data-table">
             <thead>
-              <tr style={{ background: '#f1f5f9', borderBottom: '1px solid #e2e8f0' }}>
-                <th style={{ padding: '0.65rem' }}>Kode & Nama Kebun</th>
-                <th style={{ padding: '0.65rem' }}>Komoditas</th>
-                <th style={{ padding: '0.65rem' }}>Luas (m²)</th>
-                <th style={{ padding: '0.65rem' }}>Lokasi / Koordinat</th>
-                <th style={{ padding: '0.65rem' }}>Status Verifikasi</th>
-                {isOfficerOrAdmin && <th style={{ padding: '0.65rem', textAlign: 'center' }}>Tindakan Kantor Desa</th>}
+              <tr>
+                <th>Kode & Nama Kebun</th>
+                <th>Komoditas</th>
+                <th>Luas (m²)</th>
+                <th>Lokasi / Koordinat</th>
+                <th>Status Verifikasi</th>
+                {isOfficerOrAdmin && <th style={{ textAlign: 'center' }}>Tindakan Kantor Desa</th>}
               </tr>
             </thead>
             <tbody>
               {farms
                 .filter((f) => !farmStatusFilter || f.verification_status === farmStatusFilter)
                 .map((f) => (
-                  <tr key={f.id} style={{ borderBottom: '1px solid #e2e8f0', background: '#ffffff' }}>
-                    <td style={{ padding: '0.65rem' }}>
-                      <span style={{ fontWeight: '600', color: '#0f172a', display: 'block' }}>{f.name}</span>
-                      <span style={{ fontSize: '0.75rem', color: '#64748b', fontFamily: 'monospace' }}>{f.farm_code}</span>
+                  <tr key={f.id}>
+                    <td>
+                      <span style={{ fontWeight: 700, color: 'var(--text-main)', display: 'block' }}>{f.name}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{f.farm_code}</span>
                     </td>
-                    <td style={{ padding: '0.65rem' }}>
-                      <span className={`badge ${f.primary_commodity.toLowerCase().includes('pala') ? 'badge-blue' : 'badge-green'}`}>
+                    <td>
+                      <span className={`badge ${f.primary_commodity.toLowerCase().includes('pala') ? 'badge-blue' : 'badge-emerald'}`}>
                         {f.primary_commodity}
                       </span>
                     </td>
-                    <td style={{ padding: '0.65rem', fontWeight: '600' }}>
+                    <td style={{ fontWeight: 700, color: 'var(--text-main)' }}>
                       {f.area_sqm.toLocaleString()} m²
                     </td>
-                    <td style={{ padding: '0.65rem', fontSize: '0.8rem', color: '#475569' }}>
+                    <td style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                       {f.location_description || '-'}<br />
-                      <small style={{ color: '#94a3b8' }}>{f.latitude.toFixed(4)}, {f.longitude.toFixed(4)}</small>
+                      <small style={{ color: 'var(--text-muted)' }}>{f.latitude.toFixed(4)}, {f.longitude.toFixed(4)}</small>
                     </td>
-                    <td style={{ padding: '0.65rem' }}>
+                    <td>
                       <span
-                        style={{
-                          display: 'inline-block',
-                          padding: '0.15rem 0.5rem',
-                          borderRadius: '10px',
-                          fontSize: '0.72rem',
-                          fontWeight: '700',
-                          background:
-                            f.verification_status === 'verified'
-                              ? '#ecfdf5'
-                              : f.verification_status === 'pending'
-                              ? '#fffbeb'
-                              : '#fef2f2',
-                          color:
-                            f.verification_status === 'verified'
-                              ? '#047857'
-                              : f.verification_status === 'pending'
-                              ? '#b45309'
-                              : '#b91c1c',
-                        }}
+                        className={`badge ${
+                          f.verification_status === 'verified'
+                            ? 'badge-emerald'
+                            : f.verification_status === 'pending'
+                            ? 'badge-amber'
+                            : 'badge-rose'
+                        }`}
                       >
                         {f.verification_status === 'verified'
                           ? '✓ TERVERIFIKASI'
@@ -757,23 +696,14 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                       </span>
                     </td>
                     {isOfficerOrAdmin && (
-                      <td style={{ padding: '0.65rem', textAlign: 'center' }}>
+                      <td style={{ textAlign: 'center' }}>
                         {f.verification_status === 'pending' ? (
                           <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
                             <button
                               type="button"
                               disabled={verifyingFarmId === f.id}
                               onClick={() => handleVerifyFarm(f.id, 'verified')}
-                              style={{
-                                background: '#059669',
-                                color: '#ffffff',
-                                border: 'none',
-                                padding: '0.25rem 0.6rem',
-                                borderRadius: '5px',
-                                fontSize: '0.75rem',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                              }}
+                              className="btn btn-xs btn-success"
                             >
                               {verifyingFarmId === f.id ? '...' : '✓ Setujui'}
                             </button>
@@ -781,22 +711,13 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                               type="button"
                               disabled={verifyingFarmId === f.id}
                               onClick={() => handleVerifyFarm(f.id, 'rejected')}
-                              style={{
-                                background: '#ef4444',
-                                color: '#ffffff',
-                                border: 'none',
-                                padding: '0.25rem 0.6rem',
-                                borderRadius: '5px',
-                                fontSize: '0.75rem',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                              }}
+                              className="btn btn-xs btn-danger"
                             >
                               {verifyingFarmId === f.id ? '...' : '✕ Tolak'}
                             </button>
                           </div>
                         ) : (
-                          <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                             {f.verification_status === 'verified' ? '✓ Disahkan Desa' : 'Ditolak'}
                           </span>
                         )}
@@ -806,7 +727,7 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                 ))}
               {farms.length === 0 && (
                 <tr>
-                  <td colSpan={isOfficerOrAdmin ? 6 : 5} style={{ textAlign: 'center', padding: '1.5rem', color: '#64748b' }}>
+                  <td colSpan={isOfficerOrAdmin ? 6 : 5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
                     Belum ada plot kebun terdaftar.
                   </td>
                 </tr>

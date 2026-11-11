@@ -122,62 +122,42 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
   }
 
   return (
-    <section
-      style={{
-        background: '#ffffff',
-        borderRadius: '12px',
-        padding: '1.5rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        marginBottom: '2rem',
-        border: '1px solid #e2e8f0',
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+    <section className="app-card animate-fade-in" style={{ marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.35rem', color: '#6d28d9', fontWeight: 'bold' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+            <span className="badge badge-purple" style={{ background: 'rgba(124, 58, 237, 0.1)', color: '#7c3aed', border: '1px solid rgba(124, 58, 237, 0.2)' }}>
+              Indikasi Geografis & Kualitas
+            </span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              &bull; Telusur Rantai Pasok Rempah
+            </span>
+          </div>
+          <h2 style={{ fontSize: '1.45rem', color: 'var(--text-main)', fontWeight: 800, margin: 0 }}>
             {isFarmer && !isOfficerOrAdmin
               ? 'Catatan Hasil Panen Rempah Petani'
               : 'Pengelolaan Panen & Label QR Rempah Pala'}
           </h2>
-          <p style={{ fontSize: '0.875rem', color: '#64748b' }}>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
             {isFarmer && !isOfficerOrAdmin
               ? 'Catat hasil petik buah pala, fuli, atau cengkeh dari kebun Anda. Tetap bisa disimpan walau di kebun tanpa sinyal internet.'
               : 'Rekapitulasi panen dari petani, pembuatan batch kemasan berlabel QR resmi, dan kunci keaslian produk.'}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <button
             onClick={handleExportHarvestCSV}
-            style={{
-              background: '#047857',
-              color: '#ffffff',
-              border: 'none',
-              padding: '0.4rem 0.8rem',
-              borderRadius: '6px',
-              fontSize: '0.85rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-            }}
+            className="btn btn-outline-primary"
+            style={{ fontSize: '0.85rem', padding: '0.5rem 0.9rem' }}
           >
             📥 Export CSV ({harvests.length})
           </button>
           <button
             onClick={fetchTraceabilityData}
-            style={{
-              background: '#f1f5f9',
-              color: '#334155',
-              border: '1px solid #cbd5e1',
-              padding: '0.4rem 0.8rem',
-              borderRadius: '6px',
-              fontSize: '0.85rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-            }}
+            className="btn btn-secondary"
+            style={{ fontSize: '0.85rem', padding: '0.5rem 0.9rem' }}
           >
-            Segarkan Data
+            🔄 Segarkan Data
           </button>
         </div>
       </div>
@@ -185,11 +165,12 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
       {traceMsg && (
         <div
           style={{
-            marginBottom: '1rem',
-            padding: '0.65rem',
-            borderRadius: '6px',
+            marginBottom: '1.25rem',
+            padding: '0.85rem 1rem',
+            borderRadius: 'var(--radius-md)',
             fontSize: '0.875rem',
-            background: traceMsg.type === 'success' ? '#ecfdf5' : '#fef2f2',
+            fontWeight: 500,
+            background: traceMsg.type === 'success' ? 'var(--secondary-light)' : 'var(--danger-light)',
             color: traceMsg.type === 'success' ? '#065f46' : '#991b1b',
             border: `1px solid ${traceMsg.type === 'success' ? '#a7f3d0' : '#fecaca'}`,
           }}
@@ -199,15 +180,18 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
       )}
 
       {/* Grid: 1. Input Panen & 2. Buat Batch */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem', marginBottom: '1.75rem' }}>
         {/* Form Catat Panen */}
-        <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-          <h3 style={{ fontSize: '1.05rem', color: '#0f172a', marginBottom: '0.75rem', fontWeight: '700' }}>
-            1. Catat Hasil Panen Petani
-          </h3>
-          <form onSubmit={handleCreateHarvest} style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Kebun & Petani</label>
+        <div style={{ background: 'rgba(248, 250, 252, 0.85)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <span style={{ fontSize: '1.2rem' }}>🌱</span>
+            <h3 style={{ fontSize: '1.05rem', color: 'var(--text-main)', margin: 0, fontWeight: 700 }}>
+              1. Catat Hasil Panen Petani
+            </h3>
+          </div>
+          <form onSubmit={handleCreateHarvest} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1 }}>
+            <div className="form-group">
+              <label className="form-label">Kebun & Petani</label>
               <select
                 value={harvestForm.farm_id}
                 onChange={(e) => {
@@ -219,7 +203,7 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                   })
                 }}
                 required
-                style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                className="form-control"
               >
                 <option value="">-- Pilih Kebun --</option>
                 {farms.map((f) => (
@@ -229,58 +213,53 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                 ))}
               </select>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Kode Panen</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+              <div className="form-group">
+                <label className="form-label">Kode Panen</label>
                 <input
                   type="text"
                   value={harvestForm.harvest_code}
                   onChange={(e) => setHarvestForm({ ...harvestForm, harvest_code: e.target.value })}
                   required
-                  style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                  className="form-control"
                 />
               </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Jumlah (kg)</label>
+              <div className="form-group">
+                <label className="form-label">Jumlah (kg)</label>
                 <input
                   type="number"
                   value={harvestForm.quantity_kg}
                   onChange={(e) => setHarvestForm({ ...harvestForm, quantity_kg: Number(e.target.value) })}
                   required
-                  style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                  className="form-control"
                 />
               </div>
             </div>
             <button
               type="submit"
-              style={{
-                background: '#047857',
-                color: '#ffffff',
-                border: 'none',
-                padding: '0.5rem',
-                borderRadius: '6px',
-                fontWeight: '600',
-                marginTop: '0.5rem',
-                cursor: 'pointer',
-              }}
+              className="btn btn-primary"
+              style={{ marginTop: 'auto', padding: '0.55rem' }}
             >
               Simpan Catatan Panen
             </button>
-            <p style={{ fontSize: '0.75rem', color: '#16a34a', marginTop: '0.4rem', lineHeight: 1.4 }}>
-              📶 Bekerja Offline: Catatan panen tetap tersimpan di HP walau di kebun tanpa sinyal internet, dan otomatis terkirim saat sinyal kembali.
+            <p style={{ fontSize: '0.75rem', color: 'var(--emerald-600)', margin: '0.35rem 0 0', lineHeight: 1.4 }}>
+              📶 <b>Bekerja Offline:</b> Catatan panen tetap tersimpan di HP walau di kebun tanpa sinyal internet, dan otomatis terkirim saat sinyal kembali.
             </p>
           </form>
         </div>
 
         {/* Form Buat Batch Produk - Khusus Petugas / Admin */}
         {isOfficerOrAdmin && (
-          <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-            <h3 style={{ fontSize: '1.05rem', color: '#0f172a', marginBottom: '0.75rem', fontWeight: '700' }}>
-              2. Buat Batch Kemasan & Label QR
-            </h3>
-            <form onSubmit={handleCreateBatch} style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Asal Catatan Panen</label>
+          <div style={{ background: 'rgba(248, 250, 252, 0.85)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+              <span style={{ fontSize: '1.2rem' }}>📦</span>
+              <h3 style={{ fontSize: '1.05rem', color: 'var(--text-main)', margin: 0, fontWeight: 700 }}>
+                2. Buat Batch Kemasan & Label QR
+              </h3>
+            </div>
+            <form onSubmit={handleCreateBatch} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1 }}>
+              <div className="form-group">
+                <label className="form-label">Asal Catatan Panen</label>
                 <select
                   value={batchForm.harvest_id}
                   onChange={(e) => {
@@ -293,7 +272,7 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                     })
                   }}
                   required
-                  style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                  className="form-control"
                 >
                   <option value="">-- Pilih Panen Terdaftar --</option>
                   {harvests.map((h) => (
@@ -303,40 +282,32 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                   ))}
                 </select>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Kode Batch</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div className="form-group">
+                  <label className="form-label">Kode Batch</label>
                   <input
                     type="text"
                     value={batchForm.batch_code}
                     onChange={(e) => setBatchForm({ ...batchForm, batch_code: e.target.value })}
                     required
-                    style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                    className="form-control"
                   />
                 </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Alokasi (kg)</label>
+                <div className="form-group">
+                  <label className="form-label">Alokasi (kg)</label>
                   <input
                     type="number"
                     value={batchForm.allocated_qty}
                     onChange={(e) => setBatchForm({ ...batchForm, allocated_qty: Number(e.target.value) })}
                     required
-                    style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                    className="form-control"
                   />
                 </div>
               </div>
               <button
                 type="submit"
-                style={{
-                  background: '#6d28d9',
-                  color: '#ffffff',
-                  border: 'none',
-                  padding: '0.5rem',
-                  borderRadius: '6px',
-                  fontWeight: '600',
-                  marginTop: '0.5rem',
-                  cursor: 'pointer',
-                }}
+                className="btn btn-primary"
+                style={{ marginTop: 'auto', padding: '0.55rem', background: '#7c3aed', borderColor: '#6d28d9' }}
               >
                 Terbitkan Batch & Label QR
               </button>
@@ -346,17 +317,17 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
       </div>
 
       {/* DAFTAR RIWAYAT PANEN MASUK (Bisa dilihat Petani & Petugas) */}
-      <div style={{ marginBottom: '1.75rem' }}>
-        <h3 style={{ fontSize: '1.1rem', color: '#0f172a', marginBottom: '0.75rem', fontWeight: '700' }}>
+      <div style={{ marginBottom: '2rem' }}>
+        <h3 style={{ fontSize: '1.15rem', color: 'var(--text-main)', marginBottom: '0.75rem', fontWeight: 800 }}>
           📋 Riwayat Catatan Hasil Panen ({harvests.length} Catatan)
         </h3>
         {harvests.length === 0 ? (
-          <div style={{ padding: '1.5rem', textAlign: 'center', background: '#f8fafc', borderRadius: '8px', color: '#64748b', border: '1px solid #e2e8f0' }}>
+          <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(248, 250, 252, 0.8)', borderRadius: 'var(--radius-md)', color: 'var(--text-muted)', border: '1px dashed var(--border-color)' }}>
             Belum ada catatan panen terdaftar. Gunakan formulir di atas untuk mencatat panen hari ini.
           </div>
         ) : (
-          <div style={{ overflowX: 'auto', background: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-            <table className="data-table" style={{ width: '100%', fontSize: '0.85rem' }}>
+          <div className="table-responsive">
+            <table className="data-table">
               <thead>
                 <tr>
                   <th>Kode Panen</th>
@@ -372,12 +343,18 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                   const farm = farms.find((f) => f.id === h.farm_id)
                   return (
                     <tr key={h.id}>
-                      <td><b>{h.harvest_code}</b></td>
+                      <td style={{ fontWeight: 700, color: 'var(--text-main)', fontFamily: 'monospace' }}>{h.harvest_code}</td>
                       <td>{farm ? farm.name : 'Kebun Lonthoir'}</td>
-                      <td><span className="badge badge-green">{h.commodity}</span></td>
-                      <td><b>{h.quantity_kg} kg</b></td>
-                      <td>{h.quality_grade || 'Grade A'}</td>
-                      <td>{h.harvest_date}</td>
+                      <td>
+                        <span className={`badge ${h.commodity.toLowerCase().includes('pala') ? 'badge-blue' : 'badge-emerald'}`}>
+                          {h.commodity}
+                        </span>
+                      </td>
+                      <td style={{ fontWeight: 700, color: 'var(--text-main)' }}>{h.quantity_kg} kg</td>
+                      <td>
+                        <span className="badge badge-emerald">{h.quality_grade || 'Grade A Super'}</span>
+                      </td>
+                      <td style={{ color: 'var(--text-muted)' }}>{h.harvest_date}</td>
                     </tr>
                   )
                 })}
@@ -390,207 +367,177 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
       {/* Active Batches & Event Lifecycle Append - Khusus Petugas / Admin */}
       {isOfficerOrAdmin && (
         <div style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ fontSize: '1.1rem', color: '#0f172a', marginBottom: '0.75rem', fontWeight: '700' }}>
-            Daftar Batch & Label QR Resmi ({batches.length} Batch)
-          </h3>
-          {batches.map((b) => (
-            <div
-              key={b.id}
-              style={{
-                border: selectedBatch?.id === b.id ? '2px solid #7c3aed' : '1px solid #e2e8f0',
-                borderRadius: '10px',
-                padding: '1.25rem',
-                marginBottom: '1rem',
-                background: '#ffffff',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '0.75rem' }}>
-                <div>
-                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Nomor Batch:</span>
-                  <h4 style={{ fontSize: '1.2rem', color: '#1e3a8a', fontWeight: 'bold' }}>
-                    {b.batch_code} ({b.commodity} - {b.total_quantity_kg} kg)
-                  </h4>
-                  <span
-                    style={{
-                      padding: '0.2rem 0.6rem',
-                      borderRadius: '9999px',
-                      fontSize: '0.75rem',
-                      fontWeight: '700',
-                      background: '#dbeafe',
-                      color: '#1e40af',
-                      display: 'inline-block',
-                      marginTop: '0.25rem',
-                    }}
-                  >
-                    STATUS: {b.status.toUpperCase()}
-                  </span>
-                  <span
-                    style={{
-                      padding: '0.2rem 0.6rem',
-                      borderRadius: '9999px',
-                      fontSize: '0.75rem',
-                      fontWeight: '700',
-                      marginLeft: '0.4rem',
-                      background:
-                        b.blockchain_status === 'confirmed'
-                          ? '#d1fae5'
-                          : b.blockchain_status === 'submitted'
-                          ? '#dbeafe'
-                          : b.blockchain_status === 'failed'
-                          ? '#fee2e2'
-                          : '#fef3c7',
-                      color:
-                        b.blockchain_status === 'confirmed'
-                          ? '#065f46'
-                          : b.blockchain_status === 'submitted'
-                          ? '#1e40af'
-                          : b.blockchain_status === 'failed'
-                          ? '#991b1b'
-                          : '#92400e',
-                      display: 'inline-block',
-                      marginTop: '0.25rem',
-                    }}
-                  >
-                    ⛓️ BLOCKCHAIN: {b.blockchain_status.toUpperCase()}
-                  </span>
-                </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div>
+              <h3 style={{ fontSize: '1.2rem', color: 'var(--text-main)', margin: 0, fontWeight: 800 }}>
+                Daftar Batch & Label QR Resmi ({batches.length} Batch)
+              </h3>
+              <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', margin: '0.2rem 0 0' }}>
+                Kemasan produk rempah berlabel QR dengan sertifikat keaslian dan jangkar kriptografis on-chain.
+              </p>
+            </div>
+          </div>
 
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                  {b.qr_code_base64 && (
-                    <img
-                      src={b.qr_code_base64}
-                      alt="QR Code"
-                      style={{ width: '70px', height: '70px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
-                    />
-                  )}
-                  <button
-                    onClick={() => handleAnchorBlockchain(b.id)}
-                    disabled={blockchainLoading === b.id}
-                    style={{
-                      background: '#4f46e5',
-                      color: '#ffffff',
-                      border: 'none',
-                      padding: '0.45rem 0.8rem',
-                      borderRadius: '6px',
-                      fontSize: '0.8rem',
-                      fontWeight: '600',
-                      cursor: blockchainLoading === b.id ? 'not-allowed' : 'pointer',
-                      opacity: blockchainLoading === b.id ? 0.7 : 1,
-                    }}
-                  >
-                    {blockchainLoading === b.id ? 'Menjangkar...' : '⛓️ Jangkar EVM'}
-                  </button>
-                  <button
-                    onClick={() => handleVerifyBlockchain(b.id)}
-                    style={{
-                      background: '#0284c7',
-                      color: '#ffffff',
-                      border: 'none',
-                      padding: '0.45rem 0.8rem',
-                      borderRadius: '6px',
-                      fontSize: '0.8rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    🔍 Verifikasi On-Chain
-                  </button>
-                  <button
-                    onClick={() => handlePublicVerify(b.public_verification_token)}
-                    style={{
-                      background: '#059669',
-                      color: '#ffffff',
-                      border: 'none',
-                      padding: '0.45rem 0.8rem',
-                      borderRadius: '6px',
-                      fontSize: '0.8rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    QR Publik ↗
-                  </button>
-                </div>
-              </div>
-
-              {/* Event Chain Timeline */}
-              <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0', marginTop: '0.5rem' }}>
-                <p style={{ fontSize: '0.85rem', fontWeight: '700', color: '#334155', marginBottom: '0.5rem' }}>
-                  Rantai Hash Integritas Peristiwa ({b.events.length} Peristiwa):
-                </p>
-                {b.events.map((ev, idx) => (
-                  <div
-                    key={ev.id}
-                    style={{
-                      padding: '0.5rem 0',
-                      borderBottom: idx < b.events.length - 1 ? '1px dashed #cbd5e1' : 'none',
-                      fontSize: '0.8rem',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#1e40af', fontWeight: '600' }}>
-                      <span>● {ev.event_type.toUpperCase()} ({ev.location})</span>
-                      <span style={{ color: '#64748b', fontWeight: 'normal' }}>
-                        {new Date(ev.event_timestamp).toLocaleString('id-ID')}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {batches.map((b) => (
+              <div
+                key={b.id}
+                style={{
+                  border: selectedBatch?.id === b.id ? '2px solid var(--ocean-600)' : '1px solid var(--border-color)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '1.35rem',
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  boxShadow: selectedBatch?.id === b.id ? 'var(--shadow-md)' : 'var(--shadow-sm)',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+                  <div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+                      Nomor Batch Kemasan
+                    </span>
+                    <h4 style={{ fontSize: '1.25rem', color: 'var(--text-main)', fontWeight: 800, margin: '0.2rem 0 0.4rem' }}>
+                      {b.batch_code} <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-muted)' }}>({b.commodity} &bull; {b.total_quantity_kg} kg)</span>
+                    </h4>
+                    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <span className="badge badge-blue">
+                        STATUS: {b.status.toUpperCase()}
+                      </span>
+                      <span
+                        className={`badge ${
+                          b.blockchain_status === 'confirmed'
+                            ? 'badge-emerald'
+                            : b.blockchain_status === 'submitted'
+                            ? 'badge-blue'
+                            : b.blockchain_status === 'failed'
+                            ? 'badge-rose'
+                            : 'badge-amber'
+                        }`}
+                      >
+                        ⛓️ EVM: {b.blockchain_status.toUpperCase()}
                       </span>
                     </div>
-                    <p style={{ color: '#475569', marginTop: '0.1rem' }}>{ev.description || '-'}</p>
-                    <div style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: '#6d28d9', marginTop: '0.2rem' }}>
-                      Hash SHA-256: {ev.event_hash}
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    {b.qr_code_base64 && (
+                      <img
+                        src={b.qr_code_base64}
+                        alt="QR Code"
+                        style={{ width: '68px', height: '68px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}
+                      />
+                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                      <div style={{ display: 'flex', gap: '0.35rem' }}>
+                        <button
+                          onClick={() => handleAnchorBlockchain(b.id)}
+                          disabled={blockchainLoading === b.id}
+                          className="btn btn-sm btn-primary"
+                          style={{ fontSize: '0.78rem', padding: '0.4rem 0.75rem' }}
+                        >
+                          {blockchainLoading === b.id ? '⏳ Menjangkar...' : '⛓️ Jangkar EVM'}
+                        </button>
+                        <button
+                          onClick={() => handleVerifyBlockchain(b.id)}
+                          className="btn btn-sm btn-outline-primary"
+                          style={{ fontSize: '0.78rem', padding: '0.4rem 0.75rem' }}
+                        >
+                          🔍 Verifikasi On-Chain
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => handlePublicVerify(b.public_verification_token)}
+                        className="btn btn-sm btn-success"
+                        style={{ fontSize: '0.78rem', padding: '0.4rem 0.75rem', justifyContent: 'center' }}
+                      >
+                        QR Publik Sertifikat ↗
+                      </button>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
 
-              {/* Quick Append Event */}
-              <form
-                onSubmit={(e) => {
-                  setSelectedBatch(b)
-                  handleAppendEvent(e)
-                }}
-                style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}
-              >
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Tambah Tahapan</label>
-                  <select
-                    value={eventForm.event_type}
-                    onChange={(e) => setEventForm({ ...eventForm, event_type: e.target.value })}
-                    style={{ padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
-                  >
-                    <option value="drying">Pengeringan (Drying)</option>
-                    <option value="sorting">Sortasi Mutu (Sorting)</option>
-                    <option value="packaging">Pengemasan (Packaging)</option>
-                    <option value="transfer">Distribusi (Transfer)</option>
-                  </select>
+                {/* Event Chain Timeline */}
+                <div style={{ background: 'rgba(248, 250, 252, 0.85)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', marginTop: '0.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.65rem' }}>
+                    <span style={{ fontSize: '0.9rem' }}>🔗</span>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                      Rantai Hash Integritas Peristiwa ({b.events.length} Peristiwa):
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                    {b.events.map((ev, idx) => (
+                      <div
+                        key={ev.id}
+                        style={{
+                          paddingBottom: idx < b.events.length - 1 ? '0.65rem' : '0',
+                          borderBottom: idx < b.events.length - 1 ? '1px dashed var(--border-color)' : 'none',
+                          fontSize: '0.825rem',
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          <span style={{ fontWeight: 700, color: 'var(--ocean-600)' }}>
+                            ● {ev.event_type.toUpperCase()} ({ev.location})
+                          </span>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                            {new Date(ev.event_timestamp).toLocaleString('id-ID')}
+                          </span>
+                        </div>
+                        <p style={{ color: 'var(--text-main)', margin: '0.2rem 0', fontSize: '0.825rem' }}>
+                          {ev.description || '-'}
+                        </p>
+                        <div style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: '#7c3aed', background: 'rgba(124, 58, 237, 0.05)', padding: '0.15rem 0.45rem', borderRadius: '4px', display: 'inline-block' }}>
+                          SHA-256: {ev.event_hash}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div style={{ flex: 1, minWidth: '200px' }}>
-                  <label style={{ display: 'block', fontSize: '0.75rem', color: '#64748b' }}>Catatan / Lokasi</label>
-                  <input
-                    type="text"
-                    placeholder="Mis. Pengeringan solar dryer Lonthoir"
-                    value={eventForm.description}
-                    onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
-                    required
-                    style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  style={{
-                    background: '#4338ca',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '0.45rem 1rem',
-                    borderRadius: '6px',
-                    fontWeight: '600',
-                    fontSize: '0.85rem',
-                    cursor: 'pointer',
+
+                {/* Quick Append Event */}
+                <form
+                  onSubmit={(e) => {
+                    setSelectedBatch(b)
+                    handleAppendEvent(e)
                   }}
+                  style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}
                 >
-                  + Catat & Rantai Hash
-                </button>
-              </form>
-            </div>
-          ))}
+                  <div style={{ width: '180px' }}>
+                    <label className="form-label">Tambah Tahapan</label>
+                    <select
+                      value={eventForm.event_type}
+                      onChange={(e) => setEventForm({ ...eventForm, event_type: e.target.value })}
+                      className="form-control"
+                      style={{ fontSize: '0.8rem', padding: '0.45rem 0.6rem' }}
+                    >
+                      <option value="drying">Pengeringan (Drying)</option>
+                      <option value="sorting">Sortasi Mutu (Sorting)</option>
+                      <option value="packaging">Pengemasan (Packaging)</option>
+                      <option value="transfer">Distribusi (Transfer)</option>
+                    </select>
+                  </div>
+                  <div style={{ flex: 1, minWidth: '220px' }}>
+                    <label className="form-label">Catatan & Lokasi Tahapan</label>
+                    <input
+                      type="text"
+                      placeholder="Mis. Pengeringan solar dryer Lonthoir..."
+                      value={eventForm.description}
+                      onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+                      required
+                      className="form-control"
+                      style={{ fontSize: '0.8rem', padding: '0.45rem 0.75rem' }}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    style={{ fontSize: '0.8rem', padding: '0.5rem 1rem' }}
+                  >
+                    + Catat & Rantai Hash
+                  </button>
+                </form>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </section>

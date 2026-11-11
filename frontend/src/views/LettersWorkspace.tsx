@@ -1,4 +1,13 @@
 import React, { useState } from 'react'
+import {
+  Mail,
+  Check,
+  X,
+  Printer,
+  FileText,
+  CheckCircle2,
+  Clock,
+} from 'lucide-react'
 import { AdministrativeRequestItem } from '../services/population'
 import { getOccupationBadge } from '../components/OccupationBadge'
 
@@ -30,31 +39,54 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
   }
 
   return (
-    <section
-      style={{
-        background: '#ffffff',
-        borderRadius: '12px',
-        padding: '1.5rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        marginBottom: '2rem',
-        border: '1px solid #e2e8f0',
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+    <section className="app-card animate-fade-in" style={{ padding: '1.75rem', marginBottom: '2rem' }}>
+      {/* Header Bar */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '1.5rem',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          borderBottom: '1px solid var(--border-color)',
+          paddingBottom: '1rem',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{ fontSize: '2rem', background: '#eff6ff', padding: '0.5rem', borderRadius: '10px' }}>📬</div>
+          <div
+            style={{
+              width: '42px',
+              height: '42px',
+              borderRadius: '12px',
+              background: '#fef3c7',
+              color: '#b45309',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '1px solid #fde68a',
+            }}
+          >
+            <Mail size={22} />
+          </div>
           <div>
-            <h2 style={{ fontSize: '1.35rem', color: '#1e3a8a', fontWeight: 'bold', margin: 0 }}>
+            <h2 style={{ fontSize: '1.35rem', color: '#1e3a8a', fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
               Kotak Masuk Pelayanan Surat Warga (Inbox Desa)
             </h2>
-            <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '0.2rem 0 0 0' }}>
-              Verifikasi dan terbitkan surat keterangan usaha (Petani Pala, Nelayan, Pengolah Fuli) dan surat domisili.
+            <p style={{ fontSize: '0.825rem', color: '#64748b', margin: '0.15rem 0 0' }}>
+              Verifikasi dan terbitkan surat keterangan usaha (Petani Pala, Nelayan, Pengolah Fuli) dan surat domisili warga.
             </p>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-          {['', 'submitted', 'approved', 'rejected'].map((st) => {
-            const label = st === '' ? 'Semua' : st === 'submitted' ? 'Menunggu' : st === 'approved' ? 'Disetujui' : 'Ditolak'
+
+        {/* Filter Tabs */}
+        <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+          {[
+            { st: '', label: 'Semua' },
+            { st: 'submitted', label: 'Menunggu' },
+            { st: 'approved', label: 'Disetujui' },
+            { st: 'rejected', label: 'Ditolak' },
+          ].map(({ st, label }) => {
             const count = st === '' ? adminRequests.length : adminRequests.filter((r) => r.status === st).length
             const active = requestFilterStatus === st
             return (
@@ -63,17 +95,34 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
                 type="button"
                 onClick={() => setRequestFilterStatus(st)}
                 style={{
-                  padding: '0.25rem 0.6rem',
-                  borderRadius: '6px',
-                  fontSize: '0.75rem',
-                  fontWeight: '600',
-                  border: active ? '1px solid #1e40af' : '1px solid #cbd5e1',
-                  background: active ? '#1e40af' : '#f8fafc',
-                  color: active ? '#ffffff' : '#475569',
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: 'var(--radius-full)',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  border: active ? '2px solid #1e40af' : '1px solid #cbd5e1',
+                  background: active ? '#eff6ff' : '#ffffff',
+                  color: active ? '#1e40af' : '#475569',
                   cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  boxShadow: 'var(--shadow-xs)',
+                  transition: 'all 0.15s ease',
                 }}
               >
-                {label} ({count})
+                <span>{label}</span>
+                <span
+                  style={{
+                    background: active ? '#1e40af' : '#e2e8f0',
+                    color: active ? '#ffffff' : '#475569',
+                    borderRadius: '10px',
+                    padding: '0.05rem 0.45rem',
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                  }}
+                >
+                  {count}
+                </span>
               </button>
             )
           })}
@@ -82,145 +131,120 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
 
       {letterActionMsg && (
         <div
+          className="animate-fade-in"
           style={{
-            marginBottom: '1rem',
-            padding: '0.65rem',
-            borderRadius: '6px',
-            fontSize: '0.875rem',
+            marginBottom: '1.25rem',
+            padding: '0.75rem 1rem',
+            borderRadius: 'var(--radius-md)',
+            fontSize: '0.85rem',
             background: letterActionMsg.type === 'success' ? '#ecfdf5' : '#fef2f2',
             color: letterActionMsg.type === 'success' ? '#065f46' : '#991b1b',
             border: `1px solid ${letterActionMsg.type === 'success' ? '#a7f3d0' : '#fecaca'}`,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            fontWeight: 600,
           }}
         >
+          {letterActionMsg.type === 'success' ? <CheckCircle2 size={16} /> : <X size={16} />}
           {letterActionMsg.text}
         </div>
       )}
 
-      <div style={{ overflowX: 'auto', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+      {/* Requests Table */}
+      <div className="table-responsive">
+        <table className="data-table">
           <thead>
-            <tr style={{ background: '#f1f5f9', borderBottom: '1px solid #e2e8f0' }}>
-              <th style={{ padding: '0.65rem' }}>Warga Pemohon</th>
-              <th style={{ padding: '0.65rem' }}>Profesi</th>
-              <th style={{ padding: '0.65rem' }}>Jenis Surat yang Diminta</th>
-              <th style={{ padding: '0.65rem' }}>Keperluan / Catatan</th>
-              <th style={{ padding: '0.65rem' }}>Status</th>
-              <th style={{ padding: '0.65rem', textAlign: 'center' }}>Tindakan Perangkat Desa</th>
+            <tr>
+              <th>Warga Pemohon</th>
+              <th>Profesi</th>
+              <th>Jenis Surat yang Diminta</th>
+              <th>Keperluan / Catatan</th>
+              <th>Status</th>
+              <th style={{ textAlign: 'center' }}>Tindakan Perangkat Desa</th>
             </tr>
           </thead>
           <tbody>
             {adminRequests
               .filter((req) => !requestFilterStatus || req.status === requestFilterStatus)
               .map((req) => (
-                <tr key={req.id} style={{ borderBottom: '1px solid #e2e8f0', background: '#ffffff' }}>
-                  <td style={{ padding: '0.65rem' }}>
-                    <span style={{ fontWeight: '600', color: '#0f172a', display: 'block' }}>
+                <tr key={req.id}>
+                  <td>
+                    <span style={{ fontWeight: 700, color: '#0f172a', display: 'block' }}>
                       {req.resident_name || 'Warga Terdaftar'}
                     </span>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b', fontFamily: 'monospace' }}>
+                    <span style={{ fontSize: '0.75rem', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
                       {req.resident_nik || '-'}
                     </span>
                   </td>
-                  <td style={{ padding: '0.65rem' }}>
-                    {getOccupationBadge(req.resident_occupation)}
+                  <td>{getOccupationBadge(req.resident_occupation)}</td>
+                  <td style={{ fontWeight: 600, color: '#1e3a8a' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <FileText size={14} color="#1e40af" />
+                      {req.request_type}
+                    </div>
                   </td>
-                  <td style={{ padding: '0.65rem', fontWeight: '500', color: '#1e3a8a' }}>
-                    {req.request_type}
-                  </td>
-                  <td style={{ padding: '0.65rem', color: '#475569', fontSize: '0.8rem', maxWidth: '240px' }}>
+                  <td style={{ color: '#475569', fontSize: '0.825rem', maxWidth: '240px', lineHeight: 1.4 }}>
                     {req.notes || '-'}
                   </td>
-                  <td style={{ padding: '0.65rem' }}>
+                  <td>
                     <span
-                      style={{
-                        display: 'inline-block',
-                        padding: '0.15rem 0.5rem',
-                        borderRadius: '10px',
-                        fontSize: '0.72rem',
-                        fontWeight: '700',
-                        background:
-                          req.status === 'approved'
-                            ? '#ecfdf5'
-                            : req.status === 'submitted'
-                            ? '#fffbeb'
-                            : '#fef2f2',
-                        color:
-                          req.status === 'approved'
-                            ? '#047857'
-                            : req.status === 'submitted'
-                            ? '#b45309'
-                            : '#b91c1c',
-                      }}
+                      className={`badge ${
+                        req.status === 'approved'
+                          ? 'badge-green'
+                          : req.status === 'submitted'
+                          ? 'badge-amber'
+                          : 'badge-red'
+                      }`}
                     >
-                      {req.status === 'approved'
-                        ? '✓ DISETUJUI'
-                        : req.status === 'submitted'
-                        ? '⏳ MENUNGGU'
-                        : '✕ DITOLAK'}
+                      {req.status === 'approved' ? (
+                        <>
+                          <CheckCircle2 size={11} /> Disetujui
+                        </>
+                      ) : req.status === 'submitted' ? (
+                        <>
+                          <Clock size={11} /> Menunggu
+                        </>
+                      ) : (
+                        <>
+                          <X size={11} /> Ditolak
+                        </>
+                      )}
                     </span>
                   </td>
-                  <td style={{ padding: '0.65rem', textAlign: 'center' }}>
+                  <td style={{ textAlign: 'center' }}>
                     {req.status === 'submitted' ? (
                       <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
                         <button
                           type="button"
                           disabled={updatingRequestId === req.id}
                           onClick={() => handleUpdateRequestStatus(req.id, 'approved')}
-                          style={{
-                            background: '#059669',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '0.25rem 0.6rem',
-                            borderRadius: '5px',
-                            fontSize: '0.75rem',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                          }}
+                          className="btn btn-sm btn-success"
+                          style={{ padding: '0.25rem 0.65rem' }}
                         >
-                          {updatingRequestId === req.id ? '...' : '✓ Setujui'}
+                          <Check size={12} /> {updatingRequestId === req.id ? '...' : 'Setujui'}
                         </button>
                         <button
                           type="button"
                           disabled={updatingRequestId === req.id}
                           onClick={() => handleUpdateRequestStatus(req.id, 'rejected')}
-                          style={{
-                            background: '#ef4444',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '0.25rem 0.6rem',
-                            borderRadius: '5px',
-                            fontSize: '0.75rem',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                          }}
+                          className="btn btn-sm btn-danger"
+                          style={{ padding: '0.25rem 0.65rem' }}
                         >
-                          {updatingRequestId === req.id ? '...' : '✕ Tolak'}
+                          <X size={12} /> {updatingRequestId === req.id ? '...' : 'Tolak'}
                         </button>
                       </div>
                     ) : req.status === 'approved' ? (
-                      <div style={{ display: 'inline-flex', gap: '0.4rem', alignItems: 'center' }}>
-                        <button
-                          type="button"
-                          onClick={() => handlePrint(req)}
-                          style={{
-                            background: '#1e40af',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '0.25rem 0.6rem',
-                            borderRadius: '5px',
-                            fontSize: '0.75rem',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.25rem',
-                          }}
-                        >
-                          🖨️ Cetak Surat
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handlePrint(req)}
+                        className="btn btn-sm btn-primary"
+                        style={{ padding: '0.25rem 0.65rem' }}
+                      >
+                        <Printer size={12} /> Cetak Surat
+                      </button>
                     ) : (
-                      <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                      <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontStyle: 'italic' }}>
                         Ditolak
                       </span>
                     )}
@@ -229,8 +253,14 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
               ))}
             {adminRequests.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '1.5rem', color: '#64748b' }}>
-                  Belum ada permohonan surat dari warga.
+                <td colSpan={6} style={{ textAlign: 'center', padding: '2.5rem', color: '#64748b' }}>
+                  <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📬</div>
+                  <p style={{ fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
+                    Belum ada permohonan surat masuk
+                  </p>
+                  <p style={{ fontSize: '0.8rem', marginTop: '0.25rem', color: 'var(--text-muted)' }}>
+                    Warga dapat mengajukan permohonan SKU atau surat domisili secara mandiri melalui Portal Warga.
+                  </p>
                 </td>
               </tr>
             )}
@@ -241,31 +271,17 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
       {/* MODAL CETAK SURAT RESMI DESA */}
       {printLetter && (
         <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(15, 23, 42, 0.65)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            padding: '1rem',
-          }}
+          className="modal-backdrop"
+          onClick={() => setPrintLetter(null)}
         >
           <div
+            className="modal-content animate-fade-in"
             style={{
-              background: '#ffffff',
-              borderRadius: '12px',
-              maxWidth: '680px',
-              width: '100%',
-              padding: '2.5rem',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
-              position: 'relative',
-              maxHeight: '90vh',
-              overflowY: 'auto',
+              maxWidth: '700px',
               fontFamily: 'serif',
               color: '#0f172a',
             }}
+            onClick={(e) => e.stopPropagation()}
           >
             {/* Action Bar (Not printed) */}
             <div
@@ -286,32 +302,14 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
                 <button
                   type="button"
                   onClick={triggerBrowserPrint}
-                  style={{
-                    background: '#1e40af',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '0.35rem 0.85rem',
-                    borderRadius: '6px',
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
+                  className="btn btn-sm btn-primary"
                 >
-                  🖨️ Cetak / Simpan PDF
+                  <Printer size={13} /> Cetak / Simpan PDF
                 </button>
                 <button
                   type="button"
                   onClick={() => setPrintLetter(null)}
-                  style={{
-                    background: '#f1f5f9',
-                    color: '#475569',
-                    border: '1px solid #cbd5e1',
-                    padding: '0.35rem 0.85rem',
-                    borderRadius: '6px',
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
+                  className="btn btn-sm btn-secondary"
                 >
                   Tutup
                 </button>
@@ -320,13 +318,13 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
 
             {/* KOP SURAT DESA RESMI */}
             <div style={{ textAlign: 'center', borderBottom: '3px double #000000', paddingBottom: '0.75rem', marginBottom: '1.5rem' }}>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', letterSpacing: '1px', textTransform: 'uppercase' }}>
+              <h3 style={{ margin: 0, fontSize: '1.05rem', letterSpacing: '1px', textTransform: 'uppercase' }}>
                 PEMERINTAH KABUPATEN MALUKU TENGAH
               </h3>
-              <h4 style={{ margin: '0.2rem 0', fontSize: '1.05rem', textTransform: 'uppercase' }}>
+              <h4 style={{ margin: '0.2rem 0', fontSize: '1rem', textTransform: 'uppercase' }}>
                 KECAMATAN KEPULAUAN BANDA
               </h4>
-              <h2 style={{ margin: '0.2rem 0', fontSize: '1.25rem', fontWeight: 'bold', textTransform: 'uppercase' }}>
+              <h2 style={{ margin: '0.2rem 0', fontSize: '1.3rem', fontWeight: 'bold', textTransform: 'uppercase' }}>
                 KANTOR KEPALA DESA BANDA NEIRA
               </h2>
               <p style={{ margin: 0, fontSize: '0.8rem', fontStyle: 'italic', color: '#334155' }}>
@@ -339,7 +337,7 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
               <h3 style={{ margin: 0, textDecoration: 'underline', fontSize: '1.15rem', textTransform: 'uppercase' }}>
                 {printLetter.request_type}
               </h3>
-              <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem' }}>
+              <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem', fontFamily: 'sans-serif' }}>
                 Nomor: 503/{printLetter.id.substring(0, 5).toUpperCase()}/KD-BN/{new Date().getFullYear()}
               </p>
             </div>

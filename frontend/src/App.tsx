@@ -1159,40 +1159,30 @@ export const App: React.FC = () => {
       )}
 
       {/* Public Search Token Section for Consumers */}
-      <section
-        style={{
-          background: '#ffffff',
-          borderRadius: '12px',
-          padding: '1.5rem',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          marginBottom: '2rem',
-          border: '1px solid #e2e8f0',
-        }}
-      >
-        <h3 style={{ fontSize: '1.15rem', color: '#1e3a8a', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-          🔍 Verifikasi Mandiri Konsumen / Wisatawan (Scan QR Publik)
+      <section className="app-card animate-fade-in" style={{ marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.5rem' }}>
+          <span className="badge badge-emerald">Indikasi Geografis Terbuka</span>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>&bull; Konsumen & Wisatawan</span>
+        </div>
+        <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)', marginBottom: '0.35rem', fontWeight: 800 }}>
+          🔍 Verifikasi Mandiri Asal Rempah (Scan QR Publik)
         </h3>
-        <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '0.75rem' }}>
+        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
           Konsumen dapat memeriksa keaslian asal rempah Banda Neira tanpa harus mendaftar atau masuk ke sistem.
         </p>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <input
             type="text"
             placeholder="Masukkan token publik QR produk (misal: dari kemasan rempah)..."
             value={verifyTokenInput}
             onChange={(e) => setVerifyTokenInput(e.target.value)}
-            style={{ flex: 1, padding: '0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+            className="form-control"
+            style={{ flex: 1, minWidth: '260px' }}
           />
           <button
             onClick={() => handlePublicVerify(verifyTokenInput)}
-            style={{
-              background: '#059669',
-              color: '#ffffff',
-              border: 'none',
-              padding: '0.5rem 1.25rem',
-              borderRadius: '6px',
-              fontWeight: 'bold',
-            }}
+            className="btn btn-primary"
+            style={{ padding: '0.55rem 1.4rem' }}
           >
             Verifikasi Produk
           </button>
@@ -1200,47 +1190,63 @@ export const App: React.FC = () => {
       </section>
 
       {/* System Status Section */}
-      <section
-        style={{
-          background: '#ffffff',
-          borderRadius: '12px',
-          padding: '1.5rem',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          border: '1px solid #e2e8f0',
-        }}
-      >
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: '#0f172a' }}>
-          Status Infrastruktur Sistem
-        </h2>
-        {loadingHealth && <p style={{ color: '#64748b' }}>Memeriksa koneksi layanan backend...</p>}
+      <section className="app-card animate-fade-in" style={{ marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
+              Status Infrastruktur Sistem
+            </h2>
+            <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', margin: '0.2rem 0 0' }}>
+              Ketersediaan backend API, mesin geospasial PostGIS, dan persistensi terdistribusi.
+            </p>
+          </div>
+          <span className="badge badge-emerald">
+            ● Sistem Aktif
+          </span>
+        </div>
+
+        {loadingHealth && <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Memeriksa koneksi layanan backend...</p>}
         {healthError && (
-          <div style={{ color: '#b91c1c', background: '#fef2f2', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem' }}>
-            Backend offline: {healthError}
+          <div style={{ color: '#b91c1c', background: 'var(--danger-light)', padding: '0.85rem 1.25rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem', border: '1px solid #fecaca', fontSize: '0.875rem' }}>
+            ⚠️ Backend offline: {healthError}
           </div>
         )}
         {health && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-            <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <span style={{ fontSize: '0.875rem', color: '#64748b' }}>API Gateway</span>
-              <p style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#059669', marginTop: '0.25rem' }}>
-                {health.services.api.toUpperCase()} (v{health.version})
-              </p>
+          <div className="stat-grid">
+            <div className="stat-card" style={{ borderTop: '4px solid var(--emerald-600)' }}>
+              <span className="stat-label">API Gateway</span>
+              <div className="stat-value" style={{ color: 'var(--emerald-600)', fontSize: '1.2rem' }}>
+                {health.services.api.toUpperCase()}
+              </div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Versi: v{health.version}</span>
             </div>
-            <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Database Engine</span>
-              <p style={{ fontSize: '1.125rem', fontWeight: 'bold', color: health.services.database === 'connected' ? '#059669' : '#d97706', marginTop: '0.25rem' }}>
+            <div className="stat-card" style={{ borderTop: `4px solid ${health.services.database === 'connected' ? 'var(--ocean-600)' : 'var(--amber-600)'}` }}>
+              <span className="stat-label">Database Engine</span>
+              <div className="stat-value" style={{ color: health.services.database === 'connected' ? 'var(--ocean-600)' : 'var(--amber-600)', fontSize: '1.2rem' }}>
                 {health.services.database.toUpperCase()}
-              </p>
+              </div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>PostgreSQL & PostGIS</span>
             </div>
-            <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Status Global</span>
-              <p style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#1e40af', marginTop: '0.25rem' }}>
+            <div className="stat-card" style={{ borderTop: '4px solid #7c3aed' }}>
+              <span className="stat-label">Status Global</span>
+              <div className="stat-value" style={{ color: '#7c3aed', fontSize: '1.2rem' }}>
                 {health.status.toUpperCase()}
-              </p>
+              </div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Ecosystem Operational</span>
             </div>
           </div>
         )}
       </section>
+
+      {/* Footer */}
+      <footer style={{ textAlign: 'center', padding: '1.5rem 0', color: 'var(--text-muted)', fontSize: '0.825rem', borderTop: '1px solid var(--border-color)', marginTop: '2rem' }}>
+        <p style={{ margin: 0 }}>
+          <b>Ekosistem Digital Banda Neira</b> &bull; Tata Kelola Kependudukan & Ketertelusuran Rempah Berbasis PostGIS & Blockchain
+        </p>
+        <p style={{ margin: '0.35rem 0 0', opacity: 0.8 }}>
+          Kepulauan Banda, Maluku Tengah &bull; PWA Offline First &bull; Dilindungi Hak Cipta &copy; {new Date().getFullYear()}
+        </p>
+      </footer>
 
       {/* MODALS */}
       <BlockchainModal
