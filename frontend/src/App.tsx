@@ -34,12 +34,14 @@ import { FarmsGisWorkspace } from './views/FarmsGisWorkspace.tsx'
 import { HarvestGradingWorkspace } from './views/HarvestGradingWorkspace.tsx'
 import { CitizenPortalWorkspace } from './views/CitizenPortalWorkspace.tsx'
 import { AuditTrailWorkspace } from './views/AuditTrailWorkspace.tsx'
+import { SmartPlannerWorkspace } from './views/SmartPlannerWorkspace.tsx'
 import {
   MapPin,
   Users,
   QrCode,
   Mail,
   ShieldCheck,
+  Compass,
 } from 'lucide-react'
 import { offlineDB } from './offline/db.ts'
 import { syncManager, SyncQueueItem } from './offline/syncManager.ts'
@@ -56,7 +58,7 @@ interface HealthResponse {
 
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'population' | 'letters' | 'farming' | 'traceability' | 'audit'>('population')
+  const [activeTab, setActiveTab] = useState<'population' | 'letters' | 'farming' | 'traceability' | 'audit' | 'smart_planner'>('population')
   const [health, setHealth] = useState<HealthResponse | null>(null)
   const [loadingHealth, setLoadingHealth] = useState<boolean>(true)
   const [healthError, setHealthError] = useState<string | null>(null)
@@ -948,6 +950,7 @@ export const App: React.FC = () => {
           onVerifySampleBatch={(token) => handlePublicVerify(token)}
           onPublicVerify={(token) => handlePublicVerify(token)}
           onOpenMarketplace={() => setShowMarketplaceModal(true)}
+          onOpenPlanner={() => setActiveTab('smart_planner')}
           loading={authLoading}
           error={authError}
         />
@@ -1065,6 +1068,12 @@ export const App: React.FC = () => {
           >
             <ShieldCheck size={16} /> 🏛️ Rekap & Audit
           </button>
+          <button
+            onClick={() => setActiveTab('smart_planner')}
+            className={`tab-btn ${activeTab === 'smart_planner' ? 'active' : ''}`}
+          >
+            <Compass size={16} /> 🧭 Perencana Cerdas (DSS)
+          </button>
         </div>
       )}
 
@@ -1157,6 +1166,11 @@ export const App: React.FC = () => {
       {/* TAB 5: REKAPITULASI DESA & AUDIT TRAIL */}
       {isOfficerOrAdmin && activeTab === 'audit' && (
         <AuditTrailWorkspace isOnline={isOnline} />
+      )}
+
+      {/* TAB 6: PERENCANA CERDAS & KETAHANAN PULAU (DSS SAW) */}
+      {activeTab === 'smart_planner' && (
+        <SmartPlannerWorkspace />
       )}
 
       {/* PORTAL KHUSUS WARGA DESA (RESIDENT) */}

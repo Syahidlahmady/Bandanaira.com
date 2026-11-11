@@ -28,6 +28,7 @@ interface LoginSectionProps {
   onVerifySampleBatch?: (token: string) => void
   onPublicVerify?: (token: string) => void
   onOpenMarketplace?: () => void
+  onOpenPlanner?: () => void
   loading: boolean
   error: string | null
 }
@@ -41,6 +42,7 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
   onVerifySampleBatch,
   onPublicVerify,
   onOpenMarketplace,
+  onOpenPlanner,
   loading,
   error,
 }) => {
@@ -767,24 +769,47 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
                     <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>Pala, fuli merah, sirup buah pala, ikan asar cakalang, dan tuna sirip kuning dengan QR batch</div>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={onOpenMarketplace}
-                  className="btn btn-secondary"
-                  style={{
-                    fontSize: '0.825rem',
-                    padding: '0.55rem 1.15rem',
-                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2))',
-                    border: '1px solid rgba(16, 185, 129, 0.4)',
-                    color: '#a7f3d0',
-                    fontWeight: 700,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                  }}
-                >
-                  <ShoppingBag size={15} /> Buka Katalog Marketplace
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={onOpenMarketplace}
+                    className="btn btn-secondary"
+                    style={{
+                      fontSize: '0.825rem',
+                      padding: '0.55rem 1.15rem',
+                      background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2))',
+                      border: '1px solid rgba(16, 185, 129, 0.4)',
+                      color: '#a7f3d0',
+                      fontWeight: 700,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                    }}
+                  >
+                    <ShoppingBag size={15} /> Buka Katalog Marketplace
+                  </button>
+
+                  {onOpenPlanner && (
+                    <button
+                      type="button"
+                      onClick={onOpenPlanner}
+                      className="btn btn-secondary"
+                      style={{
+                        fontSize: '0.825rem',
+                        padding: '0.55rem 1.15rem',
+                        background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(168, 85, 247, 0.2))',
+                        border: '1px solid rgba(56, 189, 248, 0.4)',
+                        color: '#7dd3fc',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                      }}
+                    >
+                      <Compass size={15} /> 🧭 Perencana Wisata &amp; Krisis (SAW)
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>

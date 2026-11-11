@@ -19,6 +19,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 10: Security Hardening & Banda Neira Resident Livelihood Tracking**
 - [x] **Phase 15: Radical Neo-Obsidian Cyber-Emerald & Bento Grid System Overhaul ("Rombak Total Style & Gaya")**
 - [x] **Phase 16: Multi-Commodity Traceability, Smart Contract EVM, Verified Marketplace & DSR Scopus Documentation (Mandat Khoirul Anam)**
+- [x] **Phase 17: Decision Support System (DSS SAW Engine Dual-Mode) & Smart Tourism Planner (Mandat Hidayah / SRS)**
 
 ---
 
@@ -159,4 +160,14 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - [x] `13_DATA_DICTIONARY_DAN_MODEL_DATA.md` (PostgreSQL tables, Pydantic schemas, IPFS JSON metadata).
   - [x] `14_LOG_INTEGRASI_LINTAS_MODUL.md` (Cross-module coordination with Hidayah, Fauzan, Syafa, Syahid, Restiadi).
 - [x] 16.6 Full Verification & Quality Assurance: Verified 0 TypeScript compilation errors (`npm run build` exits 0) and 37/37 passing backend tests (`pytest backend/tests/ -v`).
+
+### Phase 17: Decision Support System (DSS SAW Engine Dual-Mode) & Smart Tourism Planner (Mandat Hidayah / SRS)
+- [x] 17.1 Pure-Python SAW Mathematical Engine (`backend/app/modules/dss/engine.py`): Implemented matrix normalization ($r_{ij}$) for both Benefit and Cost criteria with automatic zero-division safety, weight normalization ($\sum W_j = 1.0$), and descending preference score ranking ($V_i$).
+- [x] 17.2 Pydantic Data Contracts & Schemas (`backend/app/modules/dss/schemas.py`): Defined `SAWCriterion`, `SAWAlternativeInput`, `SAWCalculationRequest`, `SAWAlternativeResult`, `TourismPreferences`, and `CrisisPriorityWeights`.
+- [x] 17.3 Authentic Banda Neira Dataset (`backend/app/modules/dss/sample_data.py`): Pre-seeded real-world tourism alternatives (Delfika Homestay, The Nutmeg Tree, Maulana Hotel, Mutiara Guesthouse, Hatta Reef Cabin, Ai Spice Homestay) and village crisis zones (RT 03 Lonthoir, RT 01 Selamon, RT 02 Neira, RT 01 Pulau Hatta, RT 02 Pulau Ai).
+- [x] 17.4 FastAPI Endpoints (`backend/app/modules/dss/router.py` & `main.py`): Implemented `/api/v1/dss/hitung-saw` (generic SAW), `/api/v1/dss/rekomendasi-wisata` (Mode 1), `/api/v1/dss/prioritas-krisis` (Mode 2), `/api/v1/dss/wisata/alternatives`, and `/api/v1/dss/krisis/alternatives`.
+- [x] 17.5 Automated Test Suite Coverage (`backend/tests/test_dss.py`): 5 comprehensive tests verifying mathematical precision, manual vector calculation, Mode 1 tourism ranking, Mode 2 crisis ranking, and alternatives listing (42/42 passing pytest suite).
+- [x] 17.6 Interactive Frontend Workspace (`frontend/src/views/SmartPlannerWorkspace.tsx`): Built dual-mode interactive workspace in Neo-Obsidian Cyber-Emerald Bento styling with real-time weight sliders, island filters, top recommendation highlight card with direct WhatsApp booking action, and detailed ranked alternatives data table.
+- [x] 17.7 UI Navigation & Public Guest Integration: Added `🧭 Perencana Cerdas (DSS)` tab in `frontend/src/App.tsx` and quick launch button in `LoginSection.tsx`. Verified clean TypeScript production build (`npm run build` exits 0).
+
 
