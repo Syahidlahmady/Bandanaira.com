@@ -79,13 +79,16 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
   const apiBase = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 
   const getBatchQrSrc = (batch: ProductBatch) => {
+    if (batch.public_verification_token) {
+      const fullUrl = typeof window !== 'undefined'
+        ? `${window.location.origin}/?verify=${encodeURIComponent(batch.public_verification_token)}`
+        : ''
+      return `${apiBase}/public/verify/image/${encodeURIComponent(batch.public_verification_token)}?full_url=${encodeURIComponent(fullUrl)}`
+    }
     if (batch.qr_code_base64 && batch.qr_code_base64.trim().length > 0) {
       return batch.qr_code_base64.startsWith('data:image')
         ? batch.qr_code_base64
         : `data:image/png;base64,${batch.qr_code_base64}`
-    }
-    if (batch.public_verification_token) {
-      return `${apiBase}/public/verify/image/${encodeURIComponent(batch.public_verification_token)}`
     }
     return ''
   }
@@ -703,9 +706,25 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                 <div style={{ fontSize: '0.75rem', color: 'var(--ocean-600)', marginTop: '0.25rem', fontWeight: 600 }}>
                   Produksi: {previewQrBatch.production_date}
                 </div>
-                <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0.5rem 0 0', lineHeight: 1.4 }}>
-                  Arahkan kamera smartphone ke kode QR ini untuk memeriksa sertifikat keaslian dan bukti rantai pasok on-chain.
+                <p style={{ fontSize: '0.74rem', color: '#1e40af', background: '#eff6ff', padding: '0.45rem', borderRadius: '6px', margin: '0.65rem 0 0', lineHeight: 1.4, border: '1px solid #bfdbfe' }}>
+                  📸 <b>Bisa Discan Langsung:</b> Arahkan kamera bawaan HP (iPhone Camera / Android Google Lens) ke QR code ini untuk membuka sertifikat keaslian secara instan tanpa login.
                 </p>
+                <div style={{ marginTop: '0.5rem', padding: '0.35rem 0.65rem', background: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    Token: {previewQrBatch.public_verification_token}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(previewQrBatch.public_verification_token)
+                      alert('Token verifikasi berhasil disalin ke papan klip!')
+                    }}
+                    className="btn btn-sm btn-secondary"
+                    style={{ fontSize: '0.68rem', padding: '0.2rem 0.5rem', whiteSpace: 'nowrap' }}
+                  >
+                    Salin Token
+                  </button>
+                </div>
               </div>
             </div>
 

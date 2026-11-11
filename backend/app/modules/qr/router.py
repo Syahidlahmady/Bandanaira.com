@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -63,14 +64,17 @@ async def verify_batch_public(token: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/image/{token}")
-async def get_qr_image(token: str):
+async def get_qr_image(token: str, full_url: Optional[str] = None):
     """
     Returns direct PNG image response for QR code of given token.
-    Publicly accessible, high performance, can be directly used in <img src="..." />.
+    If full_url is provided, embeds the direct verification web link so phone cameras
+    can open the certificate instantly with 1 tap.
     """
     from io import BytesIO
     import qrcode
     from fastapi.responses import Response
+
+    qr_payload = full_url if (full_url and full_url.strip()) else token
 
     qr = qrcode.QRCode(
         version=1,
@@ -78,7 +82,7 @@ async def get_qr_image(token: str):
         box_size=10,
         border=3,
     )
-    qr.add_data(token)
+    qr.add_data(qr_payload)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
     buffer = BytesIO()

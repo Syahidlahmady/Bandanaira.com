@@ -445,6 +445,17 @@ export const App: React.FC = () => {
         .then((user) => setCurrentUser(user))
         .catch(() => authService.clearTokens())
     }
+
+    // Auto-open public certificate if ?verify=<token> is in the URL (e.g. from camera scan)
+    try {
+      const searchParams = new URLSearchParams(window.location.search)
+      const verifyToken = searchParams.get('verify') || searchParams.get('token')
+      if (verifyToken) {
+        handlePublicVerify(verifyToken)
+      }
+    } catch {
+      // ignore
+    }
   }, [apiBase])
 
   useEffect(() => {
