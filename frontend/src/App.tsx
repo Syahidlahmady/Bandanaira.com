@@ -32,11 +32,13 @@ import { LettersWorkspace } from './views/LettersWorkspace.tsx'
 import { FarmsGisWorkspace } from './views/FarmsGisWorkspace.tsx'
 import { HarvestGradingWorkspace } from './views/HarvestGradingWorkspace.tsx'
 import { CitizenPortalWorkspace } from './views/CitizenPortalWorkspace.tsx'
+import { AuditTrailWorkspace } from './views/AuditTrailWorkspace.tsx'
 import {
   MapPin,
   Users,
   QrCode,
   Mail,
+  ShieldCheck,
 } from 'lucide-react'
 import { offlineDB } from './offline/db.ts'
 import { syncManager, SyncQueueItem } from './offline/syncManager.ts'
@@ -53,7 +55,7 @@ interface HealthResponse {
 
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'population' | 'letters' | 'farming' | 'traceability'>('population')
+  const [activeTab, setActiveTab] = useState<'population' | 'letters' | 'farming' | 'traceability' | 'audit'>('population')
   const [health, setHealth] = useState<HealthResponse | null>(null)
   const [loadingHealth, setLoadingHealth] = useState<boolean>(true)
   const [healthError, setHealthError] = useState<string | null>(null)
@@ -1040,6 +1042,12 @@ export const App: React.FC = () => {
           >
             <QrCode size={16} /> 📦 Panen & Mutu Rempah
           </button>
+          <button
+            onClick={() => setActiveTab('audit')}
+            className={`tab-btn ${activeTab === 'audit' ? 'active' : ''}`}
+          >
+            <ShieldCheck size={16} /> 🏛️ Rekap & Audit
+          </button>
         </div>
       )}
 
@@ -1127,6 +1135,11 @@ export const App: React.FC = () => {
           handleUpdateRequestStatus={handleUpdateRequestStatus}
           letterActionMsg={letterActionMsg}
         />
+      )}
+
+      {/* TAB 5: REKAPITULASI DESA & AUDIT TRAIL */}
+      {isOfficerOrAdmin && activeTab === 'audit' && (
+        <AuditTrailWorkspace isOnline={isOnline} />
       )}
 
       {/* PORTAL KHUSUS WARGA DESA (RESIDENT) */}

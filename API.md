@@ -98,6 +98,12 @@ RESTful API specification for **Banda Digital Ecosystem**.
 | `GET` | `/api/v1/blockchain/batches/{id}/transactions` | `admin`, `village_officer`, `farmer_group_admin`, `farmer` | List on-chain transaction history for batch |
 | `GET` | `/api/v1/blockchain/batches/{id}/verify` | Public (No Auth) | Cryptographic verification comparing local DB hash with on-chain anchored hash |
 
+### 2.8 Centralized Audit & Ecosystem Recap (`/api/v1/audit`)
+| Method | Endpoint | Roles Allowed | Description |
+|---|---|---|---|
+| `GET` | `/api/v1/audit/logs` | `admin`, `village_officer` | List audit log history with entity, action, and pagination filters |
+| `GET` | `/api/v1/audit/ecosystem-summary` | `admin`, `village_officer`, `farmer_group_admin` | Fetch executive aggregate statistics across population, farmland, harvests, blockchain, and letters |
+
 ---
 
 ## 3. Query Parameters Standard

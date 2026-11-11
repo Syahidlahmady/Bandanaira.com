@@ -12,6 +12,7 @@ from backend.app.modules.population.router import router as population_router
 from backend.app.modules.qr.router import router as qr_router
 from backend.app.modules.traceability.router import router as traceability_router
 from backend.app.modules.blockchain.router import router as blockchain_router
+from backend.app.modules.audit.router import router as audit_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -31,6 +32,7 @@ app.include_router(harvests_router, prefix=settings.API_V1_STR)
 app.include_router(traceability_router, prefix=settings.API_V1_STR)
 app.include_router(qr_router, prefix=settings.API_V1_STR)
 app.include_router(blockchain_router, prefix=settings.API_V1_STR)
+app.include_router(audit_router, prefix=settings.API_V1_STR)
 
 # CORS Middleware
 app.add_middleware(

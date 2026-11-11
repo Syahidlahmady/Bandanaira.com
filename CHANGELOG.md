@@ -36,6 +36,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Offline Map Tile Caching: Implemented dedicated Service Worker cache bucket (`banda-map-tiles-v1`) with cache-first and opaque response handling for OpenStreetMap tiles, enabling offline GIS mapping in remote mountain areas.
   - Spatial Polygon Validation & Overlap Prevention: Implemented spherical geodesic area calculation, closed ring validation, and automated polygon overlap detection rejecting conflicting farm boundaries with 409 Conflict, complete with real-time `POST /api/v1/farms/validate-boundary` API and Leaflet visual polygon layer.
   - PWA Install Prompt & Service Worker Update Notifications: Created `usePWA` hook (`frontend/src/offline/usePWA.ts`) supporting `beforeinstallprompt` capture, standalone detection, and background SW update discovery; added `SKIP_WAITING` message listener in `frontend/public/sw.js`; integrated real-time "📲 Pasang di HP" install button, "Aplikasi Terpasang" status badge, background update banner with 1-click update activation, and comprehensive installation modal guide for Android & iOS users in `HeaderNav.tsx`.
+- Centralized Audit Trail & Executive Ecosystem Analytics:
+  - Backend Audit Router: Added `GET /api/v1/audit/logs` with flexible entity/action filtering and `GET /api/v1/audit/ecosystem-summary` with live multi-pillar aggregation (population, land, harvests, blockchain batches, letters, and recent audit trail).
+  - Frontend Audit Trail Workspace: Built `AuditTrailWorkspace.tsx` with 5 executive KPI cards, searchable/filterable audit log stream with JSON diff modal, 1-click CSV export, and official printable "Laporan Rekapitulasi Tahunan Ekosistem Digital Desa Banda Neira" for Kecamatan Banda.
+  - Comprehensive Automated Tests: 37/37 passing pytest tests and clean TypeScript build.
 
 
 
