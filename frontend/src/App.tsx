@@ -251,7 +251,7 @@ export const App: React.FC = () => {
     }
   }
 
-  const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8005/api/v1'
+  const apiBase = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 
   const fetchPopulationData = async (queryOverride?: string, occOverride?: string) => {
     setLoadingPop(true)

@@ -76,7 +76,7 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
 }) => {
   const [previewQrBatch, setPreviewQrBatch] = useState<ProductBatch | null>(null)
 
-  const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8005/api/v1'
+  const apiBase = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 
   const getBatchQrSrc = (batch: ProductBatch) => {
     if (batch.qr_code_base64 && batch.qr_code_base64.trim().length > 0) {
