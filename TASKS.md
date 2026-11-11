@@ -20,6 +20,11 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 15: Radical Neo-Obsidian Cyber-Emerald & Bento Grid System Overhaul ("Rombak Total Style & Gaya")**
 - [x] **Phase 16: Multi-Commodity Traceability, Smart Contract EVM, Verified Marketplace & DSR Scopus Documentation (Mandat Khoirul Anam)**
 - [x] **Phase 17: Decision Support System (DSS SAW Engine Dual-Mode) & Smart Tourism Planner (Mandat Hidayah / SRS)**
+- [x] **Phase 18: Koperasi Hatta, Bank Sampah Plastik, & Dispenser Air Bersih RO (Mandat Prof. Purwo & KKN-PPM UGM)**
+- [ ] **Phase 19: IoT Telemetry & Island Resiliency Command Dashboard (Water TDS & Tank Level, Solar/Diesel Sensor Simulator)**
+- [ ] **Phase 20: Smart Tourism Accommodations, Eco-Stay Catalog & WhatsApp Direct Booking**
+- [ ] **Phase 21: 7-Layer Spatial GIS Peta Interaktif (Leaflet Multi-Layer GeoJSON Switcher)**
+- [ ] **Phase 22: Cryptographic NIK Hardening (AES-256-GCM + Blind Index HMAC-SHA256 OWASP Top 10)**
 
 ---
 
@@ -169,5 +174,14 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 17.5 Automated Test Suite Coverage (`backend/tests/test_dss.py`): 5 comprehensive tests verifying mathematical precision, manual vector calculation, Mode 1 tourism ranking, Mode 2 crisis ranking, and alternatives listing (42/42 passing pytest suite).
 - [x] 17.6 Interactive Frontend Workspace (`frontend/src/views/SmartPlannerWorkspace.tsx`): Built dual-mode interactive workspace in Neo-Obsidian Cyber-Emerald Bento styling with real-time weight sliders, island filters, top recommendation highlight card with direct WhatsApp booking action, and detailed ranked alternatives data table.
 - [x] 17.7 UI Navigation & Public Guest Integration: Added `🧭 Perencana Cerdas (DSS)` tab in `frontend/src/App.tsx` and quick launch button in `LoginSection.tsx`. Verified clean TypeScript production build (`npm run build` exits 0).
+
+### Phase 18: Koperasi Hatta, Bank Sampah Plastik, & Dispenser Air Bersih RO (Mandat Prof. Purwo & KKN-PPM UGM)
+- [x] 18.1 Database Models & Migration (`backend/app/modules/koperasi/models.py` & `backend/migrations/versions/006_koperasi_and_water_tables.py`): Defined `coop_accounts` (Saldo Rp, kuota air liter, poin bank sampah, total komoditas & plastik) and `coop_transactions` (buku besar transaksi dengan SHA-256 receipt hash deterministik). Registered models in `migrations/env.py`.
+- [x] 18.2 Pricing & Circular Conversion Engine (`backend/app/modules/koperasi/pricing.py`): Established standards for commodities (Pala Super Rp 75k, Fuli Rp 95k, Cengkeh Rp 60k, Cakalang Rp 25k, Tuna Rp 45k) and plastic recycling ratio (Mandat Prof. Purwo: 1 kg botol plastik = 10 Liter air bersih RO + 10 Poin).
+- [x] 18.3 Pydantic Contracts & Validation Schemas (`backend/app/modules/koperasi/schemas.py`): Strict 16-digit NIK validation, commodity deposit inputs, waste deposit inputs, water redemption inputs, and profile/recap response models.
+- [x] 18.4 FastAPI Endpoints (`backend/app/modules/koperasi/router.py` & `main.py`): Implemented `/api/v1/koperasi/transaksi/setor-komoditas`, `/api/v1/koperasi/transaksi/setor-sampah`, `/api/v1/koperasi/tebus-air`, `/api/v1/koperasi/warga/{nik}/profil`, `/api/v1/koperasi/transaksi` (ledger), and `/api/v1/koperasi/rekapitulasi`.
+- [x] 18.5 Automated Test Suite (`backend/tests/test_koperasi.py`): 6 comprehensive tests passing 100% (balance deposit, water quota conversion, plastic waste recycling, solenoid valve water redemption, quota exhaustion guard, and invalid NIK rejection). Total backend test suite: 48/48 passing.
+- [x] 18.6 Frontend Service & UI Workspace (`frontend/src/services/koperasi.ts` & `frontend/src/views/KoperasiKasirWorkspace.tsx`): Built interactive POS cashier workspace featuring NIK citizen lookup, sample persona buttons, commodity scale calculator with Rp/Water allocation switcher, Prof. Purwo plastic waste converter, ESP32 solenoid valve water dispenser simulator with animated countdown, and SHA-256 ledger table.
+- [x] 18.7 App Navigation Integration: Added `⚖️ Koperasi & Bank Sampah` tab to `frontend/src/App.tsx` and public guest shortcut to `LoginSection.tsx`. Verified 0 TypeScript compilation errors (`npm run build` exits 0).
 
 

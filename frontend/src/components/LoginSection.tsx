@@ -16,6 +16,7 @@ import {
   Cpu,
   Fingerprint,
   ShoppingBag,
+  Scale,
 } from 'lucide-react'
 
 interface LoginSectionProps {
@@ -29,6 +30,7 @@ interface LoginSectionProps {
   onPublicVerify?: (token: string) => void
   onOpenMarketplace?: () => void
   onOpenPlanner?: () => void
+  onOpenKoperasi?: () => void
   loading: boolean
   error: string | null
 }
@@ -43,6 +45,7 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
   onPublicVerify,
   onOpenMarketplace,
   onOpenPlanner,
+  onOpenKoperasi,
   loading,
   error,
 }) => {
@@ -807,6 +810,27 @@ export const LoginSection: React.FC<LoginSectionProps> = ({
                       }}
                     >
                       <Compass size={15} /> 🧭 Perencana Wisata &amp; Krisis (SAW)
+                    </button>
+                  )}
+
+                  {onOpenKoperasi && (
+                    <button
+                      type="button"
+                      onClick={onOpenKoperasi}
+                      className="btn btn-secondary"
+                      style={{
+                        fontSize: '0.825rem',
+                        padding: '0.55rem 1.15rem',
+                        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2))',
+                        border: '1px solid rgba(16, 185, 129, 0.4)',
+                        color: '#a7f3d0',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                      }}
+                    >
+                      <Scale size={15} /> ⚖️ Kasir Koperasi &amp; Bank Sampah
                     </button>
                   )}
                 </div>

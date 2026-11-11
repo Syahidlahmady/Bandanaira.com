@@ -35,6 +35,7 @@ import { HarvestGradingWorkspace } from './views/HarvestGradingWorkspace.tsx'
 import { CitizenPortalWorkspace } from './views/CitizenPortalWorkspace.tsx'
 import { AuditTrailWorkspace } from './views/AuditTrailWorkspace.tsx'
 import { SmartPlannerWorkspace } from './views/SmartPlannerWorkspace.tsx'
+import { KoperasiKasirWorkspace } from './views/KoperasiKasirWorkspace.tsx'
 import {
   MapPin,
   Users,
@@ -42,6 +43,7 @@ import {
   Mail,
   ShieldCheck,
   Compass,
+  Scale,
 } from 'lucide-react'
 import { offlineDB } from './offline/db.ts'
 import { syncManager, SyncQueueItem } from './offline/syncManager.ts'
@@ -58,7 +60,7 @@ interface HealthResponse {
 
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'population' | 'letters' | 'farming' | 'traceability' | 'audit' | 'smart_planner'>('population')
+  const [activeTab, setActiveTab] = useState<'population' | 'letters' | 'farming' | 'traceability' | 'koperasi' | 'audit' | 'smart_planner'>('population')
   const [health, setHealth] = useState<HealthResponse | null>(null)
   const [loadingHealth, setLoadingHealth] = useState<boolean>(true)
   const [healthError, setHealthError] = useState<string | null>(null)
@@ -951,6 +953,7 @@ export const App: React.FC = () => {
           onPublicVerify={(token) => handlePublicVerify(token)}
           onOpenMarketplace={() => setShowMarketplaceModal(true)}
           onOpenPlanner={() => setActiveTab('smart_planner')}
+          onOpenKoperasi={() => setActiveTab('koperasi')}
           loading={authLoading}
           error={authError}
         />
@@ -1074,6 +1077,12 @@ export const App: React.FC = () => {
           >
             <Compass size={16} /> 🧭 Perencana Cerdas (DSS)
           </button>
+          <button
+            onClick={() => setActiveTab('koperasi')}
+            className={`tab-btn ${activeTab === 'koperasi' ? 'active' : ''}`}
+          >
+            <Scale size={16} /> ⚖️ Koperasi &amp; Bank Sampah
+          </button>
         </div>
       )}
 
@@ -1171,6 +1180,11 @@ export const App: React.FC = () => {
       {/* TAB 6: PERENCANA CERDAS & KETAHANAN PULAU (DSS SAW) */}
       {activeTab === 'smart_planner' && (
         <SmartPlannerWorkspace />
+      )}
+
+      {/* TAB 7: KOPERASI HATTA, BANK SAMPAH & DISPENSER AIR RO */}
+      {activeTab === 'koperasi' && (
+        <KoperasiKasirWorkspace />
       )}
 
       {/* PORTAL KHUSUS WARGA DESA (RESIDENT) */}
