@@ -226,27 +226,30 @@ export const LandingPortalWorkspace: React.FC<LandingPortalWorkspaceProps> = ({
   }
 
   return (
-    <div style={{ maxWidth: '1240px', margin: '0 auto', color: '#f8fafc' }}>
-      {/* HERO HEADER SECTION WITH AUTHENTIC BANDA SCENIC BACKGROUND */}
+    <div style={{ width: '100%', color: '#f8fafc' }}>
+      {/* HERO HEADER SECTION: 100% FULL-SCREEN / EDGE-TO-EDGE PANORAMA */}
       <section
-        className="app-card animate-fade-in"
+        className="animate-fade-in"
         style={{
+          width: '100%',
+          minHeight: '86vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           position: 'relative',
           overflow: 'hidden',
-          padding: '4rem 2.25rem 3.25rem',
-          borderRadius: '28px',
-          backgroundImage: `linear-gradient(180deg, rgba(8, 12, 20, 0.40) 0%, rgba(8, 12, 20, 0.65) 55%, rgba(8, 12, 20, 0.92) 100%), url(${activeTheme.imageUrl})`,
+          padding: '4.5rem 1.5rem 4rem',
+          backgroundImage: `linear-gradient(180deg, rgba(8, 12, 20, 0.38) 0%, rgba(8, 12, 20, 0.62) 55%, rgba(8, 12, 20, 0.95) 100%), url(${activeTheme.imageUrl})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center center',
           backgroundRepeat: 'no-repeat',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 35px rgba(6, 182, 212, 0.15)',
-          marginBottom: '3rem',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.15)',
+          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.75)',
           transition: 'background-image 0.5s ease-in-out',
         }}
       >
-        {/* Content Container inside Header */}
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: '920px', margin: '0 auto', textAlign: 'center' }}>
+        {/* Centered Content Container inside Full Screen Header */}
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: '1040px', width: '100%', margin: '0 auto', textAlign: 'center' }}>
           
           {/* Top Bar: Scene Indicator & Panorama Switcher */}
           <div
@@ -652,8 +655,10 @@ export const LandingPortalWorkspace: React.FC<LandingPortalWorkspaceProps> = ({
         </div>
       </section>
 
-      {/* SMART TOURISM SPOTLIGHT: PESONA BAHARI & WARISAN BANDA NEIRA */}
-      <section style={{ marginBottom: '3.5rem' }}>
+      {/* SECTIONS BELOW HEADER: CENTERED IN CONTAINER */}
+      <div style={{ maxWidth: '1240px', margin: '0 auto', padding: '3.5rem 1.25rem 3.5rem' }}>
+        {/* SMART TOURISM SPOTLIGHT: PESONA BAHARI & WARISAN BANDA NEIRA */}
+        <section style={{ marginBottom: '3.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: '#06b6d4', fontSize: '0.825rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>
@@ -1524,6 +1529,7 @@ export const LandingPortalWorkspace: React.FC<LandingPortalWorkspaceProps> = ({
           </button>
         </div>
       </section>
+      </div>
     </div>
   )
 }

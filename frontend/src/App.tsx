@@ -937,20 +937,28 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: '1180px', margin: '0 auto', padding: '1.5rem 1rem 3rem' }}>
+    <div
+      style={{
+        maxWidth: activeTab === 'landing' ? '100%' : '1180px',
+        margin: '0 auto',
+        padding: activeTab === 'landing' ? '0' : '1.5rem 1rem 3rem',
+        overflowX: 'hidden',
+      }}
+    >
       {/* Top Brand Navbar & Offline Status */}
-      {/* Top Brand Navbar & Offline Status */}
-      <HeaderNav
-        currentUser={currentUser}
-        isOnline={isOnline}
-        pendingSyncCount={pendingSyncCount}
-        isSyncing={isSyncing}
-        onLogout={handleLogout}
-        onManualSync={handleManualSync}
-        onOpenQueueModal={handleOpenQueueModal}
-        onOpenMarketplace={() => setShowMarketplaceModal(true)}
-        onOpenLanding={() => setActiveTab('landing')}
-      />
+      <div style={{ maxWidth: '1180px', margin: '0 auto', padding: activeTab === 'landing' ? '1.25rem 1rem 0' : '0' }}>
+        <HeaderNav
+          currentUser={currentUser}
+          isOnline={isOnline}
+          pendingSyncCount={pendingSyncCount}
+          isSyncing={isSyncing}
+          onLogout={handleLogout}
+          onManualSync={handleManualSync}
+          onOpenQueueModal={handleOpenQueueModal}
+          onOpenMarketplace={() => setShowMarketplaceModal(true)}
+          onOpenLanding={() => setActiveTab('landing')}
+        />
+      </div>
 
       {/* 1. LANDING PORTAL WORKSPACE (Satu Pintu Utama Ekosistem) */}
       {activeTab === 'landing' && (
