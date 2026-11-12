@@ -200,4 +200,36 @@ export const offlineDB = {
       request.onerror = () => reject(request.error)
     })
   },
+
+  /**
+   * Mengambil record cache lengkap beserta metadata waktu penyimpanan
+   */
+  async getCachedRecord<T>(key: string): Promise<{ data: T; updatedAt: string } | null> {
+    const db = await openDB()
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(CACHE_STORE, 'readonly')
+      const store = tx.objectStore(CACHE_STORE)
+      const request = store.get(key)
+      request.onsuccess = () => {
+        const result = request.result as CachedDataRecord | undefined
+        resolve(result ? { data: result.data as T, updatedAt: result.updatedAt } : null)
+      }
+      request.onerror = () => reject(request.error)
+    })
+  },
+
+  /**
+   * Menghapus cache berdasarkan key
+   */
+  async deleteCachedData(key: string): Promise<void> {
+    const db = await openDB()
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(CACHE_STORE, 'readwrite')
+      const store = tx.objectStore(CACHE_STORE)
+      const request = store.delete(key)
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+    })
+  },
 }
+

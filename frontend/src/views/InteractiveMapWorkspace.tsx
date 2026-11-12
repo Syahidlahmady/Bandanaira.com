@@ -14,6 +14,12 @@ import {
   RefreshCw,
   Volume2,
   Radio,
+  HardDriveDownload,
+  Wifi,
+  WifiOff,
+  CheckCircle2,
+  AlertCircle,
+  Trash2,
 } from 'lucide-react'
 import {
   gisService,
@@ -66,6 +72,22 @@ export const InteractiveMapWorkspace: React.FC = () => {
   const [islandFilter, setIslandFilter] = useState<string>('')
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'publik' | 'resiliensi'>('all')
 
+  // Offline Caching State
+  const [isOffline, setIsOffline] = useState<boolean>(
+    typeof window !== 'undefined' ? !window.navigator.onLine : false
+  )
+  const [isUsingCachedData, setIsUsingCachedData] = useState<boolean>(false)
+  const [cacheInfo, setCacheInfo] = useState<{
+    isCached: boolean
+    cachedAt: string | null
+    featureCount: number
+  }>({ isCached: false, cachedAt: null, featureCount: 0 })
+  const [cachingMap, setCachingMap] = useState<boolean>(false)
+  const [notificationMsg, setNotificationMsg] = useState<{
+    type: 'success' | 'info' | 'error'
+    text: string
+  } | null>(null)
+
   // Active Layers Multi-selection (all enabled by default)
   const [selectedLayers, setSelectedLayers] = useState<Set<string>>(
     new Set([
@@ -79,10 +101,35 @@ export const InteractiveMapWorkspace: React.FC = () => {
     ])
   )
 
-  // Load Metadata & Features on Mount
+  // Load Metadata & Features on Mount, plus check offline cache status
   useEffect(() => {
     loadGISData()
+    refreshCacheStatus()
+
+    const handleOnline = () => {
+      setIsOffline(false)
+      loadGISData()
+    }
+    const handleOffline = () => {
+      setIsOffline(true)
+    }
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
   }, [])
+
+  const refreshCacheStatus = async () => {
+    try {
+      const status = await gisService.getOfflineGISStatus()
+      setCacheInfo(status)
+    } catch (err) {
+      console.warn('Gagal membaca status cache offline:', err)
+    }
+  }
 
   const loadGISData = async () => {
     setLoading(true)
@@ -93,10 +140,67 @@ export const InteractiveMapWorkspace: React.FC = () => {
       ])
       setGisMeta(metaRes)
       setFeatures(layersRes.features)
+      const status = await gisService.getOfflineGISStatus()
+      setCacheInfo(status)
+      if (typeof window !== 'undefined' && !window.navigator.onLine) {
+        setIsUsingCachedData(true)
+      } else {
+        setIsUsingCachedData(false)
+      }
     } catch (err) {
-      console.error('Failed to load GIS data:', err)
+      console.warn('Network request gagal, memeriksa ketersediaan cache offline...', err)
+      const cachedStatus = await gisService.getOfflineGISStatus()
+      setCacheInfo(cachedStatus)
+      if (cachedStatus.isCached) {
+        setIsUsingCachedData(true)
+      } else {
+        setNotificationMsg({
+          type: 'error',
+          text: 'Peta belum tersimpan di cache lokal. Harap hubungkan internet setidaknya sekali untuk mengunduh layer.',
+        })
+      }
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleCacheMapForOffline = async () => {
+    setCachingMap(true)
+    try {
+      const res = await gisService.cacheAllGISOffline()
+      const status = await gisService.getOfflineGISStatus()
+      setCacheInfo(status)
+      setNotificationMsg({
+        type: 'success',
+        text: `Berhasil menyimpan seluruh 7 layer spasial (${res.totalFeatures} titik) ke memori IndexedDB perangkat! Peta ini kini dapat dibuka di kebun tanpa sinyal internet.`,
+      })
+      setTimeout(() => setNotificationMsg(null), 6000)
+    } catch (err: any) {
+      setNotificationMsg({
+        type: 'error',
+        text: `Gagal menyimpan peta offline: ${err?.message || 'Terjadi kesalahan sistem'}`,
+      })
+    } finally {
+      setCachingMap(false)
+    }
+  }
+
+  const handleClearCache = async () => {
+    if (!window.confirm('Hapus cache peta offline dari perangkat ini?')) return
+    try {
+      await gisService.clearOfflineGISCache()
+      const status = await gisService.getOfflineGISStatus()
+      setCacheInfo(status)
+      setNotificationMsg({
+        type: 'info',
+        text: 'Cache peta offline pada perangkat telah dibersihkan.',
+      })
+      setTimeout(() => setNotificationMsg(null), 4000)
+    } catch (err: any) {
+      setNotificationMsg({
+        type: 'error',
+        text: `Gagal membersihkan cache: ${err?.message || 'Terjadi kesalahan'}`,
+      })
     }
   }
 
@@ -335,6 +439,201 @@ export const InteractiveMapWorkspace: React.FC = () => {
             <Compass size={13} />
             Pusat Banda
           </button>
+        </div>
+      </div>
+
+      {/* Alert Notification Toast */}
+      {notificationMsg && (
+        <div
+          className="animate-fade-in"
+          style={{
+            padding: '0.85rem 1.25rem',
+            borderRadius: 'var(--radius-md)',
+            marginBottom: '1rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '0.75rem',
+            background:
+              notificationMsg.type === 'success'
+                ? 'rgba(16, 185, 129, 0.15)'
+                : notificationMsg.type === 'info'
+                ? 'rgba(6, 182, 212, 0.15)'
+                : 'rgba(239, 68, 68, 0.15)',
+            border: `1px solid ${
+              notificationMsg.type === 'success'
+                ? 'rgba(16, 185, 129, 0.4)'
+                : notificationMsg.type === 'info'
+                ? 'rgba(6, 182, 212, 0.4)'
+                : 'rgba(239, 68, 68, 0.4)'
+            }`,
+            color:
+              notificationMsg.type === 'success'
+                ? '#34d399'
+                : notificationMsg.type === 'info'
+                ? '#38bdf8'
+                : '#f87171',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {notificationMsg.type === 'success' ? (
+              <CheckCircle2 size={16} />
+            ) : notificationMsg.type === 'info' ? (
+              <AlertCircle size={16} />
+            ) : (
+              <AlertCircle size={16} />
+            )}
+            <span>{notificationMsg.text}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setNotificationMsg(null)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'inherit',
+              cursor: 'pointer',
+              fontWeight: 800,
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* PWA Offline Caching & Island Resilience HUD Bar */}
+      <div
+        className="app-card"
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          padding: '0.85rem 1.25rem',
+          marginBottom: '1.25rem',
+          background: 'rgba(15, 23, 42, 0.85)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: 'var(--radius-md)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
+          {/* Status Indicator */}
+          {isUsingCachedData || isOffline ? (
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                padding: '0.35rem 0.85rem',
+                borderRadius: '999px',
+                background: 'rgba(245, 158, 11, 0.16)',
+                border: '1px solid rgba(245, 158, 11, 0.45)',
+                color: '#fbbf24',
+                fontSize: '0.78rem',
+                fontWeight: 800,
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              <WifiOff size={14} />
+              <span>OFFLINE: MEMAKAI CACHE LOKAL ({features.length} TITIK)</span>
+            </div>
+          ) : cacheInfo.isCached ? (
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                padding: '0.35rem 0.85rem',
+                borderRadius: '999px',
+                background: 'rgba(16, 185, 129, 0.14)',
+                border: '1px solid rgba(16, 185, 129, 0.4)',
+                color: '#34d399',
+                fontSize: '0.78rem',
+                fontWeight: 800,
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              <CheckCircle2 size={14} />
+              <span>PETA TERSIMPAN DI PERANGKAT ({cacheInfo.featureCount} TITIK • SIAP OFFLINE)</span>
+            </div>
+          ) : (
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                padding: '0.35rem 0.85rem',
+                borderRadius: '999px',
+                background: 'rgba(6, 182, 212, 0.12)',
+                border: '1px solid rgba(6, 182, 212, 0.35)',
+                color: '#38bdf8',
+                fontSize: '0.78rem',
+                fontWeight: 800,
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              <Wifi size={14} />
+              <span>ONLINE LIVE (BELUM DI-CACHE SECARA PERMANEN)</span>
+            </div>
+          )}
+
+          {cacheInfo.cachedAt && (
+            <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+              Sinkronisasi Terakhir:{' '}
+              <strong style={{ color: '#e2e8f0' }}>
+                {new Date(cacheInfo.cachedAt).toLocaleDateString('id-ID', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </strong>
+            </span>
+          )}
+        </div>
+
+        {/* Cache Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={handleCacheMapForOffline}
+            disabled={cachingMap}
+            className="btn btn-sm btn-primary"
+            style={{
+              fontWeight: 800,
+              fontSize: '0.78rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              boxShadow: '0 0 15px rgba(16, 185, 129, 0.3)',
+            }}
+            title="Unduh seluruh data 7-layer PostGIS ke IndexedDB agar bisa dibuka saat tidak ada sinyal di kebun"
+          >
+            <HardDriveDownload size={14} className={cachingMap ? 'animate-spin' : ''} />
+            {cachingMap ? 'Menyimpan...' : '💾 Simpan Peta Offline (IndexedDB)'}
+          </button>
+
+          {cacheInfo.isCached && (
+            <button
+              type="button"
+              onClick={handleClearCache}
+              className="btn btn-sm btn-secondary"
+              style={{
+                fontSize: '0.78rem',
+                color: '#94a3b8',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+              }}
+              title="Bersihkan cache lokal peta dari memori browser"
+            >
+              <Trash2 size={13} /> Bersihkan Cache
+            </button>
+          )}
         </div>
       </div>
 

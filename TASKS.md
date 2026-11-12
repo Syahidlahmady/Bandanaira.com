@@ -22,9 +22,12 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 17: Decision Support System (DSS SAW Engine Dual-Mode) & Smart Tourism Planner (Mandat Hidayah / SRS)**
 - [x] **Phase 18: Koperasi Hatta, Bank Sampah Plastik, & Dispenser Air Bersih RO (Mandat Prof. Purwo & KKN-PPM UGM)**
 - [x] **Phase 19: IoT Telemetry & Island Resiliency Command Dashboard (Water TDS & Tank Level, Solar/Diesel Sensor Simulator)**
-- [ ] **Phase 20: Smart Tourism Accommodations, Eco-Stay Catalog & WhatsApp Direct Booking**
-- [ ] **Phase 21: 7-Layer Spatial GIS Peta Interaktif (Leaflet Multi-Layer GeoJSON Switcher)**
-- [ ] **Phase 22: Cryptographic NIK Hardening (AES-256-GCM + Blind Index HMAC-SHA256 OWASP Top 10)**
+- [x] **Phase 20: Smart Tourism Accommodations, Eco-Stay Catalog & WhatsApp Direct Booking**
+- [x] **Phase 21: 7-Layer Spatial GIS Peta Interaktif (Leaflet Multi-Layer GeoJSON Switcher)**
+- [x] **Phase 22: Cryptographic NIK Hardening (AES-256-GCM + Blind Index HMAC-SHA256 OWASP Top 10)**
+- [x] **Phase 23: Dynamic Field Surveys & Hybrid Database ETL Pipeline (Mandat Syafa Nailah Mufidah & Fauzan Arisanto / SRS 6.1, 9.1 & BAB XI)**
+- [x] **Phase 24: Single-Door Island Ecosystem Landing Page Portal (Satu Pintu BST-NIRANA)**
+- [x] **Phase 25: PWA Offline Map Caching & Field Resilience (IndexedDB GeoJSON 7-Layer Storage)**
 
 ---
 
@@ -289,6 +292,12 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Harmonized color system to Neo-Obsidian & Cyber-Emerald design tokens (`#080c14`, `#10b981`, `#06b6d4`, `#f59e0b`, `#8b5cf6`), clean typography, glassmorphism, and responsive layout.
   - Added comprehensive Ecosystem Footer with four-quadrant navigation links, island coordinates, cryptographic system statuses, and copyright.
   - Verified with `npm run build` (built in 4.39s, exit code 0) and backend pytest suite (78/78 tests passed, 100%).
+- [x] Phase 25: PWA Offline Map Caching & Field Resilience (IndexedDB GeoJSON 7-Layer Storage):
+  - Added `getCachedRecord<T>` and `deleteCachedData` in `frontend/src/offline/db.ts` for full cache lifecycle management.
+  - Upgraded `frontend/src/services/gis.ts` with automatic network-to-cache fallback, silent cache synchronization, 1-click batch download (`cacheAllGISOffline`), status inspection (`getOfflineGISStatus`), and cache clearing (`clearOfflineGISCache`).
+  - Added real-time connectivity event listeners (`online` / `offline`) and interactive PWA Offline Resilience HUD Bar in `frontend/src/views/InteractiveMapWorkspace.tsx`.
+  - Verified clean TypeScript build (`npm run build` exits 0 in 4.29s) and full test coverage (78/78 passed 100%).
+
 
 
 
