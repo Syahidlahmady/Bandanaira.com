@@ -227,7 +227,7 @@ export const LandingPortalWorkspace: React.FC<LandingPortalWorkspaceProps> = ({
 
   return (
     <div style={{ position: 'relative', width: '100%', color: '#0f172a' }}>
-      {/* 1. FULL-PAGE FIXED BRIGHT TROPICAL SUNLIT BACKGROUND */}
+      {/* 1. FULL-PAGE FIXED AUTHENTIC NATURE BACKGROUND (Tanpa overlay gradient putih, 100% murni foto pemandangan alam) */}
       <div
         style={{
           position: 'fixed',
@@ -236,7 +236,7 @@ export const LandingPortalWorkspace: React.FC<LandingPortalWorkspaceProps> = ({
           width: '100vw',
           height: '100vh',
           zIndex: 0,
-          backgroundImage: `linear-gradient(180deg, rgba(240, 249, 255, 0.72) 0%, rgba(224, 242, 254, 0.82) 40%, rgba(236, 253, 245, 0.92) 100%), radial-gradient(circle at 50% 15%, rgba(56, 189, 248, 0.25) 0%, transparent 65%), url(${activeTheme.imageUrl})`,
+          backgroundImage: `url(${activeTheme.imageUrl})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center center',
           backgroundRepeat: 'no-repeat',
@@ -270,29 +270,6 @@ export const LandingPortalWorkspace: React.FC<LandingPortalWorkspaceProps> = ({
             marginBottom: '2.5rem',
           }}
         >
-          {/* Subtle Decorative Ambient Glows */}
-          <div
-            style={{
-              position: 'absolute',
-              top: '-80px',
-              right: '-80px',
-              width: '320px',
-              height: '320px',
-              background: 'radial-gradient(circle, rgba(56, 189, 248, 0.3) 0%, transparent 70%)',
-              pointerEvents: 'none',
-            }}
-          />
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '-90px',
-              left: '10%',
-              width: '380px',
-              height: '380px',
-              background: 'radial-gradient(circle, rgba(52, 211, 153, 0.25) 0%, transparent 70%)',
-              pointerEvents: 'none',
-            }}
-          />
 
           {/* Content Container */}
           <div style={{ position: 'relative', zIndex: 1, maxWidth: '920px', margin: '0 auto', textAlign: 'center' }}>
