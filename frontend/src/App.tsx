@@ -945,8 +945,8 @@ export const App: React.FC = () => {
         overflowX: 'hidden',
       }}
     >
-      {/* Top Brand Navbar & Offline Status */}
-      <div style={{ maxWidth: '1180px', margin: '0 auto', padding: activeTab === 'landing' ? '1.25rem 1rem 0' : '0' }}>
+      {/* Top Brand Navbar is ONLY rendered for dashboard workspace tabs, NOT for landing page to avoid duplicate headers! */}
+      {activeTab !== 'landing' && (
         <HeaderNav
           currentUser={currentUser}
           isOnline={isOnline}
@@ -958,9 +958,9 @@ export const App: React.FC = () => {
           onOpenMarketplace={() => setShowMarketplaceModal(true)}
           onOpenLanding={() => setActiveTab('landing')}
         />
-      </div>
+      )}
 
-      {/* 1. LANDING PORTAL WORKSPACE (Satu Pintu Utama Ekosistem) */}
+      {/* 1. LANDING PORTAL WORKSPACE (Satu Pintu Utama Ekosistem - SINGLE UNIFIED HEADER) */}
       {activeTab === 'landing' && (
         <LandingPortalWorkspace
           onNavigate={(tab) => setActiveTab(tab)}
@@ -968,6 +968,8 @@ export const App: React.FC = () => {
           onOpenMarketplace={() => setShowMarketplaceModal(true)}
           onPublicVerify={(token) => handlePublicVerify(token)}
           currentUser={currentUser}
+          isOnline={isOnline}
+          onLogout={handleLogout}
         />
       )}
 

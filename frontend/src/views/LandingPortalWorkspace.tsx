@@ -29,6 +29,7 @@ import {
   Palmtree,
   Sailboat,
   Star,
+  LogOut,
 } from 'lucide-react'
 
 interface LandingPortalWorkspaceProps {
@@ -37,6 +38,8 @@ interface LandingPortalWorkspaceProps {
   onOpenMarketplace: () => void
   onPublicVerify: (token: string) => void
   currentUser: any
+  isOnline?: boolean
+  onLogout?: () => void
 }
 
 interface ScenicTheme {
@@ -178,6 +181,8 @@ export const LandingPortalWorkspace: React.FC<LandingPortalWorkspaceProps> = ({
   onOpenMarketplace,
   onPublicVerify,
   currentUser,
+  isOnline = true,
+  onLogout,
 }) => {
   const [activeTheme, setActiveTheme] = useState<ScenicTheme>(SCENIC_THEMES[0])
   const [quickSearchInput, setQuickSearchInput] = useState('')
@@ -226,24 +231,311 @@ export const LandingPortalWorkspace: React.FC<LandingPortalWorkspaceProps> = ({
   }
 
   return (
-    <div style={{ width: '100%', color: '#f8fafc' }}>
-      {/* HERO HEADER SECTION: 100% FULL-SCREEN / EDGE-TO-EDGE PANORAMA */}
+    <div style={{ width: '100%', color: '#f8fafc', background: '#080c14' }}>
+      {/* 1. SINGLE UNIFIED TOP HEADER BAR (Only Header for Landing Page) */}
+      <header
+        style={{
+          width: '100%',
+          position: 'sticky',
+          top: 0,
+          zIndex: 50,
+          background: 'rgba(8, 12, 20, 0.82)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 4px 25px rgba(0, 0, 0, 0.55)',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: '1280px',
+            margin: '0 auto',
+            padding: '0.85rem 1.25rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            flexWrap: 'wrap',
+          }}
+        >
+          {/* Left: Brand Identity */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.85rem',
+              cursor: 'pointer',
+            }}
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          >
+            <div
+              style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '14px',
+                background: 'linear-gradient(135deg, #059669 0%, #10b981 50%, #06b6d4 100%)',
+                color: '#042f2e',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.4rem',
+                boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)',
+                border: '1.5px solid rgba(255, 255, 255, 0.25)',
+                flexShrink: 0,
+              }}
+            >
+              🌿
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <span
+                  style={{
+                    fontSize: '1.15rem',
+                    fontWeight: 800,
+                    letterSpacing: '-0.02em',
+                    lineHeight: 1.2,
+                    background: 'linear-gradient(135deg, #ffffff 0%, #a7f3d0 50%, #67e8f9 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  Banda Digital Ecosystem
+                </span>
+                <span
+                  className="badge badge-emerald"
+                  style={{ fontSize: '0.65rem', padding: '0.15rem 0.5rem', fontWeight: 800 }}
+                >
+                  Kepulauan Banda
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.15rem' }}>
+                <span style={{ fontSize: '0.72rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <MapPin size={11} color="#34d399" /> 4°31′S 129°54′E
+                </span>
+                <span style={{ color: 'rgba(255, 255, 255, 0.2)', fontSize: '0.7rem' }}>•</span>
+                <span style={{ fontSize: '0.72rem', color: '#38bdf8', fontFamily: 'var(--font-mono)' }}>
+                  Smart Tourism &amp; Rempah Pala
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Center: Panorama Background Switcher */}
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.3rem',
+              background: 'rgba(15, 23, 42, 0.7)',
+              padding: '0.3rem 0.45rem',
+              borderRadius: '999px',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              backdropFilter: 'blur(8px)',
+            }}
+          >
+            <span
+              style={{
+                fontSize: '0.72rem',
+                color: '#94a3b8',
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                padding: '0 0.45rem',
+              }}
+            >
+              <Camera size={12} color="#06b6d4" /> Latar:
+            </span>
+            {SCENIC_THEMES.map((theme) => {
+              const isSelected = activeTheme.id === theme.id
+              return (
+                <button
+                  key={theme.id}
+                  type="button"
+                  onClick={() => setActiveTheme(theme)}
+                  style={{
+                    background: isSelected
+                      ? 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)'
+                      : 'transparent',
+                    border: isSelected
+                      ? '1px solid #38bdf8'
+                      : '1px solid transparent',
+                    color: isSelected ? '#080c14' : '#cbd5e1',
+                    padding: '0.25rem 0.65rem',
+                    borderRadius: '999px',
+                    fontSize: '0.73rem',
+                    fontWeight: isSelected ? 800 : 500,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    boxShadow: isSelected ? '0 0 12px rgba(6, 182, 212, 0.45)' : 'none',
+                    transition: 'all 0.18s ease',
+                  }}
+                  title={theme.title}
+                >
+                  <span>{theme.emoji}</span>
+                  <span className="hidden md:inline">{theme.title.split('&')[0].trim()}</span>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Right: Signal Status, Marketplace & User Session */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+            {/* Online / Offline status badge */}
+            <div
+              style={{
+                background: isOnline ? 'rgba(16, 185, 129, 0.12)' : 'rgba(244, 63, 94, 0.14)',
+                border: `1px solid ${isOnline ? 'rgba(16, 185, 129, 0.35)' : 'rgba(244, 63, 94, 0.4)'}`,
+                borderRadius: '999px',
+                padding: '0.32rem 0.75rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+              }}
+            >
+              <span
+                style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: isOnline ? '#10b981' : '#f43f5e',
+                  boxShadow: isOnline ? '0 0 8px #10b981' : '0 0 8px #f43f5e',
+                  display: 'inline-block',
+                  animation: 'pulse-ring 2s infinite',
+                }}
+              />
+              <span
+                style={{
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  color: isOnline ? '#34d399' : '#fb7185',
+                  letterSpacing: '0.02em',
+                  fontFamily: 'var(--font-mono)',
+                }}
+              >
+                {isOnline ? 'ONLINE' : 'OFFLINE'}
+              </span>
+            </div>
+
+            {/* Marketplace Button */}
+            <button
+              type="button"
+              onClick={onOpenMarketplace}
+              style={{
+                background: 'rgba(6, 182, 212, 0.12)',
+                border: '1px solid rgba(6, 182, 212, 0.4)',
+                color: '#38bdf8',
+                padding: '0.4rem 0.85rem',
+                borderRadius: '12px',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'all 0.2s ease',
+              }}
+              title="Katalog Produk Pala & UMKM Banda Neira"
+            >
+              <ShoppingBag size={14} />
+              <span>Marketplace</span>
+            </button>
+
+            {/* User Session or Login */}
+            {currentUser ? (
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('population')}
+                  style={{
+                    background: 'rgba(139, 92, 246, 0.15)',
+                    border: '1px solid rgba(139, 92, 246, 0.35)',
+                    color: '#c084fc',
+                    padding: '0.4rem 0.85rem',
+                    borderRadius: '12px',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                  }}
+                  title="Masuk ke Dasbor Saya"
+                >
+                  <Users size={14} />
+                  <span>{currentUser.full_name || currentUser.username}</span>
+                </button>
+                {onLogout && (
+                  <button
+                    type="button"
+                    onClick={onLogout}
+                    style={{
+                      background: 'rgba(239, 68, 68, 0.12)',
+                      border: '1px solid rgba(239, 68, 68, 0.35)',
+                      color: '#f87171',
+                      padding: '0.4rem 0.65rem',
+                      borderRadius: '12px',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.3rem',
+                    }}
+                    title="Keluar dari Akun"
+                  >
+                    <LogOut size={13} />
+                    <span className="hidden sm:inline">Keluar</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={onOpenLogin}
+                style={{
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  border: 'none',
+                  color: '#080c14',
+                  padding: '0.45rem 1rem',
+                  borderRadius: '12px',
+                  fontSize: '0.78rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  boxShadow: '0 2px 10px rgba(16, 185, 129, 0.35)',
+                }}
+                title="Masuk ke Dasbor Desa, Poktan, Petani, atau Warga"
+              >
+                <Lock size={13} />
+                <span>Masuk Akun</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* 2. HERO SECTION: 100% FULL-SCREEN / EDGE-TO-EDGE PANORAMA */}
       <section
         className="animate-fade-in"
         style={{
           width: '100%',
-          minHeight: '86vh',
+          minHeight: '88vh',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
           overflow: 'hidden',
           padding: '4.5rem 1.5rem 4rem',
-          backgroundImage: `linear-gradient(180deg, rgba(8, 12, 20, 0.38) 0%, rgba(8, 12, 20, 0.62) 55%, rgba(8, 12, 20, 0.95) 100%), url(${activeTheme.imageUrl})`,
+          backgroundImage: `linear-gradient(180deg, rgba(8, 12, 20, 0.42) 0%, rgba(8, 12, 20, 0.55) 50%, rgba(8, 12, 20, 0.96) 100%), url(${activeTheme.imageUrl})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center center',
           backgroundRepeat: 'no-repeat',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.15)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
           boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.75)',
           transition: 'background-image 0.5s ease-in-out',
         }}
@@ -251,67 +543,27 @@ export const LandingPortalWorkspace: React.FC<LandingPortalWorkspaceProps> = ({
         {/* Centered Content Container inside Full Screen Header */}
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '1040px', width: '100%', margin: '0 auto', textAlign: 'center' }}>
           
-          {/* Top Bar: Scene Indicator & Panorama Switcher */}
+          {/* Location & Marine Status Pill */}
           <div
             style={{
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '1rem',
-              flexWrap: 'wrap',
-              marginBottom: '1.75rem',
-              background: 'rgba(8, 12, 20, 0.75)',
+              gap: '0.55rem',
+              marginBottom: '1.5rem',
+              background: 'rgba(8, 12, 20, 0.78)',
               backdropFilter: 'blur(12px)',
-              padding: '0.45rem 0.95rem',
+              padding: '0.45rem 1.15rem',
               borderRadius: '999px',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
+              border: '1px solid rgba(6, 182, 212, 0.35)',
+              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4)',
             }}
           >
-            {/* Current Active Location Tag */}
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: '#38bdf8', fontWeight: 800 }}>
-              <Waves size={16} color="#06b6d4" />
-              <span>{activeTheme.location}</span>
-              <span style={{ color: '#64748b' }}>•</span>
-              <span style={{ color: '#34d399', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                <Star size={13} fill="#34d399" color="#34d399" /> {activeTheme.badge}
-              </span>
-            </div>
-
-            {/* Interactive Scenic Panorama Selector */}
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.25rem', marginRight: '0.2rem', fontWeight: 600 }}>
-                <Camera size={13} color="#06b6d4" /> Latar Header:
-              </span>
-              {SCENIC_THEMES.map((theme) => {
-                const isSelected = activeTheme.id === theme.id
-                return (
-                  <button
-                    key={theme.id}
-                    type="button"
-                    onClick={() => setActiveTheme(theme)}
-                    style={{
-                      background: isSelected ? 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)' : 'rgba(255, 255, 255, 0.08)',
-                      border: isSelected ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.15)',
-                      color: isSelected ? '#080c14' : '#e2e8f0',
-                      padding: '0.3rem 0.75rem',
-                      borderRadius: '999px',
-                      fontSize: '0.75rem',
-                      fontWeight: isSelected ? 800 : 600,
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.35rem',
-                      boxShadow: isSelected ? '0 0 15px rgba(6, 182, 212, 0.45)' : 'none',
-                      transition: 'all 0.2s ease',
-                    }}
-                    title={theme.title}
-                  >
-                    <span>{theme.emoji}</span>
-                    <span className="hidden sm:inline">{theme.title.split('&')[0].trim()}</span>
-                  </button>
-                )
-              })}
-            </div>
+            <Waves size={16} color="#06b6d4" />
+            <span style={{ fontSize: '0.825rem', color: '#38bdf8', fontWeight: 800 }}>{activeTheme.location}</span>
+            <span style={{ color: 'rgba(255, 255, 255, 0.3)' }}>•</span>
+            <span style={{ color: '#34d399', fontSize: '0.825rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+              <Star size={13} fill="#34d399" color="#34d399" /> {activeTheme.badge}
+            </span>
           </div>
 
           {/* Travel Brand Tag */}
@@ -1530,6 +1782,178 @@ export const LandingPortalWorkspace: React.FC<LandingPortalWorkspaceProps> = ({
         </div>
       </section>
       </div>
+
+      {/* 5. UNIFIED CLEAN FOOTER */}
+      <footer
+        style={{
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          background: 'rgba(8, 12, 20, 0.96)',
+          padding: '3.5rem 1.5rem 2.25rem',
+          marginTop: '3.5rem',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: '1240px',
+            margin: '0 auto',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: '2.5rem',
+            marginBottom: '2.5rem',
+          }}
+        >
+          {/* Brand info */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.85rem' }}>
+              <div
+                style={{
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.2rem',
+                  boxShadow: '0 0 15px rgba(16, 185, 129, 0.35)',
+                }}
+              >
+                🌿
+              </div>
+              <span style={{ fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc' }}>
+                Banda Digital Ecosystem
+              </span>
+            </div>
+            <p style={{ fontSize: '0.825rem', color: '#94a3b8', lineHeight: 1.6, margin: '0 0 1.15rem' }}>
+              Portal terpadu satu pintu untuk kepulauan Banda Neira, Maluku Tengah. Mengintegrasikan pariwisata bahari, agrikultur pala berkelanjutan, telemetri IoT resiliensi pulau, dan tata kelola desa berbasis blockchain.
+            </p>
+            <div style={{ fontSize: '0.75rem', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '0.35rem', fontFamily: 'var(--font-mono)' }}>
+              <MapPin size={13} color="#10b981" /> 4°31′00″S 129°54′00″E • Laut Banda, Maluku
+            </div>
+          </div>
+
+          {/* Gerbang 1 & 2 links */}
+          <div>
+            <h4 style={{ fontSize: '0.875rem', fontWeight: 800, color: '#f8fafc', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.85rem' }}>
+              Pariwisata &amp; Warga
+            </h4>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.55rem', fontSize: '0.825rem' }}>
+              <li>
+                <button type="button" onClick={() => onNavigate('gis')} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 0, textAlign: 'left', transition: 'color 0.15s ease' }}>
+                  🗺️ Peta Interaktif 7-Layer PostGIS
+                </button>
+              </li>
+              <li>
+                <button type="button" onClick={() => onNavigate('tourism')} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 0, textAlign: 'left', transition: 'color 0.15s ease' }}>
+                  🏡 Direktori Homestay &amp; Panduan Selam
+                </button>
+              </li>
+              <li>
+                <button type="button" onClick={() => onNavigate('smart_planner')} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 0, textAlign: 'left', transition: 'color 0.15s ease' }}>
+                  🧭 Rekomendasi Rute Wisata Cerdas (SAW)
+                </button>
+              </li>
+              <li>
+                <button type="button" onClick={() => onNavigate('koperasi')} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 0, textAlign: 'left', transition: 'color 0.15s ease' }}>
+                  💧 Kuota Air Minum RO &amp; Bank Sampah
+                </button>
+              </li>
+              <li>
+                <button type="button" onClick={() => onNavigate('letters')} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 0, textAlign: 'left', transition: 'color 0.15s ease' }}>
+                  📬 Pelayanan Surat Keterangan Desa
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* Gerbang 3 & 4 links */}
+          <div>
+            <h4 style={{ fontSize: '0.875rem', fontWeight: 800, color: '#f8fafc', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.85rem' }}>
+              Rempah, IoT &amp; Audit
+            </h4>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.55rem', fontSize: '0.825rem' }}>
+              <li>
+                <button type="button" onClick={onOpenMarketplace} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 0, textAlign: 'left', transition: 'color 0.15s ease' }}>
+                  🛍️ Marketplace Rempah &amp; Hasil Laut
+                </button>
+              </li>
+              <li>
+                <button type="button" onClick={() => onNavigate('traceability')} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 0, textAlign: 'left', transition: 'color 0.15s ease' }}>
+                  📦 Paspor Digital Ketertelusuran Pala
+                </button>
+              </li>
+              <li>
+                <button type="button" onClick={() => onNavigate('farming')} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 0, textAlign: 'left', transition: 'color 0.15s ease' }}>
+                  🌾 Poligon Kebun &amp; Sensus Pohon
+                </button>
+              </li>
+              <li>
+                <button type="button" onClick={() => onNavigate('iot')} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 0, textAlign: 'left', transition: 'color 0.15s ease' }}>
+                  📡 Telemetri ESP32 &amp; Panel Tenaga Surya
+                </button>
+              </li>
+              <li>
+                <button type="button" onClick={() => onNavigate('audit')} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 0, textAlign: 'left', transition: 'color 0.15s ease' }}>
+                  🛡️ Audit Keamanan &amp; Verifikasi Hash
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* System status */}
+          <div>
+            <h4 style={{ fontSize: '0.875rem', fontWeight: 800, color: '#f8fafc', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.85rem' }}>
+              Infrastruktur Terdesentralisasi
+            </h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', fontSize: '0.8rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#34d399' }}>
+                <CheckCircle2 size={14} /> PWA Siap Kerja Offline (IndexedDB)
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#38bdf8' }}>
+                <CheckCircle2 size={14} /> Spasial EPSG:4326 PostGIS
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#fbbf24' }}>
+                <CheckCircle2 size={14} /> Kriptografi Blind Index AES-256-GCM
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#a78bfa' }}>
+                <CheckCircle2 size={14} /> EVM Ledger &amp; Deterministic Hash
+              </div>
+              <div style={{ marginTop: '0.4rem', padding: '0.5rem 0.75rem', borderRadius: '10px', background: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)', fontSize: '0.72rem', color: '#94a3b8' }}>
+                Sistem Terpadu Kepulauan Banda &bull; v1.0.0 Stable
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom copyright */}
+        <div
+          style={{
+            maxWidth: '1240px',
+            margin: '0 auto',
+            paddingTop: '1.5rem',
+            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '1rem',
+            fontSize: '0.75rem',
+            color: '#64748b',
+          }}
+        >
+          <div>
+            &copy; {new Date().getFullYear()} Banda Digital Ecosystem. Hak Cipta Dilindungi Undang-Undang.
+          </div>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <span>Kecamatan Banda</span>
+            <span>&bull;</span>
+            <span>Kabupaten Maluku Tengah</span>
+            <span>&bull;</span>
+            <span>Provinsi Maluku</span>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
+
