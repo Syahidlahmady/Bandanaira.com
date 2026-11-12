@@ -28,6 +28,8 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 23: Dynamic Field Surveys & Hybrid Database ETL Pipeline (Mandat Syafa Nailah Mufidah & Fauzan Arisanto / SRS 6.1, 9.1 & BAB XI)**
 - [x] **Phase 24: Single-Door Island Ecosystem Landing Page Portal (Satu Pintu BST-NIRANA)**
 - [x] **Phase 25: PWA Offline Map Caching & Field Resilience (IndexedDB GeoJSON 7-Layer Storage)**
+- [x] **Phase 26: Actor Segregation & Dedicated Operational Roles (Koperasi, Homestay, Smart Tourism, Survei)**
+
 
 ---
 
@@ -297,6 +299,31 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Upgraded `frontend/src/services/gis.ts` with automatic network-to-cache fallback, silent cache synchronization, 1-click batch download (`cacheAllGISOffline`), status inspection (`getOfflineGISStatus`), and cache clearing (`clearOfflineGISCache`).
   - Added real-time connectivity event listeners (`online` / `offline`) and interactive PWA Offline Resilience HUD Bar in `frontend/src/views/InteractiveMapWorkspace.tsx`.
   - Verified clean TypeScript build (`npm run build` exits 0 in 4.29s) and full test coverage (78/78 passed 100%).
+
+### Phase 26: Actor Segregation & Dedicated Operational Roles (Koperasi, Homestay, Smart Tourism, Survei)
+- [x] 26.1 Backend RBAC Roles & Seeding (`backend/app/core/permissions.py` & `backend/app/modules/auth/seed.py`):
+  - Added formal role constants: `ROLE_RESIDENT = "resident"`, `ROLE_COOP_MANAGER = "coop_manager"`, `ROLE_HOMESTAY_OPERATOR = "homestay_operator"`, `ROLE_SMART_TOURISM_ADMIN = "smart_tourism_admin"`, and `ROLE_FIELD_SURVEYOR = "field_surveyor"`.
+  - Seeded dedicated demo users into PostgreSQL database:
+    - `pengelola_koperasi` (`Koperasi123!`, role `coop_manager`): Faisal Latarisa (Pengelola Koperasi Hatta)
+    - `operator_homestay` (`Homestay123!`, role `homestay_operator`): Rahmat Delfika (Pengelola Delfika Eco-Stay)
+    - `admin_wisata` (`Wisata123!`, role `smart_tourism_admin`): Dewi Nusantara (Pengelola Smart Tourism & Pemandu Budaya)
+    - `surveyor` (`Surveyor123!`, role `field_surveyor`): Fauzan Arisanto (Surveyor Lapangan & IoT Operator)
+- [x] 26.2 Frontend One-Click Digital Passes & Role Badges (`frontend/src/components/LoginSection.tsx` & `frontend/src/components/HeaderNav.tsx`):
+  - Added 4 dedicated demo login cards with tailored icons, color themes, and credential badges.
+  - Formatted Indonesian role badges in `HeaderNav.tsx` for all actor types.
+- [x] 26.3 Role-Segregated Workspace Navigation & Tab Routing (`frontend/src/App.tsx`):
+  - Eliminated monolithic tab clutter by personalizing navigation bars per actor:
+    - **Pengelola Koperasi (`coop_manager`)**: Lands on `koperasi` (Kasir Komoditas, Bank Sampah, Koin Air RO) + `traceability` (Penerimaan Lot Rempah) + `iot` (Level Tangki Air & TDS).
+    - **Operator Homestay (`homestay_operator`)**: Lands on `tourism` (Katalog Penginapan & WhatsApp Booking) + `gis` (Peta Akomodasi) + `smart_planner` (Panduan Wisatawan DSS).
+    - **Admin Wisata & Budaya (`smart_tourism_admin`)**: Lands on `tourism` (177 Cagar Budaya, Audio Guide) + `gis` (7-Layer Spatial Map) + `smart_planner` (SAW Mode 1 DSS).
+    - **Surveyor Lapangan (`field_surveyor`)**: Lands on `survei` (Form Survei NoSQL, Pipa Migrasi ETL PostGIS) + `iot` (Telemetri 4 Stasiun) + `gis` (Validasi Titik Lapangan) + `smart_planner` (SAW Mode 2 Krisis Desa).
+    - **Petugas Desa (`village_officer`)**: Focused on Civil & Governance (`population`, `letters`, `farming`, `audit`).
+    - **Super Admin (`admin`)**: Master oversight with all 11 tabs accessible.
+- [x] 26.4 Automated Testing & Verification:
+  - Added parametrized test `test_login_segmented_roles` in `backend/tests/test_auth.py` verifying JWT token issuance and role validation for all 4 new actors.
+  - Verified full test suite passes: **14/14 auth tests, 82/82 total backend tests pass 100%**.
+  - Verified clean TypeScript build (`npm --prefix frontend run build` exits 0 in 4.06s).
+
 
 
 

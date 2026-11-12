@@ -386,12 +386,26 @@ export const App: React.FC = () => {
     }
   }
 
-  const isOfficerOrAdmin = Boolean(
+  const isAdmin = Boolean(
     currentUser &&
-      (currentUser.is_superuser ||
-        currentUser.roles.some(
-          (r) => r.name === 'admin' || r.name === 'village_officer'
-        ))
+      (currentUser.is_superuser || currentUser.roles.some((r) => r.name === 'admin'))
+  )
+  const isVillageOfficer = Boolean(
+    currentUser && currentUser.roles.some((r) => r.name === 'village_officer')
+  )
+  const isOfficerOrAdmin = Boolean(isAdmin || isVillageOfficer)
+
+  const isCoopManager = Boolean(
+    currentUser && currentUser.roles.some((r) => r.name === 'coop_manager')
+  )
+  const isHomestayOperator = Boolean(
+    currentUser && currentUser.roles.some((r) => r.name === 'homestay_operator')
+  )
+  const isSmartTourismAdmin = Boolean(
+    currentUser && currentUser.roles.some((r) => r.name === 'smart_tourism_admin')
+  )
+  const isFieldSurveyor = Boolean(
+    currentUser && currentUser.roles.some((r) => r.name === 'field_surveyor')
   )
   const isFarmerGroupAdmin = Boolean(
     currentUser && currentUser.roles.some((r) => r.name === 'farmer_group_admin')
@@ -496,10 +510,21 @@ export const App: React.FC = () => {
     try {
       const response = await authService.login(username, password)
       setCurrentUser(response.user)
-      if (response.user.roles.some((r) => r.name === 'farmer_group_admin')) {
+      const roleNames = response.user.roles.map((r) => r.name)
+      if (roleNames.includes('coop_manager')) {
+        setActiveTab('koperasi')
+      } else if (roleNames.includes('homestay_operator')) {
+        setActiveTab('tourism')
+      } else if (roleNames.includes('smart_tourism_admin')) {
+        setActiveTab('tourism')
+      } else if (roleNames.includes('field_surveyor')) {
+        setActiveTab('survei')
+      } else if (roleNames.includes('farmer_group_admin')) {
         setActiveTab('farming')
-      } else if (response.user.roles.some((r) => r.name === 'farmer') && !response.user.roles.some((r) => r.name === 'admin' || r.name === 'village_officer')) {
+      } else if (roleNames.includes('farmer') && !roleNames.includes('admin') && !roleNames.includes('village_officer')) {
         setActiveTab('traceability')
+      } else if (roleNames.includes('resident') && !roleNames.includes('admin') && !roleNames.includes('village_officer')) {
+        setActiveTab('koperasi')
       } else {
         setActiveTab('population')
       }
@@ -518,10 +543,21 @@ export const App: React.FC = () => {
     try {
       const response = await authService.login(u, p)
       setCurrentUser(response.user)
-      if (response.user.roles.some((r) => r.name === 'farmer_group_admin')) {
+      const roleNames = response.user.roles.map((r) => r.name)
+      if (roleNames.includes('coop_manager')) {
+        setActiveTab('koperasi')
+      } else if (roleNames.includes('homestay_operator')) {
+        setActiveTab('tourism')
+      } else if (roleNames.includes('smart_tourism_admin')) {
+        setActiveTab('tourism')
+      } else if (roleNames.includes('field_surveyor')) {
+        setActiveTab('survei')
+      } else if (roleNames.includes('farmer_group_admin')) {
         setActiveTab('farming')
-      } else if (response.user.roles.some((r) => r.name === 'farmer') && !response.user.roles.some((r) => r.name === 'admin' || r.name === 'village_officer')) {
+      } else if (roleNames.includes('farmer') && !roleNames.includes('admin') && !roleNames.includes('village_officer')) {
         setActiveTab('traceability')
+      } else if (roleNames.includes('resident') && !roleNames.includes('admin') && !roleNames.includes('village_officer')) {
+        setActiveTab('koperasi')
       } else {
         setActiveTab('population')
       }
@@ -1109,7 +1145,8 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {currentUser && isFarmerGroupAdmin && !isOfficerOrAdmin && (
+      {/* 4. Ketua Kelompok Tani Tab Nav */}
+      {currentUser && isFarmerGroupAdmin && !isAdmin && !isVillageOfficer && (
         <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
           <button
             onClick={() => setActiveTab('landing')}
@@ -1122,7 +1159,7 @@ export const App: React.FC = () => {
             onClick={() => setActiveTab('farming')}
             className={`tab-btn ${activeTab === 'farming' ? 'active' : ''}`}
           >
-            <MapPin size={16} /> 🗺️ Peta & Pengajuan Kebun
+            <MapPin size={16} /> 🗺️ Peta &amp; Pengajuan Kebun
             {farms.filter((f) => f.verification_status === 'pending').length > 0 && (
               <span
                 style={{
@@ -1148,7 +1185,138 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {currentUser && isOfficerOrAdmin && (
+      {/* 5. Pengelola Koperasi Hatta & Bank Sampah Tab Nav */}
+      {currentUser && isCoopManager && !isAdmin && (
+        <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
+          <button
+            onClick={() => setActiveTab('landing')}
+            className={`tab-btn ${activeTab === 'landing' ? 'active' : ''}`}
+            style={{ color: '#38bdf8', fontWeight: 800 }}
+          >
+            🏠 Satu Pintu
+          </button>
+          <button
+            onClick={() => setActiveTab('koperasi')}
+            className={`tab-btn ${activeTab === 'koperasi' ? 'active' : ''}`}
+          >
+            <Scale size={16} /> ⚖️ Kasir Koperasi &amp; Bank Sampah
+          </button>
+          <button
+            onClick={() => setActiveTab('traceability')}
+            className={`tab-btn ${activeTab === 'traceability' ? 'active' : ''}`}
+          >
+            <QrCode size={16} /> 📦 Rantai Pasok Komoditas
+          </button>
+          <button
+            onClick={() => setActiveTab('iot')}
+            className={`tab-btn ${activeTab === 'iot' ? 'active' : ''}`}
+          >
+            <Radio size={16} /> 📡 Telemetri Tandon Air RO
+          </button>
+        </div>
+      )}
+
+      {/* 6. Pengelola Eco-Stay & Wisata Tab Nav */}
+      {currentUser && isHomestayOperator && !isAdmin && (
+        <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
+          <button
+            onClick={() => setActiveTab('landing')}
+            className={`tab-btn ${activeTab === 'landing' ? 'active' : ''}`}
+            style={{ color: '#38bdf8', fontWeight: 800 }}
+          >
+            🏠 Satu Pintu
+          </button>
+          <button
+            onClick={() => setActiveTab('tourism')}
+            className={`tab-btn ${activeTab === 'tourism' ? 'active' : ''}`}
+          >
+            <Home size={16} /> 🏡 Katalog Eco-Stay &amp; Reservasi WA
+          </button>
+          <button
+            onClick={() => setActiveTab('smart_planner')}
+            className={`tab-btn ${activeTab === 'smart_planner' ? 'active' : ''}`}
+          >
+            <Compass size={16} /> 🧭 Panduan Rekomendasi Tamu (DSS)
+          </button>
+          <button
+            onClick={() => setActiveTab('gis')}
+            className={`tab-btn ${activeTab === 'gis' ? 'active' : ''}`}
+          >
+            <Layers size={16} /> 🗺️ Peta Spasial Akomodasi
+          </button>
+        </div>
+      )}
+
+      {/* 7. Pemandu Smart Tourism & Cagar Budaya Tab Nav */}
+      {currentUser && isSmartTourismAdmin && !isAdmin && (
+        <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
+          <button
+            onClick={() => setActiveTab('landing')}
+            className={`tab-btn ${activeTab === 'landing' ? 'active' : ''}`}
+            style={{ color: '#38bdf8', fontWeight: 800 }}
+          >
+            🏠 Satu Pintu
+          </button>
+          <button
+            onClick={() => setActiveTab('tourism')}
+            className={`tab-btn ${activeTab === 'tourism' ? 'active' : ''}`}
+          >
+            <Home size={16} /> 🏖️ 177 Cagar Budaya &amp; Audio
+          </button>
+          <button
+            onClick={() => setActiveTab('gis')}
+            className={`tab-btn ${activeTab === 'gis' ? 'active' : ''}`}
+          >
+            <Layers size={16} /> 🗺️ Peta Tematik 7-Layer
+          </button>
+          <button
+            onClick={() => setActiveTab('smart_planner')}
+            className={`tab-btn ${activeTab === 'smart_planner' ? 'active' : ''}`}
+          >
+            <Compass size={16} /> 🧭 Perencana Rute Wisata Cerdas
+          </button>
+        </div>
+      )}
+
+      {/* 8. Surveyor Lapangan & IoT Operator Tab Nav */}
+      {currentUser && isFieldSurveyor && !isAdmin && (
+        <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
+          <button
+            onClick={() => setActiveTab('landing')}
+            className={`tab-btn ${activeTab === 'landing' ? 'active' : ''}`}
+            style={{ color: '#38bdf8', fontWeight: 800 }}
+          >
+            🏠 Satu Pintu
+          </button>
+          <button
+            onClick={() => setActiveTab('survei')}
+            className={`tab-btn ${activeTab === 'survei' ? 'active' : ''}`}
+          >
+            <Database size={16} /> 📋 Form Survei NoSQL &amp; Pipa ETL
+          </button>
+          <button
+            onClick={() => setActiveTab('iot')}
+            className={`tab-btn ${activeTab === 'iot' ? 'active' : ''}`}
+          >
+            <Radio size={16} /> 📡 Telemetri 4 Stasiun IoT
+          </button>
+          <button
+            onClick={() => setActiveTab('gis')}
+            className={`tab-btn ${activeTab === 'gis' ? 'active' : ''}`}
+          >
+            <Layers size={16} /> 🗺️ Validasi Lapangan PostGIS
+          </button>
+          <button
+            onClick={() => setActiveTab('smart_planner')}
+            className={`tab-btn ${activeTab === 'smart_planner' ? 'active' : ''}`}
+          >
+            <Compass size={16} /> 🧭 Prioritas Krisis Desa (DSS SAW)
+          </button>
+        </div>
+      )}
+
+      {/* 9. Petugas Pelayanan Desa Tab Nav */}
+      {currentUser && isVillageOfficer && !isAdmin && (
         <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
           <button
             onClick={() => setActiveTab('landing')}
@@ -1161,7 +1329,7 @@ export const App: React.FC = () => {
             onClick={() => setActiveTab('population')}
             className={`tab-btn ${activeTab === 'population' ? 'active' : ''}`}
           >
-            <Users size={16} /> 👥 Warga & Profesi
+            <Users size={16} /> 👥 Warga &amp; Profesi
           </button>
           <button
             onClick={() => setActiveTab('letters')}
@@ -1188,7 +1356,7 @@ export const App: React.FC = () => {
             onClick={() => setActiveTab('farming')}
             className={`tab-btn ${activeTab === 'farming' ? 'active' : ''}`}
           >
-            <MapPin size={16} /> 🗺️ Peta Kebun & Poktan
+            <MapPin size={16} /> 🗺️ Peta Kebun &amp; Poktan
             {farms.filter((f) => f.verification_status === 'pending').length > 0 && (
               <span
                 style={{
@@ -1206,34 +1374,74 @@ export const App: React.FC = () => {
             )}
           </button>
           <button
+            onClick={() => setActiveTab('audit')}
+            className={`tab-btn ${activeTab === 'audit' ? 'active' : ''}`}
+          >
+            <ShieldCheck size={16} /> 🏛️ Rekap &amp; Audit
+          </button>
+        </div>
+      )}
+
+      {/* 10. Administrator Sistem Tab Nav (Full Master Suite) */}
+      {currentUser && isAdmin && (
+        <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
+          <button
+            onClick={() => setActiveTab('landing')}
+            className={`tab-btn ${activeTab === 'landing' ? 'active' : ''}`}
+            style={{ color: '#38bdf8', fontWeight: 800 }}
+          >
+            🏠 Satu Pintu
+          </button>
+          <button
+            onClick={() => setActiveTab('population')}
+            className={`tab-btn ${activeTab === 'population' ? 'active' : ''}`}
+          >
+            <Users size={16} /> 👥 Warga &amp; Profesi
+          </button>
+          <button
+            onClick={() => setActiveTab('letters')}
+            className={`tab-btn ${activeTab === 'letters' ? 'active' : ''}`}
+          >
+            <Mail size={16} /> 📬 Pelayanan Surat
+            {adminRequests.filter((r) => r.status === 'submitted').length > 0 && (
+              <span
+                style={{
+                  background: '#f59e0b',
+                  color: '#ffffff',
+                  borderRadius: '10px',
+                  padding: '0.1rem 0.5rem',
+                  fontSize: '0.72rem',
+                  fontWeight: '700',
+                  marginLeft: '0.4rem',
+                }}
+              >
+                {adminRequests.filter((r) => r.status === 'submitted').length}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('farming')}
+            className={`tab-btn ${activeTab === 'farming' ? 'active' : ''}`}
+          >
+            <MapPin size={16} /> 🗺️ Peta Kebun &amp; Poktan
+          </button>
+          <button
             onClick={() => setActiveTab('traceability')}
             className={`tab-btn ${activeTab === 'traceability' ? 'active' : ''}`}
           >
-            <QrCode size={16} /> 📦 Panen & Mutu Rempah
+            <QrCode size={16} /> 📦 Panen &amp; Mutu Rempah
           </button>
           <button
             onClick={() => setActiveTab('audit')}
             className={`tab-btn ${activeTab === 'audit' ? 'active' : ''}`}
           >
-            <ShieldCheck size={16} /> 🏛️ Rekap & Audit
-          </button>
-          <button
-            onClick={() => setActiveTab('smart_planner')}
-            className={`tab-btn ${activeTab === 'smart_planner' ? 'active' : ''}`}
-          >
-            <Compass size={16} /> 🧭 Perencana Cerdas (DSS)
+            <ShieldCheck size={16} /> 🏛️ Rekap &amp; Audit
           </button>
           <button
             onClick={() => setActiveTab('koperasi')}
             className={`tab-btn ${activeTab === 'koperasi' ? 'active' : ''}`}
           >
             <Scale size={16} /> ⚖️ Koperasi &amp; Bank Sampah
-          </button>
-          <button
-            onClick={() => setActiveTab('iot')}
-            className={`tab-btn ${activeTab === 'iot' ? 'active' : ''}`}
-          >
-            <Radio size={16} /> 📡 Telemetri IoT &amp; Resiliensi
           </button>
           <button
             onClick={() => setActiveTab('tourism')}
@@ -1248,6 +1456,18 @@ export const App: React.FC = () => {
             <Layers size={16} /> 🗺️ Peta 7-Layer
           </button>
           <button
+            onClick={() => setActiveTab('smart_planner')}
+            className={`tab-btn ${activeTab === 'smart_planner' ? 'active' : ''}`}
+          >
+            <Compass size={16} /> 🧭 Perencana Cerdas (DSS)
+          </button>
+          <button
+            onClick={() => setActiveTab('iot')}
+            className={`tab-btn ${activeTab === 'iot' ? 'active' : ''}`}
+          >
+            <Radio size={16} /> 📡 Telemetri IoT &amp; Resiliensi
+          </button>
+          <button
             onClick={() => setActiveTab('survei')}
             className={`tab-btn ${activeTab === 'survei' ? 'active' : ''}`}
           >
@@ -1258,7 +1478,7 @@ export const App: React.FC = () => {
 
 
       {/* TAB 1: PANEN & MUTU REMPAH (TRACEABILITY) */}
-      {(isOfficerOrAdmin || isFarmerGroupAdmin || isFarmer) && activeTab === 'traceability' && (
+      {(isOfficerOrAdmin || isFarmerGroupAdmin || isFarmer || isCoopManager) && activeTab === 'traceability' && (
         <HarvestGradingWorkspace
           harvests={harvests}
           batches={batches}

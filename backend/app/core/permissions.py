@@ -20,7 +20,12 @@ ROLE_ADMIN = "admin"
 ROLE_VILLAGE_OFFICER = "village_officer"
 ROLE_FARMER_GROUP_ADMIN = "farmer_group_admin"
 ROLE_FARMER = "farmer"
-ROLE_SMART_TOUSIM_ADMIN = "smart_tourism_admin"
+ROLE_RESIDENT = "resident"
+ROLE_COOP_MANAGER = "coop_manager"
+ROLE_HOMESTAY_OPERATOR = "homestay_operator"
+ROLE_SMART_TOURISM_ADMIN = "smart_tourism_admin"
+ROLE_SMART_TOUSIM_ADMIN = "smart_tourism_admin"  # backwards compatibility alias
+ROLE_FIELD_SURVEYOR = "field_surveyor"
 
 
 async def get_current_user(

@@ -67,8 +67,14 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
         return 'Petani Rempah Pala'
       case 'resident':
         return 'Warga Desa'
+      case 'coop_manager':
+        return 'Pengelola Koperasi Hatta'
+      case 'homestay_operator':
+        return 'Pengelola Eco-Stay & Wisata'
       case 'smart_tourism_admin':
-        return 'Pengelola Wisata'
+        return 'Pengelola Smart Tourism & Budaya'
+      case 'field_surveyor':
+        return 'Surveyor Lapangan & IoT'
       default:
         return roleName
     }

@@ -173,3 +173,28 @@ async def test_rbac_non_admin_cannot_create_user(client: AsyncClient):
     )
     assert attempt_res.status_code == 403
     assert "Operation not permitted" in attempt_res.json()["detail"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "username,password,expected_role",
+    [
+        ("pengelola_koperasi", "Koperasi123!", "coop_manager"),
+        ("operator_homestay", "Homestay123!", "homestay_operator"),
+        ("admin_wisata", "Wisata123!", "smart_tourism_admin"),
+        ("surveyor", "Surveyor123!", "field_surveyor"),
+    ],
+)
+async def test_login_segmented_roles(
+    client: AsyncClient, username: str, password: str, expected_role: str
+):
+    response = await client.post(
+        "/api/v1/auth/login",
+        json={"username_or_email": username, "password": password},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "access_token" in data
+    assert data["user"]["username"] == username
+    assert any(role["name"] == expected_role for role in data["user"]["roles"])
+

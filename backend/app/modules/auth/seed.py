@@ -11,8 +11,11 @@ INITIAL_ROLES = [
     ("village_officer", "Village officer managing population and administrative services"),
     ("farmer_group_admin", "Farmer group administrator managing members and collective batches"),
     ("farmer", "Spice farmer logging harvests and viewing farm records"),
-    ("smart_tourism_admin", "Tourism administrator managing public catalog and spice routes"),
-    ("resident", "Village resident accessing civil services and administrative requests"),
+    ("smart_tourism_admin", "Tourism administrator managing public catalog, heritage audio guides and routes"),
+    ("resident", "Village resident accessing civil services and water quotas"),
+    ("coop_manager", "Cooperative manager handling commodity cash register, plastic waste bank, and RO water"),
+    ("homestay_operator", "Homestay and eco-stay operator managing accommodations and WhatsApp bookings"),
+    ("field_surveyor", "Field surveyor and IoT operator collecting dynamic surveys and monitoring telemetry"),
 ]
 
 DEMO_USERS = [
@@ -54,6 +57,38 @@ DEMO_USERS = [
         "password": "Warga123!",
         "full_name": "Siti Rahma (Warga Banda Neira)",
         "role": "resident",
+        "is_superuser": False,
+    },
+    {
+        "username": "pengelola_koperasi",
+        "email": "koperasi@bandadigital.id",
+        "password": "Koperasi123!",
+        "full_name": "Faisal Latarisa (Pengelola Koperasi Hatta)",
+        "role": "coop_manager",
+        "is_superuser": False,
+    },
+    {
+        "username": "operator_homestay",
+        "email": "homestay@bandadigital.id",
+        "password": "Homestay123!",
+        "full_name": "Rahmat Delfika (Pengelola Delfika Eco-Stay)",
+        "role": "homestay_operator",
+        "is_superuser": False,
+    },
+    {
+        "username": "admin_wisata",
+        "email": "wisata@bandadigital.id",
+        "password": "Wisata123!",
+        "full_name": "Dewi Nusantara (Pengelola Smart Tourism & Pemandu Budaya)",
+        "role": "smart_tourism_admin",
+        "is_superuser": False,
+    },
+    {
+        "username": "surveyor",
+        "email": "surveyor@bandadigital.id",
+        "password": "Surveyor123!",
+        "full_name": "Fauzan Arisanto (Surveyor Lapangan & IoT Operator)",
+        "role": "field_surveyor",
         "is_superuser": False,
     },
 ]
