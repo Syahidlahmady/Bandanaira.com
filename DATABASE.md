@@ -200,7 +200,7 @@ Documentation of data models, relationships, and constraints for **Banda Digital
   - `alert_flags`: JSON (NULLABLE)
   - `created_at`: TIMESTAMPTZ
 
-### 2.8 Smart Tourism & Eco-Stay (Phase 20)
+### 2.8 Smart Tourism, Eco-Stay & Tour Guides CMS (Phase 20 & 28)
 - **`accommodations`**
   - `id`: UUID (PK)
   - `name`: VARCHAR(150) (NOT NULL)
@@ -211,7 +211,26 @@ Documentation of data models, relationships, and constraints for **Banda Digital
   - `has_clean_ro_water`: BOOLEAN (DEFAULT TRUE)
   - `has_solar_backup`: BOOLEAN (DEFAULT TRUE)
   - `eco_stay_badge`: BOOLEAN (DEFAULT TRUE)
+  - `is_verified`: BOOLEAN (DEFAULT TRUE, INDEXED) - Central Admin verification control
   - `contact_whatsapp`: VARCHAR(20) (NOT NULL)
+  - `photo_url`: VARCHAR(255)
+  - `description`: TEXT
+  - `created_at`, `updated_at`: TIMESTAMPTZ
+- **`tour_guides`**
+  - `id`: UUID (PK)
+  - `name`: VARCHAR(150) (NOT NULL)
+  - `license_number`: VARCHAR(50) (UNIQUE, INDEXED, NOT NULL) - e.g. `HPI-BANDA-001`
+  - `phone_whatsapp`: VARCHAR(20) (NOT NULL)
+  - `specialties`: VARCHAR(255) (NOT NULL) - e.g. 'Sejarah Benteng VOC & Budaya Banda'
+  - `languages`: VARCHAR(150) (DEFAULT 'Indonesia, English')
+  - `fee_per_day_rp`: NUMERIC(12, 2) (NOT NULL)
+  - `photo_url`: VARCHAR(255)
+  - `bio`: TEXT
+  - `island_base`: VARCHAR(100) (DEFAULT 'Pulau Neira', INDEXED)
+  - `rating`: FLOAT (DEFAULT 4.9)
+  - `trips_completed`: INT (DEFAULT 12)
+  - `is_verified`: BOOLEAN (DEFAULT TRUE, INDEXED) - HPI certification status verified by Admin Pusat
+  - `is_active`: BOOLEAN (DEFAULT TRUE)
   - `created_at`, `updated_at`: TIMESTAMPTZ
 - **`bookings`**
   - `id`: UUID (PK)
@@ -269,4 +288,4 @@ Documentation of data models, relationships, and constraints for **Banda Digital
 1. Every schema change must be created via Alembic migrations.
 2. Inspect generated migration files before applying with `alembic upgrade head`.
 3. Never drop tables or columns directly in live environments.
-4. All 11 migrations are tracked deterministically in `backend/migrations/versions/`.
+4. All 12 migrations are tracked deterministically in `backend/migrations/versions/`.

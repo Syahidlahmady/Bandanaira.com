@@ -75,3 +75,66 @@ class HeritageCatalogItem(BaseModel):
     audio_guide_url: str
     coordinates: Tuple[float, float]
     photo_url: str
+
+
+class AccommodationUpdateInput(BaseModel):
+    name: Optional[str] = Field(None, max_length=150)
+    type: Optional[str] = None
+    island_name: Optional[str] = None
+    address: Optional[str] = None
+    price_per_night_rp: Optional[float] = Field(None, gt=0)
+    rooms_available: Optional[int] = Field(None, ge=0)
+    has_clean_ro_water: Optional[bool] = None
+    has_solar_backup: Optional[bool] = None
+    eco_stay_badge: Optional[bool] = None
+    contact_whatsapp: Optional[str] = None
+    description: Optional[str] = None
+    photo_url: Optional[str] = None
+    is_verified: Optional[bool] = None
+
+
+class TourGuideCreateInput(BaseModel):
+    name: str = Field(..., max_length=150, description="Nama pemandu wisata")
+    license_number: str = Field(default="HPI-BANDA-LOKAL", max_length=50, description="Nomor lisensi / sertifikat HPI")
+    phone_whatsapp: str = Field(..., max_length=20, description="Nomor WhatsApp pemandu")
+    specialties: str = Field(..., max_length=255, description="Spesialisasi tur (Sejarah VOC, Snorkeling, Diving, dll)")
+    languages: str = Field(default="Indonesia, English", max_length=100, description="Bahasa yang dikuasai")
+    fee_per_day_rp: float = Field(..., gt=0, description="Tarif jasa per hari (Rp)")
+    photo_url: Optional[str] = Field(default=None, description="Foto profil pemandu")
+    bio: str = Field(..., description="Profil singkat dan pengalaman memandu")
+    island_base: str = Field(default="Pulau Neira", description="Basis pulau pemandu")
+    is_verified: bool = Field(default=True, description="Terverifikasi oleh admin pusat")
+    is_active: bool = Field(default=True, description="Status aktif menerima tamu")
+
+
+class TourGuideUpdateInput(BaseModel):
+    name: Optional[str] = None
+    license_number: Optional[str] = None
+    phone_whatsapp: Optional[str] = None
+    specialties: Optional[str] = None
+    languages: Optional[str] = None
+    fee_per_day_rp: Optional[float] = Field(None, gt=0)
+    photo_url: Optional[str] = None
+    bio: Optional[str] = None
+    island_base: Optional[str] = None
+    is_verified: Optional[bool] = None
+    is_active: Optional[bool] = None
+
+
+class TourGuideItemResponse(BaseModel):
+    id: str
+    name: str
+    license_number: str
+    phone_whatsapp: str
+    specialties: str
+    languages: str
+    fee_per_day_rp: float
+    photo_url: Optional[str] = None
+    bio: str
+    island_base: str
+    is_verified: bool
+    is_active: bool
+    rating: float
+    trips_completed: int
+    created_at: datetime
+

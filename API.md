@@ -133,13 +133,21 @@ RESTful API specification for **Banda Digital Ecosystem**.
 | `GET` | `/api/v1/iot/resiliency-summary` | Public / Admin | Island readiness barometer, WHO water standard compliance, solar energy mix %, and diesel fuel savings |
 | `POST` | `/api/v1/iot/simulate-pulse` | Public / Admin | Trigger simulated realistic ESP32 telemetry pulse across island network |
 
-### 2.12 Smart Tourism, Eco-Stay & Heritage (`/api/v1/tourism` & `/api/v1/penginapan`)
+### 2.12 Smart Tourism, Eco-Stay & Tour Guides CMS (`/api/v1/tourism` & `/api/v1/penginapan`)
 | Method | Endpoint | Roles Allowed | Description |
 |---|---|---|---|
-| `GET` | `/api/v1/tourism/accommodations` & `/api/v1/penginapan` | Public | List verified accommodations with island, type, max price, RO water, and solar backup filters |
+| `GET` | `/api/v1/tourism/accommodations` & `/api/v1/penginapan` | Public | List accommodations with island, type, price, RO water, and solar backup filters |
+| `POST` | `/api/v1/tourism/accommodations` | `admin`, `village_officer`, `operator_homestay` | Register new accommodation listing into eco-stay catalog |
+| `PUT` | `/api/v1/tourism/accommodations/{id}` | `admin`, `village_officer`, `operator_homestay` | Update accommodation details, room tariffs/night, availability, or verify status |
+| `DELETE` | `/api/v1/tourism/accommodations/{id}` | `admin`, `village_officer`, `operator_homestay` | Delete accommodation listing from catalog |
 | `POST` | `/api/v1/tourism/bookings` & `/api/v1/pemesanan` | Public | Create guest booking with automated pricing and deterministic direct click-to-chat WhatsApp link |
+| `GET` | `/api/v1/tourism/bookings` & `/api/v1/pemesanan` | Public / Operator | List incoming guest reservations with optional accommodation filter |
 | `GET` | `/api/v1/tourism/bookings/{booking_code}` | Public | Lookup booking details and status by unique code |
 | `GET` | `/api/v1/tourism/heritage-catalog` | Public | 177 Cagar Budaya catalog with historical narratives, photo galleries, and audio guide MP3 stream links |
+| `GET` | `/api/v1/tourism/guides` | Public | List licensed Banda tour guides with island and verified filters |
+| `POST` | `/api/v1/tourism/guides` | `admin`, `village_officer`, `smart_tourism_admin` | Register licensed tour guide profile with specialties, languages, and daily fee |
+| `PUT` | `/api/v1/tourism/guides/{id}` | `admin`, `village_officer`, `smart_tourism_admin` | Update tour guide details, daily fee, or HPI verification status |
+| `DELETE` | `/api/v1/tourism/guides/{id}` | `admin`, `village_officer`, `smart_tourism_admin` | Delete tour guide record |
 
 ### 2.13 7-Layer Spatial GIS (`/api/v1/gis` & `/api/v1/peta/geojson`)
 | Method | Endpoint | Roles Allowed | Description |

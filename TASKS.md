@@ -30,8 +30,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 25: PWA Offline Map Caching & Field Resilience (IndexedDB GeoJSON 7-Layer Storage)**
 - [x] **Phase 26: Actor Segregation & Dedicated Operational Roles (Koperasi, Homestay, Smart Tourism, Survei)**
 - [x] **Phase 27: Multi-Actor Quick Login Simulator & Homestay Operator Booking Management**
-
-
+- [x] **Phase 28: Central Admin Governance & Tourism Master Data CMS (Accommodations Tariff Control, Tour Guides Directory & Licensing)**
 
 ---
 
@@ -345,6 +344,33 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 27.5 Verification & Automated Tests:
   - Automated tests passing: **6/6 tourism tests, 14/14 auth tests, 83/83 total backend tests (100%)**.
   - TypeScript frontend build verified: `npm --prefix frontend run build` exits with code 0 in 4.38s.
+
+### Phase 28: Central Admin Governance & Tourism Master Data CMS (Accommodations Tariff Control, Tour Guides Directory & Licensing)
+- [x] 28.1 Database Schema & Migration (`tour_guides` & Accommodations Admin Controls):
+  - Created `TourGuide` model in `backend/app/modules/tourism/models.py` with fields: `id` (UUID PK), `name`, `license_number` (unique), `phone_whatsapp`, `specialties`, `languages`, `fee_per_day_rp`, `photo_url`, `bio`, `island_base`, `rating`, `trips_completed`, `is_verified`, `is_active`.
+  - Created and executed Alembic migration `backend/migrations/versions/012_tour_guides_table.py` with indices on `island_base` and `is_verified`.
+- [x] 28.2 Backend CMS Endpoints & Auto-Seeding (`backend/app/modules/tourism/router.py` & `schemas.py`):
+  - Created `AccommodationUpdateInput`, `TourGuideCreateInput`, `TourGuideUpdateInput`, and `TourGuideItemResponse` Pydantic schemas.
+  - Implemented `PUT /api/v1/tourism/accommodations/{id}` and `DELETE /api/v1/tourism/accommodations/{id}`.
+  - Implemented `GET /api/v1/tourism/guides`, `POST /api/v1/tourism/guides`, `PUT /api/v1/tourism/guides/{id}`, and `DELETE /api/v1/tourism/guides/{id}`.
+  - Seeded initial certified Banda tour guides (La Ode Ruslan, Nyong Baadilla, Siti Hatta).
+- [x] 28.3 Automated Backend Tests (`backend/tests/test_tourism.py`):
+  - Implemented `test_cms_accommodations_crud`: verified hotel creation, tariff adjustment to Rp 500k, and deletion.
+  - Implemented `test_cms_tour_guides_crud`: verified seed retrieval, guide registration, admin verification toggle, and deletion.
+  - Test suite result: **8/8 tests passing (100%)** in 29.97s.
+- [x] 28.4 Frontend Tourism Service (`frontend/src/services/tourism.ts`):
+  - Added TypeScript interfaces: `TourGuideItem`, `AccommodationCreatePayload`, `AccommodationUpdatePayload`, `TourGuideCreatePayload`, `TourGuideUpdatePayload`.
+  - Implemented API methods: `createAccommodation`, `updateAccommodation`, `deleteAccommodation`, `listTourGuides`, `createTourGuide`, `updateTourGuide`, `deleteTourGuide`.
+- [x] 28.5 Dual-Panel CMS & Tour Guides Catalog Frontend (`frontend/src/views/TourismEcoStayWorkspace.tsx`):
+  - Added Tab **"🧭 Pemandu Wisata"**: catalog cards with photo, verification badge, rating, trips count, specialties, languages, daily fee, and 1-click WhatsApp booking.
+  - Added Tab **"⚙️ CMS Pusat & Tarif"**: dual-panel workspace with sub-tabs for:
+    - **Kelola Penginapan & Tarif**: listing cards with 1-click quick price update (`✏️ Ubah Tarif Cepat`), admin verification toggle (`Setujui/Batalkan Verifikasi`), edit modal, and delete action.
+    - **Kelola Pemandu Wisata & Jasa**: listing cards with 1-click quick fee update (`✏️ Ubah Tarif Jasa`), HPI certification toggle, edit modal, and delete action.
+  - Interactive Add/Edit Modals with form validation for new hotels/homestays and licensed tour guides.
+- [x] 28.6 Verification & Build:
+  - TypeScript compilation and Vite production build verified: `npm --prefix frontend run build` exited with code 0 in 4.40s.
+  - Backend test suite: `PYTHONPATH=. pytest backend/tests/test_tourism.py` passed 8/8 (100%).
+
 
 
 

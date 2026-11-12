@@ -57,6 +57,83 @@ export interface HeritageCatalogItem {
   photo_url: string
 }
 
+export interface TourGuideItem {
+  id: string
+  name: string
+  license_number: string
+  phone_whatsapp: string
+  specialties: string
+  languages: string
+  fee_per_day_rp: number
+  photo_url?: string | null
+  bio: string
+  island_base: string
+  is_verified: boolean
+  is_active: boolean
+  rating: number
+  trips_completed: number
+  created_at: string
+}
+
+export interface AccommodationCreatePayload {
+  name: string
+  type: string
+  island_name: string
+  address: string
+  price_per_night_rp: number
+  rooms_available: number
+  has_clean_ro_water: boolean
+  has_solar_backup: boolean
+  eco_stay_badge: boolean
+  contact_whatsapp: string
+  description: string
+  photo_url?: string | null
+}
+
+export interface AccommodationUpdatePayload {
+  name?: string
+  type?: string
+  island_name?: string
+  address?: string
+  price_per_night_rp?: number
+  rooms_available?: number
+  has_clean_ro_water?: boolean
+  has_solar_backup?: boolean
+  eco_stay_badge?: boolean
+  contact_whatsapp?: string
+  description?: string
+  photo_url?: string | null
+  is_verified?: boolean
+}
+
+export interface TourGuideCreatePayload {
+  name: string
+  license_number: string
+  phone_whatsapp: string
+  specialties: string
+  languages: string
+  fee_per_day_rp: number
+  photo_url?: string | null
+  bio: string
+  island_base: string
+  is_verified?: boolean
+  is_active?: boolean
+}
+
+export interface TourGuideUpdatePayload {
+  name?: string
+  license_number?: string
+  phone_whatsapp?: string
+  specialties?: string
+  languages?: string
+  fee_per_day_rp?: number
+  photo_url?: string | null
+  bio?: string
+  island_base?: string
+  is_verified?: boolean
+  is_active?: boolean
+}
+
 const getApiBase = () => {
   return typeof window !== 'undefined'
     ? `http://${window.location.hostname}:8005/api/v1`
@@ -122,6 +199,82 @@ export const tourismService = {
     const res = await fetch(`${getApiBase()}/tourism/bookings?${q.toString()}`)
     if (!res.ok) throw new Error('Gagal memuat riwayat reservasi.')
     return res.json()
+  },
+
+  async createAccommodation(payload: AccommodationCreatePayload): Promise<AccommodationItem> {
+    const res = await fetch(`${getApiBase()}/tourism/accommodations`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }))
+      throw new Error(err.detail || 'Gagal menambahkan penginapan baru.')
+    }
+    return res.json()
+  },
+
+  async updateAccommodation(id: string, payload: AccommodationUpdatePayload): Promise<AccommodationItem> {
+    const res = await fetch(`${getApiBase()}/tourism/accommodations/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }))
+      throw new Error(err.detail || 'Gagal memperbarui data penginapan.')
+    }
+    return res.json()
+  },
+
+  async deleteAccommodation(id: string): Promise<void> {
+    const res = await fetch(`${getApiBase()}/tourism/accommodations/${id}`, {
+      method: 'DELETE',
+    })
+    if (!res.ok) throw new Error('Gagal menghapus penginapan.')
+  },
+
+  async listTourGuides(params?: { island?: string; is_verified?: boolean }): Promise<TourGuideItem[]> {
+    const q = new URLSearchParams()
+    if (params?.island) q.append('island', params.island)
+    if (params?.is_verified !== undefined) q.append('is_verified', String(params.is_verified))
+
+    const res = await fetch(`${getApiBase()}/tourism/guides?${q.toString()}`)
+    if (!res.ok) throw new Error('Gagal memuat katalog pemandu wisata.')
+    return res.json()
+  },
+
+  async createTourGuide(payload: TourGuideCreatePayload): Promise<TourGuideItem> {
+    const res = await fetch(`${getApiBase()}/tourism/guides`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }))
+      throw new Error(err.detail || 'Gagal mendaftarkan pemandu wisata.')
+    }
+    return res.json()
+  },
+
+  async updateTourGuide(id: string, payload: TourGuideUpdatePayload): Promise<TourGuideItem> {
+    const res = await fetch(`${getApiBase()}/tourism/guides/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }))
+      throw new Error(err.detail || 'Gagal memperbarui profil pemandu.')
+    }
+    return res.json()
+  },
+
+  async deleteTourGuide(id: string): Promise<void> {
+    const res = await fetch(`${getApiBase()}/tourism/guides/${id}`, {
+      method: 'DELETE',
+    })
+    if (!res.ok) throw new Error('Gagal menghapus pemandu wisata.')
   },
 }
 

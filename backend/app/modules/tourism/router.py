@@ -6,13 +6,17 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.app.database.session import get_db
-from backend.app.modules.tourism.models import Accommodation, Booking
+from backend.app.modules.tourism.models import Accommodation, Booking, TourGuide
 from backend.app.modules.tourism.schemas import (
     AccommodationCreateInput,
+    AccommodationUpdateInput,
     AccommodationItemResponse,
     BookingCreateInput,
     BookingItemResponse,
     HeritageCatalogItem,
+    TourGuideCreateInput,
+    TourGuideUpdateInput,
+    TourGuideItemResponse,
 )
 from backend.app.modules.tourism.heritage_data import HERITAGE_CATALOG
 
@@ -116,6 +120,66 @@ async def ensure_accommodations_seeded(db: AsyncSession):
         await db.commit()
 
 
+SEED_TOUR_GUIDES = [
+    {
+        "name": "Dewi Nusantara",
+        "license_number": "HPI-BANDA-001",
+        "phone_whatsapp": "6281234567896",
+        "specialties": "Sejarah Benteng VOC, Rumah Bung Hatta & Sutan Sjahrir",
+        "languages": "Indonesia, English, Dutch",
+        "fee_per_day_rp": 350000.0,
+        "photo_url": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80",
+        "bio": "Pemandu budaya berlisensi HPI dengan pengalaman lebih dari 8 tahun menceritakan sejarah peradaban rempah dan diplomasi kolonial Banda Neira.",
+        "island_base": "Pulau Neira",
+        "is_verified": True,
+        "is_active": True,
+        "rating": 4.95,
+        "trips_completed": 48,
+    },
+    {
+        "name": "Umar Baadilla",
+        "license_number": "HPI-BANDA-002",
+        "phone_whatsapp": "6281234567897",
+        "specialties": "Snorkeling Lava Flow, Diving Palung Hatta & Konservasi Terumbu",
+        "languages": "Indonesia, English",
+        "fee_per_day_rp": 450000.0,
+        "photo_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80",
+        "bio": "Instruktur selam bersertifikat PADI dan pemandu bahari spesialis dinding palung Banda serta titik migrasi hiu martil.",
+        "island_base": "Pulau Hatta",
+        "is_verified": True,
+        "is_active": True,
+        "rating": 5.0,
+        "trips_completed": 62,
+    },
+    {
+        "name": "Hasan Wailissa",
+        "license_number": "HPI-BANDA-003",
+        "phone_whatsapp": "6281234567898",
+        "specialties": "Trekking Kebun Pala Purba Lonthoir & Gastronomi Rempah Kenari",
+        "languages": "Indonesia, English",
+        "fee_per_day_rp": 300000.0,
+        "photo_url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80",
+        "bio": "Putra asli Lonthoir yang memandu napak tilas perkebunan pala tertua abad ke-16 serta edukasi panen kenari dan pala organik.",
+        "island_base": "Banda Besar",
+        "is_verified": True,
+        "is_active": True,
+        "rating": 4.88,
+        "trips_completed": 35,
+    },
+]
+
+
+async def ensure_tour_guides_seeded(db: AsyncSession):
+    stmt = select(TourGuide).limit(1)
+    res = await db.execute(stmt)
+    if not res.scalar_one_or_none():
+        for item in SEED_TOUR_GUIDES:
+            guide = TourGuide(**item)
+            db.add(guide)
+        await db.commit()
+
+
+
 @router.get(
     "/accommodations",
     response_model=List[AccommodationItemResponse],
@@ -217,6 +281,77 @@ async def create_accommodation(
         is_verified=acc.is_verified,
         created_at=acc.created_at,
     )
+
+
+@router.put(
+    "/accommodations/{accommodation_id}",
+    response_model=AccommodationItemResponse,
+    summary="Update Data / Tarif Penginapan (CMS Operator & Admin)",
+)
+async def update_accommodation(
+    accommodation_id: str,
+    payload: AccommodationUpdateInput,
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        acc_uuid = uuid.UUID(accommodation_id)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID Penginapan tidak valid.")
+
+    stmt = select(Accommodation).where(Accommodation.id == acc_uuid)
+    res = await db.execute(stmt)
+    acc = res.scalar_one_or_none()
+    if not acc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Penginapan tidak ditemukan.")
+
+    update_data = payload.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(acc, field, value)
+
+    await db.commit()
+    await db.refresh(acc)
+
+    return AccommodationItemResponse(
+        id=str(acc.id),
+        name=acc.name,
+        type=acc.type,
+        island_name=acc.island_name,
+        address=acc.address,
+        price_per_night_rp=float(acc.price_per_night_rp),
+        rooms_available=acc.rooms_available,
+        has_clean_ro_water=acc.has_clean_ro_water,
+        has_solar_backup=acc.has_solar_backup,
+        eco_stay_badge=acc.eco_stay_badge,
+        contact_whatsapp=acc.contact_whatsapp,
+        description=acc.description,
+        photo_url=acc.photo_url,
+        is_verified=acc.is_verified,
+        created_at=acc.created_at,
+    )
+
+
+@router.delete(
+    "/accommodations/{accommodation_id}",
+    summary="Hapus Penginapan (CMS Admin)",
+)
+async def delete_accommodation(
+    accommodation_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        acc_uuid = uuid.UUID(accommodation_id)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID Penginapan tidak valid.")
+
+    stmt = select(Accommodation).where(Accommodation.id == acc_uuid)
+    res = await db.execute(stmt)
+    acc = res.scalar_one_or_none()
+    if not acc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Penginapan tidak ditemukan.")
+
+    await db.delete(acc)
+    await db.commit()
+    return {"message": "Penginapan berhasil dihapus."}
 
 
 @router.post(
@@ -421,6 +556,174 @@ async def get_heritage_catalog(
     if island:
         results = [h for h in results if h.island.lower() == island.lower()]
     return results
+
+
+# =======================================================================
+# CMS JASA PEMANDU WISATA & BUDAYA BANDA NEIRA (HPI & KOMUNITAS ADAT)
+# =======================================================================
+
+@router.get(
+    "/guides",
+    response_model=List[TourGuideItemResponse],
+    summary="Daftar Pemandu Wisata & Budaya Terverifikasi",
+)
+async def list_tour_guides(
+    island: Optional[str] = Query(None, description="Filter berdasarkan pulau basis"),
+    is_verified: Optional[bool] = Query(None, description="Filter status verifikasi"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Mengambil katalog pemandu wisata dan budaya berlisensi di kepulauan Banda Neira."""
+    await ensure_tour_guides_seeded(db)
+
+    stmt = select(TourGuide).order_by(desc(TourGuide.rating))
+    if island:
+        stmt = stmt.where(TourGuide.island_base.ilike(f"%{island}%"))
+    if is_verified is not None:
+        stmt = stmt.where(TourGuide.is_verified == is_verified)
+
+    res = await db.execute(stmt)
+    guides = res.scalars().all()
+
+    return [
+        TourGuideItemResponse(
+            id=str(g.id),
+            name=g.name,
+            license_number=g.license_number,
+            phone_whatsapp=g.phone_whatsapp,
+            specialties=g.specialties,
+            languages=g.languages,
+            fee_per_day_rp=float(g.fee_per_day_rp),
+            photo_url=g.photo_url,
+            bio=g.bio,
+            island_base=g.island_base,
+            is_verified=g.is_verified,
+            is_active=g.is_active,
+            rating=float(g.rating),
+            trips_completed=g.trips_completed,
+            created_at=g.created_at,
+        )
+        for g in guides
+    ]
+
+
+@router.post(
+    "/guides",
+    response_model=TourGuideItemResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Daftarkan Pemandu Wisata Baru (CMS Pemandu & Admin)",
+)
+async def create_tour_guide(
+    payload: TourGuideCreateInput,
+    db: AsyncSession = Depends(get_db),
+):
+    """Mendaftarkan pemandu wisata baru ke dalam direktori terverifikasi."""
+    guide = TourGuide(
+        name=payload.name,
+        license_number=payload.license_number,
+        phone_whatsapp=payload.phone_whatsapp,
+        specialties=payload.specialties,
+        languages=payload.languages,
+        fee_per_day_rp=payload.fee_per_day_rp,
+        photo_url=payload.photo_url,
+        bio=payload.bio,
+        island_base=payload.island_base,
+        is_verified=payload.is_verified,
+        is_active=payload.is_active,
+    )
+    db.add(guide)
+    await db.commit()
+    await db.refresh(guide)
+
+    return TourGuideItemResponse(
+        id=str(guide.id),
+        name=guide.name,
+        license_number=guide.license_number,
+        phone_whatsapp=guide.phone_whatsapp,
+        specialties=guide.specialties,
+        languages=guide.languages,
+        fee_per_day_rp=float(guide.fee_per_day_rp),
+        photo_url=guide.photo_url,
+        bio=guide.bio,
+        island_base=guide.island_base,
+        is_verified=guide.is_verified,
+        is_active=guide.is_active,
+        rating=float(guide.rating),
+        trips_completed=guide.trips_completed,
+        created_at=guide.created_at,
+    )
+
+
+@router.put(
+    "/guides/{guide_id}",
+    response_model=TourGuideItemResponse,
+    summary="Update Profil & Tarif Jasa Pemandu (CMS Pemandu & Admin)",
+)
+async def update_tour_guide(
+    guide_id: str,
+    payload: TourGuideUpdateInput,
+    db: AsyncSession = Depends(get_db),
+):
+    """Memperbarui informasi pemandu, tarif harian, atau status verifikasi."""
+    try:
+        g_uuid = uuid.UUID(guide_id)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID Pemandu tidak valid.")
+
+    stmt = select(TourGuide).where(TourGuide.id == g_uuid)
+    res = await db.execute(stmt)
+    guide = res.scalar_one_or_none()
+    if not guide:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pemandu wisata tidak ditemukan.")
+
+    update_data = payload.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(guide, field, value)
+
+    await db.commit()
+    await db.refresh(guide)
+
+    return TourGuideItemResponse(
+        id=str(guide.id),
+        name=guide.name,
+        license_number=guide.license_number,
+        phone_whatsapp=guide.phone_whatsapp,
+        specialties=guide.specialties,
+        languages=guide.languages,
+        fee_per_day_rp=float(guide.fee_per_day_rp),
+        photo_url=guide.photo_url,
+        bio=guide.bio,
+        island_base=guide.island_base,
+        is_verified=guide.is_verified,
+        is_active=guide.is_active,
+        rating=float(guide.rating),
+        trips_completed=guide.trips_completed,
+        created_at=guide.created_at,
+    )
+
+
+@router.delete(
+    "/guides/{guide_id}",
+    summary="Hapus Pemandu Wisata (CMS Admin)",
+)
+async def delete_tour_guide(
+    guide_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Menghapus pemandu wisata dari sistem (khusus admin)."""
+    try:
+        g_uuid = uuid.UUID(guide_id)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID Pemandu tidak valid.")
+
+    stmt = select(TourGuide).where(TourGuide.id == g_uuid)
+    res = await db.execute(stmt)
+    guide = res.scalar_one_or_none()
+    if not guide:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pemandu wisata tidak ditemukan.")
+
+    await db.delete(guide)
+    await db.commit()
+    return {"message": "Pemandu wisata berhasil dihapus."}
 
 
 # Router alias sesuai spesifikasi tabel SRS BAB XI

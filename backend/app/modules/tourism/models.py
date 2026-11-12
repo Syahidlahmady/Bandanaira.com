@@ -66,3 +66,26 @@ class Booking(Base, TimestampMixin):
     wa_link: Mapped[str] = mapped_column(Text, nullable=False)
 
     accommodation: Mapped["Accommodation"] = relationship("Accommodation", back_populates="bookings")
+
+
+class TourGuide(Base, TimestampMixin):
+    """
+    Model Jasa Pemandu Wisata & Budaya Lokal Banda Neira (HPI / Pemandu Komunitas).
+    Menampilkan lisensi, rute spesialisasi, bahasa, tarif harian, dan kontak WhatsApp.
+    """
+    __tablename__ = "tour_guides"
+
+    name: Mapped[str] = mapped_column(String(150), nullable=False)
+    license_number: Mapped[str] = mapped_column(String(50), default="HPI-BANDA-LOKAL", nullable=False)
+    phone_whatsapp: Mapped[str] = mapped_column(String(20), nullable=False)
+    specialties: Mapped[str] = mapped_column(String(255), nullable=False)
+    languages: Mapped[str] = mapped_column(String(100), default="Indonesia, English", nullable=False)
+    fee_per_day_rp: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
+    photo_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    bio: Mapped[str] = mapped_column(Text, nullable=False)
+    island_base: Mapped[str] = mapped_column(String(100), default="Pulau Neira", nullable=False)
+    is_verified: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    rating: Mapped[float] = mapped_column(Numeric(3, 2), default=4.9, nullable=False)
+    trips_completed: Mapped[int] = mapped_column(Integer, default=12, nullable=False)
+

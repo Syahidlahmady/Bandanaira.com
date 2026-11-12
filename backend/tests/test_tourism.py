@@ -147,3 +147,91 @@ async def test_list_bookings_for_operator(client: AsyncClient):
     alias_bookings = res_alias.json()
     assert len(alias_bookings) >= 1
 
+
+@pytest.mark.asyncio
+async def test_cms_accommodations_crud(client: AsyncClient):
+    """Uji CMS Penginapan: Tambah baru, update tarif kamar, dan hapus penginapan."""
+    # 1. Create accommodation
+    create_payload = {
+        "name": "Banda Heritage Villa Baru",
+        "type": "VILA",
+        "island_name": "Pulau Neira",
+        "address": "Jl. Kujali No. 8, Banda Neira",
+        "price_per_night_rp": 450000.0,
+        "rooms_available": 4,
+        "has_clean_ro_water": True,
+        "has_solar_backup": True,
+        "eco_stay_badge": True,
+        "contact_whatsapp": "6281199887766",
+        "description": "Vila peninggalan kolonial dengan pemandangan langsung ke Teluk Banda.",
+    }
+    res_create = await client.post("/api/v1/tourism/accommodations", json=create_payload)
+    assert res_create.status_code == 201
+    acc_id = res_create.json()["id"]
+
+    # 2. Update price and room count
+    update_payload = {
+        "price_per_night_rp": 500000.0,
+        "rooms_available": 6,
+        "is_verified": True,
+    }
+    res_update = await client.put(f"/api/v1/tourism/accommodations/{acc_id}", json=update_payload)
+    assert res_update.status_code == 200
+    updated_acc = res_update.json()
+    assert updated_acc["price_per_night_rp"] == 500000.0
+    assert updated_acc["rooms_available"] == 6
+
+    # 3. Delete accommodation
+    res_del = await client.delete(f"/api/v1/tourism/accommodations/{acc_id}")
+    assert res_del.status_code == 200
+    assert "berhasil dihapus" in res_del.json()["message"]
+
+
+@pytest.mark.asyncio
+async def test_cms_tour_guides_crud(client: AsyncClient):
+    """Uji CMS Pemandu Wisata: Auto-seed, tambah pemandu, update tarif harian, dan verifikasi admin."""
+    # 1. List auto-seeded guides
+    res_list = await client.get("/api/v1/tourism/guides")
+    assert res_list.status_code == 200
+    guides = res_list.json()
+    assert len(guides) >= 3
+    names = [g["name"] for g in guides]
+    assert "Dewi Nusantara" in names
+
+    # 2. Create new tour guide
+    new_guide = {
+        "name": "La Ode Ruslan",
+        "license_number": "HPI-BANDA-004",
+        "phone_whatsapp": "6281233445566",
+        "specialties": "Ekspedisi Snorkeling Pulau Rhun & Sejarah Traktat Breda 1667",
+        "languages": "Indonesia, English",
+        "fee_per_day_rp": 380000.0,
+        "bio": "Pemandu ekspedisi bahari pulau terluar Rhun dan Ay dengan wawasan mendalam mengenai sejarah pulau rempah.",
+        "island_base": "Pulau Rhun",
+        "is_verified": False,
+        "is_active": True,
+    }
+    res_create = await client.post("/api/v1/tourism/guides", json=new_guide)
+    assert res_create.status_code == 201
+    created = res_create.json()
+    guide_id = created["id"]
+    assert created["name"] == "La Ode Ruslan"
+    assert created["fee_per_day_rp"] == 380000.0
+    assert created["is_verified"] is False
+
+    # 3. Admin verifies and updates fee
+    res_update = await client.put(
+        f"/api/v1/tourism/guides/{guide_id}",
+        json={"is_verified": True, "fee_per_day_rp": 400000.0},
+    )
+    assert res_update.status_code == 200
+    updated = res_update.json()
+    assert updated["is_verified"] is True
+    assert updated["fee_per_day_rp"] == 400000.0
+
+    # 4. Delete guide
+    res_del = await client.delete(f"/api/v1/tourism/guides/{guide_id}")
+    assert res_del.status_code == 200
+    assert "berhasil dihapus" in res_del.json()["message"]
+
+
