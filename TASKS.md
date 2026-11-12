@@ -272,6 +272,18 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Added clickable brand identity and dedicated "🏠 Satu Pintu" button across the entire navbar and all role-based tabs (Admin, Officer, Farmer Group Admin, Farmer, and Guest).
   - Set `landing` as default starting view, providing seamless entry points to all features with 1-click return to home.
   - Verified clean TypeScript build (`npm run build` exits 0 in 4.45s) and full test coverage.
+- [x] 24.3 Immersive Banda Neira Ocean & Island Panorama Scenery (Smart Tourism Attraction):
+  - Upgraded `frontend/src/views/LandingPortalWorkspace.tsx` background with authentic tropical ocean, deep Banda Sea palung, and volcanic island scenery to maximize smart tourism appeal.
+  - Interactive Scenic Panorama Selector with 4 selectable atmospheres:
+    1. 🌊 *Lautan Banda & Palung Kedalaman 7.440m* (Coral reef biodiversity, wall dive).
+    2. 🌋 *Gunung Api Banda & Teluk Neira* (656 mdpl volcanic peak, lava flow snorkeling).
+    3. 🏝️ *Pulau Hatta & Pantai Pasir Putih* (Pristine shore, turtle and hammerhead migration).
+    4. 🏰 *Benteng Belgica & Kota Tua Neira* (17th-century pentagonal fortress UNESCO tentative).
+  - Live marine sensing & telemetry barometer pill (Water temp 28.4°C, 28m crystal visibility, 100% solar energy, Gunung Api Level I Normal).
+  - Dedicated "Pesona Unggulan Kepulauan Banda Neira" Smart Tourism Spotlight Showcase with 4 interactive cards, high-definition photography, GPS coordinates, and direct links to 7-Layer PostGIS GIS and eco-stay booking.
+  - Quick Search chips for 1-click exploration (`Snorkeling Lava Flow`, `Diving Pulau Hatta`, `Benteng Belgica`, `Homestay`, `BATCH-PALA-001`, `Air RO`).
+  - Verified with `npm run build` (built in 4.30s, exit code 0) and backend pytest (78/78 passed 100%).
+
 
 
 
