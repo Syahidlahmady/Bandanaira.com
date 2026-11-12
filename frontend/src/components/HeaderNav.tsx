@@ -12,6 +12,7 @@ import {
   MoreVertical,
   MapPin,
   ShoppingBag,
+  Zap,
 } from 'lucide-react'
 import { User } from '../services/auth'
 import { usePWA } from '../offline/usePWA'
@@ -26,6 +27,7 @@ interface HeaderNavProps {
   onOpenQueueModal: () => void
   onOpenMarketplace?: () => void
   onOpenLanding?: () => void
+  onOpenQuickSwitch?: () => void
 }
 
 export const HeaderNav: React.FC<HeaderNavProps> = ({
@@ -38,6 +40,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   onOpenQueueModal,
   onOpenMarketplace,
   onOpenLanding,
+  onOpenQuickSwitch,
 }) => {
   const { canInstall, isInstalled, hasUpdate, installApp, updateApp } = usePWA()
   const [installing, setInstalling] = useState(false)
@@ -427,16 +430,40 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
             </div>
           </div>
 
-          <button
-            onClick={onLogout}
-            className="btn btn-sm btn-danger"
-            style={{
-              padding: '0.45rem 0.95rem',
-              fontWeight: 700,
-            }}
-          >
-            <LogOut size={13} /> Keluar (Logout)
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            {onOpenQuickSwitch && (
+              <button
+                type="button"
+                onClick={onOpenQuickSwitch}
+                className="btn btn-sm"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%)',
+                  border: '1px solid rgba(245, 158, 11, 0.45)',
+                  color: '#fbbf24',
+                  padding: '0.45rem 0.95rem',
+                  fontWeight: 800,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  cursor: 'pointer',
+                  borderRadius: 'var(--radius-md)',
+                }}
+                title="Ganti peran aktor secara instan untuk pengujian alur kerja"
+              >
+                <Zap size={14} fill="#fbbf24" /> ⚡ Ganti Peran Cepat
+              </button>
+            )}
+            <button
+              onClick={onLogout}
+              className="btn btn-sm btn-danger"
+              style={{
+                padding: '0.45rem 0.95rem',
+                fontWeight: 700,
+              }}
+            >
+              <LogOut size={13} /> Keluar (Logout)
+            </button>
+          </div>
         </div>
       )}
 

@@ -28,6 +28,7 @@ import { BlockchainModal } from './components/BlockchainModal.tsx'
 import { OfflineQueueModal } from './components/OfflineQueueModal.tsx'
 import { PublicVerifyModal } from './components/PublicVerifyModal.tsx'
 import { VerifiedMarketplaceModal } from './components/VerifiedMarketplaceModal.tsx'
+import { QuickLoginModal } from './components/QuickLoginModal.tsx'
 import { ResidentsWorkspace } from './views/ResidentsWorkspace.tsx'
 import { LettersWorkspace } from './views/LettersWorkspace.tsx'
 import { FarmsGisWorkspace } from './views/FarmsGisWorkspace.tsx'
@@ -53,6 +54,7 @@ import {
   Home,
   Layers,
   Database,
+  Zap,
 } from 'lucide-react'
 import { offlineDB } from './offline/db.ts'
 import { syncManager, SyncQueueItem } from './offline/syncManager.ts'
@@ -120,6 +122,7 @@ export const App: React.FC = () => {
   const [verificationModal, setVerificationModal] = useState<BlockchainVerification | null>(null)
   const [blockchainLoading, setBlockchainLoading] = useState<string | null>(null)
   const [showMarketplaceModal, setShowMarketplaceModal] = useState<boolean>(false)
+  const [showQuickLoginModal, setShowQuickLoginModal] = useState<boolean>(false)
 
   // Form: Resident
   const [popForm, setPopForm] = useState<ResidentCreateInput>({
@@ -993,6 +996,7 @@ export const App: React.FC = () => {
           onOpenQueueModal={handleOpenQueueModal}
           onOpenMarketplace={() => setShowMarketplaceModal(true)}
           onOpenLanding={() => setActiveTab('landing')}
+          onOpenQuickSwitch={() => setShowQuickLoginModal(true)}
         />
       )}
 
@@ -1006,6 +1010,7 @@ export const App: React.FC = () => {
           currentUser={currentUser}
           isOnline={isOnline}
           onLogout={handleLogout}
+          onOpenQuickLogin={() => setShowQuickLoginModal(true)}
         />
       )}
 
@@ -1584,7 +1589,7 @@ export const App: React.FC = () => {
 
       {/* TAB 9: SMART TOURISM, ECO-STAY & WARISAN BUDAYA */}
       {activeTab === 'tourism' && (
-        <TourismEcoStayWorkspace />
+        <TourismEcoStayWorkspace currentUser={currentUser} />
       )}
 
       {/* TAB 10: PETA SPASIAL INTERAKTIF 7-LAYER */}
@@ -1742,6 +1747,57 @@ export const App: React.FC = () => {
         onClose={() => setShowMarketplaceModal(false)}
         onVerifyProduct={(token) => handlePublicVerify(token)}
       />
+      <QuickLoginModal
+        isOpen={showQuickLoginModal}
+        onClose={() => setShowQuickLoginModal(false)}
+        currentUser={currentUser}
+        onQuickLogin={handleQuickLogin}
+        onLogout={handleLogout}
+      />
+
+      {/* Floating Quick Test & Multi-Actor Login Dock (Always Accessible on All Pages) */}
+      <button
+        type="button"
+        onClick={() => setShowQuickLoginModal(true)}
+        style={{
+          position: 'fixed',
+          bottom: '1.25rem',
+          right: '1.25rem',
+          zIndex: 9999,
+          background: 'linear-gradient(135deg, #0b1120 0%, #0f172a 100%)',
+          border: '1.5px solid #10b981',
+          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.75), 0 0 20px rgba(16, 185, 129, 0.35)',
+          color: '#ffffff',
+          padding: '0.65rem 1.15rem',
+          borderRadius: '999px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.65rem',
+          fontSize: '0.825rem',
+          fontWeight: 800,
+          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+          backdropFilter: 'blur(12px)',
+        }}
+        title="Buka simulator peran & quick login instan untuk pengujian alur kerja"
+      >
+        <span
+          style={{
+            width: '9px',
+            height: '9px',
+            borderRadius: '50%',
+            background: currentUser ? '#10b981' : '#f59e0b',
+            boxShadow: currentUser ? '0 0 8px #10b981' : '0 0 8px #f59e0b',
+            display: 'inline-block',
+          }}
+        />
+        <Zap size={15} color="#fbbf24" fill="#fbbf24" />
+        <span>
+          {currentUser
+            ? `⚡ Peran: @${currentUser.username}`
+            : '⚡ Quick Login (Uji Peran)'}
+        </span>
+      </button>
     </div>
   )
 }

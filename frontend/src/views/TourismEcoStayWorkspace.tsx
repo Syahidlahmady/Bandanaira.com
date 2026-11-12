@@ -21,8 +21,12 @@ import {
   HeritageCatalogItem,
 } from '../services/tourism'
 
-export const TourismEcoStayWorkspace: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'accommodations' | 'heritage' | 'lookup'>('accommodations')
+export interface TourismEcoStayWorkspaceProps {
+  currentUser?: any
+}
+
+export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = ({ currentUser }) => {
+  const [activeTab, setActiveTab] = useState<'accommodations' | 'heritage' | 'lookup' | 'bookings'>('accommodations')
 
   // Accommodations State
   const [accommodations, setAccommodations] = useState<AccommodationItem[]>([])
@@ -59,10 +63,27 @@ export const TourismEcoStayWorkspace: React.FC = () => {
   const [loadingLookup, setLoadingLookup] = useState<boolean>(false)
   const [lookupError, setLookupError] = useState<string | null>(null)
 
+  // Host/Operator Bookings Management State
+  const [bookings, setBookings] = useState<BookingItem[]>([])
+  const [loadingBookings, setLoadingBookings] = useState<boolean>(false)
+
   useEffect(() => {
     loadAccommodations()
     loadHeritage()
+    loadBookings()
   }, [islandFilter, typeFilter, filterRoOnly, filterSolarOnly, heritageCategory])
+
+  const loadBookings = async () => {
+    setLoadingBookings(true)
+    try {
+      const data = await tourismService.listBookings()
+      setBookings(data)
+    } catch {
+      // ignore
+    } finally {
+      setLoadingBookings(false)
+    }
+  }
 
   const loadAccommodations = async () => {
     setLoadingAccs(true)
@@ -154,9 +175,16 @@ export const TourismEcoStayWorkspace: React.FC = () => {
       {/* Workspace Header */}
       <div className="workspace-header" style={{ marginBottom: '1.75rem' }}>
         <div>
-          <span className="badge badge-emerald" style={{ marginBottom: '0.4rem', display: 'inline-flex', gap: '0.35rem' }}>
-            <Compass size={12} /> Mandat Smart Tourism FTI &amp; Komunitas Lokal
-          </span>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
+            <span className="badge badge-emerald" style={{ display: 'inline-flex', gap: '0.35rem' }}>
+              <Compass size={12} /> Mandat Smart Tourism FTI &amp; Komunitas Lokal
+            </span>
+            {currentUser && (
+              <span className="badge badge-blue" style={{ fontSize: '0.72rem' }}>
+                👤 Operator: {currentUser.full_name || currentUser.username}
+              </span>
+            )}
+          </div>
           <h2 style={{ margin: 0, fontSize: '1.65rem', fontWeight: 900, color: '#f8fafc', letterSpacing: '-0.02em' }}>
             Smart Tourism, Eco-Stay &amp; Cagar Budaya
           </h2>
@@ -226,6 +254,29 @@ export const TourismEcoStayWorkspace: React.FC = () => {
             }}
           >
             <Search size={14} /> 🔍 Cek Kode Reservasi
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('bookings')
+              loadBookings()
+            }}
+            style={{
+              padding: '0.5rem 0.95rem',
+              borderRadius: 'var(--radius-md)',
+              border: 'none',
+              fontSize: '0.8rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              transition: 'all 0.2s',
+              background: activeTab === 'bookings' ? 'linear-gradient(135deg, #06b6d4, #0284c7)' : 'transparent',
+              color: activeTab === 'bookings' ? '#ffffff' : '#94a3b8',
+            }}
+          >
+            <Calendar size={14} /> 📋 Reservasi Masuk ({bookings.length})
           </button>
         </div>
       </div>
@@ -588,6 +639,182 @@ export const TourismEcoStayWorkspace: React.FC = () => {
               >
                 <MessageCircle size={16} /> Hubungi Host Penginapan via WhatsApp
               </a>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB 4: OPERATOR BOOKINGS MANAGEMENT */}
+      {activeTab === 'bookings' && (
+        <div className="animate-fade-in">
+          {/* Barometer Metrics */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '1rem',
+              marginBottom: '1.5rem',
+            }}
+          >
+            <div className="card" style={{ padding: '1.25rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>
+                Total Reservasi Masuk
+              </div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#06b6d4', marginTop: '0.25rem' }}>
+                {bookings.length} <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>Pemesanan</span>
+              </div>
+              <div style={{ fontSize: '0.72rem', color: '#10b981', marginTop: '0.35rem' }}>
+                ● Status Terverifikasi 100%
+              </div>
+            </div>
+
+            <div className="card" style={{ padding: '1.25rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>
+                Estimasi Omset Homestay
+              </div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#10b981', marginTop: '0.25rem' }}>
+                Rp {bookings.reduce((sum, b) => sum + b.total_price_rp, 0).toLocaleString()}
+              </div>
+              <div style={{ fontSize: '0.72rem', color: '#38bdf8', marginTop: '0.35rem' }}>
+                Ekonomi Komunitas Banda Neira
+              </div>
+            </div>
+
+            <div className="card" style={{ padding: '1.25rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>
+                Total Malam Menginap
+              </div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#fbbf24', marginTop: '0.25rem' }}>
+                {bookings.reduce((sum, b) => sum + (b.total_nights * b.rooms_count), 0)} <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>Room-Nights</span>
+              </div>
+              <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '0.35rem' }}>
+                Kamar Ramah Lingkungan &amp; Air RO
+              </div>
+            </div>
+          </div>
+
+          {/* Action Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <Calendar size={18} color="#06b6d4" /> Buku Tamu &amp; Riwayat Reservasi Eco-Stay
+            </h3>
+            <button
+              type="button"
+              onClick={loadBookings}
+              disabled={loadingBookings}
+              className="btn btn-secondary btn-sm"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem' }}
+            >
+              <RefreshCw size={13} className={loadingBookings ? 'animate-spin' : ''} />
+              {loadingBookings ? 'Menyinkronkan...' : 'Perbarui Data'}
+            </button>
+          </div>
+
+          {/* Bookings List */}
+          {loadingBookings ? (
+            <div style={{ textAlign: 'center', padding: '3rem 0', color: '#94a3b8' }}>
+              <RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 0.75rem' }} />
+              Memuat data reservasi...
+            </div>
+          ) : bookings.length === 0 ? (
+            <div className="card" style={{ padding: '3rem 2rem', textAlign: 'center', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
+              <Home size={36} color="#64748b" style={{ margin: '0 auto 0.75rem' }} />
+              <h4 style={{ margin: '0 0 0.35rem', color: '#f8fafc' }}>Belum Ada Reservasi Masuk</h4>
+              <p style={{ margin: 0, fontSize: '0.825rem', color: '#94a3b8' }}>
+                Pemesanan baru oleh wisatawan akan otomatis muncul pada buku tamu ini.
+              </p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              {bookings.map((b) => (
+                <div
+                  key={b.id}
+                  className="card"
+                  style={{
+                    padding: '1.25rem',
+                    background: 'var(--surface-color)',
+                    border: '1px solid var(--border-color)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '1rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                    <div
+                      style={{
+                        width: '44px',
+                        height: '44px',
+                        borderRadius: '12px',
+                        background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%)',
+                        border: '1px solid rgba(6, 182, 212, 0.4)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '1.3rem',
+                        flexShrink: 0,
+                      }}
+                    >
+                      🏡
+                    </div>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.975rem', fontWeight: 800, color: '#f8fafc' }}>
+                          {b.guest_name}
+                        </span>
+                        <span className="badge badge-emerald" style={{ fontSize: '0.65rem' }}>
+                          <CheckCircle2 size={11} /> {b.status}
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
+                          [{b.booking_code}]
+                        </span>
+                      </div>
+
+                      <div style={{ fontSize: '0.825rem', fontWeight: 700, color: '#06b6d4', marginTop: '0.2rem' }}>
+                        {b.accommodation_name}
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '1rem', marginTop: '0.35rem', fontSize: '0.75rem', color: '#94a3b8', flexWrap: 'wrap' }}>
+                        <span>📅 Check-in: <b>{b.check_in}</b></span>
+                        <span>📅 Check-out: <b>{b.check_out}</b> ({b.total_nights} Malam)</span>
+                        <span>🛏️ <b>{b.rooms_count} Kamar</b></span>
+                        {b.notes && <span style={{ color: '#cbd5e1' }}>📝 Catatan: "{b.notes}"</span>}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Total Tagihan:</div>
+                      <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#10b981' }}>
+                        Rp {b.total_price_rp.toLocaleString()}
+                      </div>
+                    </div>
+
+                    <a
+                      href={`https://wa.me/${b.guest_whatsapp.replace(/\D/g, '')}?text=Halo%20${encodeURIComponent(b.guest_name)},%20kami%20dari%20pengelola%20${encodeURIComponent(b.accommodation_name)}%20Banda%20Neira%20mengenai%20booking%20${b.booking_code}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        color: '#ffffff',
+                        padding: '0.5rem 0.95rem',
+                        borderRadius: '10px',
+                        fontSize: '0.78rem',
+                        fontWeight: 800,
+                        textDecoration: 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                      }}
+                      title="Hubungi tamu langsung lewat WhatsApp"
+                    >
+                      <MessageCircle size={14} /> Hubungi Tamu
+                    </a>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>

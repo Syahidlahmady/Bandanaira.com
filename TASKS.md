@@ -29,6 +29,8 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 24: Single-Door Island Ecosystem Landing Page Portal (Satu Pintu BST-NIRANA)**
 - [x] **Phase 25: PWA Offline Map Caching & Field Resilience (IndexedDB GeoJSON 7-Layer Storage)**
 - [x] **Phase 26: Actor Segregation & Dedicated Operational Roles (Koperasi, Homestay, Smart Tourism, Survei)**
+- [x] **Phase 27: Multi-Actor Quick Login Simulator & Homestay Operator Booking Management**
+
 
 
 ---
@@ -323,6 +325,27 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Added parametrized test `test_login_segmented_roles` in `backend/tests/test_auth.py` verifying JWT token issuance and role validation for all 4 new actors.
   - Verified full test suite passes: **14/14 auth tests, 82/82 total backend tests pass 100%**.
   - Verified clean TypeScript build (`npm --prefix frontend run build` exits 0 in 4.06s).
+
+### Phase 27: Multi-Actor Quick Login Simulator & Homestay Operator Booking Management
+- [x] 27.1 Universal Multi-Actor Quick Login Component (`frontend/src/components/QuickLoginModal.tsx`):
+  - Created interactive simulator modal displaying all 9 ecosystem actor cards with Indonesian roles, credentials, descriptions, destination tabs, and 1-click login action.
+  - Category filters: Semua (9), 🏛️ Desa, ⚖️ Koperasi & Tani, 🏖️ Wisata, 📋 Survei.
+  - Active actor indicator with green pulse ring and dedicated `🌐 Mode Tamu` button to test public/unauthenticated access.
+- [x] 27.2 Global Floating Quick Test Dock (`frontend/src/App.tsx`):
+  - Fixed floating glassmorphic trigger pill at the bottom-right corner (`⚡ Quick Login (Uji Peran)` / `⚡ Peran: @username`) available on every single view and tab.
+  - Integrated `⚡ Uji Peran` button directly into the top header and hero action area of `LandingPortalWorkspace.tsx`.
+  - Integrated `⚡ Ganti Peran Cepat` button directly into the session HUD bar of `HeaderNav.tsx`.
+- [x] 27.3 Backend Tourism Bookings Management Endpoint (`backend/app/modules/tourism/router.py`):
+  - Implemented `GET /api/v1/tourism/bookings` and SRS BAB XI alias `GET /api/v1/pemesanan` with optional `accommodation_id` filtering.
+  - Added automated test `test_list_bookings_for_operator` in `backend/tests/test_tourism.py` (all 6 tourism tests pass 100%).
+- [x] 27.4 Frontend Host / Homestay Bookings Workspace (`frontend/src/views/TourismEcoStayWorkspace.tsx`):
+  - Added 4th Tab: **"📋 Reservasi Masuk"** with real-time barometer (Total Reservasi, Estimasi Omset Homestay, Total Malam Menginap).
+  - Cards listing guest details, check-in/out dates, room count, total bill, notes, and 1-click direct WhatsApp chat link to the guest (`💬 Hubungi Tamu`).
+  - Added operator session badge showing active user name.
+- [x] 27.5 Verification & Automated Tests:
+  - Automated tests passing: **6/6 tourism tests, 14/14 auth tests, 83/83 total backend tests (100%)**.
+  - TypeScript frontend build verified: `npm --prefix frontend run build` exits with code 0 in 4.38s.
+
 
 
 

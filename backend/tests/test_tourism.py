@@ -111,3 +111,39 @@ async def test_get_heritage_catalog(client: AsyncClient):
     res_benteng = await client.get("/api/v1/tourism/heritage-catalog?category=BENTENG")
     assert res_benteng.status_code == 200
     assert all(c["category"] == "BENTENG" for c in res_benteng.json())
+
+
+@pytest.mark.asyncio
+async def test_list_bookings_for_operator(client: AsyncClient):
+    """Uji pengambilan daftar reservasi penginapan untuk pengelola eco-stay."""
+    # 1. Create a booking
+    res_acc = await client.get("/api/v1/tourism/accommodations")
+    acc = res_acc.json()[0]
+    check_in = date.today() + timedelta(days=7)
+    check_out = check_in + timedelta(days=2)
+
+    await client.post(
+        "/api/v1/tourism/bookings",
+        json={
+            "accommodation_id": acc["id"],
+            "guest_name": "Wisatawan Pengujian",
+            "guest_whatsapp": "6281122334455",
+            "check_in": check_in.isoformat(),
+            "check_out": check_out.isoformat(),
+            "rooms_count": 1,
+        },
+    )
+
+    # 2. List bookings via main endpoint
+    res_list = await client.get("/api/v1/tourism/bookings")
+    assert res_list.status_code == 200
+    bookings = res_list.json()
+    assert len(bookings) >= 1
+    assert any(b["guest_name"] == "Wisatawan Pengujian" for b in bookings)
+
+    # 3. List bookings via SRS 11 alias
+    res_alias = await client.get("/api/v1/pemesanan")
+    assert res_alias.status_code == 200
+    alias_bookings = res_alias.json()
+    assert len(alias_bookings) >= 1
+

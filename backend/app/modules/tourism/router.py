@@ -357,6 +357,55 @@ async def get_booking_by_code(
 
 
 @router.get(
+    "/bookings",
+    response_model=List[BookingItemResponse],
+    summary="Daftar Reservasi Masuk untuk Pengelola Penginapan & Wisata",
+)
+async def list_bookings(
+    accommodation_id: Optional[str] = Query(None, description="Filter berdasarkan ID penginapan"),
+    limit: int = Query(50, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+):
+    """Mengambil riwayat dan daftar reservasi penginapan yang masuk."""
+    stmt = (
+        select(Booking, Accommodation.name)
+        .join(Accommodation, Booking.accommodation_id == Accommodation.id)
+        .order_by(desc(Booking.created_at))
+        .limit(limit)
+    )
+    if accommodation_id:
+        try:
+            acc_uuid = uuid.UUID(accommodation_id)
+            stmt = stmt.where(Booking.accommodation_id == acc_uuid)
+        except ValueError:
+            pass
+    res = await db.execute(stmt)
+    rows = res.all()
+    results = []
+    for booking, acc_name in rows:
+        results.append(
+            BookingItemResponse(
+                id=str(booking.id),
+                booking_code=booking.booking_code,
+                accommodation_id=str(booking.accommodation_id),
+                accommodation_name=acc_name,
+                guest_name=booking.guest_name,
+                guest_whatsapp=booking.guest_whatsapp,
+                check_in=booking.check_in,
+                check_out=booking.check_out,
+                total_nights=booking.total_nights,
+                rooms_count=booking.rooms_count,
+                total_price_rp=float(booking.total_price_rp),
+                status=booking.status,
+                wa_link=booking.wa_link,
+                notes=booking.notes,
+                created_at=booking.created_at,
+            )
+        )
+    return results
+
+
+@router.get(
     "/heritage-catalog",
     response_model=List[HeritageCatalogItem],
     summary="Katalog 177 Cagar Budaya Banda Neira & Panduan Suara (Audio Guide)",
@@ -412,3 +461,17 @@ async def create_pemesanan_alias(
     db: AsyncSession = Depends(get_db),
 ):
     return await create_booking(payload=payload, db=db)
+
+
+@penginapan_alias_router.get(
+    "/pemesanan",
+    response_model=List[BookingItemResponse],
+    summary="Daftar Reservasi Masuk (Alias SRS 11)"
+)
+async def list_pemesanan_alias(
+    accommodation_id: Optional[str] = Query(None),
+    limit: int = Query(50, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+):
+    return await list_bookings(accommodation_id=accommodation_id, limit=limit, db=db)
+

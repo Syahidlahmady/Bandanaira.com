@@ -40,6 +40,7 @@ interface LandingPortalWorkspaceProps {
   currentUser: any
   isOnline?: boolean
   onLogout?: () => void
+  onOpenQuickLogin?: () => void
 }
 
 interface ScenicTheme {
@@ -183,6 +184,7 @@ export const LandingPortalWorkspace: React.FC<LandingPortalWorkspaceProps> = ({
   currentUser,
   isOnline = true,
   onLogout,
+  onOpenQuickLogin,
 }) => {
   const [activeTheme, setActiveTheme] = useState<ScenicTheme>(SCENIC_THEMES[0])
   const [quickSearchInput, setQuickSearchInput] = useState('')
@@ -442,6 +444,32 @@ export const LandingPortalWorkspace: React.FC<LandingPortalWorkspaceProps> = ({
               <ShoppingBag size={14} />
               <span>Marketplace</span>
             </button>
+
+            {/* Quick Login / Role Simulator Button */}
+            {onOpenQuickLogin && (
+              <button
+                type="button"
+                onClick={onOpenQuickLogin}
+                style={{
+                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.22) 0%, rgba(16, 185, 129, 0.22) 100%)',
+                  border: '1px solid rgba(245, 158, 11, 0.5)',
+                  color: '#fbbf24',
+                  padding: '0.4rem 0.85rem',
+                  borderRadius: '12px',
+                  fontSize: '0.78rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  transition: 'all 0.2s ease',
+                }}
+                title="Pilih dan uji 9 peran aktor ekosistem secara instan"
+              >
+                <Zap size={14} fill="#fbbf24" />
+                <span>⚡ Uji Peran</span>
+              </button>
+            )}
 
             {/* User Session or Login */}
             {currentUser ? (
@@ -855,6 +883,30 @@ export const LandingPortalWorkspace: React.FC<LandingPortalWorkspaceProps> = ({
                 }}
               >
                 <Users size={18} /> Masuk Dasbor ({currentUser.full_name})
+              </button>
+            )}
+
+            {onOpenQuickLogin && (
+              <button
+                onClick={onOpenQuickLogin}
+                style={{
+                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.25) 100%)',
+                  color: '#fbbf24',
+                  border: '1.5px solid rgba(245, 158, 11, 0.55)',
+                  padding: '0.9rem 1.75rem',
+                  borderRadius: '16px',
+                  fontWeight: 800,
+                  fontSize: '0.925rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  backdropFilter: 'blur(8px)',
+                  boxShadow: '0 6px 20px rgba(245, 158, 11, 0.2)',
+                }}
+                title="Pilih dan uji peran aktor ekosistem secara instan"
+              >
+                <Zap size={18} fill="#fbbf24" /> ⚡ Quick Login (Uji Peran)
               </button>
             )}
           </div>

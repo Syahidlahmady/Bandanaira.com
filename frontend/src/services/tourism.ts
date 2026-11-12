@@ -114,4 +114,14 @@ export const tourismService = {
     if (!res.ok) throw new Error('Gagal memuat katalog cagar budaya.')
     return res.json()
   },
+
+  async listBookings(accommodationId?: string): Promise<BookingItem[]> {
+    const q = new URLSearchParams()
+    if (accommodationId) q.append('accommodation_id', accommodationId)
+
+    const res = await fetch(`${getApiBase()}/tourism/bookings?${q.toString()}`)
+    if (!res.ok) throw new Error('Gagal memuat riwayat reservasi.')
+    return res.json()
+  },
 }
+
