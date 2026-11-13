@@ -37,6 +37,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 32: Spatial Studio Map Editor & 4A Geocoding Integration (Editor Titik Peta PostGIS & Google Maps/OSM)**
 - [x] **Phase 33: GIS Map Aesthetic Unification & Editorial Tone Harmonization (Clean Google Maps Style & Slop Removal)**
 - [x] **Phase 34: Penghapusan Tuntas Desain Lama (Pembersihan desainlama.png), Redesain Global Warm Linen Banda Neira, dan Harmonisasi Workspace**
+- [x] **Phase 35: Modularisasi Komponen Frontend & Penerapan Clean Code Blueprint (fhinisCleanCode.md)**
 
 ---
 
@@ -540,6 +541,28 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 34.5 Pembersihan Tuntas Navigasi Lama di `App.tsx`:
   - Menghapus rendering `HeaderNav` lama dan bilah tab mengambang `Guest Public Exploration` bagi tamu non-login. Tamu kini secara mulus hanya menikmati 1 Landing Page Satu Pintu (`BandanairaBeranda`) atau masuk via Login/Register.
   - Memverifikasi build frontend produksi (`npm --prefix frontend run build`) lolos exit code 0 tanpa error TypeScript maupun CSS.
+
+### Phase 35: Modularisasi Komponen Frontend & Penerapan Clean Code Blueprint (`fhinisCleanCode.md`)
+- [x] 35.1 Restrukturisasi Fondasi Desain & Style (`frontend/src/styles/`):
+  - Memisahkan token `:root` desain editorial Warm Linen & Deep Navy ke `styles/tokens.css`.
+  - Memisahkan typography, keyframes animasi, form controls, bento cards, data table, dan modal backdrops ke `styles/global.css`.
+  - Mengonfigurasi `frontend/src/index.css` sebagai entry point impor yang bersih bebas warning PostCSS.
+- [x] 35.2 Standardisasi Komponen UI Reusable (`frontend/src/components/common/`):
+  - Membuat `Button.tsx` (varian primary emas pala, secondary, outline, danger, success, ghost; size sm/md/lg; status loading & disabled).
+  - Membuat `Card.tsx` (Card, CardHeader, CardTitle, CardDescription, CardBody, CardFooter).
+  - Membuat `BadgeStatus.tsx` (varian verified, pending, confirmed, danger, offline, synced).
+  - Membuat `InputForm.tsx` (FormInput, FormSelect, FormTextarea, FormLabel, FormError).
+  - Memindahkan `HeaderNav.tsx` dan `Footer.tsx` ke dalam `components/common/` dengan backward-compatibility shim di root `components/`.
+- [x] 35.3 Pengelompokan & Reorganisasi Seluruh Modal Dialog (`frontend/src/components/modals/`):
+  - Mengisolasi 5 modal dialog: `QuickLoginModal.tsx`, `VerifiedMarketplaceModal.tsx`, `PublicVerifyModal.tsx`, `BlockchainModal.tsx`, `OfflineQueueModal.tsx`.
+  - Menyediakan barrel export `modals/index.ts`.
+  - Menyediakan file shim re-export di `components/` untuk menjamin zero regression pada kode legacy.
+- [x] 35.4 Dekomposisi 10 Section Modular Landing Page (`frontend/src/components/landing/`):
+  - Membedah monolit `BandanairaBeranda.tsx` (2.224 baris) menjadi 10 komponen section mandiri: `HeroSection.tsx`, `PanoramaIslandSection.tsx`, `PetaInteractiveSection.tsx`, `HeritageSpiceSection.tsx`, `TourismSawSection.tsx`, `EcoStayCatalogSection.tsx`, `EcosystemFeaturesSection.tsx`, `TraceabilityMarketplaceSection.tsx`, `SustainableTravelSection.tsx`, `PlanYourVisitSection.tsx`, dan `LandingFooterSection.tsx`.
+  - Menyediakan ikon SVG terpadu di `LandingIcons.tsx` dan barrel export `landing/index.ts`.
+  - Merefaktor `BandanairaBeranda.tsx` menjadi View Composer ramping (~120 baris) dengan keterbacaan tinggi.
+- [x] 35.5 Verifikasi Build dan Integritas Fungsionalitas:
+  - Memverifikasi build frontend (`npm --prefix frontend run build`) lolos exit code 0 tanpa error TypeScript atau bundle warning (`✓ built in 5.93s`).
 
 
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import { BandanairaBeranda, NavTabType } from './landing/BandanairaBeranda.tsx'
+import { BandanairaBeranda, NavTabType } from './landing/BandanairaBeranda'
 
 export interface LandingPortalWorkspaceProps {
   onNavigate: (tab: NavTabType) => void

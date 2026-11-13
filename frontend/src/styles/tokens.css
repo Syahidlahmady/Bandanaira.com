@@ -1,0 +1,72 @@
+/* ==========================================================================
+   Banda Digital Ecosystem — Design System Tokens (:root)
+   Palette: Warm Linen (#F7F5F0), Deep Ocean Navy (#081D35), Spice Gold (#F4B75E)
+   ========================================================================== */
+
+:root {
+  /* Core Surfaces */
+  --bg-color: #F7F5F0;
+  --bg-surface: #FFFFFF;
+  --bg-surface-elevated: #F8FAFC;
+  --surface-color: #FFFFFF;
+
+  --card-bg: #FFFFFF;
+  --card-border: #E2E8F0;
+  --card-hover-border: #F4B75E;
+
+  /* Primary: Banda Spice Gold & Royal Navy */
+  --primary: #F4B75E;
+  --primary-hover: #E0A24A;
+  --primary-light: rgba(244, 183, 94, 0.16);
+  --primary-border: rgba(244, 183, 94, 0.45);
+  --primary-gradient: linear-gradient(135deg, #D97706 0%, #F4B75E 55%, #FBBF24 100%);
+
+  /* Secondary: Banda Deep Ocean Navy */
+  --secondary: #081D35;
+  --secondary-hover: #0F2C59;
+  --secondary-light: rgba(8, 29, 53, 0.08);
+  --secondary-border: rgba(8, 29, 53, 0.2);
+  --secondary-gradient: linear-gradient(135deg, #081D35 0%, #0F2C59 100%);
+
+  /* Signature Banda Spice Gold (#F4B75E & #D97706) */
+  --accent-gold: #F4B75E;
+  --accent-gold-strong: #D97706;
+  --accent-gold-light: rgba(244, 183, 94, 0.18);
+  --accent-gold-border: rgba(244, 183, 94, 0.5);
+  --accent-gold-gradient: linear-gradient(135deg, #D97706 0%, #F4B75E 60%, #FBBF24 100%);
+
+  /* Nutmeg Mace Coral */
+  --accent-mace: #E11D48;
+  --accent-mace-light: rgba(225, 29, 72, 0.12);
+  --accent-mace-border: rgba(225, 29, 72, 0.35);
+
+  --danger: #EF4444;
+  --danger-light: rgba(239, 68, 68, 0.12);
+  --danger-border: rgba(239, 68, 68, 0.3);
+
+  --text-main: #081D35;
+  --text-muted: #475569;
+  --text-light: #64748B;
+  --border-color: #E2E8F0;
+  --border-focus: #F4B75E;
+
+  /* 21st.dev Bento Shadow Elevations for Warm Linen */
+  --shadow-xs: 0 1px 3px rgba(8, 29, 53, 0.05);
+  --shadow-sm: 0 4px 12px rgba(8, 29, 53, 0.06);
+  --shadow-md: 0 10px 25px -4px rgba(8, 29, 53, 0.08), 0 4px 8px -2px rgba(8, 29, 53, 0.04);
+  --shadow-lg: 0 18px 36px -6px rgba(8, 29, 53, 0.11), 0 0 20px rgba(244, 183, 94, 0.15);
+  --shadow-xl: 0 24px 50px -8px rgba(8, 29, 53, 0.15), 0 0 30px rgba(244, 183, 94, 0.2);
+  --shadow-glow-emerald: 0 0 20px rgba(16, 185, 129, 0.25);
+  --shadow-glow-cyan: 0 0 20px rgba(6, 182, 212, 0.25);
+  --shadow-glow-amber: 0 0 20px rgba(244, 183, 94, 0.3);
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
