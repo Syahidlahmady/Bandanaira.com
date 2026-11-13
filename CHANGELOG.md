@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Unified Navbar & Footer, Figma Desktop Map Vector Integration, and 21st.dev User Bento Dashboard (Phase 31)**:
+  - Created and integrated `BandaUnifiedNavbar.tsx` and `BandaUnifiedFooter.tsx` across public and internal surfaces, ensuring cohesive branding (`#081D35` navy, `#0F2C59`, `#F4B75E` spice-gold accent, and *"Bertumbuh bersama Banda."* motto).
+  - Ported the full Figma desktop map design from `frontend/src/desainsaatini/maps-dekstop/index.tsx` into `JelajahPetaDesktopView.tsx` with high-detail SVG vectors for all Banda islands (Neira, Banda Besar, Banda Api, Hatta, Ai, Pisang, Run), speedboat routes, layer toggles, island filters, search input, and interactive place detail modal.
+  - Transformed Landing Page 2 into `UserEcosystemDashboard.tsx` utilizing a 21st.dev-inspired Bento Grid layout that dynamically tailors metrics, rapid action cards, and ecosystem summaries to the logged-in user's role.
+  - Implemented the 21st.dev Management Dashboard (`desainsaatini/dashboard-desktop/dasboard.tsx`) in `UserEcosystemDashboard.tsx`, harmonizing its design with the Banda Neira warm palette: Header with user avatar and role badge, search bar & notifications, 4 KPI stats cards with dynamic hints, an interactive Recharts AreaChart for task/harvest throughput, an active initiatives progress board, and a real-time ecosystem activity feed.
+  - Unified the entire application to **Single Canonical Landing Page** (`BandanairaBeranda.tsx`), eliminating duplicate landing pages.
+  - Implemented `DashboardLayout.tsx` providing a persistent, responsive, collapsible left sidebar (`#081D35` navy with `#F4B75E` gold accents) that embeds all role-authorized operational workspaces directly inside the dashboard upon login without jumping or cluttered horizontal tab bars.
+  - Updated `App.tsx` and role navigation (`HeaderNav.tsx`) so authenticated users land on `dashboard` upon login and can access their role-specific modules with a single click.
+- **Editorial Slow-Travel Landing Page & Dual-Mode UI System (Phase 30)**:
+  - Installed Tailwind CSS, PostCSS, and Autoprefixer with Banda Neira color tokens (`#173f43` teal, `#e9a66f` coral, `#b46b3c` sand, `#f7f5f0` cream) and Google Fonts (*Cormorant Garamond* & *Plus Jakarta Sans*).
+  - Implemented `BandanairaBeranda.tsx` in `frontend/src/views/landing/` featuring interactive sections (Hero with search bar, Island Introduction, 7-Layer PostGIS Spatial Map with live Leaflet switcher, Spice Heritage, SAW Smart Tourism Recommender with live ranking sliders, Eco-Stays Directory with direct WhatsApp booking modal, Resident Services, Verified Blockchain Marketplace with QR verification & WhatsApp ordering, Sustainable Travel, and Plan Your Visit Gateways).
+  - Aligned the hero floating glassmorphic navbar with `desainsaatini/BandaHeroSection.tsx` (`bandanaira.com` logo, 6 navigation items with `#f4b75e` active underline, and `Masuk / Login` CTA) and integrated `frontend/src/assets/image.webp` as the hero and dusk banner backdrop.
+  - Implemented instant role-based dashboard redirection upon login and registration (`getRoleDefaultTab(user)`), dynamically adapting dashboard navigation menus (`HeaderNav.tsx`) to show only workspaces authorized for the logged-in user's role without clutter.
+  - Unified the entire application UI/UX using the `21st-cli-use` skill (`21st.dev` catalog: *Elevate Navbar*, *Bento Card*, and *Ocean Breeze* theme) combined with the Banda Neira Deep Ocean Navy (`#081d35`, `#0f2c59`) and Spice Gold (`#f4b75e`, `#d97706`) design system across `index.css`, `HeaderNav.tsx`, `LoginSection.tsx`, `QuickLoginModal.tsx`, `VerifiedMarketplaceModal.tsx`, `PublicVerifyModal.tsx`, `LandingPortalWorkspace.tsx`, and `App.tsx`.
+  - Implemented the split-screen account registration page (`frontend/src/components/RegisterSection.tsx`) matching `desainsaatini/register-dekstop/` (`IslandLifeIntroSection` & `AccountRegistrationSection`), where users select their role once at registration across all 9 project roles (`Warga Desa`, `Mitra Usaha`, `Wisatawan`, `Petani Rempah`, `Kelompok Tani`, `Koperasi Hatta`, `Petugas Desa`, `Surveyor & IoT`, `Administrator`) and bind it to their NIK & 4-digit PIN.
+  - Implemented the split-screen login page (`frontend/src/components/LoginSection.tsx`) matching `desainsaatini/login-desktop/` (`BandaServicesIntroSection` & `AccountLoginSection`) without role selection on login; roles are automatically resolved from the user's registered NIK / account ID via `authService`.
+  - Unified the public landing page in `LandingPortalWorkspace.tsx` to render `BandanairaBeranda.tsx` as the single canonical landing page, removing the duplicate command-mode landing page and mode-switcher buttons.
 - Standardized documentation structure:
   - `AGENTS.md`: Mandatory instructions and workflow rules for AI coding agents.
   - `SRS.md`: Complete Software Requirements Specification.
@@ -51,6 +68,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Packaging Label QR Preview Modal: Implemented dedicated high-resolution modal with large 220x220 QR image, official Banda Neira Geographic Indication header, batch metadata, direct "Unduh PNG" download button, "Cetak Stiker" (`window.print()`) button, and public certificate verification shortcut.
   - Harvest Table Quick QR Action: Added "Label QR & Aksi" column in the harvest records table linking individual harvest entries to their packaging batch label.
   - Verification: 0 TypeScript compilation errors and 37/37 passing backend tests.
+- Strict RBAC Security Enforcement on Smart Tourism CMS, Tour Guides & Guest Bookings Privacy (Phase 29):
+  - Enforced backend role dependencies (`HOMESTAY_CMS_ROLES`, `GUIDE_CMS_ROLES`, `BOOKINGS_VIEW_ROLES`) in `backend/app/modules/tourism/router.py` protecting guest reservation PII and master data mutations.
+  - Added Bearer JWT header injection in `frontend/src/services/tourism.ts` and role-based UI access gates (`canViewBookings`, `canAccessCMS`, `canManageHotels`, `canManageGuides`) in `frontend/src/views/TourismEcoStayWorkspace.tsx`.
+  - Added `test_unauthorized_guest_access_blocked` (401) and `test_forbidden_role_access_blocked` (403) in `backend/tests/test_tourism.py` (10/10 tourism tests passing, 0 TypeScript build errors).
+
 
 
 

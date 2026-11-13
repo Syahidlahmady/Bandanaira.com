@@ -23,6 +23,8 @@ import {
   Phone,
   UserCheck,
   Users,
+  Lock,
+  Zap,
 } from 'lucide-react'
 import {
   tourismService,
@@ -36,10 +38,21 @@ import {
 
 export interface TourismEcoStayWorkspaceProps {
   currentUser?: any
+  onOpenQuickLogin?: () => void
 }
 
-export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = ({ currentUser }) => {
+export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = ({ currentUser, onOpenQuickLogin }) => {
   const [activeTab, setActiveTab] = useState<'accommodations' | 'guides' | 'heritage' | 'lookup' | 'bookings' | 'cms'>('accommodations')
+
+  // Role permissions
+  const userRoleNames: string[] = currentUser
+    ? (currentUser.roles || []).map((r: any) => (typeof r === 'string' ? r : r.name))
+    : []
+  const isSuperuser = Boolean(currentUser?.is_superuser)
+  const isHomestayOperator = isSuperuser || userRoleNames.some((r) => ['admin', 'village_officer', 'operator_homestay', 'homestay_operator'].includes(r))
+  const isSmartTourismAdmin = isSuperuser || userRoleNames.some((r) => ['admin', 'village_officer', 'smart_tourism_admin'].includes(r))
+  const canAccessCMS = isHomestayOperator || isSmartTourismAdmin
+  const canAccessBookings = isHomestayOperator || isSmartTourismAdmin
 
   // Accommodations State
   const [accommodations, setAccommodations] = useState<AccommodationItem[]>([])
@@ -127,9 +140,11 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
   useEffect(() => {
     loadAccommodations()
     loadHeritage()
-    loadBookings()
     loadGuides()
-  }, [islandFilter, typeFilter, filterRoOnly, filterSolarOnly, heritageCategory, guideIslandFilter])
+    if (canAccessBookings) {
+      loadBookings()
+    }
+  }, [islandFilter, typeFilter, filterRoOnly, filterSolarOnly, heritageCategory, guideIslandFilter, canAccessBookings])
 
   const loadGuides = async () => {
     setLoadingGuides(true)
@@ -144,6 +159,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
   }
 
   const loadBookings = async () => {
+    if (!canAccessBookings) return
     setLoadingBookings(true)
     try {
       const data = await tourismService.listBookings()
@@ -544,51 +560,77 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
           >
             <Search size={14} /> 🔍 Cek Kode Reservasi
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab('bookings')
-              loadBookings()
-            }}
-            style={{
-              padding: '0.5rem 0.95rem',
-              borderRadius: 'var(--radius-md)',
-              border: 'none',
-              fontSize: '0.8rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              transition: 'all 0.2s',
-              background: activeTab === 'bookings' ? 'linear-gradient(135deg, #06b6d4, #0284c7)' : 'transparent',
-              color: activeTab === 'bookings' ? '#ffffff' : '#94a3b8',
-            }}
-          >
-            <Calendar size={14} /> 📋 Reservasi Masuk ({bookings.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('cms')}
-            style={{
-              padding: '0.5rem 0.95rem',
-              borderRadius: 'var(--radius-md)',
-              border: 'none',
-              fontSize: '0.8rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              transition: 'all 0.2s',
-              background: activeTab === 'cms' ? 'linear-gradient(135deg, #ec4899, #8b5cf6)' : 'rgba(236, 72, 153, 0.12)',
-              color: activeTab === 'cms' ? '#ffffff' : '#f472b6',
-              borderLeft: '1px solid rgba(236, 72, 153, 0.3)',
-            }}
-            title="Kelola harga hotel, penginapan baru, dan tarif pemandu wisata"
-          >
-            <Settings size={14} /> ⚙️ CMS Pusat &amp; Tarif
-          </button>
+          {canAccessBookings && (
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('bookings')
+                loadBookings()
+              }}
+              style={{
+                padding: '0.5rem 0.95rem',
+                borderRadius: 'var(--radius-md)',
+                border: 'none',
+                fontSize: '0.8rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'all 0.2s',
+                background: activeTab === 'bookings' ? 'linear-gradient(135deg, #06b6d4, #0284c7)' : 'transparent',
+                color: activeTab === 'bookings' ? '#ffffff' : '#94a3b8',
+              }}
+            >
+              <Calendar size={14} /> 📋 Reservasi Masuk ({bookings.length})
+            </button>
+          )}
+          {canAccessCMS ? (
+            <button
+              type="button"
+              onClick={() => setActiveTab('cms')}
+              style={{
+                padding: '0.5rem 0.95rem',
+                borderRadius: 'var(--radius-md)',
+                border: 'none',
+                fontSize: '0.8rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'all 0.2s',
+                background: activeTab === 'cms' ? 'linear-gradient(135deg, #ec4899, #8b5cf6)' : 'rgba(236, 72, 153, 0.12)',
+                color: activeTab === 'cms' ? '#ffffff' : '#f472b6',
+                borderLeft: '1px solid rgba(236, 72, 153, 0.3)',
+              }}
+              title="Kelola harga hotel, penginapan baru, dan tarif pemandu wisata"
+            >
+              <Settings size={14} /> ⚙️ CMS Pusat &amp; Tarif
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setActiveTab('cms')}
+              style={{
+                padding: '0.5rem 0.95rem',
+                borderRadius: 'var(--radius-md)',
+                border: activeTab === 'cms' ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid rgba(255, 255, 255, 0.08)',
+                fontSize: '0.8rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'all 0.2s',
+                background: activeTab === 'cms' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(15, 23, 42, 0.6)',
+                color: activeTab === 'cms' ? '#f87171' : '#64748b',
+              }}
+              title="Panel CMS dan Kontrol Tarif hanya untuk Pengelola Homestay & Admin Pusat"
+            >
+              <Lock size={13} color={activeTab === 'cms' ? '#f87171' : '#64748b'} /> 🔒 CMS &amp; Tarif (Terkunci)
+            </button>
+          )}
         </div>
       </div>
 
@@ -957,6 +999,40 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
 
       {/* TAB 4: OPERATOR BOOKINGS MANAGEMENT */}
       {activeTab === 'bookings' && (
+        !canAccessBookings ? (
+          <div className="card animate-fade-in" style={{ padding: '3.5rem 1.5rem', textAlign: 'center', background: 'var(--surface-color)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-lg)' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+              <Lock size={32} color="#f87171" />
+            </div>
+            <span className="badge badge-amber" style={{ marginBottom: '0.5rem', display: 'inline-block' }}>
+              PRIVASI DATA TAMU &bull; AKSES TERBATAS
+            </span>
+            <h3 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#f8fafc', margin: '0.25rem 0 0.5rem' }}>
+              Buku Reservasi Tamu Dilindungi
+            </h3>
+            <p style={{ color: '#94a3b8', fontSize: '0.875rem', maxWidth: '560px', margin: '0 auto 1.5rem', lineHeight: 1.6 }}>
+              Nomor WhatsApp tamu, identitas pemesan, dan rincian transaksi menginap bersifat rahasia dan hanya dapat diakses oleh operator penginapan resmi atau petugas desa yang terautentikasi.
+            </p>
+            {onOpenQuickLogin && (
+              <button
+                type="button"
+                onClick={onOpenQuickLogin}
+                className="btn btn-primary"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.75rem 1.5rem',
+                  fontWeight: 800,
+                  background: 'linear-gradient(135deg, #10b981, #06b6d4)',
+                  boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)',
+                }}
+              >
+                <Zap size={16} /> Masuk Akun Operator Homestay
+              </button>
+            )}
+          </div>
+        ) : (
         <div className="animate-fade-in">
           {/* Barometer Metrics */}
           <div
@@ -1129,6 +1205,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
             </div>
           )}
         </div>
+        )
       )}
 
       {/* TAB: TOUR GUIDES CATALOG */}
@@ -1292,6 +1369,40 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
 
       {/* TAB: CMS PUSAT & PENGATURAN TARIF */}
       {activeTab === 'cms' && (
+        !canAccessCMS ? (
+          <div className="card animate-fade-in" style={{ padding: '3.5rem 1.5rem', textAlign: 'center', background: 'var(--surface-color)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-lg)' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+              <Lock size={32} color="#f87171" />
+            </div>
+            <span className="badge badge-amber" style={{ marginBottom: '0.5rem', display: 'inline-block' }}>
+              KONTROL MASTER DATA &bull; ROLE-BASED ACCESS CONTROL
+            </span>
+            <h3 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#f8fafc', margin: '0.25rem 0 0.5rem' }}>
+              Panel CMS &amp; Pengaturan Tarif Khusus Petugas
+            </h3>
+            <p style={{ color: '#94a3b8', fontSize: '0.875rem', maxWidth: '580px', margin: '0 auto 1.5rem', lineHeight: 1.6 }}>
+              Pengelolaan harga sewa kamar hotel/homestay, penambahan listing penginapan baru, validasi fasilitas Eco-Stay (RO Water &amp; PLTS), serta akreditasi pemandu wisata HPI Banda dilindungi oleh otorisasi backend dan hanya dapat diakses oleh Operator Homestay atau Smart Tourism Admin terdaftar.
+            </p>
+            {onOpenQuickLogin && (
+              <button
+                type="button"
+                onClick={onOpenQuickLogin}
+                className="btn btn-primary"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.75rem 1.5rem',
+                  fontWeight: 800,
+                  background: 'linear-gradient(135deg, #ec4899, #8b5cf6)',
+                  boxShadow: '0 4px 15px rgba(236, 72, 153, 0.4)',
+                }}
+              >
+                <Zap size={16} /> Masuk Akun Operator / Uji Peran Cepat
+              </button>
+            )}
+          </div>
+        ) : (
         <div>
           {/* CMS Notice */}
           {cmsNotice && (
@@ -1751,6 +1862,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
             </div>
           )}
         </div>
+        )
       )}
 
       {/* MODAL: FORM BOOKING & GENERATOR WHATSAPP */}
@@ -2019,7 +2131,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
       )}
 
       {/* MODAL: ADD / EDIT ACCOMMODATION */}
-      {showAccModal && (
+      {canAccessCMS && showAccModal && (
         <div
           style={{
             position: 'fixed',
@@ -2339,7 +2451,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
       )}
 
       {/* MODAL: ADD / EDIT TOUR GUIDE */}
-      {showGuideModal && (
+      {canAccessCMS && showGuideModal && (
         <div
           style={{
             position: 'fixed',

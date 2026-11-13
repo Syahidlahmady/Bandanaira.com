@@ -1,29 +1,9 @@
-import React, { useState } from 'react'
-import {
-  ShieldCheck,
-  MapPin,
-  Users,
-  Lock,
-  ArrowRight,
-  Sparkles,
-  AlertCircle,
-  QrCode,
-  Search,
-  CheckCircle2,
-  Eye,
-  EyeOff,
-  Compass,
-  Cpu,
-  Fingerprint,
-  ShoppingBag,
-  Scale,
-  Radio,
-  Home,
-  Layers,
-  Database,
-} from 'lucide-react'
+import React, { FormEvent, useState } from 'react'
+import { AlertCircle, CheckCircle2 } from 'lucide-react'
+import pelabuhanBandaNeiraDanGunungBandaApi from '../assets/image.webp'
+import { authService } from '../services/auth'
 
-interface LoginSectionProps {
+export interface LoginSectionProps {
   username: string
   setUsername: (u: string) => void
   password: string
@@ -39,942 +19,557 @@ interface LoginSectionProps {
   onOpenTourism?: () => void
   onOpenGIS?: () => void
   onOpenSurvei?: () => void
+  onOpenRegister?: () => void
+  onBackToHome?: () => void
   loading: boolean
   error: string | null
 }
 
-export const LoginSection: React.FC<LoginSectionProps> = ({
-  username,
+const trustItems = [
+  { label: 'Enkripsi AES-256', iconType: 'encryption' as const },
+  { label: 'Terhubung Blockchain Koperasi', iconType: 'blockchain' as const },
+  { label: 'Pemdes Banda', iconType: 'pemdes' as const },
+]
+
+/* ============================================================================
+   Inline SVG Helpers matching desainsaatini/login-desktop
+============================================================================ */
+
+const NutmegAndWavesSvg = () => (
+  <svg
+    className="relative w-[19.16px] h-[23.94px] shrink-0"
+    viewBox="0 0 20 25"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <path
+      d="M10 1.8C6.2 5.6 3.8 9.9 3.8 13.7C3.8 17.12 6.58 19.9 10 19.9C13.42 19.9 16.2 17.12 16.2 13.7C16.2 9.9 13.8 5.6 10 1.8Z"
+      stroke="#F4B75E"
+      strokeWidth="1.6"
+      fill="rgba(244, 183, 94, 0.18)"
+    />
+    <path
+      d="M10 7C8.4 9.4 7.6 11.5 7.6 13.4C7.6 14.98 8.67 16.25 10 16.25C11.33 16.25 12.4 14.98 12.4 13.4C12.4 11.5 11.6 9.4 10 7Z"
+      fill="#F4B75E"
+    />
+    <path
+      d="M1.8 22.4C4.2 21 6.8 21 10 22.4C13.2 23.8 15.8 23.8 18.2 22.4"
+      stroke="#F4B75E"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+  </svg>
+)
+
+const ShieldSecuritySvg = () => (
+  <svg
+    className="w-[18px] h-[18px] shrink-0 text-[#f4b75e]"
+    viewBox="0 0 20 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <path
+      d="M10 2.2L3.8 4.9V9.6C3.8 13.85 6.44 17.78 10 18.9C13.56 17.78 16.2 13.85 16.2 9.6V4.9L10 2.2Z"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M7.5 10.2L9.2 11.9L12.8 8.3"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+)
+
+const FieldIconSvg = ({ type }: { type: 'nik' | 'pin' }) => {
+  if (type === 'nik') {
+    return (
+      <svg
+        className="w-[19px] h-[19px] text-[#627085]"
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <rect
+          x="2.5"
+          y="4.5"
+          width="15"
+          height="11"
+          rx="2"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        />
+        <circle cx="6.8" cy="9.5" r="1.6" stroke="currentColor" strokeWidth="1.3" />
+        <path
+          d="M10.5 8.2H14.8M10.5 11.2H13.5"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+        />
+      </svg>
+    )
+  }
+  return (
+    <svg
+      className="w-[19px] h-[19px] text-[#627085]"
+      viewBox="0 0 20 20"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <rect
+        x="4.2"
+        y="9"
+        width="11.6"
+        height="8"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M6.8 9V6.5C6.8 4.73 8.23 3.3 10 3.3C11.77 3.3 13.2 4.73 13.2 6.5V9"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
+const EyeToggleSvg = ({ visible }: { visible: boolean }) => (
+  <svg
+    className="w-[18px] h-[18px] text-[#627085]"
+    viewBox="0 0 20 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <path
+      d="M2.2 10C3.8 6.4 6.6 4.5 10 4.5C13.4 4.5 16.2 6.4 17.8 10C16.2 13.6 13.4 15.5 10 15.5C6.6 15.5 3.8 13.6 2.2 10Z"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+    />
+    <circle cx="10" cy="10" r="2.4" stroke="currentColor" strokeWidth="1.5" />
+    {visible && (
+      <path
+        d="M3.5 16.5L16.5 3.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    )}
+  </svg>
+)
+
+const TrustBadgeIconSvg = ({
+  type,
+}: {
+  type: 'encryption' | 'blockchain' | 'pemdes'
+}) => {
+  if (type === 'encryption') {
+    return (
+      <svg
+        className="w-5 h-5 text-[#0f2c59]"
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <path
+          d="M10 2.5L4 5V9.5C4 13.5 6.55 17.2 10 18.3C13.45 17.2 16 13.5 16 9.5V5L10 2.5Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M7.6 10L9.3 11.7L12.6 8.4"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    )
+  }
+  if (type === 'blockchain') {
+    return (
+      <svg
+        className="w-5 h-5 text-[#0f2c59]"
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <polygon
+          points="10,2.5 16.5,6.2 16.5,13.8 10,17.5 3.5,13.8 3.5,6.2"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M3.5 6.2L10 10L16.5 6.2M10 10V17.5"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    )
+  }
+  return (
+    <svg
+      className="w-5 h-5 text-[#0f2c59]"
+      viewBox="0 0 20 20"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <path
+        d="M3 8L10 3.5L17 8H3Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M5 8V15M8.3 8V15M11.7 8V15M15 8V15M2.5 16.5H17.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
+/* ============================================================================
+   1. Left Panel: BandaServicesIntroSection (desainsaatini/login-desktop)
+============================================================================ */
+
+export const BandaServicesIntroSection: React.FC<{
+  onBackToHome?: () => void
+}> = ({ onBackToHome }) => {
+  return (
+    <section
+      aria-label="Layanan Kepulauan Banda"
+      className="flex flex-col w-full lg:w-[48%] xl:w-[720px] min-h-[520px] lg:min-h-[1024px] items-start justify-between pt-10 lg:pt-12 pb-8 lg:pb-[42px] px-7 sm:px-12 lg:px-14 relative self-stretch bg-[#0f2c59] overflow-hidden shrink-0"
+    >
+      <img
+        className="absolute w-full h-full top-0 left-0 object-cover"
+        alt="Pelabuhan Banda Neira dengan Gunung Banda Api"
+        src={pelabuhanBandaNeiraDanGunungBandaApi}
+      />
+      <div
+        aria-hidden="true"
+        className="absolute w-full h-full top-0 left-0 bg-[linear-gradient(0deg,rgba(15,44,89,0.44)_0%,rgba(15,44,89,0.13)_35%,rgba(15,44,89,0.8)_70%,rgba(15,44,89,0.98)_100%)]"
+      />
+
+      <header
+        onClick={onBackToHome}
+        className="inline-flex items-center gap-2.5 relative z-10 flex-[0_0_auto] cursor-pointer"
+      >
+        <NutmegAndWavesSvg />
+        <div className="relative w-fit font-normal text-white text-[25px] tracking-[-0.90px] leading-[normal] whitespace-nowrap">
+          bandanaira.com
+        </div>
+      </header>
+
+      <div className="flex flex-col items-start gap-6 py-12 lg:pt-[180px] lg:pb-0 px-0 relative z-10 self-stretch w-full flex-[0_0_auto]">
+        <div className="inline-flex items-center gap-2.5 relative flex-[0_0_auto]">
+          <div aria-hidden="true" className="relative w-7 h-px bg-amber-600" />
+          <p className="relative w-fit mt-[-1.00px] font-normal text-white text-[11px] tracking-[2.00px] leading-[normal] whitespace-nowrap">
+            KEPULAUAN BANDA · MALUKU
+          </p>
+        </div>
+        <h1 className="relative self-stretch font-medium text-white text-[34px] sm:text-[42px] xl:text-[47px] tracking-[-1.90px] leading-[1.14] xl:leading-[52.6px]">
+          Satu Pintu Layanan Kepulauan Banda
+        </h1>
+        <p className="relative self-stretch font-normal text-[#dbe5f0] text-base tracking-[0] leading-[27.2px]">
+          Akses mudah untuk warga memeriksa saldo koperasi &amp; kuota air,
+          kemudahan mitra mengelola homestay, serta layanan wisata cerdas Banda
+          Neira.
+        </p>
+        <p className="relative w-fit font-serif font-normal italic text-white text-[30px] sm:text-[34px] tracking-[0] leading-[normal]">
+          Bertumbuh bersama Banda.
+        </p>
+      </div>
+
+      <footer className="gap-5 flex flex-col items-start relative z-10 self-stretch w-full flex-[0_0_auto]">
+        <div
+          aria-hidden="true"
+          className="relative self-stretch w-full h-px bg-[#ffffff30]"
+        />
+        <div className="flex items-start gap-2.5 relative self-stretch w-full flex-[0_0_auto]">
+          <ShieldSecuritySvg />
+          <p className="relative flex-1 mt-[-1.00px] font-normal text-[#dbe5f0] text-xs tracking-[0] leading-[19.8px]">
+            Data kependudukan dilindungi standar keamanan enkripsi berlapis
+            AES-256 &amp; HMAC.
+          </p>
+        </div>
+      </footer>
+    </section>
+  )
+}
+
+/* ============================================================================
+   2. Right Panel: AccountLoginSection (Unified Login Without Role Selection)
+============================================================================ */
+
+export const AccountLoginSection: React.FC<LoginSectionProps> = ({
   setUsername,
-  password,
   setPassword,
   onLogin,
-  onVerifySampleBatch,
-  onPublicVerify,
-  onOpenMarketplace,
-  onOpenPlanner,
-  onOpenKoperasi,
-  onOpenTelemetry,
-  onOpenTourism,
-  onOpenGIS,
-  onOpenSurvei,
+  onQuickLogin,
+  onOpenRegister,
+  onBackToHome,
   loading,
   error,
 }) => {
-  const [showPassword, setShowPassword] = useState(false)
-  const [tokenInput, setTokenInput] = useState('')
-  const [selectedRoleHint, setSelectedRoleHint] = useState<string | null>(null)
+  const [identifier, setIdentifier] = useState('8171010101900001')
+  const [pin, setPin] = useState('1234')
+  const [showPin, setShowPin] = useState(false)
 
-  const demoAccounts = [
-    {
-      role: 'Petugas Kantor Desa',
-      icon: '🏛️',
-      u: 'petugas',
-      p: 'Petugas123!',
-      badge: 'Pemerintahan',
-      accentColor: '#f59e0b',
-      badgeClass: 'badge-amber',
-      desc: 'Verifikasi kependudukan, validasi lahan & terbitkan surat desa',
-    },
-    {
-      role: 'Pengelola Koperasi Hatta',
-      icon: '⚖️',
-      u: 'pengelola_koperasi',
-      p: 'Koperasi123!',
-      badge: 'Kasir & Bank Sampah',
-      accentColor: '#10b981',
-      badgeClass: 'badge-emerald',
-      desc: 'Timbangan komoditas pala, bank sampah botol, & kuota air RO',
-    },
-    {
-      role: 'Pengelola Eco-Stay & Wisata',
-      icon: '🏡',
-      u: 'operator_homestay',
-      p: 'Homestay123!',
-      badge: 'Akomodasi & Homestay',
-      accentColor: '#06b6d4',
-      badgeClass: 'badge-blue',
-      desc: 'Kelola kamar penginapan, fasilitas air RO, & booking WhatsApp',
-    },
-    {
-      role: 'Pemandu Smart Tourism',
-      icon: '🏖️',
-      u: 'admin_wisata',
-      p: 'Wisata123!',
-      badge: '177 Cagar Budaya',
-      accentColor: '#38bdf8',
-      badgeClass: 'badge-cyan',
-      desc: 'Audio narasi sejarah VOC, rute cerdas SAW, & peta wisata',
-    },
-    {
-      role: 'Surveyor Lapangan & IoT',
-      icon: '📋',
-      u: 'surveyor',
-      p: 'Surveyor123!',
-      badge: 'Survei & Telemetri',
-      accentColor: '#8b5cf6',
-      badgeClass: 'badge-purple',
-      desc: 'Form survei NoSQL, pipa ETL PostGIS, & stasiun sensor ESP32',
-    },
-    {
-      role: 'Ketua Kelompok Tani',
-      icon: '🌾',
-      u: 'ketua_kelompok',
-      p: 'Ketua123!',
-      badge: 'Poktan Lonthoir',
-      accentColor: '#c084fc',
-      badgeClass: 'badge-purple',
-      desc: 'Validasi petak kebun anggota & rekapitulasi panen rempah',
-    },
-    {
-      role: 'Petani Rempah Pala',
-      icon: '👨‍🌾',
-      u: 'petani',
-      p: 'Petani123!',
-      badge: 'Pala & Cengkeh',
-      accentColor: '#10b981',
-      badgeClass: 'badge-emerald',
-      desc: 'Catat hasil panen kebun & pantau geolokasi petak lahan',
-    },
-    {
-      role: 'Warga Masyarakat Desa',
-      icon: '👤',
-      u: 'warga',
-      p: 'Warga123!',
-      badge: 'Layanan Mandiri',
-      accentColor: '#38bdf8',
-      badgeClass: 'badge-blue',
-      desc: 'Cek kuota air minum RO, tabungan botol plastik, & permohonan surat',
-    },
-    {
-      role: 'Administrator Sistem',
-      icon: '👑',
-      u: 'admin',
-      p: 'Admin123!',
-      badge: 'Root Access',
-      accentColor: '#ec4899',
-      badgeClass: 'badge-red',
-      desc: 'Audit trail kriptografis OWASP, anchoring blockchain EVM & sistem',
-    },
-  ]
+  const detectedAccount = identifier.trim()
+    ? authService.findAccountByIdentifier(identifier)
+    : undefined
 
-  const handleSelectRole = (u: string, p: string, roleName: string) => {
-    setUsername(u)
-    setPassword(p)
-    setSelectedRoleHint(`Pass Digital ${roleName} aktif. Kredensial telah disuntikkan ke terminal login.`)
-  }
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const cleanId = identifier.trim()
+    const cleanPin = pin.trim() || '1234'
+    setUsername(cleanId)
+    setPassword(cleanPin)
 
-  const handleVerify = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!tokenInput.trim()) return
-    if (onPublicVerify) {
-      onPublicVerify(tokenInput.trim())
+    if (onQuickLogin) {
+      onQuickLogin(cleanId, cleanPin)
+    } else {
+      onLogin(event)
     }
   }
 
   return (
-    <div style={{ marginBottom: '2.5rem' }} className="animate-fade-in">
-      {/* 1. CYBER COMMAND BANNER (HERO) */}
-      <div
-        className="app-card"
-        style={{
-          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(6, 78, 59, 0.35) 60%, rgba(10, 15, 29, 0.95) 100%)',
-          border: '1px solid rgba(16, 185, 129, 0.35)',
-          boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.7), 0 0 25px rgba(16, 185, 129, 0.15)',
-          padding: '2.5rem 2rem',
-          borderRadius: 'var(--radius-xl)',
-          marginBottom: '1.75rem',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
+    <main className="flex flex-col flex-1 w-full lg:max-w-[720px] min-h-[1024px] items-start justify-between pt-9 pb-8 px-6 sm:px-12 lg:px-[100px] relative bg-white">
+      <button
+        type="button"
+        onClick={onBackToHome}
+        className="inline-flex h-11 items-center relative font-medium text-[#0f2c59] text-[13px] tracking-[0] leading-[normal] bg-transparent border-0 p-0 hover:opacity-80 cursor-pointer"
+        aria-label="Kembali ke Beranda"
       >
-        {/* Ambient Top Glow Sheen */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: '10%',
-            right: '10%',
-            height: '2px',
-            background: 'linear-gradient(90deg, transparent, #10b981, #06b6d4, transparent)',
-          }}
-        />
+        <span aria-hidden="true" className="mr-1">
+          ←
+        </span>
+        <span>Kembali ke Beranda</span>
+      </button>
 
-        <div style={{ maxWidth: '880px', position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
-            <span
-              style={{
-                background: 'rgba(16, 185, 129, 0.15)',
-                color: '#34d399',
-                padding: '0.35rem 0.85rem',
-                borderRadius: 'var(--radius-full)',
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.45rem',
-                border: '1px solid rgba(16, 185, 129, 0.4)',
-                letterSpacing: '0.04em',
-              }}
-            >
-              <Sparkles size={13} /> SISTEM RESMI DESA BANDA NEIRA
-            </span>
-            <span
-              style={{
-                background: 'rgba(6, 182, 212, 0.15)',
-                color: '#38bdf8',
-                padding: '0.35rem 0.85rem',
-                borderRadius: 'var(--radius-full)',
-                fontSize: '0.75rem',
-                fontWeight: 700,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.45rem',
-                border: '1px solid rgba(6, 182, 212, 0.4)',
-              }}
-            >
-              <Cpu size={13} /> BCRYPT &amp; JWT CRYPTO VAULT
-            </span>
-            <span
-              style={{
-                background: 'rgba(245, 158, 11, 0.15)',
-                color: '#fbbf24',
-                padding: '0.35rem 0.85rem',
-                borderRadius: 'var(--radius-full)',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.45rem',
-                border: '1px solid rgba(245, 158, 11, 0.35)',
-              }}
-            >
-              <MapPin size={13} /> 4°31′S 129°54′E &bull; BANDA BESAR
-            </span>
-          </div>
-
-          <h1
-            style={{
-              fontSize: '2.35rem',
-              fontWeight: 900,
-              lineHeight: 1.2,
-              marginBottom: '0.85rem',
-              letterSpacing: '-0.03em',
-              background: 'linear-gradient(135deg, #ffffff 40%, #a7f3d0 80%, #38bdf8 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            Ekosistem Digital Terpadu Banda Neira
-          </h1>
-
-          <p
-            style={{
-              fontSize: '1rem',
-              color: '#94a3b8',
-              lineHeight: 1.65,
-              marginBottom: '1.75rem',
-              maxWidth: '820px',
-            }}
-          >
-            Infrastruktur digital berdaulat untuk tata kelola kependudukan kepulauan, pendataan mata pencaharian bahari-agraris (petani pala, nelayan tradisional, pengolah fuli), pemetaan geospasial petak kebun rempah, serta verifikasi mutu &amp; keaslian Indikasi Geografis Pala Banda berbasis blockchain.
+      <div className="flex flex-col items-start gap-7 px-0 py-[30px] relative self-stretch w-full flex-[0_0_auto]">
+        <header className="flex flex-col items-start gap-2.5 relative self-stretch w-full flex-[0_0_auto]">
+          <p className="relative w-fit mt-[-1.00px] font-semibold text-amber-600 text-[10px] tracking-[1.70px] leading-[normal] whitespace-nowrap">
+            PORTAL WARGA &amp; EKOSISTEM BANDA
           </p>
+          <h1 className="relative self-stretch font-semibold text-[#0f2c59] text-[30px] sm:text-[34px] tracking-[-1.10px] leading-[40.1px]">
+            Selamat Datang Kembali
+          </h1>
+          <p className="relative self-stretch font-normal text-[#627085] text-sm tracking-[0] leading-[22.4px]">
+            Masukkan NIK atau ID akun beserta PIN pengaman Anda. Peran layanan
+            otomatis menyesuaikan akun yang telah Anda daftarkan.
+          </p>
+        </header>
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '1rem',
-            }}
-          >
-            <div
-              style={{
-                background: 'rgba(15, 23, 42, 0.65)',
-                backdropFilter: 'blur(12px)',
-                padding: '1rem 1.15rem',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderLeft: '3px solid #10b981',
-              }}
-            >
-              <b style={{ display: 'block', color: '#f8fafc', fontSize: '0.875rem', marginBottom: '0.25rem' }}>
-                👥 Sensus Profesi Warga Desa
-              </b>
-              <span style={{ color: '#94a3b8', fontSize: '0.8rem', lineHeight: 1.4, display: 'block' }}>
-                Petani pala, nelayan tangkap, pengolah fuli merah &amp; pedagang rempah pesisir.
-              </span>
-            </div>
-            <div
-              style={{
-                background: 'rgba(15, 23, 42, 0.65)',
-                backdropFilter: 'blur(12px)',
-                padding: '1rem 1.15rem',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderLeft: '3px solid #06b6d4',
-              }}
-            >
-              <b style={{ display: 'block', color: '#f8fafc', fontSize: '0.875rem', marginBottom: '0.25rem' }}>
-                🌾 Log Mutu &amp; Panen Offline
-              </b>
-              <span style={{ color: '#94a3b8', fontSize: '0.8rem', lineHeight: 1.4, display: 'block' }}>
-                Tetap dapat mencatat di tengah kebun tanpa internet via PWA IndexedDB cache.
-              </span>
-            </div>
-            <div
-              style={{
-                background: 'rgba(15, 23, 42, 0.65)',
-                backdropFilter: 'blur(12px)',
-                padding: '1rem 1.15rem',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                borderLeft: '3px solid #f59e0b',
-              }}
-            >
-              <b style={{ display: 'block', color: '#f8fafc', fontSize: '0.875rem', marginBottom: '0.25rem' }}>
-                ⛓️ Paspor Mutu Rempah EVM
-              </b>
-              <span style={{ color: '#94a3b8', fontSize: '0.8rem', lineHeight: 1.4, display: 'block' }}>
-                Kriptografi hash permanen menjamin keaslian Pala Banda ke seluruh dunia.
-              </span>
-            </div>
+        {error && (
+          <div className="w-full flex items-center gap-2.5 rounded-lg border border-rose-300 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
+            <AlertCircle size={17} className="shrink-0" />
+            <span>{error}</span>
           </div>
-        </div>
-      </div>
+        )}
 
-      {/* 2. DUAL BENTO TERMINAL: AUTHENTICATION (LEFT) & HOLOGRAPHIC ROLE PASSES (RIGHT) */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-          gap: '1.75rem',
-          marginBottom: '2rem',
-        }}
-      >
-        {/* SECURE TERMINAL LOGIN CARD */}
-        <div
-          className="app-card"
-          style={{
-            padding: '2.25rem 2rem',
-            border: '1px solid rgba(6, 182, 212, 0.3)',
-            boxShadow: '0 12px 30px -5px rgba(0, 0, 0, 0.6), 0 0 20px rgba(6, 182, 212, 0.1)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            background: 'var(--bg-surface)',
-          }}
+        <form
+          className="flex flex-col items-start gap-[22px] relative self-stretch w-full flex-[0_0_auto]"
+          onSubmit={handleSubmit}
         >
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.65rem' }}>
-              <div
-                style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '12px',
-                  background: 'rgba(6, 182, 212, 0.15)',
-                  color: '#38bdf8',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: '1px solid rgba(6, 182, 212, 0.35)',
-                  boxShadow: '0 0 12px rgba(6, 182, 212, 0.25)',
-                }}
-              >
-                <Fingerprint size={22} />
-              </div>
-              <div>
-                <span style={{ fontSize: '0.72rem', color: '#38bdf8', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                  Akses Terproteksi
-                </span>
-                <h3 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#f8fafc', margin: 0 }}>
-                  Terminal Masuk Akun
-                </h3>
-              </div>
+          <div className="flex flex-col items-start gap-2 relative self-stretch w-full flex-[0_0_auto]">
+            <label
+              htmlFor="nik"
+              className="relative self-stretch mt-[-1.00px] font-semibold text-[#24364f] text-[13px] tracking-[0] leading-[19.5px]"
+            >
+              16 Digit Nomor Induk Kependudukan (NIK) / ID Akun
+            </label>
+            <div className="flex h-[54px] items-center gap-3 px-4 py-0 relative self-stretch w-full bg-slate-50 rounded-lg overflow-hidden border border-solid border-slate-200 focus-within:border-[#0f2c59] focus-within:ring-1 focus-within:ring-[#0f2c59] focus-within:bg-white transition-colors">
+              <FieldIconSvg type="nik" />
+              <input
+                id="nik"
+                name="nik"
+                type="text"
+                autoComplete="username"
+                value={identifier}
+                onChange={(event) => setIdentifier(event.target.value)}
+                placeholder="XXXX-XXXX-XXXX-XXXX"
+                aria-describedby="nik-help"
+                required
+                className="relative flex-1 min-w-0 bg-transparent border-0 outline-none font-normal text-[#0f2c59] text-lg tracking-[1.10px] leading-[normal] placeholder:text-[#627085]"
+              />
             </div>
-
-            <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '1.5rem', lineHeight: 1.55 }}>
-              Otentikasi operator desa, ketua kelompok tani, petani rempah, atau warga untuk mengelola layanan mandiri &amp; perkebunan.
-            </p>
-
-            {selectedRoleHint && (
-              <div
-                className="animate-fade-in"
-                style={{
-                  marginBottom: '1.25rem',
-                  padding: '0.85rem 1rem',
-                  background: 'rgba(16, 185, 129, 0.12)',
-                  border: '1px solid rgba(16, 185, 129, 0.35)',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: '0.825rem',
-                  color: '#a7f3d0',
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.6rem',
-                  boxShadow: '0 0 15px rgba(16, 185, 129, 0.1)',
-                }}
+            {detectedAccount ? (
+              <p
+                id="nik-help"
+                className="inline-flex items-center gap-1.5 font-medium text-emerald-700 text-xs tracking-[0] leading-[19.2px]"
               >
-                <Sparkles size={16} color="#34d399" style={{ flexShrink: 0 }} />
-                <span>{selectedRoleHint}</span>
-              </div>
+                <CheckCircle2 size={14} className="shrink-0" />
+                <span>
+                  Akun dikenali: <strong>{detectedAccount.name}</strong> · Peran
+                  terdaftar: <strong>{detectedAccount.roleTitle}</strong>
+                </span>
+              </p>
+            ) : (
+              <p
+                id="nik-help"
+                className="font-normal text-[#627085] text-xs tracking-[0] leading-[19.2px] relative self-stretch"
+              >
+                Cukup masukkan 16 digit NIK yang tertera di KTP atau ID akun
+                yang Anda daftarkan.
+              </p>
             )}
+          </div>
 
-            <form onSubmit={onLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div>
-                <label className="form-label" style={{ color: '#cbd5e1', fontWeight: 600, fontSize: '0.825rem' }}>
-                  ID PENGGUNA / USERNAME
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <Users
-                    size={17}
-                    style={{
-                      position: 'absolute',
-                      left: '14px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: '#64748b',
-                    }}
-                  />
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Contoh: petugas, petani, warga..."
-                    required
-                    className="form-control"
-                    style={{ paddingLeft: '2.65rem', fontSize: '0.925rem' }}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="form-label" style={{ color: '#cbd5e1', fontWeight: 600, fontSize: '0.825rem' }}>
-                  KATA SANDI / SECURITY KEY
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <Lock
-                    size={17}
-                    style={{
-                      position: 'absolute',
-                      left: '14px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: '#64748b',
-                    }}
-                  />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Masukkan kata sandi akun..."
-                    required
-                    className="form-control"
-                    style={{ paddingLeft: '2.65rem', paddingRight: '2.85rem', fontSize: '0.925rem' }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
-                      border: 'none',
-                      color: '#94a3b8',
-                      cursor: 'pointer',
-                      padding: '0.25rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                    title={showPassword ? 'Sembunyikan sandi' : 'Lihat sandi'}
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </div>
-
-              {error && (
-                <div
-                  className="animate-fade-in"
-                  style={{
-                    background: 'rgba(239, 68, 68, 0.15)',
-                    color: '#fca5a5',
-                    padding: '0.85rem 1rem',
-                    borderRadius: 'var(--radius-md)',
-                    fontSize: '0.825rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.6rem',
-                    border: '1px solid rgba(239, 68, 68, 0.4)',
-                    fontWeight: 600,
-                  }}
-                >
-                  <AlertCircle size={17} style={{ flexShrink: 0 }} /> {error}
-                </div>
-              )}
-
+          <div className="flex flex-col items-start gap-2 relative self-stretch w-full flex-[0_0_auto]">
+            <label
+              htmlFor="pin"
+              className="relative self-stretch mt-[-1.00px] font-semibold text-[#24364f] text-[13px] tracking-[0] leading-[19.5px]"
+            >
+              PIN Pengaman (4 Digit)
+            </label>
+            <div className="flex h-[54px] items-center gap-3 px-4 py-0 relative self-stretch w-full bg-slate-50 rounded-lg overflow-hidden border border-solid border-slate-200 focus-within:border-[#0f2c59] focus-within:ring-1 focus-within:ring-[#0f2c59] focus-within:bg-white transition-colors">
+              <FieldIconSvg type="pin" />
+              <input
+                id="pin"
+                name="pin"
+                type={showPin ? 'text' : 'password'}
+                autoComplete="current-password"
+                value={pin}
+                onChange={(event) => setPin(event.target.value)}
+                placeholder="• • • •"
+                required
+                className="relative flex-1 min-w-0 bg-transparent border-0 outline-none font-normal text-[#0f2c59] text-lg tracking-[1.10px] leading-[normal] placeholder:text-[#627085]"
+              />
               <button
-                type="submit"
-                disabled={loading}
-                className="btn btn-primary"
-                style={{
-                  width: '100%',
-                  padding: '0.85rem',
-                  fontSize: '0.975rem',
-                  fontWeight: 800,
-                  marginTop: '0.5rem',
-                  letterSpacing: '0.02em',
-                }}
+                type="button"
+                aria-label={showPin ? 'Sembunyikan PIN' : 'Tampilkan PIN'}
+                aria-pressed={showPin}
+                onClick={() => setShowPin((visible) => !visible)}
+                className="relative w-[28px] h-[28px] flex items-center justify-center shrink-0 bg-transparent border-0 p-0 hover:opacity-80 cursor-pointer"
               >
-                {loading ? 'Memverifikasi Otentikasi...' : 'Masuk Sekarang (Login Aman)'}{' '}
-                <ArrowRight size={18} />
+                <EyeToggleSvg visible={showPin} />
               </button>
-            </form>
-          </div>
-
-          <div
-            style={{
-              marginTop: '1.75rem',
-              paddingTop: '1.15rem',
-              borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-              fontSize: '0.78rem',
-              color: '#64748b',
-              lineHeight: 1.5,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-            }}
-          >
-            <ShieldCheck size={16} color="#10b981" style={{ flexShrink: 0 }} />
-            <span>Dilindungi enkripsi Bcrypt Salt rounds &amp; token JWT dengan kedaluwarsa otomatis.</span>
-          </div>
-        </div>
-
-        {/* HOLOGRAPHIC PERSONA PASSES (ROLE SELECTOR) */}
-        <div
-          className="app-card"
-          style={{
-            padding: '2.25rem 2rem',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--border-color)',
-          }}
-        >
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.65rem' }}>
-              <div
-                style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '12px',
-                  background: 'rgba(245, 158, 11, 0.15)',
-                  color: '#fbbf24',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: '1px solid rgba(245, 158, 11, 0.35)',
-                  boxShadow: '0 0 12px rgba(245, 158, 11, 0.25)',
-                }}
-              >
-                <Compass size={22} />
-              </div>
-              <div>
-                <span style={{ fontSize: '0.72rem', color: '#fbbf24', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                  Quick Simulator
-                </span>
-                <h3 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#f8fafc', margin: 0 }}>
-                  Pass Persona Pengguna
-                </h3>
-              </div>
             </div>
+          </div>
 
-            <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '1.25rem', lineHeight: 1.55 }}>
-              Klik salah satu pass digital di bawah untuk mengisikan kredensial otomatis sesuai hak akses (RBAC):
-            </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {demoAccounts.map((acc) => {
-                const isSelected = username === acc.u
-                return (
-                  <button
-                    key={acc.u}
-                    type="button"
-                    onClick={() => handleSelectRole(acc.u, acc.p, acc.role)}
-                    className="app-card-interactive"
-                    style={{
-                      background: isSelected
-                        ? `linear-gradient(135deg, rgba(15, 23, 42, 0.95), ${acc.accentColor}25)`
-                        : 'rgba(15, 23, 42, 0.65)',
-                      borderColor: isSelected ? acc.accentColor : 'rgba(255, 255, 255, 0.08)',
-                      borderWidth: '1px',
-                      borderStyle: 'solid',
-                      borderLeft: `4px solid ${acc.accentColor}`,
-                      textAlign: 'left',
-                      padding: '0.85rem 1.15rem',
-                      borderRadius: 'var(--radius-md)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      width: '100%',
-                      cursor: 'pointer',
-                      transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-                      boxShadow: isSelected
-                        ? `0 6px 20px -2px ${acc.accentColor}40, 0 0 15px ${acc.accentColor}25`
-                        : 'var(--shadow-xs)',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                      <span style={{ fontSize: '1.5rem', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>
-                        {acc.icon}
-                      </span>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <b style={{ fontSize: '0.9rem', color: isSelected ? '#ffffff' : '#f1f5f9' }}>
-                            {acc.role}
-                          </b>
-                          {isSelected && <CheckCircle2 size={15} color={acc.accentColor} />}
-                        </div>
-                        <span style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginTop: '0.15rem' }}>
-                          {acc.desc}
-                        </span>
-                      </div>
-                    </div>
-                    <span
-                      style={{
-                        fontSize: '0.7rem',
-                        fontWeight: 700,
-                        padding: '0.2rem 0.55rem',
-                        borderRadius: '6px',
-                        background: `${acc.accentColor}20`,
-                        color: acc.accentColor,
-                        border: `1px solid ${acc.accentColor}40`,
-                        whiteSpace: 'nowrap',
-                        fontFamily: 'var(--font-mono)',
-                      }}
-                    >
-                      @{acc.u}
-                    </span>
-                  </button>
+          <div className="flex h-11 items-center justify-end w-full relative self-stretch">
+            <button
+              type="button"
+              onClick={() =>
+                alert(
+                  'Untuk bantuan reset PIN akun warga desa, silakan hubungi operator kantor desa Banda Neira.'
                 )
-              })}
-            </div>
-          </div>
-
-          <div
-            style={{
-              marginTop: '1.75rem',
-              paddingTop: '1.15rem',
-              borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-              fontSize: '0.78rem',
-              color: '#64748b',
-              lineHeight: 1.5,
-            }}
-          >
-            💡 Setiap peran menerapkan otorisasi ketat (Role-Based Access Control) untuk melindungi kerahasiaan NIK dan dokumen warga desa.
-          </div>
-        </div>
-      </div>
-
-      {/* 3. PUBLIC SPICE AUTHENTICITY RADAR (NO LOGIN REQUIRED) */}
-      <div
-        className="app-card"
-        style={{
-          background: 'linear-gradient(135deg, rgba(6, 78, 59, 0.3) 0%, rgba(15, 23, 42, 0.85) 60%, rgba(8, 12, 20, 0.95) 100%)',
-          border: '1px solid rgba(16, 185, 129, 0.4)',
-          boxShadow: '0 12px 35px -5px rgba(0, 0, 0, 0.7), 0 0 25px rgba(16, 185, 129, 0.15)',
-          padding: '2rem 2.25rem',
-          borderRadius: 'var(--radius-xl)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem', flexWrap: 'wrap' }}>
-          <div
-            style={{
-              width: '56px',
-              height: '56px',
-              borderRadius: '16px',
-              background: 'rgba(16, 185, 129, 0.18)',
-              color: '#34d399',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '1px solid rgba(16, 185, 129, 0.45)',
-              boxShadow: '0 0 20px rgba(16, 185, 129, 0.3)',
-              flexShrink: 0,
-            }}
-          >
-            <ShieldCheck size={30} />
-          </div>
-
-          <div style={{ flex: 1, minWidth: '280px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-              <span className="badge badge-emerald">
-                <CheckCircle2 size={12} /> RADAR VERIFIKASI REMPAH PUBLIK
-              </span>
-              <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
-                &bull; Akses Terbuka Konsumen Global &amp; Wisatawan
-              </span>
-            </div>
-
-            <h3 style={{ fontSize: '1.45rem', fontWeight: 900, color: '#f8fafc', margin: '0 0 0.45rem' }}>
-              Pemeriksaan Keaslian Indikasi Geografis Pala Asli Banda
-            </h3>
-
-            <p style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '1.35rem', lineHeight: 1.6 }}>
-              Wisatawan, eksportir, dan konsumen rempah dapat menelusuri riwayat pohon kebun, sertifikasi mutu panen, dan bukti hash smart contract tanpa perlu akun login desa.
-            </p>
-
-            <form
-              onSubmit={handleVerify}
-              style={{
-                display: 'flex',
-                gap: '0.75rem',
-                flexWrap: 'wrap',
-                marginBottom: '1.25rem',
-              }}
+              }
+              className="relative w-fit font-medium text-[#0f2c59] text-xs tracking-[0] leading-[normal] hover:underline bg-transparent border-0 p-0 cursor-pointer"
             >
-              <div style={{ position: 'relative', flex: 1, minWidth: '260px' }}>
-                <Search
-                  size={17}
-                  style={{
-                    position: 'absolute',
-                    left: '14px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: '#64748b',
-                  }}
-                />
-                <input
-                  type="text"
-                  value={tokenInput}
-                  onChange={(e) => setTokenInput(e.target.value)}
-                  placeholder="Masukkan nomor kode batch atau token QR kemasan..."
-                  className="form-control"
-                  style={{ paddingLeft: '2.65rem', fontSize: '0.925rem' }}
-                />
-              </div>
-              <button
-                type="submit"
-                className="btn btn-success"
-                style={{
-                  fontWeight: 800,
-                  padding: '0.7rem 1.6rem',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  letterSpacing: '0.02em',
-                }}
+              Lupa PIN? Hubungi pemdes
+            </button>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex h-[54px] items-center justify-center gap-3 px-5 py-0 relative self-stretch w-full bg-amber-600 rounded-lg overflow-hidden hover:bg-amber-700 active:bg-amber-800 transition-colors cursor-pointer disabled:opacity-60"
+          >
+            <span className="w-fit font-bold text-white text-[17px] sm:text-[19px] leading-[normal] relative tracking-[0]">
+              {loading ? 'Memverifikasi...' : 'Masuk ke Portal Warga'}
+            </span>
+            <svg
+              className="w-[18px] h-[18px] text-white"
+              viewBox="0 0 18 18"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path
+                d="M3.75 9H14.25M14.25 9L9.75 4.5M14.25 9L9.75 13.5"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </form>
+
+        <p className="relative self-stretch h-11 flex items-center justify-center gap-1.5 font-normal text-[13px] text-center tracking-[0] leading-[22.1px]">
+          <span className="text-[#627085]">Belum punya akun? </span>
+          <button
+            type="button"
+            onClick={onOpenRegister}
+            className="font-semibold text-[#0f2c59] hover:underline bg-transparent border-0 p-0 cursor-pointer"
+          >
+            Daftar sekarang
+          </button>
+        </p>
+
+        <div className="gap-4 pt-[22px] pb-0 px-0 border-t border-solid border-slate-200 flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
+          <div className="items-start gap-4 self-stretch w-full flex-[0_0_auto] flex relative">
+            {trustItems.map((item) => (
+              <div
+                key={item.label}
+                className="flex-col items-center gap-2 flex-1 grow flex relative"
               >
-                <QrCode size={17} /> Cek Keaslian Sekarang
-              </button>
-            </form>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap', fontSize: '0.825rem', color: '#94a3b8' }}>
-              <span>💡 Uji coba sertifikat resmi Banda:</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setTokenInput('BN_VERIFY_PALA_SUPER_2026_LONTHOIR')
-                  if (onVerifySampleBatch) {
-                    onVerifySampleBatch('BN_VERIFY_PALA_SUPER_2026_LONTHOIR')
-                  }
-                }}
-                className="badge badge-emerald"
-                style={{
-                  cursor: 'pointer',
-                  padding: '0.4rem 0.85rem',
-                  fontSize: '0.78rem',
-                  background: 'rgba(16, 185, 129, 0.15)',
-                  border: '1px solid rgba(16, 185, 129, 0.4)',
-                }}
-              >
-                🌿 Pala Super Lonthoir (Uji Cek)
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setTokenInput('BN_VERIFY_FULI_MERAH_2026_BELGICA')
-                  if (onVerifySampleBatch) {
-                    onVerifySampleBatch('BN_VERIFY_FULI_MERAH_2026_BELGICA')
-                  }
-                }}
-                className="badge badge-amber"
-                style={{
-                  cursor: 'pointer',
-                  padding: '0.4rem 0.85rem',
-                  fontSize: '0.78rem',
-                  background: 'rgba(245, 158, 11, 0.15)',
-                  border: '1px solid rgba(245, 158, 11, 0.4)',
-                }}
-              >
-                🌺 Fuli Merah Belgica (Uji Cek)
-              </button>
-            </div>
-
-            {onOpenMarketplace && (
-              <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
-                    <ShoppingBag size={18} />
-                  </div>
-                  <div>
-                    <div style={{ color: '#f8fafc', fontSize: '0.875rem', fontWeight: 700 }}>Marketplace Produk Banda Terverifikasi On-Chain</div>
-                    <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>Pala, fuli merah, sirup buah pala, ikan asar cakalang, dan tuna sirip kuning dengan QR batch</div>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <button
-                    type="button"
-                    onClick={onOpenMarketplace}
-                    className="btn btn-secondary"
-                    style={{
-                      fontSize: '0.825rem',
-                      padding: '0.55rem 1.15rem',
-                      background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2))',
-                      border: '1px solid rgba(16, 185, 129, 0.4)',
-                      color: '#a7f3d0',
-                      fontWeight: 700,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                    }}
-                  >
-                    <ShoppingBag size={15} /> Buka Katalog Marketplace
-                  </button>
-
-                  {onOpenPlanner && (
-                    <button
-                      type="button"
-                      onClick={onOpenPlanner}
-                      className="btn btn-secondary"
-                      style={{
-                        fontSize: '0.825rem',
-                        padding: '0.55rem 1.15rem',
-                        background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(168, 85, 247, 0.2))',
-                        border: '1px solid rgba(56, 189, 248, 0.4)',
-                        color: '#7dd3fc',
-                        fontWeight: 700,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                      }}
-                    >
-                      <Compass size={15} /> 🧭 Perencana Wisata &amp; Krisis (SAW)
-                    </button>
-                  )}
-
-                  {onOpenKoperasi && (
-                    <button
-                      type="button"
-                      onClick={onOpenKoperasi}
-                      className="btn btn-secondary"
-                      style={{
-                        fontSize: '0.825rem',
-                        padding: '0.55rem 1.15rem',
-                        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2))',
-                        border: '1px solid rgba(16, 185, 129, 0.4)',
-                        color: '#a7f3d0',
-                        fontWeight: 700,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                      }}
-                    >
-                      <Scale size={15} /> ⚖️ Kasir Koperasi &amp; Bank Sampah
-                    </button>
-                  )}
-
-                  {onOpenTelemetry && (
-                    <button
-                      type="button"
-                      onClick={onOpenTelemetry}
-                      className="btn btn-secondary"
-                      style={{
-                        fontSize: '0.825rem',
-                        padding: '0.55rem 1.15rem',
-                        background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.2))',
-                        border: '1px solid rgba(6, 182, 212, 0.4)',
-                        color: '#67e8f9',
-                        fontWeight: 700,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                      }}
-                    >
-                      <Radio size={15} /> 📡 Telemetri IoT &amp; Resiliensi
-                    </button>
-                  )}
-
-                  {onOpenTourism && (
-                    <button
-                      type="button"
-                      onClick={onOpenTourism}
-                      className="btn btn-secondary"
-                      style={{
-                        fontSize: '0.825rem',
-                        padding: '0.55rem 1.15rem',
-                        background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2))',
-                        border: '1px solid rgba(245, 158, 11, 0.4)',
-                        color: '#fde68a',
-                        fontWeight: 700,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                      }}
-                    >
-                      <Home size={15} /> 🏡 Eco-Stay &amp; Budaya
-                    </button>
-                  )}
-
-                  {onOpenGIS && (
-                    <button
-                      type="button"
-                      onClick={onOpenGIS}
-                      className="btn btn-secondary"
-                      style={{
-                        fontSize: '0.825rem',
-                        padding: '0.55rem 1.15rem',
-                        background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(16, 185, 129, 0.2))',
-                        border: '1px solid rgba(6, 182, 212, 0.4)',
-                        color: '#67e8f9',
-                        fontWeight: 700,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                      }}
-                    >
-                      <Layers size={15} /> 🗺️ Peta 7-Layer
-                    </button>
-                  )}
-
-                  {onOpenSurvei && (
-                    <button
-                      type="button"
-                      onClick={onOpenSurvei}
-                      className="btn btn-secondary"
-                      style={{
-                        fontSize: '0.825rem',
-                        padding: '0.55rem 1.15rem',
-                        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2))',
-                        border: '1px solid rgba(16, 185, 129, 0.4)',
-                        color: '#6ee7b7',
-                        fontWeight: 700,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                      }}
-                    >
-                      <Database size={15} /> 📋 Survei &amp; ETL Hybrid
-                    </button>
-                  )}
+                <TrustBadgeIconSvg type={item.iconType} />
+                <div className="self-stretch font-normal text-[#627085] text-[11px] text-center leading-[16.5px] relative tracking-[0]">
+                  {item.label}
                 </div>
               </div>
-            )}
+            ))}
           </div>
         </div>
       </div>
+
+      <footer className="flex flex-col items-center gap-3 relative self-stretch w-full flex-[0_0_auto]">
+        <nav
+          aria-label="Tautan informasi"
+          className="inline-flex h-11 items-center gap-5 relative"
+        >
+          {['Bantuan', 'Privasi', 'Ketentuan'].map((item) => (
+            <button
+              key={item}
+              type="button"
+              className="relative w-fit font-normal text-[#627085] hover:text-[#0f2c59] text-[11px] tracking-[0] leading-[normal] whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer"
+            >
+              {item}
+            </button>
+          ))}
+        </nav>
+        <p className="relative w-fit font-normal text-[#627085] text-[10px] tracking-[0] leading-[normal] whitespace-nowrap">
+          © 2026 bandanaira.com · Kepulauan Banda
+        </p>
+      </footer>
+    </main>
+  )
+}
+
+/* ============================================================================
+   3. Main Container: LoginDesktop Split-Screen Component
+============================================================================ */
+
+export const LoginSection: React.FC<LoginSectionProps> = (props) => {
+  return (
+    <div className="flex min-h-screen w-full flex-col bg-white lg:flex-row">
+      <BandaServicesIntroSection onBackToHome={props.onBackToHome} />
+      <AccountLoginSection {...props} />
     </div>
   )
 }
+
+export default LoginSection

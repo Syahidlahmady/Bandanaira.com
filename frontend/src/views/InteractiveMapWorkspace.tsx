@@ -26,6 +26,7 @@ import {
   GeoJSONFeature,
   GISSummaryResponse,
 } from '../services/gis'
+import { JelajahPetaDesktopView } from './maps/JelajahPetaDesktopView'
 
 // Helper icons mapping
 const LAYER_ICONS: Record<string, React.ReactNode> = {
@@ -67,6 +68,7 @@ export const InteractiveMapWorkspace: React.FC = () => {
   const [features, setFeatures] = useState<GeoJSONFeature[]>([])
   const [gisMeta, setGisMeta] = useState<GISSummaryResponse | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
+  const [mapViewMode, setMapViewMode] = useState<'leaflet' | 'figma'>('figma')
   const [selectedFeature, setSelectedFeature] = useState<GeoJSONFeature | null>(null)
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [islandFilter, setIslandFilter] = useState<string>('')
@@ -419,7 +421,44 @@ export const InteractiveMapWorkspace: React.FC = () => {
         </div>
 
         {/* Global Action Buttons */}
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'inline-flex', background: 'rgba(15, 23, 42, 0.8)', padding: '0.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+            <button
+              type="button"
+              onClick={() => setMapViewMode('figma')}
+              style={{
+                padding: '0.45rem 0.85rem',
+                borderRadius: 'var(--radius-sm)',
+                border: 'none',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                background: mapViewMode === 'figma' ? '#d97706' : 'transparent',
+                color: '#ffffff',
+                transition: 'all 0.2s',
+              }}
+            >
+              🗺️ Peta Vektor Figma
+            </button>
+            <button
+              type="button"
+              onClick={() => setMapViewMode('leaflet')}
+              style={{
+                padding: '0.45rem 0.85rem',
+                borderRadius: 'var(--radius-sm)',
+                border: 'none',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                background: mapViewMode === 'leaflet' ? '#0284c7' : 'transparent',
+                color: '#ffffff',
+                transition: 'all 0.2s',
+              }}
+            >
+              🛰️ 7-Layer Leaflet
+            </button>
+          </div>
+
           <button
             type="button"
             className="btn btn-secondary"
@@ -849,7 +888,13 @@ export const InteractiveMapWorkspace: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Grid: Interactive Map + Inspection Sidebar */}
+      {/* Main Content: Figma Desktop Vector Map vs Leaflet Map */}
+      {mapViewMode === 'figma' ? (
+        <div style={{ marginBottom: '1.5rem' }}>
+          <JelajahPetaDesktopView />
+        </div>
+      ) : (
+      /* Main Grid: Interactive Map + Inspection Sidebar */
       <div style={{ display: 'grid', gridTemplateColumns: selectedFeature ? '1fr 340px' : '1fr', gap: '1.25rem', alignItems: 'start' }}>
         {/* Leaflet Map Card */}
         <div
@@ -1146,6 +1191,7 @@ export const InteractiveMapWorkspace: React.FC = () => {
           </div>
         )}
       </div>
+      )}
 
       {/* Island Spatial Resiliency Bento Summary */}
       <div style={{ marginTop: '1.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>

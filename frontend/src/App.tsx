@@ -24,6 +24,7 @@ import {
 } from './services/traceability.ts'
 import { HeaderNav } from './components/HeaderNav.tsx'
 import { LoginSection } from './components/LoginSection.tsx'
+import { RegisterSection } from './components/RegisterSection.tsx'
 import { BlockchainModal } from './components/BlockchainModal.tsx'
 import { OfflineQueueModal } from './components/OfflineQueueModal.tsx'
 import { PublicVerifyModal } from './components/PublicVerifyModal.tsx'
@@ -42,19 +43,13 @@ import { TourismEcoStayWorkspace } from './views/TourismEcoStayWorkspace.tsx'
 import { InteractiveMapWorkspace } from './views/InteractiveMapWorkspace.tsx'
 import { SurveyEtlWorkspace } from './views/SurveyEtlWorkspace.tsx'
 import { LandingPortalWorkspace } from './views/LandingPortalWorkspace.tsx'
+import { UserEcosystemDashboard } from './views/dashboard/UserEcosystemDashboard.tsx'
+import { DashboardLayout } from './views/dashboard/DashboardLayout.tsx'
+import { BandaUnifiedFooter } from './components/common/BandaUnifiedFooter.tsx'
 import {
-  MapPin,
-  Users,
-  QrCode,
-  Mail,
-  ShieldCheck,
-  Compass,
-  Scale,
-  Radio,
-  Home,
   Layers,
-  Database,
-  Zap,
+  Home,
+  Compass,
 } from 'lucide-react'
 import { offlineDB } from './offline/db.ts'
 import { syncManager, SyncQueueItem } from './offline/syncManager.ts'
@@ -71,7 +66,7 @@ interface HealthResponse {
 
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'landing' | 'population' | 'letters' | 'farming' | 'traceability' | 'koperasi' | 'iot' | 'tourism' | 'gis' | 'audit' | 'smart_planner' | 'survei'>('landing')
+  const [activeTab, setActiveTab] = useState<'landing' | 'register' | 'dashboard' | 'population' | 'letters' | 'farming' | 'traceability' | 'koperasi' | 'iot' | 'tourism' | 'gis' | 'audit' | 'smart_planner' | 'survei'>('landing')
   const [health, setHealth] = useState<HealthResponse | null>(null)
   const [loadingHealth, setLoadingHealth] = useState<boolean>(true)
   const [healthError, setHealthError] = useState<string | null>(null)
@@ -117,7 +112,6 @@ export const App: React.FC = () => {
   const [batches, setBatches] = useState<ProductBatch[]>([])
   const [selectedBatch, setSelectedBatch] = useState<ProductBatch | null>(null)
   const [publicVerifyData, setPublicVerifyData] = useState<PublicBatchVerification | null>(null)
-  const [verifyTokenInput, setVerifyTokenInput] = useState<string>('')
   const [traceMsg, setTraceMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [verificationModal, setVerificationModal] = useState<BlockchainVerification | null>(null)
   const [blockchainLoading, setBlockchainLoading] = useState<string | null>(null)
@@ -506,6 +500,12 @@ export const App: React.FC = () => {
     }
   }, [currentUser, isOfficerOrAdmin, isFarmerGroupAdmin, isFarmer])
 
+  const getRoleDefaultTab = (user: User | null): typeof activeTab => {
+    if (!user) return 'landing'
+    // Mengarahkan ke Dasbor Ekosistem Terpadu (Landing Page 2) yang menyesuaikan tampilan dengan role
+    return 'dashboard'
+  }
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setAuthLoading(true)
@@ -513,24 +513,7 @@ export const App: React.FC = () => {
     try {
       const response = await authService.login(username, password)
       setCurrentUser(response.user)
-      const roleNames = response.user.roles.map((r) => r.name)
-      if (roleNames.includes('coop_manager')) {
-        setActiveTab('koperasi')
-      } else if (roleNames.includes('homestay_operator')) {
-        setActiveTab('tourism')
-      } else if (roleNames.includes('smart_tourism_admin')) {
-        setActiveTab('tourism')
-      } else if (roleNames.includes('field_surveyor')) {
-        setActiveTab('survei')
-      } else if (roleNames.includes('farmer_group_admin')) {
-        setActiveTab('farming')
-      } else if (roleNames.includes('farmer') && !roleNames.includes('admin') && !roleNames.includes('village_officer')) {
-        setActiveTab('traceability')
-      } else if (roleNames.includes('resident') && !roleNames.includes('admin') && !roleNames.includes('village_officer')) {
-        setActiveTab('koperasi')
-      } else {
-        setActiveTab('population')
-      }
+      setActiveTab(getRoleDefaultTab(response.user))
     } catch (err: unknown) {
       if (err instanceof Error) setAuthError(err.message)
     } finally {
@@ -546,24 +529,7 @@ export const App: React.FC = () => {
     try {
       const response = await authService.login(u, p)
       setCurrentUser(response.user)
-      const roleNames = response.user.roles.map((r) => r.name)
-      if (roleNames.includes('coop_manager')) {
-        setActiveTab('koperasi')
-      } else if (roleNames.includes('homestay_operator')) {
-        setActiveTab('tourism')
-      } else if (roleNames.includes('smart_tourism_admin')) {
-        setActiveTab('tourism')
-      } else if (roleNames.includes('field_surveyor')) {
-        setActiveTab('survei')
-      } else if (roleNames.includes('farmer_group_admin')) {
-        setActiveTab('farming')
-      } else if (roleNames.includes('farmer') && !roleNames.includes('admin') && !roleNames.includes('village_officer')) {
-        setActiveTab('traceability')
-      } else if (roleNames.includes('resident') && !roleNames.includes('admin') && !roleNames.includes('village_officer')) {
-        setActiveTab('koperasi')
-      } else {
-        setActiveTab('population')
-      }
+      setActiveTab(getRoleDefaultTab(response.user))
     } catch (err: unknown) {
       if (err instanceof Error) setAuthError(err.message)
     } finally {
@@ -978,19 +944,21 @@ export const App: React.FC = () => {
   return (
     <div
       style={{
-        maxWidth: activeTab === 'landing' ? '100%' : '1180px',
+        maxWidth: '100%',
         margin: '0 auto',
-        padding: activeTab === 'landing' ? '0' : '1.5rem 1rem 3rem',
+        padding: '0',
         overflowX: 'hidden',
       }}
     >
-      {/* Top Brand Navbar is ONLY rendered for dashboard workspace tabs, NOT for landing page to avoid duplicate headers! */}
-      {activeTab !== 'landing' && (
+      {/* HeaderNav hanya ditampilkan untuk tamu non-login yang sedang menjelajah fitur sebelum login */}
+      {!currentUser && activeTab !== 'landing' && activeTab !== 'register' && activeTab !== 'population' && (
         <HeaderNav
           currentUser={currentUser}
           isOnline={isOnline}
           pendingSyncCount={pendingSyncCount}
           isSyncing={isSyncing}
+          activeTab={activeTab}
+          onSelectTab={(tab) => setActiveTab(tab)}
           onLogout={handleLogout}
           onManualSync={handleManualSync}
           onOpenQueueModal={handleOpenQueueModal}
@@ -1000,11 +968,16 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* 1. LANDING PORTAL WORKSPACE (Satu Pintu Utama Ekosistem - SINGLE UNIFIED HEADER) */}
+      {/* 1. LANDING PORTAL UTAMA (SATU PINTU UTAMA EKOSISTEM - HANYA 1 LANDING PAGE) */}
       {activeTab === 'landing' && (
         <LandingPortalWorkspace
-          onNavigate={(tab) => setActiveTab(tab)}
+          onNavigate={(tab) =>
+            setActiveTab(
+              tab === 'population' && currentUser ? getRoleDefaultTab(currentUser) : tab
+            )
+          }
           onOpenLogin={() => setActiveTab('population')}
+          onOpenRegister={() => setActiveTab('register')}
           onOpenMarketplace={() => setShowMarketplaceModal(true)}
           onPublicVerify={(token) => handlePublicVerify(token)}
           currentUser={currentUser}
@@ -1014,714 +987,323 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* 2. Login Portal Section for Non-authenticated Users choosing to login */}
+      {/* 1B. REGISTER DESKTOP SPLIT-SCREEN PAGE (Sesuai desainsaatini/register-dekstop) */}
+      {activeTab === 'register' && (
+        <RegisterSection
+          onBackToHome={() => setActiveTab('landing')}
+          onSwitchToLogin={() => setActiveTab('population')}
+          onQuickLogin={handleQuickLogin}
+          onNavigate={(tab) => setActiveTab(tab)}
+        />
+      )}
+
+      {/* 2. Login Portal Section for Non-authenticated Users (Sesuai desainsaatini/login-desktop) */}
       {!currentUser && activeTab === 'population' && (
-        <div style={{ marginBottom: '1.75rem' }}>
-          <div style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <LoginSection
+          username={username}
+          setUsername={setUsername}
+          password={password}
+          setPassword={setPassword}
+          onLogin={handleLogin}
+          onQuickLogin={handleQuickLogin}
+          onBackToHome={() => setActiveTab('landing')}
+          onOpenRegister={() => setActiveTab('register')}
+          onVerifySampleBatch={(token) => handlePublicVerify(token)}
+          onPublicVerify={(token) => handlePublicVerify(token)}
+          onOpenMarketplace={() => setShowMarketplaceModal(true)}
+          onOpenPlanner={() => setActiveTab('smart_planner')}
+          onOpenKoperasi={() => setActiveTab('koperasi')}
+          onOpenTelemetry={() => setActiveTab('iot')}
+          onOpenTourism={() => setActiveTab('tourism')}
+          onOpenGIS={() => setActiveTab('gis')}
+          onOpenSurvei={() => setActiveTab('survei')}
+          loading={authLoading}
+          error={authError}
+        />
+      )}
+
+      {/* 3. Guest Public Exploration (Hanya ketika tamu belum login menjelajahi modul publik) */}
+      {!currentUser && activeTab !== 'landing' && activeTab !== 'register' && activeTab !== 'population' && (
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1rem' }}>
+          <div className="tab-nav" style={{ marginBottom: '1.75rem', background: 'rgba(15, 23, 42, 0.95)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', padding: '0.4rem' }}>
             <button
               type="button"
               onClick={() => setActiveTab('landing')}
-              className="btn btn-secondary"
+              className="tab-btn"
+              style={{ color: '#38bdf8', fontWeight: 800 }}
+            >
+              🏠 Beranda Satu Pintu
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('gis')}
+              className={`tab-btn ${activeTab === 'gis' ? 'active' : ''}`}
+            >
+              <Layers size={16} /> 🗺️ Peta 7-Layer
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('tourism')}
+              className={`tab-btn ${activeTab === 'tourism' ? 'active' : ''}`}
+            >
+              <Home size={16} /> 🏡 Eco-Stay &amp; Budaya
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('smart_planner')}
+              className={`tab-btn ${activeTab === 'smart_planner' ? 'active' : ''}`}
+            >
+              <Compass size={16} /> 🧭 Perencana Cerdas (DSS)
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('population')}
+              className="tab-btn"
+              style={{ color: '#fbbf24', marginLeft: 'auto', background: 'rgba(245, 158, 11, 0.15)' }}
+            >
+              🔐 Masuk Akun
+            </button>
+          </div>
+
+          {activeTab === 'gis' && <InteractiveMapWorkspace />}
+          {activeTab === 'tourism' && <TourismEcoStayWorkspace currentUser={null} />}
+          {activeTab === 'smart_planner' && <SmartPlannerWorkspace />}
+        </div>
+      )}
+
+      {/* =====================================================================
+          4. DASBOR EKOSISTEM DENGAN SIDEBAR NAVIGASI DI SAMPING (UNTUK USER LOGIN)
+             Semua Ruang Kerja Operasional Terintegrasi di Dalam Dasbor Sesuai Hak Akses Role
+      ====================================================================== */}
+      {currentUser && activeTab !== 'landing' && activeTab !== 'register' && (
+        <DashboardLayout
+          currentUser={currentUser}
+          activeTab={activeTab}
+          onSelectTab={(tab) => setActiveTab(tab)}
+          onOpenLanding={() => setActiveTab('landing')}
+          onOpenMarketplace={() => setShowMarketplaceModal(true)}
+          onPublicVerify={(token) => handlePublicVerify(token || '')}
+          onOpenQueueModal={handleOpenQueueModal}
+          onOpenQuickSwitch={() => setShowQuickLoginModal(true)}
+          onLogout={handleLogout}
+          isOnline={isOnline}
+          pendingSyncCount={pendingSyncCount}
+          isSyncing={isSyncing}
+          adminPendingLettersCount={adminRequests.filter((r) => r.status === 'submitted').length}
+          pendingFarmsCount={farms.filter((f) => f.verification_status === 'pending').length}
+        >
+          {/* TAB 0: RINGKASAN DASBOR (OVERVIEW BENTO GRID 21st.dev DENGAN WARNA BERANDA) */}
+          {activeTab === 'dashboard' && (
+            <UserEcosystemDashboard
+              currentUser={currentUser}
+              onNavigate={(tab) => setActiveTab(tab as any)}
+              onOpenMarketplace={() => setShowMarketplaceModal(true)}
+              onPublicVerify={(token) => handlePublicVerify(token)}
+              onLogout={handleLogout}
+              isOnline={isOnline}
+            />
+          )}
+
+          {/* TAB 1: WARGA & PROFESI (POPULATION) */}
+          {isOfficerOrAdmin && activeTab === 'population' && (
+            <ResidentsWorkspace
+              residents={residents}
+              popStats={popStats}
+              loadingPop={loadingPop}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              selectedOccupationFilter={selectedOccupationFilter}
+              setSelectedOccupationFilter={setSelectedOccupationFilter}
+              popMsg={popMsg}
+              popForm={popForm}
+              setPopForm={setPopForm}
+              fetchPopulationData={fetchPopulationData}
+              handleCreateResident={handleCreateResident}
+              handleVerifyResident={handleVerifyResident}
+            />
+          )}
+
+          {/* TAB 2: PELAYANAN SURAT WARGA (LETTERS) */}
+          {(isResident || isOfficerOrAdmin) && activeTab === 'letters' && (
+            isOfficerOrAdmin ? (
+              <LettersWorkspace
+                adminRequests={adminRequests}
+                requestFilterStatus={requestFilterStatus}
+                setRequestFilterStatus={setRequestFilterStatus}
+                updatingRequestId={updatingRequestId}
+                handleUpdateRequestStatus={handleUpdateRequestStatus}
+                letterActionMsg={letterActionMsg}
+              />
+            ) : (
+              <CitizenPortalWorkspace
+                currentUser={currentUser}
+                letters={letters}
+                showLetterForm={showLetterForm}
+                setShowLetterForm={setShowLetterForm}
+                letterTypeInput={letterTypeInput}
+                setLetterTypeInput={setLetterTypeInput}
+                letterPurposeInput={letterPurposeInput}
+                setLetterPurposeInput={setLetterPurposeInput}
+                handleSubmitLetter={handleSubmitLetter}
+                letterSuccessNotice={letterSuccessNotice}
+              />
+            )
+          )}
+
+          {/* TAB 3: PETA KEBUN & POKTAN (FARMING) */}
+          {(isOfficerOrAdmin || isFarmerGroupAdmin || isFarmer) && activeTab === 'farming' && (
+            <FarmsGisWorkspace
+              farmers={farmers}
+              farmerGroups={farmerGroups}
+              farms={farms}
+              farmGeoJSON={farmGeoJSON}
+              farmStats={farmStats}
+              farmMsg={farmMsg}
+              verifyingFarmId={verifyingFarmId}
+              farmStatusFilter={farmStatusFilter}
+              setFarmStatusFilter={setFarmStatusFilter}
+              handleVerifyFarm={handleVerifyFarm}
+              isOfficerOrAdmin={isOfficerOrAdmin}
+              isFarmerGroupAdmin={isFarmerGroupAdmin}
+              isFarmerOnly={isFarmerOnly}
+              farmForm={farmForm}
+              setFarmForm={setFarmForm}
+              handleCreateQuickFarmerAndFarm={handleCreateQuickFarmerAndFarm}
+              fetchFarmingData={fetchFarmingData}
+            />
+          )}
+
+          {/* TAB 4: PANEN & MUTU REMPAH (TRACEABILITY) */}
+          {(isOfficerOrAdmin || isFarmerGroupAdmin || isFarmer || isCoopManager) && activeTab === 'traceability' && (
+            <HarvestGradingWorkspace
+              harvests={harvests}
+              batches={batches}
+              selectedBatch={selectedBatch}
+              setSelectedBatch={setSelectedBatch}
+              traceMsg={traceMsg}
+              blockchainLoading={blockchainLoading}
+              harvestForm={harvestForm}
+              setHarvestForm={setHarvestForm}
+              handleCreateHarvest={handleCreateHarvest}
+              batchForm={batchForm}
+              setBatchForm={setBatchForm}
+              handleCreateBatch={handleCreateBatch}
+              eventForm={eventForm}
+              setEventForm={setEventForm}
+              handleAppendEvent={handleAppendEvent}
+              handleAnchorBlockchain={handleAnchorBlockchain}
+              handleVerifyBlockchain={handleVerifyBlockchain}
+              handlePublicVerify={handlePublicVerify}
+              farms={farms}
+              farmers={farmers}
+              isOfficerOrAdmin={isOfficerOrAdmin}
+              isFarmerGroupAdmin={isFarmerGroupAdmin}
+              isFarmer={isFarmer}
+              isFarmerOnly={isFarmerOnly}
+              fetchTraceabilityData={fetchTraceabilityData}
+            />
+          )}
+
+          {/* TAB 5: KOPERASI HATTA, BANK SAMPAH & DISPENSER AIR RO */}
+          {(isCoopManager || isOfficerOrAdmin) && activeTab === 'koperasi' && (
+            <KoperasiKasirWorkspace />
+          )}
+
+          {/* TAB 6: SMART TOURISM, ECO-STAY & WARISAN BUDAYA */}
+          {(isHomestayOperator || isSmartTourismAdmin || isOfficerOrAdmin) && activeTab === 'tourism' && (
+            <TourismEcoStayWorkspace currentUser={currentUser} />
+          )}
+
+          {/* TAB 7: PETA SPASIAL INTERAKTIF 7-LAYER */}
+          {(isFieldSurveyor || isSmartTourismAdmin || isHomestayOperator || isOfficerOrAdmin) && activeTab === 'gis' && (
+            <InteractiveMapWorkspace />
+          )}
+
+          {/* TAB 8: PERENCANA CERDAS SAW (DSS) */}
+          {(isSmartTourismAdmin || isHomestayOperator || isFieldSurveyor || isOfficerOrAdmin) && activeTab === 'smart_planner' && (
+            <SmartPlannerWorkspace />
+          )}
+
+          {/* TAB 9: PUSAT KOMANDO TELEMETRI IoT & RESILIENSI PULAU */}
+          {(isFieldSurveyor || isCoopManager || isOfficerOrAdmin) && activeTab === 'iot' && (
+            <IslandTelemetryWorkspace />
+          )}
+
+          {/* TAB 10: SURVEI LAPANGAN DINAMIS & PIPA ETL HYBRID */}
+          {(isFieldSurveyor || isOfficerOrAdmin) && activeTab === 'survei' && (
+            <SurveyEtlWorkspace onNavigateToMap={() => setActiveTab('gis')} />
+          )}
+
+          {/* TAB 11: REKAPITULASI DESA & AUDIT TRAIL */}
+          {isOfficerOrAdmin && activeTab === 'audit' && (
+            <AuditTrailWorkspace isOnline={isOnline} />
+          )}
+
+          {/* System Telemetry Section (Khusus untuk Administrator Sistem) */}
+          {isAdmin && (
+            <section
+              className="app-card animate-fade-in"
               style={{
-                background: 'rgba(255, 255, 255, 0.06)',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                color: '#cbd5e1',
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
+                marginTop: '2rem',
+                border: '1px solid rgba(244, 183, 94, 0.2)',
+                padding: '1.5rem',
+                borderRadius: '1rem',
               }}
             >
-              ← Kembali ke Beranda Satu Pintu
-            </button>
-            <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
-              Pintu Masuk Terpadu: Petugas Desa, Poktan, Petani, dan Warga
-            </span>
-          </div>
-          <LoginSection
-            username={username}
-            setUsername={setUsername}
-            password={password}
-            setPassword={setPassword}
-            onLogin={handleLogin}
-            onQuickLogin={handleQuickLogin}
-            onVerifySampleBatch={(token) => handlePublicVerify(token)}
-            onPublicVerify={(token) => handlePublicVerify(token)}
-            onOpenMarketplace={() => setShowMarketplaceModal(true)}
-            onOpenPlanner={() => setActiveTab('smart_planner')}
-            onOpenKoperasi={() => setActiveTab('koperasi')}
-            onOpenTelemetry={() => setActiveTab('iot')}
-            onOpenTourism={() => setActiveTab('tourism')}
-            onOpenGIS={() => setActiveTab('gis')}
-            onOpenSurvei={() => setActiveTab('survei')}
-            loading={authLoading}
-            error={authError}
-          />
-        </div>
-      )}
-
-      {/* 3. Guest Public Workspace Switcher Bar when exploring features */}
-      {!currentUser && activeTab !== 'landing' && activeTab !== 'population' && (
-        <div className="tab-nav" style={{ marginBottom: '1.75rem', background: 'rgba(15, 23, 42, 0.95)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', padding: '0.4rem' }}>
-          <button
-            type="button"
-            onClick={() => setActiveTab('landing')}
-            className="tab-btn"
-            style={{ color: '#38bdf8', fontWeight: 800 }}
-          >
-            🏠 Beranda Satu Pintu
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('gis')}
-            className={`tab-btn ${activeTab === 'gis' ? 'active' : ''}`}
-          >
-            <Layers size={16} /> 🗺️ Peta 7-Layer
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('survei')}
-            className={`tab-btn ${activeTab === 'survei' ? 'active' : ''}`}
-          >
-            <Database size={16} /> 📋 Survei &amp; ETL Hybrid
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('tourism')}
-            className={`tab-btn ${activeTab === 'tourism' ? 'active' : ''}`}
-          >
-            <Home size={16} /> 🏡 Eco-Stay &amp; Budaya
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('smart_planner')}
-            className={`tab-btn ${activeTab === 'smart_planner' ? 'active' : ''}`}
-          >
-            <Compass size={16} /> 🧭 Perencana Cerdas (DSS)
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('koperasi')}
-            className={`tab-btn ${activeTab === 'koperasi' ? 'active' : ''}`}
-          >
-            <Scale size={16} /> ⚖️ Koperasi &amp; Bank Sampah
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('iot')}
-            className={`tab-btn ${activeTab === 'iot' ? 'active' : ''}`}
-          >
-            <Radio size={16} /> 📡 Telemetri IoT &amp; Resiliensi
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('population')}
-            className="tab-btn"
-            style={{ color: '#fbbf24', marginLeft: 'auto', background: 'rgba(245, 158, 11, 0.15)' }}
-          >
-            🔐 Masuk Akun
-          </button>
-        </div>
-      )}
-
-      {/* Floating Island Command Navigation Tabs */}
-      {currentUser && isFarmerOnly && (
-        <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
-          <button
-            onClick={() => setActiveTab('landing')}
-            className={`tab-btn ${activeTab === 'landing' ? 'active' : ''}`}
-            style={{ color: '#38bdf8', fontWeight: 800 }}
-          >
-            🏠 Satu Pintu
-          </button>
-          <button
-            onClick={() => setActiveTab('traceability')}
-            className={`tab-btn ${activeTab === 'traceability' ? 'active' : ''}`}
-          >
-            <QrCode size={16} /> 📦 Catatan Panen Saya
-          </button>
-          <button
-            onClick={() => setActiveTab('farming')}
-            className={`tab-btn ${activeTab === 'farming' ? 'active' : ''}`}
-          >
-            <MapPin size={16} /> 🗺️ Peta Kebun Saya
-          </button>
-        </div>
-      )}
-
-      {/* 4. Ketua Kelompok Tani Tab Nav */}
-      {currentUser && isFarmerGroupAdmin && !isAdmin && !isVillageOfficer && (
-        <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
-          <button
-            onClick={() => setActiveTab('landing')}
-            className={`tab-btn ${activeTab === 'landing' ? 'active' : ''}`}
-            style={{ color: '#38bdf8', fontWeight: 800 }}
-          >
-            🏠 Satu Pintu
-          </button>
-          <button
-            onClick={() => setActiveTab('farming')}
-            className={`tab-btn ${activeTab === 'farming' ? 'active' : ''}`}
-          >
-            <MapPin size={16} /> 🗺️ Peta &amp; Pengajuan Kebun
-            {farms.filter((f) => f.verification_status === 'pending').length > 0 && (
-              <span
-                style={{
-                  background: '#f59e0b',
-                  color: '#ffffff',
-                  borderRadius: '10px',
-                  padding: '0.1rem 0.5rem',
-                  fontSize: '0.72rem',
-                  fontWeight: '700',
-                  marginLeft: '0.4rem',
-                }}
-              >
-                {farms.filter((f) => f.verification_status === 'pending').length}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('traceability')}
-            className={`tab-btn ${activeTab === 'traceability' ? 'active' : ''}`}
-          >
-            <QrCode size={16} /> 📦 Catatan Hasil Panen Poktan
-          </button>
-        </div>
-      )}
-
-      {/* 5. Pengelola Koperasi Hatta & Bank Sampah Tab Nav */}
-      {currentUser && isCoopManager && !isAdmin && (
-        <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
-          <button
-            onClick={() => setActiveTab('landing')}
-            className={`tab-btn ${activeTab === 'landing' ? 'active' : ''}`}
-            style={{ color: '#38bdf8', fontWeight: 800 }}
-          >
-            🏠 Satu Pintu
-          </button>
-          <button
-            onClick={() => setActiveTab('koperasi')}
-            className={`tab-btn ${activeTab === 'koperasi' ? 'active' : ''}`}
-          >
-            <Scale size={16} /> ⚖️ Kasir Koperasi &amp; Bank Sampah
-          </button>
-          <button
-            onClick={() => setActiveTab('traceability')}
-            className={`tab-btn ${activeTab === 'traceability' ? 'active' : ''}`}
-          >
-            <QrCode size={16} /> 📦 Rantai Pasok Komoditas
-          </button>
-          <button
-            onClick={() => setActiveTab('iot')}
-            className={`tab-btn ${activeTab === 'iot' ? 'active' : ''}`}
-          >
-            <Radio size={16} /> 📡 Telemetri Tandon Air RO
-          </button>
-        </div>
-      )}
-
-      {/* 6. Pengelola Eco-Stay & Wisata Tab Nav */}
-      {currentUser && isHomestayOperator && !isAdmin && (
-        <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
-          <button
-            onClick={() => setActiveTab('landing')}
-            className={`tab-btn ${activeTab === 'landing' ? 'active' : ''}`}
-            style={{ color: '#38bdf8', fontWeight: 800 }}
-          >
-            🏠 Satu Pintu
-          </button>
-          <button
-            onClick={() => setActiveTab('tourism')}
-            className={`tab-btn ${activeTab === 'tourism' ? 'active' : ''}`}
-          >
-            <Home size={16} /> 🏡 Katalog Eco-Stay &amp; Reservasi WA
-          </button>
-          <button
-            onClick={() => setActiveTab('smart_planner')}
-            className={`tab-btn ${activeTab === 'smart_planner' ? 'active' : ''}`}
-          >
-            <Compass size={16} /> 🧭 Panduan Rekomendasi Tamu (DSS)
-          </button>
-          <button
-            onClick={() => setActiveTab('gis')}
-            className={`tab-btn ${activeTab === 'gis' ? 'active' : ''}`}
-          >
-            <Layers size={16} /> 🗺️ Peta Spasial Akomodasi
-          </button>
-        </div>
-      )}
-
-      {/* 7. Pemandu Smart Tourism & Cagar Budaya Tab Nav */}
-      {currentUser && isSmartTourismAdmin && !isAdmin && (
-        <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
-          <button
-            onClick={() => setActiveTab('landing')}
-            className={`tab-btn ${activeTab === 'landing' ? 'active' : ''}`}
-            style={{ color: '#38bdf8', fontWeight: 800 }}
-          >
-            🏠 Satu Pintu
-          </button>
-          <button
-            onClick={() => setActiveTab('tourism')}
-            className={`tab-btn ${activeTab === 'tourism' ? 'active' : ''}`}
-          >
-            <Home size={16} /> 🏖️ 177 Cagar Budaya &amp; Audio
-          </button>
-          <button
-            onClick={() => setActiveTab('gis')}
-            className={`tab-btn ${activeTab === 'gis' ? 'active' : ''}`}
-          >
-            <Layers size={16} /> 🗺️ Peta Tematik 7-Layer
-          </button>
-          <button
-            onClick={() => setActiveTab('smart_planner')}
-            className={`tab-btn ${activeTab === 'smart_planner' ? 'active' : ''}`}
-          >
-            <Compass size={16} /> 🧭 Perencana Rute Wisata Cerdas
-          </button>
-        </div>
-      )}
-
-      {/* 8. Surveyor Lapangan & IoT Operator Tab Nav */}
-      {currentUser && isFieldSurveyor && !isAdmin && (
-        <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
-          <button
-            onClick={() => setActiveTab('landing')}
-            className={`tab-btn ${activeTab === 'landing' ? 'active' : ''}`}
-            style={{ color: '#38bdf8', fontWeight: 800 }}
-          >
-            🏠 Satu Pintu
-          </button>
-          <button
-            onClick={() => setActiveTab('survei')}
-            className={`tab-btn ${activeTab === 'survei' ? 'active' : ''}`}
-          >
-            <Database size={16} /> 📋 Form Survei NoSQL &amp; Pipa ETL
-          </button>
-          <button
-            onClick={() => setActiveTab('iot')}
-            className={`tab-btn ${activeTab === 'iot' ? 'active' : ''}`}
-          >
-            <Radio size={16} /> 📡 Telemetri 4 Stasiun IoT
-          </button>
-          <button
-            onClick={() => setActiveTab('gis')}
-            className={`tab-btn ${activeTab === 'gis' ? 'active' : ''}`}
-          >
-            <Layers size={16} /> 🗺️ Validasi Lapangan PostGIS
-          </button>
-          <button
-            onClick={() => setActiveTab('smart_planner')}
-            className={`tab-btn ${activeTab === 'smart_planner' ? 'active' : ''}`}
-          >
-            <Compass size={16} /> 🧭 Prioritas Krisis Desa (DSS SAW)
-          </button>
-        </div>
-      )}
-
-      {/* 9. Petugas Pelayanan Desa Tab Nav */}
-      {currentUser && isVillageOfficer && !isAdmin && (
-        <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
-          <button
-            onClick={() => setActiveTab('landing')}
-            className={`tab-btn ${activeTab === 'landing' ? 'active' : ''}`}
-            style={{ color: '#38bdf8', fontWeight: 800 }}
-          >
-            🏠 Satu Pintu
-          </button>
-          <button
-            onClick={() => setActiveTab('population')}
-            className={`tab-btn ${activeTab === 'population' ? 'active' : ''}`}
-          >
-            <Users size={16} /> 👥 Warga &amp; Profesi
-          </button>
-          <button
-            onClick={() => setActiveTab('letters')}
-            className={`tab-btn ${activeTab === 'letters' ? 'active' : ''}`}
-          >
-            <Mail size={16} /> 📬 Pelayanan Surat Warga
-            {adminRequests.filter((r) => r.status === 'submitted').length > 0 && (
-              <span
-                style={{
-                  background: '#f59e0b',
-                  color: '#ffffff',
-                  borderRadius: '10px',
-                  padding: '0.1rem 0.5rem',
-                  fontSize: '0.72rem',
-                  fontWeight: '700',
-                  marginLeft: '0.4rem',
-                }}
-              >
-                {adminRequests.filter((r) => r.status === 'submitted').length}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('farming')}
-            className={`tab-btn ${activeTab === 'farming' ? 'active' : ''}`}
-          >
-            <MapPin size={16} /> 🗺️ Peta Kebun &amp; Poktan
-            {farms.filter((f) => f.verification_status === 'pending').length > 0 && (
-              <span
-                style={{
-                  background: '#f59e0b',
-                  color: '#ffffff',
-                  borderRadius: '10px',
-                  padding: '0.1rem 0.5rem',
-                  fontSize: '0.72rem',
-                  fontWeight: '700',
-                  marginLeft: '0.4rem',
-                }}
-              >
-                {farms.filter((f) => f.verification_status === 'pending').length}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('audit')}
-            className={`tab-btn ${activeTab === 'audit' ? 'active' : ''}`}
-          >
-            <ShieldCheck size={16} /> 🏛️ Rekap &amp; Audit
-          </button>
-        </div>
-      )}
-
-      {/* 10. Administrator Sistem Tab Nav (Full Master Suite) */}
-      {currentUser && isAdmin && (
-        <div className="tab-nav" style={{ marginBottom: '1.75rem' }}>
-          <button
-            onClick={() => setActiveTab('landing')}
-            className={`tab-btn ${activeTab === 'landing' ? 'active' : ''}`}
-            style={{ color: '#38bdf8', fontWeight: 800 }}
-          >
-            🏠 Satu Pintu
-          </button>
-          <button
-            onClick={() => setActiveTab('population')}
-            className={`tab-btn ${activeTab === 'population' ? 'active' : ''}`}
-          >
-            <Users size={16} /> 👥 Warga &amp; Profesi
-          </button>
-          <button
-            onClick={() => setActiveTab('letters')}
-            className={`tab-btn ${activeTab === 'letters' ? 'active' : ''}`}
-          >
-            <Mail size={16} /> 📬 Pelayanan Surat
-            {adminRequests.filter((r) => r.status === 'submitted').length > 0 && (
-              <span
-                style={{
-                  background: '#f59e0b',
-                  color: '#ffffff',
-                  borderRadius: '10px',
-                  padding: '0.1rem 0.5rem',
-                  fontSize: '0.72rem',
-                  fontWeight: '700',
-                  marginLeft: '0.4rem',
-                }}
-              >
-                {adminRequests.filter((r) => r.status === 'submitted').length}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('farming')}
-            className={`tab-btn ${activeTab === 'farming' ? 'active' : ''}`}
-          >
-            <MapPin size={16} /> 🗺️ Peta Kebun &amp; Poktan
-          </button>
-          <button
-            onClick={() => setActiveTab('traceability')}
-            className={`tab-btn ${activeTab === 'traceability' ? 'active' : ''}`}
-          >
-            <QrCode size={16} /> 📦 Panen &amp; Mutu Rempah
-          </button>
-          <button
-            onClick={() => setActiveTab('audit')}
-            className={`tab-btn ${activeTab === 'audit' ? 'active' : ''}`}
-          >
-            <ShieldCheck size={16} /> 🏛️ Rekap &amp; Audit
-          </button>
-          <button
-            onClick={() => setActiveTab('koperasi')}
-            className={`tab-btn ${activeTab === 'koperasi' ? 'active' : ''}`}
-          >
-            <Scale size={16} /> ⚖️ Koperasi &amp; Bank Sampah
-          </button>
-          <button
-            onClick={() => setActiveTab('tourism')}
-            className={`tab-btn ${activeTab === 'tourism' ? 'active' : ''}`}
-          >
-            <Home size={16} /> 🏡 Eco-Stay &amp; Budaya
-          </button>
-          <button
-            onClick={() => setActiveTab('gis')}
-            className={`tab-btn ${activeTab === 'gis' ? 'active' : ''}`}
-          >
-            <Layers size={16} /> 🗺️ Peta 7-Layer
-          </button>
-          <button
-            onClick={() => setActiveTab('smart_planner')}
-            className={`tab-btn ${activeTab === 'smart_planner' ? 'active' : ''}`}
-          >
-            <Compass size={16} /> 🧭 Perencana Cerdas (DSS)
-          </button>
-          <button
-            onClick={() => setActiveTab('iot')}
-            className={`tab-btn ${activeTab === 'iot' ? 'active' : ''}`}
-          >
-            <Radio size={16} /> 📡 Telemetri IoT &amp; Resiliensi
-          </button>
-          <button
-            onClick={() => setActiveTab('survei')}
-            className={`tab-btn ${activeTab === 'survei' ? 'active' : ''}`}
-          >
-            <Database size={16} /> 📋 Survei &amp; ETL Hybrid
-          </button>
-        </div>
-      )}
-
-
-      {/* TAB 1: PANEN & MUTU REMPAH (TRACEABILITY) */}
-      {(isOfficerOrAdmin || isFarmerGroupAdmin || isFarmer || isCoopManager) && activeTab === 'traceability' && (
-        <HarvestGradingWorkspace
-          harvests={harvests}
-          batches={batches}
-          selectedBatch={selectedBatch}
-          setSelectedBatch={setSelectedBatch}
-          traceMsg={traceMsg}
-          blockchainLoading={blockchainLoading}
-          harvestForm={harvestForm}
-          setHarvestForm={setHarvestForm}
-          handleCreateHarvest={handleCreateHarvest}
-          batchForm={batchForm}
-          setBatchForm={setBatchForm}
-          handleCreateBatch={handleCreateBatch}
-          eventForm={eventForm}
-          setEventForm={setEventForm}
-          handleAppendEvent={handleAppendEvent}
-          handleAnchorBlockchain={handleAnchorBlockchain}
-          handleVerifyBlockchain={handleVerifyBlockchain}
-          handlePublicVerify={handlePublicVerify}
-          farms={farms}
-          farmers={farmers}
-          isOfficerOrAdmin={isOfficerOrAdmin}
-          isFarmerGroupAdmin={isFarmerGroupAdmin}
-          isFarmer={isFarmer}
-          isFarmerOnly={isFarmerOnly}
-          fetchTraceabilityData={fetchTraceabilityData}
-        />
-      )}
-
-      {/* TAB 2: PETA & POKTAN (FARMING) */}
-      {(isOfficerOrAdmin || isFarmerGroupAdmin || isFarmer) && activeTab === 'farming' && (
-        <FarmsGisWorkspace
-          farmers={farmers}
-          farmerGroups={farmerGroups}
-          farms={farms}
-          farmGeoJSON={farmGeoJSON}
-          farmStats={farmStats}
-          farmMsg={farmMsg}
-          verifyingFarmId={verifyingFarmId}
-          farmStatusFilter={farmStatusFilter}
-          setFarmStatusFilter={setFarmStatusFilter}
-          handleVerifyFarm={handleVerifyFarm}
-          isOfficerOrAdmin={isOfficerOrAdmin}
-          isFarmerGroupAdmin={isFarmerGroupAdmin}
-          isFarmerOnly={isFarmerOnly}
-          farmForm={farmForm}
-          setFarmForm={setFarmForm}
-          handleCreateQuickFarmerAndFarm={handleCreateQuickFarmerAndFarm}
-          fetchFarmingData={fetchFarmingData}
-        />
-      )}
-
-      {/* TAB 3: WARGA & PROFESI (POPULATION) */}
-      {isOfficerOrAdmin && activeTab === 'population' && (
-        <ResidentsWorkspace
-          residents={residents}
-          popStats={popStats}
-          loadingPop={loadingPop}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          selectedOccupationFilter={selectedOccupationFilter}
-          setSelectedOccupationFilter={setSelectedOccupationFilter}
-          popMsg={popMsg}
-          popForm={popForm}
-          setPopForm={setPopForm}
-          fetchPopulationData={fetchPopulationData}
-          handleCreateResident={handleCreateResident}
-          handleVerifyResident={handleVerifyResident}
-        />
-      )}
-
-      {/* TAB 4: INBOX PELAYANAN SURAT WARGA */}
-      {isOfficerOrAdmin && activeTab === 'letters' && (
-        <LettersWorkspace
-          adminRequests={adminRequests}
-          requestFilterStatus={requestFilterStatus}
-          setRequestFilterStatus={setRequestFilterStatus}
-          updatingRequestId={updatingRequestId}
-          handleUpdateRequestStatus={handleUpdateRequestStatus}
-          letterActionMsg={letterActionMsg}
-        />
-      )}
-
-      {/* TAB 5: REKAPITULASI DESA & AUDIT TRAIL */}
-      {isOfficerOrAdmin && activeTab === 'audit' && (
-        <AuditTrailWorkspace isOnline={isOnline} />
-      )}
-
-      {/* TAB 6: PERENCANA CERDAS & KETAHANAN PULAU (DSS SAW) */}
-      {activeTab === 'smart_planner' && (
-        <SmartPlannerWorkspace />
-      )}
-
-      {/* TAB 7: KOPERASI HATTA, BANK SAMPAH & DISPENSER AIR RO */}
-      {activeTab === 'koperasi' && (
-        <KoperasiKasirWorkspace />
-      )}
-
-      {/* TAB 8: PUSAT KOMANDO TELEMETRI IoT & RESILIENSI PULAU */}
-      {activeTab === 'iot' && (
-        <IslandTelemetryWorkspace />
-      )}
-
-      {/* TAB 9: SMART TOURISM, ECO-STAY & WARISAN BUDAYA */}
-      {activeTab === 'tourism' && (
-        <TourismEcoStayWorkspace currentUser={currentUser} />
-      )}
-
-      {/* TAB 10: PETA SPASIAL INTERAKTIF 7-LAYER */}
-      {activeTab === 'gis' && (
-        <InteractiveMapWorkspace />
-      )}
-
-      {/* TAB 11: SURVEI LAPANGAN DINAMIS & PIPA ETL HYBRID */}
-      {activeTab === 'survei' && (
-        <SurveyEtlWorkspace onNavigateToMap={() => setActiveTab('gis')} />
-      )}
-
-      {/* PORTAL KHUSUS WARGA DESA (RESIDENT) */}
-      {isResident && (
-        <CitizenPortalWorkspace
-          currentUser={currentUser}
-          letters={letters}
-          showLetterForm={showLetterForm}
-          setShowLetterForm={setShowLetterForm}
-          letterTypeInput={letterTypeInput}
-          setLetterTypeInput={setLetterTypeInput}
-          letterPurposeInput={letterPurposeInput}
-          setLetterPurposeInput={setLetterPurposeInput}
-          handleSubmitLetter={handleSubmitLetter}
-          letterSuccessNotice={letterSuccessNotice}
-        />
-      )}
-
-      {/* Public Search Token Section for Consumers */}
-      <section
-        className="app-card animate-fade-in"
-        style={{
-          marginBottom: '2rem',
-          border: '1px solid rgba(6, 182, 212, 0.35)',
-          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 20px rgba(6, 182, 212, 0.1)',
-          padding: '2rem',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.5rem' }}>
-          <span className="badge badge-blue">INDIKASI GEOGRAFIS TERBUKA</span>
-          <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>&bull; Konsumen Global &amp; Wisatawan</span>
-        </div>
-        <h3 style={{ fontSize: '1.35rem', color: '#f8fafc', marginBottom: '0.35rem', fontWeight: 900 }}>
-          🔍 Verifikasi Mandiri Asal Rempah (Scan QR Publik)
-        </h3>
-        <p style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '1.25rem' }}>
-          Konsumen dapat memeriksa keaslian asal rempah Pala Banda Neira tanpa harus mendaftar atau masuk ke akun desa.
-        </p>
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <input
-            type="text"
-            placeholder="Masukkan token publik QR produk (misal: dari kemasan rempah)..."
-            value={verifyTokenInput}
-            onChange={(e) => setVerifyTokenInput(e.target.value)}
-            className="form-control"
-            style={{ flex: 1, minWidth: '260px' }}
-          />
-          <button
-            onClick={() => handlePublicVerify(verifyTokenInput)}
-            className="btn btn-primary"
-            style={{ padding: '0.65rem 1.6rem', fontWeight: 800 }}
-          >
-            Verifikasi Produk
-          </button>
-        </div>
-      </section>
-
-      {/* System Status Section */}
-      <section
-        className="app-card animate-fade-in"
-        style={{
-          marginBottom: '2rem',
-          border: '1px solid var(--border-color)',
-          padding: '2rem',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-          <div>
-            <h2 style={{ fontSize: '1.35rem', fontWeight: 900, margin: 0, color: '#f8fafc', letterSpacing: '-0.02em' }}>
-              Telemetri Infrastruktur Sistem
-            </h2>
-            <p style={{ fontSize: '0.825rem', color: '#94a3b8', margin: '0.25rem 0 0' }}>
-              Ketersediaan backend API, mesin geospasial PostGIS, dan persistensi terdistribusi.
-            </p>
-          </div>
-          <span className="badge badge-emerald">
-            ● SISTEM OPERASIONAL LENGKAP
-          </span>
-        </div>
-
-        {loadingHealth && <p style={{ color: '#94a3b8', fontSize: '0.875rem' }}>Memeriksa koneksi layanan backend...</p>}
-        {healthError && (
-          <div style={{ color: '#fca5a5', background: 'rgba(239, 68, 68, 0.15)', padding: '0.85rem 1.25rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem', border: '1px solid rgba(239, 68, 68, 0.35)', fontSize: '0.875rem', fontWeight: 600 }}>
-            ⚠️ Backend offline: {healthError}
-          </div>
-        )}
-        {health && (
-          <div className="stat-grid">
-            <div className="stat-card" style={{ borderLeft: '4px solid #10b981' }}>
-              <span className="stat-label">API Gateway</span>
-              <div className="stat-value" style={{ color: '#34d399', fontSize: '1.25rem' }}>
-                {health.services.api.toUpperCase()}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <div>
+                  <h2 className="font-serif" style={{ fontSize: '1.4rem', fontWeight: 700, margin: 0, color: '#081D35' }}>
+                    Telemetri Infrastruktur Kepulauan
+                  </h2>
+                  <p style={{ fontSize: '0.825rem', color: '#64748B', margin: '0.25rem 0 0' }}>
+                    Ketersediaan backend API, mesin geospasial PostGIS, dan persistensi database terdistribusi.
+                  </p>
+                </div>
+                <span className="badge badge-emerald">
+                  ● SISTEM OPERASIONAL LENGKAP
+                </span>
               </div>
-              <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontFamily: 'var(--font-mono)' }}>Versi: v{health.version}</span>
-            </div>
-            <div className="stat-card" style={{ borderLeft: `4px solid ${health.services.database === 'connected' ? '#06b6d4' : '#f59e0b'}` }}>
-              <span className="stat-label">Database Engine</span>
-              <div className="stat-value" style={{ color: health.services.database === 'connected' ? '#38bdf8' : '#fbbf24', fontSize: '1.25rem' }}>
-                {health.services.database.toUpperCase()}
-              </div>
-              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>PostgreSQL 15 &amp; PostGIS 3</span>
-            </div>
-            <div className="stat-card" style={{ borderLeft: '4px solid #a855f7' }}>
-              <span className="stat-label">Status Global</span>
-              <div className="stat-value" style={{ color: '#c084fc', fontSize: '1.25rem' }}>
-                {health.status.toUpperCase()}
-              </div>
-              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Ecosystem Operational</span>
-            </div>
-          </div>
-        )}
-      </section>
 
-      {/* Footer */}
-      <footer style={{ textAlign: 'center', padding: '2rem 0', color: '#64748b', fontSize: '0.825rem', borderTop: '1px solid rgba(255, 255, 255, 0.08)', marginTop: '2.5rem' }}>
-        <p style={{ margin: 0, color: '#94a3b8' }}>
-          <b style={{ color: '#f8fafc' }}>Ekosistem Digital Banda Neira</b> &bull; Tata Kelola Kependudukan &amp; Ketertelusuran Rempah Berbasis PostGIS &amp; Blockchain
-        </p>
-        <p style={{ margin: '0.4rem 0 0', opacity: 0.8 }}>
-          Kepulauan Banda, Maluku Tengah &bull; PWA Offline First &bull; Dilindungi Hak Cipta &copy; {new Date().getFullYear()}
-        </p>
-      </footer>
+              {loadingHealth && <p style={{ color: '#64748B', fontSize: '0.875rem' }}>Memeriksa koneksi layanan backend...</p>}
+              {healthError && (
+                <div style={{ color: '#fca5a5', background: 'rgba(239, 68, 68, 0.15)', padding: '0.85rem 1.25rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem', border: '1px solid rgba(239, 68, 68, 0.35)', fontSize: '0.875rem', fontWeight: 600 }}>
+                  ⚠️ Backend offline: {healthError}
+                </div>
+              )}
+              {health && (
+                <div className="stat-grid">
+                  <div className="stat-card" style={{ borderLeft: '4px solid #f4b75e' }}>
+                    <span className="stat-label">API Gateway</span>
+                    <div className="stat-value" style={{ color: '#f4b75e', fontSize: '1.25rem' }}>
+                      {health.services.api.toUpperCase()}
+                    </div>
+                    <span style={{ fontSize: '0.75rem', color: '#64748B', fontFamily: 'var(--font-mono)' }}>Versi: v{health.version}</span>
+                  </div>
+                  <div className="stat-card" style={{ borderLeft: `4px solid ${health.services.database === 'connected' ? '#10b981' : '#f59e0b'}` }}>
+                    <span className="stat-label">Database Engine</span>
+                    <div className="stat-value" style={{ color: health.services.database === 'connected' ? '#34d399' : '#fbbf24', fontSize: '1.25rem' }}>
+                      {health.services.database.toUpperCase()}
+                    </div>
+                    <span style={{ fontSize: '0.75rem', color: '#64748B' }}>PostgreSQL 15 &amp; PostGIS 3</span>
+                  </div>
+                  <div className="stat-card" style={{ borderLeft: '4px solid #38bdf8' }}>
+                    <span className="stat-label">Status Global</span>
+                    <div className="stat-value" style={{ color: '#38bdf8', fontSize: '1.25rem' }}>
+                      {health.status.toUpperCase()}
+                    </div>
+                    <span style={{ fontSize: '0.75rem', color: '#64748B' }}>bandanaira.com Operational</span>
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* UNIFIED ECOSYSTEM FOOTER DI BAGIAN BAWAH KONTEN DASBOR */}
+          <div style={{ marginTop: '4rem', marginLeft: '-1rem', marginRight: '-1rem', marginBottom: '-1rem' }}>
+            <BandaUnifiedFooter />
+          </div>
+        </DashboardLayout>
+      )}
 
       {/* MODALS */}
       <BlockchainModal
@@ -1754,50 +1336,6 @@ export const App: React.FC = () => {
         onQuickLogin={handleQuickLogin}
         onLogout={handleLogout}
       />
-
-      {/* Floating Quick Test & Multi-Actor Login Dock (Always Accessible on All Pages) */}
-      <button
-        type="button"
-        onClick={() => setShowQuickLoginModal(true)}
-        style={{
-          position: 'fixed',
-          bottom: '1.25rem',
-          right: '1.25rem',
-          zIndex: 9999,
-          background: 'linear-gradient(135deg, #0b1120 0%, #0f172a 100%)',
-          border: '1.5px solid #10b981',
-          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.75), 0 0 20px rgba(16, 185, 129, 0.35)',
-          color: '#ffffff',
-          padding: '0.65rem 1.15rem',
-          borderRadius: '999px',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.65rem',
-          fontSize: '0.825rem',
-          fontWeight: 800,
-          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-          backdropFilter: 'blur(12px)',
-        }}
-        title="Buka simulator peran & quick login instan untuk pengujian alur kerja"
-      >
-        <span
-          style={{
-            width: '9px',
-            height: '9px',
-            borderRadius: '50%',
-            background: currentUser ? '#10b981' : '#f59e0b',
-            boxShadow: currentUser ? '0 0 8px #10b981' : '0 0 8px #f59e0b',
-            display: 'inline-block',
-          }}
-        />
-        <Zap size={15} color="#fbbf24" fill="#fbbf24" />
-        <span>
-          {currentUser
-            ? `⚡ Peran: @${currentUser.username}`
-            : '⚡ Quick Login (Uji Peran)'}
-        </span>
-      </button>
     </div>
   )
 }

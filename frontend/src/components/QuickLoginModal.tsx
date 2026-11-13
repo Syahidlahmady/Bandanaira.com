@@ -217,57 +217,59 @@ export const QuickLoginModal: React.FC<QuickLoginModalProps> = ({
         onClick={(e) => e.stopPropagation()}
         style={{
           width: '100%',
-          maxWidth: '920px',
+          maxWidth: '940px',
           maxHeight: '92vh',
-          background: 'linear-gradient(145deg, #0b1120 0%, #0f172a 100%)',
-          border: '1px solid rgba(16, 185, 129, 0.35)',
+          background: 'linear-gradient(155deg, #081d35 0%, #0f2c59 100%)',
+          border: '1px solid rgba(244, 183, 94, 0.4)',
           borderRadius: '24px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 40px rgba(16, 185, 129, 0.15)',
+          boxShadow: '0 28px 56px -12px rgba(4, 12, 24, 0.85), 0 0 42px rgba(244, 183, 94, 0.18)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
+          padding: 0,
         }}
       >
         {/* Modal Header */}
         <div
           style={{
             padding: '1.25rem 1.5rem',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+            borderBottom: '1px solid rgba(244, 183, 94, 0.18)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            background: 'rgba(15, 23, 42, 0.6)',
+            background: 'rgba(6, 21, 39, 0.82)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
             <div
               style={{
-                width: '42px',
-                height: '42px',
-                borderRadius: '12px',
-                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(16, 185, 129, 0.25) 100%)',
-                border: '1px solid rgba(245, 158, 11, 0.4)',
+                width: '44px',
+                height: '44px',
+                borderRadius: '14px',
+                background: 'rgba(217, 119, 6, 0.2)',
+                border: '1px solid rgba(244, 183, 94, 0.5)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#fbbf24',
+                color: '#f4b75e',
+                boxShadow: '0 0 18px rgba(244, 183, 94, 0.25)',
               }}
             >
-              <Zap size={22} fill="#fbbf24" />
+              <Zap size={22} fill="#f4b75e" />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 900, color: '#f8fafc', letterSpacing: '-0.02em' }}>
-                  Quick Login &amp; Simulator Multi-Aktor
+                <h3 className="font-serif" style={{ margin: 0, fontSize: '1.45rem', fontWeight: 700, color: '#ffffff' }}>
+                  Quick Login &amp; Simulator Multi-Aktor Banda Neira
                 </h3>
                 <span
                   style={{
-                    background: 'rgba(16, 185, 129, 0.15)',
-                    border: '1px solid rgba(16, 185, 129, 0.3)',
-                    color: '#34d399',
+                    background: 'rgba(217, 119, 6, 0.2)',
+                    border: '1px solid rgba(244, 183, 94, 0.45)',
+                    color: '#f4b75e',
                     fontSize: '0.68rem',
                     fontWeight: 800,
-                    padding: '0.15rem 0.55rem',
+                    padding: '0.15rem 0.6rem',
                     borderRadius: '999px',
                     fontFamily: 'var(--font-mono)',
                   }}
@@ -275,7 +277,7 @@ export const QuickLoginModal: React.FC<QuickLoginModalProps> = ({
                   9 AKTOR READY
                 </span>
               </div>
-              <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: '#94a3b8' }}>
+              <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: '#cbd5e1' }}>
                 Ganti peran dalam 1-klik untuk menguji hak akses RBAC, alur kerja, dan tata kelola Ekosistem Banda Neira.
               </p>
             </div>

@@ -13,15 +13,35 @@ import {
   MapPin,
   ShoppingBag,
   Zap,
+  UserCheck,
 } from 'lucide-react'
 import { User } from '../services/auth'
 import { usePWA } from '../offline/usePWA'
+import bandaHeroBackdrop from '../assets/image.webp'
+
+export type EcosystemTabId =
+  | 'landing'
+  | 'register'
+  | 'dashboard'
+  | 'population'
+  | 'letters'
+  | 'farming'
+  | 'traceability'
+  | 'koperasi'
+  | 'iot'
+  | 'tourism'
+  | 'gis'
+  | 'audit'
+  | 'smart_planner'
+  | 'survei'
 
 interface HeaderNavProps {
   currentUser: User | null
   isOnline: boolean
   pendingSyncCount: number
   isSyncing: boolean
+  activeTab?: EcosystemTabId
+  onSelectTab?: (tab: EcosystemTabId) => void
   onLogout: () => void
   onManualSync: () => void
   onOpenQueueModal: () => void
@@ -35,6 +55,8 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   isOnline,
   pendingSyncCount,
   isSyncing,
+  activeTab,
+  onSelectTab,
   onLogout,
   onManualSync,
   onOpenQueueModal,
@@ -83,389 +105,364 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
     }
   }
 
+  const roleNames = currentUser ? currentUser.roles.map((r) => r.name) : []
+  const isAdmin = Boolean(currentUser?.is_superuser || roleNames.includes('admin'))
+
+  const getRoleNavigationItems = (): Array<{
+    label: string
+    isActive: boolean
+    onClick: () => void
+  }> => {
+    const items: Array<{ label: string; isActive: boolean; onClick: () => void }> = [
+      {
+        label: '🌐 Beranda Publik',
+        isActive: activeTab === 'landing',
+        onClick: () => (onOpenLanding ? onOpenLanding() : onSelectTab?.('landing')),
+      },
+      {
+        label: '📊 Dasbor Ekosistem',
+        isActive: activeTab === 'dashboard',
+        onClick: () => onSelectTab?.('dashboard'),
+      },
+    ]
+
+    if (isAdmin) {
+      items.push(
+        { label: '👥 Warga & Profesi', isActive: activeTab === 'population', onClick: () => onSelectTab?.('population') },
+        { label: '📬 Pelayanan Surat', isActive: activeTab === 'letters', onClick: () => onSelectTab?.('letters') },
+        { label: '🗺️ Lahan & Poktan', isActive: activeTab === 'farming', onClick: () => onSelectTab?.('farming') },
+        { label: '📦 Panen & Mutu', isActive: activeTab === 'traceability', onClick: () => onSelectTab?.('traceability') },
+        { label: '⚖️ Koperasi', isActive: activeTab === 'koperasi', onClick: () => onSelectTab?.('koperasi') },
+        { label: '🏡 Penginapan & Wisata', isActive: activeTab === 'tourism', onClick: () => onSelectTab?.('tourism') },
+        { label: '📡 IoT', isActive: activeTab === 'iot', onClick: () => onSelectTab?.('iot') },
+        { label: '📋 Survei', isActive: activeTab === 'survei', onClick: () => onSelectTab?.('survei') },
+        { label: '🏛️ Audit', isActive: activeTab === 'audit', onClick: () => onSelectTab?.('audit') }
+      )
+    } else if (roleNames.includes('village_officer')) {
+      items.push(
+        { label: '👥 Data Warga & Profesi', isActive: activeTab === 'population', onClick: () => onSelectTab?.('population') },
+        { label: '📬 Pelayanan Surat Warga', isActive: activeTab === 'letters', onClick: () => onSelectTab?.('letters') },
+        { label: '🗺️ Verifikasi Lahan Kebun', isActive: activeTab === 'farming', onClick: () => onSelectTab?.('farming') },
+        { label: '🏛️ Rekap & Audit Desa', isActive: activeTab === 'audit', onClick: () => onSelectTab?.('audit') }
+      )
+    } else if (roleNames.includes('coop_manager')) {
+      items.push(
+        { label: '⚖️ Kasir Koperasi & Bank Sampah', isActive: activeTab === 'koperasi', onClick: () => onSelectTab?.('koperasi') },
+        { label: '📦 Rantai Pasok Komoditas', isActive: activeTab === 'traceability', onClick: () => onSelectTab?.('traceability') },
+        { label: '📡 Telemetri Tandon Air RO', isActive: activeTab === 'iot', onClick: () => onSelectTab?.('iot') }
+      )
+    } else if (roleNames.includes('homestay_operator')) {
+      items.push(
+        { label: '🏡 Kelola Penginapan & Reservasi Tamu', isActive: activeTab === 'tourism', onClick: () => onSelectTab?.('tourism') }
+      )
+    } else if (roleNames.includes('smart_tourism_admin')) {
+      items.push(
+        { label: '🏖️ Destinasi, Penginapan & 177 Cagar Budaya', isActive: activeTab === 'tourism', onClick: () => onSelectTab?.('tourism') },
+        { label: '🧭 Rekomendasi Wisata (SAW)', isActive: activeTab === 'smart_planner', onClick: () => onSelectTab?.('smart_planner') },
+        { label: '🗺️ Peta Wisata 7-Layer', isActive: activeTab === 'gis', onClick: () => onSelectTab?.('gis') }
+      )
+    } else if (roleNames.includes('field_surveyor')) {
+      items.push(
+        { label: '📋 Survei Lapangan & Pipa ETL', isActive: activeTab === 'survei', onClick: () => onSelectTab?.('survei') },
+        { label: '📡 Telemetri 4 Stasiun IoT', isActive: activeTab === 'iot', onClick: () => onSelectTab?.('iot') },
+        { label: '🗺️ Validasi Spasial PostGIS', isActive: activeTab === 'gis', onClick: () => onSelectTab?.('gis') }
+      )
+    } else if (roleNames.includes('farmer_group_admin')) {
+      items.push(
+        { label: '🗺️ Peta & Pengajuan Lahan Poktan', isActive: activeTab === 'farming', onClick: () => onSelectTab?.('farming') },
+        { label: '📦 Rekap Panen & Mutu Poktan', isActive: activeTab === 'traceability', onClick: () => onSelectTab?.('traceability') }
+      )
+    } else if (roleNames.includes('farmer')) {
+      items.push(
+        { label: '📦 Catatan Panen & QR Saya', isActive: activeTab === 'traceability', onClick: () => onSelectTab?.('traceability') },
+        { label: '🗺️ Peta Lahan Kebun Saya', isActive: activeTab === 'farming', onClick: () => onSelectTab?.('farming') }
+      )
+    } else if (roleNames.includes('resident')) {
+      items.push(
+        { label: '🪪 Layanan Surat & Kuota Warga', isActive: activeTab === 'letters', onClick: () => onSelectTab?.('letters') }
+      )
+    }
+
+    return items
+  }
+
+  const navigationItems = getRoleNavigationItems()
+
   return (
-    <header style={{ marginBottom: '2rem' }}>
+    <header className="mb-7 select-none">
       {/* Service Worker Update Notification Banner */}
       {hasUpdate && (
-        <div
-          className="animate-fade-in"
-          style={{
-            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(217, 119, 6, 0.12) 100%)',
-            border: '1px solid rgba(245, 158, 11, 0.45)',
-            borderRadius: 'var(--radius-md)',
-            padding: '0.9rem 1.35rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '1rem',
-            marginBottom: '1.25rem',
-            boxShadow: '0 4px 20px rgba(245, 158, 11, 0.2)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-            <div
-              style={{
-                width: '38px',
-                height: '38px',
-                borderRadius: '50%',
-                background: 'rgba(245, 158, 11, 0.2)',
-                border: '1px solid rgba(245, 158, 11, 0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#fbbf24',
-                flexShrink: 0,
-              }}
-            >
+        <div className="animate-fade-in mb-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#f4b75e]/50 bg-gradient-to-r from-[#d97706]/25 to-[#081d35]/90 px-5 py-3.5 shadow-[0_8px_28px_rgba(217,119,6,0.25)] backdrop-blur-md">
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#f4b75e]/50 bg-[#d97706]/25 text-[#f4b75e]">
               <Sparkles size={19} />
             </div>
             <div>
-              <div style={{ fontSize: '0.925rem', fontWeight: 800, color: '#fbbf24' }}>
+              <div className="font-serif text-base font-bold text-[#f4b75e]">
                 Pembaruan Sistem Tersedia!
               </div>
-              <div style={{ fontSize: '0.8rem', color: '#cbd5e1', marginTop: '0.1rem' }}>
+              <div className="text-xs text-white/80">
                 Versi mutakhir aplikasi telah siap. Klik perbarui untuk mengaktifkannya secara instan tanpa kehilangan data offline.
               </div>
             </div>
           </div>
           <button
             onClick={updateApp}
-            className="btn btn-sm btn-warning"
-            style={{ fontWeight: 800 }}
+            className="btn btn-sm btn-warning font-bold"
           >
             <RefreshCw size={14} /> Perbarui Sekarang
           </button>
         </div>
       )}
 
-      {/* Main Top Cyber HUD Bar */}
-      <div
-        className="app-card"
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '1.25rem',
-          padding: '1.2rem 1.6rem',
-          marginBottom: '1rem',
-          background: 'rgba(15, 23, 42, 0.78)',
-          boxShadow: '0 12px 32px rgba(0, 0, 0, 0.5), 0 0 24px rgba(16, 185, 129, 0.08)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-        }}
-      >
-        {/* Brand & Identity */}
+      {/* Main Panoramic Glassmorphic Header Shell (desainsaatini/BandaHeroSection.tsx + 21st.dev Elevate Navbar) */}
+      <div className="relative overflow-hidden rounded-3xl border border-[#f4b75e]/25 bg-[#081d35] shadow-[0_20px_50px_rgba(4,12,24,0.75)]">
+        {/* Authentic Banda Neira Asset Backdrop */}
+        <img
+          src={bandaHeroBackdrop}
+          alt="Kepulauan Banda Neira"
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-35"
+        />
         <div
-          onClick={onOpenLanding}
+          className="pointer-events-none absolute inset-0"
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1.1rem',
-            cursor: onOpenLanding ? 'pointer' : 'default',
+            background:
+              'linear-gradient(135deg, rgba(8,29,53,0.92) 0%, rgba(15,44,89,0.78) 50%, rgba(8,29,53,0.95) 100%)',
           }}
-          title={onOpenLanding ? 'Klik untuk kembali ke Beranda Satu Pintu' : undefined}
-        >
+        />
+
+        {/* Top Floating Glassmorphic Navbar Row */}
+        <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 bg-[#081d35]/70 px-5 py-3.5 backdrop-blur-md md:px-7">
+          {/* Brand Logo & Identity (Matches BandaHeroSection.tsx) */}
           <div
-            style={{
-              width: '50px',
-              height: '50px',
-              borderRadius: '16px',
-              background: 'linear-gradient(135deg, #059669 0%, #10b981 50%, #06b6d4 100%)',
-              color: '#042f2e',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 0 24px rgba(16, 185, 129, 0.45)',
-              border: '2px solid rgba(255, 255, 255, 0.25)',
-              fontSize: '1.6rem',
-              flexShrink: 0,
-            }}
+            onClick={onOpenLanding}
+            className="flex cursor-pointer items-center gap-3.5 group"
+            title="Klik untuk kembali ke Beranda Utama bandanaira.com"
           >
-            🌿
-          </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-              <h1
-                style={{
-                  fontSize: '1.4rem',
-                  fontWeight: 800,
-                  color: '#f8fafc',
-                  letterSpacing: '-0.025em',
-                  lineHeight: 1.2,
-                  margin: 0,
-                  background: 'linear-gradient(135deg, #ffffff 0%, #a7f3d0 50%, #67e8f9 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#f4b75e]/45 bg-[#d97706]/20 shadow-[0_0_20px_rgba(244,183,94,0.25)] transition-transform duration-300 group-hover:scale-105">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#f4b75e"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                Banda Digital Ecosystem
-              </h1>
-              <span
-                className="badge badge-emerald"
-                style={{ fontSize: '0.68rem', padding: '0.15rem 0.55rem' }}
-              >
-                Kepulauan Banda
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginTop: '0.25rem', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                <MapPin size={12} color="#34d399" /> 4°31′S 129°54′E
-              </span>
-              <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.2)' }}>&bull;</span>
-              <span style={{ fontSize: '0.75rem', color: '#38bdf8', fontFamily: 'var(--font-mono)' }}>
-                EVM Blockchain Traceability & GIS
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Live Network, PWA Install & Offline Sync Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-          {/* Signal Indicator Pill */}
-          <div
-            style={{
-              background: isOnline ? 'rgba(16, 185, 129, 0.12)' : 'rgba(244, 63, 94, 0.14)',
-              border: `1px solid ${isOnline ? 'rgba(16, 185, 129, 0.35)' : 'rgba(244, 63, 94, 0.4)'}`,
-              borderRadius: 'var(--radius-full)',
-              padding: '0.4rem 0.95rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.55rem',
-              boxShadow: isOnline ? '0 0 16px rgba(16, 185, 129, 0.15)' : '0 0 16px rgba(244, 63, 94, 0.2)',
-            }}
-          >
-            <span
-              style={{
-                width: '9px',
-                height: '9px',
-                borderRadius: '50%',
-                background: isOnline ? '#10b981' : '#f43f5e',
-                boxShadow: isOnline ? '0 0 10px #10b981' : '0 0 10px #f43f5e',
-                display: 'inline-block',
-                animation: 'pulse-ring 2s infinite',
-              }}
-            />
-            <span
-              style={{
-                fontSize: '0.78rem',
-                fontWeight: 700,
-                color: isOnline ? '#34d399' : '#fb7185',
-                letterSpacing: '0.02em',
-                fontFamily: 'var(--font-mono)',
-              }}
-            >
-              {isOnline ? 'ONLINE & SYNCED' : 'OFFLINE KEBUN'}
-            </span>
-
-            {pendingSyncCount > 0 && (
-              <span
-                style={{
-                  background: 'rgba(245, 158, 11, 0.2)',
-                  color: '#fbbf24',
-                  padding: '0.15rem 0.55rem',
-                  borderRadius: 'var(--radius-full)',
-                  fontSize: '0.72rem',
-                  fontWeight: 800,
-                  border: '1px solid rgba(245, 158, 11, 0.4)',
-                }}
-              >
-                📦 {pendingSyncCount}
-              </span>
-            )}
-          </div>
-
-          {/* Sync Trigger button when pending data exists */}
-          {pendingSyncCount > 0 && (
-            <button
-              onClick={onManualSync}
-              disabled={!isOnline || isSyncing}
-              className="btn btn-sm btn-primary"
-              title="Kirim catatan tersimpan ke server desa"
-            >
-              <RefreshCw size={13} className={isSyncing ? 'animate-spin' : ''} />
-              {isSyncing ? 'Mengirim...' : 'Kirim Antrean'}
-            </button>
-          )}
-
-          {/* Open Offline Queue Modal */}
-          <button
-            onClick={onOpenQueueModal}
-            className="btn btn-sm btn-secondary"
-            title="Buka daftar data offline di perangkat"
-          >
-            <Layers size={13} /> Antrean ({pendingSyncCount})
-          </button>
-
-          {/* Satu Pintu Landing Button */}
-          {onOpenLanding && (
-            <button
-              onClick={onOpenLanding}
-              className="btn btn-sm btn-secondary"
-              style={{
-                fontSize: '0.785rem',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                background: 'rgba(255, 255, 255, 0.05)',
-                color: '#e2e8f0',
-                fontWeight: 700,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-              }}
-              title="Kembali ke Halaman Beranda Satu Pintu"
-            >
-              🏠 Satu Pintu
-            </button>
-          )}
-
-          {/* Decentralized Marketplace Showcase */}
-          {onOpenMarketplace && (
-            <button
-              onClick={onOpenMarketplace}
-              className="btn btn-sm btn-outline-primary"
-              style={{
-                borderColor: 'rgba(6, 182, 212, 0.45)',
-                color: '#38bdf8',
-                background: 'rgba(6, 182, 212, 0.12)',
-                fontWeight: 700,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-              }}
-              title="Buka Marketplace Produk Rempah & Ikan Terverifikasi Blockchain"
-            >
-              <ShoppingBag size={13} /> 🛍️ Marketplace Rempah &amp; Ikan
-            </button>
-          )}
-
-          {/* PWA Install Button or Status Indicator */}
-          {canInstall ? (
-            <button
-              onClick={handleInstallClick}
-              disabled={installing}
-              className="btn btn-sm btn-primary"
-              style={{
-                boxShadow: '0 0 18px rgba(16, 185, 129, 0.45)',
-                fontWeight: 800,
-              }}
-              title="Pasang aplikasi di layar utama HP / Tablet untuk akses instan tanpa browser"
-            >
-              <Smartphone size={13} />
-              {installing ? 'Memasang...' : '📲 Pasang di HP'}
-            </button>
-          ) : isInstalled ? (
-            <span
-              className="badge badge-emerald"
-              style={{ padding: '0.4rem 0.8rem' }}
-              title="Aplikasi telah terpasang di perangkat Anda"
-            >
-              <CheckCircle2 size={13} /> Terpasang di HP
-            </span>
-          ) : (
-            <button
-              onClick={() => setShowGuideModal(true)}
-              className="btn btn-sm btn-secondary"
-              style={{
-                fontSize: '0.775rem',
-                color: '#94a3b8',
-              }}
-              title="Petunjuk memasang aplikasi di ponsel Android / iPhone"
-            >
-              <Smartphone size={13} /> Pasang di HP
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Cyber User Session HUD Bar */}
-      {currentUser && (
-        <div
-          className="app-card animate-fade-in"
-          style={{
-            padding: '0.9rem 1.5rem',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '1rem',
-            background: 'linear-gradient(90deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.75) 100%)',
-            borderLeft: '4px solid #10b981',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.95rem' }}>
-            <div
-              style={{
-                width: '42px',
-                height: '42px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(6, 182, 212, 0.3) 100%)',
-                color: '#34d399',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 800,
-                fontSize: '1.05rem',
-                border: '2px solid rgba(52, 211, 153, 0.4)',
-                boxShadow: '0 0 14px rgba(16, 185, 129, 0.3)',
-              }}
-            >
-              {currentUser.full_name ? currentUser.full_name.charAt(0).toUpperCase() : 'U'}
+                <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5" />
+                <path d="M8.5 8.5v.01" />
+                <path d="M16 15.5v.01" />
+                <path d="M12 12v.01" />
+              </svg>
             </div>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '0.975rem', fontWeight: 800, color: '#f8fafc', letterSpacing: '-0.01em' }}>
-                  {currentUser.full_name || currentUser.username}
+              <div className="flex items-center gap-2.5">
+                <span className="font-serif text-xl font-bold tracking-[0.4px] text-white transition-colors group-hover:text-[#f4b75e] md:text-2xl">
+                  bandanaira.com
                 </span>
-                <span style={{ fontSize: '0.8rem', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
-                  (@{currentUser.username})
+                <span className="hidden rounded-full border border-[#f4b75e]/40 bg-[#d97706]/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[#f4b75e] sm:inline-block">
+                  Kepulauan Banda
                 </span>
               </div>
-              <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.25rem', flexWrap: 'wrap' }}>
-                {currentUser.roles.map((r) => (
-                  <span key={r.id} className="badge badge-emerald" style={{ fontSize: '0.68rem', padding: '0.15rem 0.5rem' }}>
-                    <Shield size={11} /> {getRoleLabel(r.name)}
-                  </span>
-                ))}
+              <div className="flex items-center gap-2 text-[11px] text-white/70">
+                <span className="inline-flex items-center gap-1 text-[#f4b75e]">
+                  <MapPin size={11} /> 4°31′S 129°54′E
+                </span>
+                <span>&bull;</span>
+                <span className="font-mono text-white/65">
+                  PostGIS 7-Layer &amp; EVM Traceability
+                </span>
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* Center Navigation Links (desainsaatini/BandaHeroSection.tsx style) */}
+          <nav
+            aria-label="Navigasi Utama Ekosistem"
+            className="hidden items-center gap-6 lg:flex"
+          >
+            {navigationItems.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                onClick={item.onClick}
+                className={`relative bg-transparent px-1 py-1.5 text-sm transition-colors ${
+                  item.isActive
+                    ? 'font-semibold text-[#f4b75e]'
+                    : 'font-normal text-white/80 hover:text-white'
+                }`}
+              >
+                {item.label}
+                {item.isActive && (
+                  <span className="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-[#f4b75e] shadow-[0_0_8px_#f4b75e]" />
+                )}
+              </button>
+            ))}
+          </nav>
+
+          {/* Right Action Controls: Marketplace + Login/Role Button */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            {onOpenMarketplace && (
+              <button
+                type="button"
+                onClick={onOpenMarketplace}
+                className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-semibold text-white backdrop-blur-sm transition-all hover:border-[#f4b75e]/60 hover:bg-white/15 hover:text-[#f4b75e]"
+                title="Buka Katalog Marketplace Produk Rempah & Ikan Terverifikasi Blockchain"
+              >
+                <ShoppingBag size={14} className="text-[#f4b75e]" />
+                <span>Marketplace UMKM</span>
+              </button>
+            )}
+
+            {!currentUser && onSelectTab && (
+              <button
+                type="button"
+                onClick={() => onSelectTab('register')}
+                className="inline-flex items-center gap-2 rounded-xl border border-amber-500/70 bg-amber-600 px-3.5 py-2 text-xs font-bold text-white shadow-[0_4px_14px_rgba(217,119,6,0.35)] transition-all hover:bg-amber-500"
+                title="Buka halaman Pendaftaran Akun Baru (Warga, Mitra Usaha, Wisatawan)"
+              >
+                <span>Daftar Akun</span>
+              </button>
+            )}
+
             {onOpenQuickSwitch && (
               <button
                 type="button"
                 onClick={onOpenQuickSwitch}
-                className="btn btn-sm"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%)',
-                  border: '1px solid rgba(245, 158, 11, 0.45)',
-                  color: '#fbbf24',
-                  padding: '0.45rem 0.95rem',
-                  fontWeight: 800,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  cursor: 'pointer',
-                  borderRadius: 'var(--radius-md)',
-                }}
-                title="Ganti peran aktor secara instan untuk pengujian alur kerja"
+                className="inline-flex items-center gap-2 rounded-xl border border-[#f4b75e] bg-[#d9770626] px-4 py-2 text-xs font-semibold text-[#f4b75e] shadow-[0_0_20px_rgba(217,119,6,0.2)] transition-all hover:bg-[#d9770640]"
+                title="Ganti peran aktor secara instan atau masuk ke akun desa"
               >
-                <Zap size={14} fill="#fbbf24" /> ⚡ Ganti Peran Cepat
+                <Zap size={13} fill="#f4b75e" />
+                <span>
+                  {currentUser ? `Peran: @${currentUser.username}` : 'Masuk / Login'}
+                </span>
               </button>
             )}
-            <button
-              onClick={onLogout}
-              className="btn btn-sm btn-danger"
-              style={{
-                padding: '0.45rem 0.95rem',
-                fontWeight: 700,
-              }}
-            >
-              <LogOut size={13} /> Keluar (Logout)
-            </button>
           </div>
         </div>
-      )}
+
+        {/* Secondary Telemetry, PWA Sync & Active User Session Bar */}
+        <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 bg-[#061527]/75 px-5 py-2.5 text-xs md:px-7">
+          {/* Left: Signal Status, Offline Queue & PWA */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Signal Indicator Pill */}
+            <div
+              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono text-[11px] font-bold ${
+                isOnline
+                  ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-300'
+                  : 'border-rose-400/40 bg-rose-500/15 text-rose-300'
+              }`}
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  isOnline
+                    ? 'bg-emerald-400 shadow-[0_0_8px_#10b981]'
+                    : 'bg-rose-400 shadow-[0_0_8px_#f43f5e]'
+                }`}
+              />
+              <span>{isOnline ? 'ONLINE & SYNCED' : 'OFFLINE KEBUN'}</span>
+              {pendingSyncCount > 0 && (
+                <span className="rounded-full border border-[#f4b75e]/40 bg-[#d97706]/25 px-1.5 py-0.2 text-[10px] text-[#f4b75e]">
+                  📦 {pendingSyncCount}
+                </span>
+              )}
+            </div>
+
+            {pendingSyncCount > 0 && (
+              <button
+                type="button"
+                onClick={onManualSync}
+                disabled={!isOnline || isSyncing}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[#f4b75e]/50 bg-[#d97706]/25 px-2.5 py-1 text-[11px] font-bold text-[#f4b75e] hover:bg-[#d97706]/40"
+              >
+                <RefreshCw size={12} className={isSyncing ? 'animate-spin' : ''} />
+                {isSyncing ? 'Mengirim...' : 'Kirim Antrean'}
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={onOpenQueueModal}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] font-medium text-white/80 hover:border-[#f4b75e]/40 hover:text-[#f4b75e]"
+              title="Buka daftar data offline di perangkat"
+            >
+              <Layers size={12} /> Antrean Offline ({pendingSyncCount})
+            </button>
+
+            {canInstall ? (
+              <button
+                type="button"
+                onClick={handleInstallClick}
+                disabled={installing}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[#f4b75e]/50 bg-[#d97706]/20 px-2.5 py-1 text-[11px] font-bold text-[#f4b75e] hover:bg-[#d97706]/35"
+              >
+                <Smartphone size={12} />
+                {installing ? 'Memasang...' : '📲 Pasang Aplikasi'}
+              </button>
+            ) : isInstalled ? (
+              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-300">
+                <CheckCircle2 size={12} /> Terpasang di HP
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowGuideModal(true)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-white/70 hover:border-white/25 hover:text-white"
+              >
+                <Smartphone size={12} /> Panduan PWA
+              </button>
+            )}
+          </div>
+
+          {/* Right: Active User Identity or Guest Explorer Badge */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            {currentUser ? (
+              <>
+                <div className="flex items-center gap-2 rounded-full border border-[#f4b75e]/35 bg-[#0f2c59]/80 px-3 py-1">
+                  <UserCheck size={13} className="text-[#f4b75e]" />
+                  <span className="font-semibold text-white">
+                    {currentUser.full_name || currentUser.username}
+                  </span>
+                  <span className="font-mono text-[11px] text-[#f4b75e]">
+                    (@{currentUser.username})
+                  </span>
+                  {currentUser.roles.map((r) => (
+                    <span
+                      key={r.id}
+                      className="hidden rounded-full border border-emerald-400/35 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-300 sm:inline-flex sm:items-center sm:gap-1"
+                    >
+                      <Shield size={10} /> {getRoleLabel(r.name)}
+                    </span>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-rose-400/40 bg-rose-500/15 px-2.5 py-1 text-[11px] font-bold text-rose-200 transition-colors hover:bg-rose-500/30"
+                >
+                  <LogOut size={12} /> Keluar
+                </button>
+              </>
+            ) : (
+              <div className="flex items-center gap-2 text-[11px] text-white/75">
+                <span className="rounded-full border border-white/15 bg-white/5 px-2.5 py-1">
+                  🌏 Mode Eksplorasi Publik
+                </span>
+                {onOpenLanding && (
+                  <button
+                    type="button"
+                    onClick={onOpenLanding}
+                    className="rounded-lg border border-[#f4b75e]/40 bg-[#d97706]/15 px-2.5 py-1 font-semibold text-[#f4b75e] hover:bg-[#d97706]/30"
+                  >
+                    ← Kembali ke Beranda
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Modal: Panduan Pasang Aplikasi PWA di HP */}
       {showGuideModal && (
@@ -478,49 +475,35 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
             style={{ maxWidth: '540px' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                <div
-                  style={{
-                    width: '46px',
-                    height: '46px',
-                    borderRadius: '14px',
-                    background: 'rgba(16, 185, 129, 0.15)',
-                    color: '#34d399',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: '1px solid rgba(16, 185, 129, 0.35)',
-                    boxShadow: '0 0 16px rgba(16, 185, 129, 0.2)',
-                  }}
-                >
+            <div className="mb-5 flex items-start justify-between">
+              <div className="flex items-center gap-3.5">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#f4b75e]/40 bg-[#d97706]/20 text-[#f4b75e] shadow-[0_0_20px_rgba(244,183,94,0.2)]">
                   <Smartphone size={24} />
                 </div>
                 <div>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: '#f8fafc' }}>
+                  <h3 className="font-serif text-2xl font-bold text-white">
                     Pasang Aplikasi di Layar HP
                   </h3>
-                  <p style={{ fontSize: '0.825rem', color: '#94a3b8', margin: '0.2rem 0 0' }}>
-                    Akses instan seperti aplikasi native & bekerja di kebun tanpa sinyal internet
+                  <p className="mt-0.5 text-xs text-white/70">
+                    Akses instan seperti aplikasi native &amp; bekerja di kebun tanpa sinyal internet
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowGuideModal(false)}
-                className="btn btn-sm btn-secondary"
-                style={{ padding: '0.4rem', borderRadius: '50%', border: 'none' }}
+                className="btn btn-sm btn-secondary rounded-full p-2"
               >
                 <X size={18} />
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.875rem' }}>
+            <div className="flex flex-col gap-4 text-sm">
               {/* Android Guide */}
-              <div style={{ background: 'rgba(30, 41, 59, 0.6)', padding: '1.1rem 1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, color: '#38bdf8', marginBottom: '0.5rem' }}>
+              <div className="rounded-2xl border border-white/10 bg-[#061527]/70 p-4">
+                <div className="mb-2 flex items-center gap-2 font-bold text-[#f4b75e]">
                   <MoreVertical size={16} /> 1. Pengguna Android (Chrome / Edge / Samsung Internet)
                 </div>
-                <ol style={{ paddingLeft: '1.25rem', margin: 0, lineHeight: 1.6, color: '#cbd5e1' }}>
+                <ol className="list-decimal space-y-1 pl-5 text-xs leading-relaxed text-white/80">
                   <li>Tekan ikon <strong>titik tiga (⋮)</strong> di pojok kanan atas layar peramban.</li>
                   <li>Pilih menu <strong>"Tambahkan ke Layar Utama"</strong> atau <strong>"Pasang Aplikasi"</strong>.</li>
                   <li>Tekan <strong>Install / Tambah</strong>. Ikon Desa Digital akan muncul di beranda HP Anda.</li>
@@ -528,11 +511,11 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
               </div>
 
               {/* iOS Guide */}
-              <div style={{ background: 'rgba(30, 41, 59, 0.6)', padding: '1.1rem 1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, color: '#fbbf24', marginBottom: '0.5rem' }}>
+              <div className="rounded-2xl border border-white/10 bg-[#061527]/70 p-4">
+                <div className="mb-2 flex items-center gap-2 font-bold text-emerald-300">
                   <Share2 size={16} /> 2. Pengguna iPhone / iPad (Safari)
                 </div>
-                <ol style={{ paddingLeft: '1.25rem', margin: 0, lineHeight: 1.6, color: '#cbd5e1' }}>
+                <ol className="list-decimal space-y-1 pl-5 text-xs leading-relaxed text-white/80">
                   <li>Buka website ini menggunakan browser bawaan <strong>Safari</strong>.</li>
                   <li>Tekan tombol <strong>Bagikan (Share)</strong> yang berlogo kotak panah ke atas (⎋) di bilah bawah.</li>
                   <li>Gulir ke bawah dan pilih <strong>"Tambah ke Layar Utama" (Add to Home Screen)</strong>.</li>
@@ -541,21 +524,20 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
               </div>
 
               {/* Benefits Box */}
-              <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '1rem', borderRadius: 'var(--radius-md)', fontSize: '0.825rem', color: '#6ee7b7' }}>
-                <strong style={{ color: '#34d399' }}>🌟 Keunggulan Aplikasi Desa Digital:</strong>
-                <ul style={{ margin: '0.4rem 0 0', paddingLeft: '1.2rem', lineHeight: 1.55 }}>
+              <div className="rounded-2xl border border-[#f4b75e]/30 bg-[#d97706]/15 p-4 text-xs text-white/90">
+                <strong className="text-[#f4b75e]">🌟 Keunggulan Aplikasi Desa Digital Banda Neira:</strong>
+                <ul className="mt-1.5 list-disc space-y-1 pl-5 leading-relaxed">
                   <li>Buka aplikasi dalam satu sentuhan langsung dari layar HP tanpa mengetik URL.</li>
                   <li>Peta GIS Kepulauan Banda tetap tampil secara offline tanpa jaringan internet.</li>
-                  <li>Pencatatan data penduduk & hasil panen otomatis tersimpan aman di memori lokal HP.</li>
+                  <li>Pencatatan data penduduk &amp; hasil panen otomatis tersimpan aman di memori lokal HP.</li>
                 </ul>
               </div>
             </div>
 
-            <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
+            <div className="mt-6 text-right">
               <button
                 onClick={() => setShowGuideModal(false)}
-                className="btn btn-primary"
-                style={{ padding: '0.6rem 1.5rem' }}
+                className="btn btn-primary px-6 py-2.5"
               >
                 Saya Mengerti
               </button>

@@ -134,10 +134,24 @@ export interface TourGuideUpdatePayload {
   is_active?: boolean
 }
 
+import { authService } from './auth'
+
 const getApiBase = () => {
   return typeof window !== 'undefined'
     ? `http://${window.location.hostname}:8005/api/v1`
     : 'http://localhost:8005/api/v1'
+}
+
+const getAuthHeaders = (hasBody = true): HeadersInit => {
+  const token = authService.getAccessToken()
+  const headers: Record<string, string> = {}
+  if (hasBody) {
+    headers['Content-Type'] = 'application/json'
+  }
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+  return headers
 }
 
 export const tourismService = {
@@ -196,20 +210,27 @@ export const tourismService = {
     const q = new URLSearchParams()
     if (accommodationId) q.append('accommodation_id', accommodationId)
 
-    const res = await fetch(`${getApiBase()}/tourism/bookings?${q.toString()}`)
-    if (!res.ok) throw new Error('Gagal memuat riwayat reservasi.')
+    const res = await fetch(`${getApiBase()}/tourism/bookings?${q.toString()}`, {
+      headers: getAuthHeaders(false),
+    })
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 403) {
+        throw new Error('Akses ditolak: Silakan login sebagai Operator Homestay atau Admin Desa.')
+      }
+      throw new Error('Gagal memuat riwayat reservasi.')
+    }
     return res.json()
   },
 
   async createAccommodation(payload: AccommodationCreatePayload): Promise<AccommodationItem> {
     const res = await fetch(`${getApiBase()}/tourism/accommodations`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(true),
       body: JSON.stringify(payload),
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: res.statusText }))
-      throw new Error(err.detail || 'Gagal menambahkan penginapan baru.')
+      throw new Error(err.detail || 'Gagal menambahkan penginapan baru (perlu izin Operator/Admin).')
     }
     return res.json()
   },
@@ -217,12 +238,12 @@ export const tourismService = {
   async updateAccommodation(id: string, payload: AccommodationUpdatePayload): Promise<AccommodationItem> {
     const res = await fetch(`${getApiBase()}/tourism/accommodations/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(true),
       body: JSON.stringify(payload),
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: res.statusText }))
-      throw new Error(err.detail || 'Gagal memperbarui data penginapan.')
+      throw new Error(err.detail || 'Gagal memperbarui data penginapan (perlu izin Operator/Admin).')
     }
     return res.json()
   },
@@ -230,8 +251,12 @@ export const tourismService = {
   async deleteAccommodation(id: string): Promise<void> {
     const res = await fetch(`${getApiBase()}/tourism/accommodations/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeaders(false),
     })
-    if (!res.ok) throw new Error('Gagal menghapus penginapan.')
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }))
+      throw new Error(err.detail || 'Gagal menghapus penginapan (perlu izin Operator/Admin).')
+    }
   },
 
   async listTourGuides(params?: { island?: string; is_verified?: boolean }): Promise<TourGuideItem[]> {
@@ -247,12 +272,12 @@ export const tourismService = {
   async createTourGuide(payload: TourGuideCreatePayload): Promise<TourGuideItem> {
     const res = await fetch(`${getApiBase()}/tourism/guides`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(true),
       body: JSON.stringify(payload),
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: res.statusText }))
-      throw new Error(err.detail || 'Gagal mendaftarkan pemandu wisata.')
+      throw new Error(err.detail || 'Gagal mendaftarkan pemandu wisata (perlu izin Smart Tourism Admin).')
     }
     return res.json()
   },
@@ -260,12 +285,12 @@ export const tourismService = {
   async updateTourGuide(id: string, payload: TourGuideUpdatePayload): Promise<TourGuideItem> {
     const res = await fetch(`${getApiBase()}/tourism/guides/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(true),
       body: JSON.stringify(payload),
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: res.statusText }))
-      throw new Error(err.detail || 'Gagal memperbarui profil pemandu.')
+      throw new Error(err.detail || 'Gagal memperbarui profil pemandu (perlu izin Smart Tourism Admin).')
     }
     return res.json()
   },
@@ -273,8 +298,12 @@ export const tourismService = {
   async deleteTourGuide(id: string): Promise<void> {
     const res = await fetch(`${getApiBase()}/tourism/guides/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeaders(false),
     })
-    if (!res.ok) throw new Error('Gagal menghapus pemandu wisata.')
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }))
+      throw new Error(err.detail || 'Gagal menghapus pemandu wisata (perlu izin Smart Tourism Admin).')
+    }
   },
 }
 

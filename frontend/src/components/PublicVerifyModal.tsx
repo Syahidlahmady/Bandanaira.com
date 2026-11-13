@@ -12,18 +12,25 @@ export const PublicVerifyModal: React.FC<PublicVerifyModalProps> = ({ data, onCl
 
   return (
     <div className="modal-backdrop">
-      <div className="modal-content" style={{ maxWidth: '660px', background: 'var(--bg-surface)' }}>
+      <div
+        className="modal-content"
+        style={{
+          maxWidth: '680px',
+          background: 'linear-gradient(155deg, #081d35 0%, #0f2c59 100%)',
+          border: '1px solid rgba(244, 183, 94, 0.4)',
+        }}
+      >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
           <div>
-            <span className="badge badge-emerald" style={{ marginBottom: '0.45rem' }}>
+            <span className="badge badge-gold" style={{ marginBottom: '0.45rem' }}>
               <ShieldCheck size={13} /> Sertifikat Keaslian Terverifikasi
             </span>
-            <h3 style={{ fontSize: '1.45rem', fontWeight: 900, color: '#f8fafc', margin: 0, letterSpacing: '-0.02em' }}>
-              Indikasi Geografis Pala Banda Neira
+            <h3 className="font-serif" style={{ fontSize: '1.85rem', fontWeight: 700, color: '#ffffff', margin: 0 }}>
+              Indikasi Geografis Pala <span style={{ color: '#f4b75e', fontStyle: 'italic' }}>Banda Neira</span>
             </h3>
-            <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+            <p style={{ color: '#cbd5e1', fontSize: '0.85rem', marginTop: '0.25rem' }}>
               Kepulauan Banda, Maluku Tengah &bull; Kode Batch:{' '}
-              <b style={{ color: '#38bdf8', fontFamily: 'var(--font-mono)' }}>{data.batch_code}</b>
+              <b style={{ color: '#f4b75e', fontFamily: 'var(--font-mono)' }}>{data.batch_code}</b>
             </p>
           </div>
           <button

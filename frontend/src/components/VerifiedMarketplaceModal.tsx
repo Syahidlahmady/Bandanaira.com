@@ -125,30 +125,30 @@ export const VerifiedMarketplaceModal: React.FC<VerifiedMarketplaceModalProps> =
       <div
         className="modal-content animate-fade-in"
         style={{
-          maxWidth: '900px',
+          maxWidth: '920px',
           maxHeight: '90vh',
           overflowY: 'auto',
-          background: 'var(--bg-surface)',
+          background: 'linear-gradient(155deg, #081d35 0%, #0f2c59 100%)',
           padding: '2.25rem',
-          border: '1px solid rgba(16, 185, 129, 0.35)',
-          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 25px rgba(16, 185, 129, 0.15)',
+          border: '1px solid rgba(244, 183, 94, 0.4)',
+          boxShadow: '0 28px 60px -15px rgba(4, 12, 24, 0.85), 0 0 32px rgba(244, 183, 94, 0.18)',
         }}
       >
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1.25rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', borderBottom: '1px solid rgba(244, 183, 94, 0.2)', paddingBottom: '1.25rem' }}>
           <div>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.4rem' }}>
-              <span className="badge badge-emerald">
+              <span className="badge badge-gold">
                 <ShieldCheck size={13} /> MARKETPLACE TERDESENTRALISASI RESMI
               </span>
-              <span className="badge badge-blue">
+              <span className="badge badge-emerald">
                 <Database size={12} /> IPFS &amp; SMART CONTRACT
               </span>
             </div>
-            <h2 style={{ fontSize: '1.65rem', fontWeight: 900, color: '#f8fafc', margin: 0, letterSpacing: '-0.02em' }}>
-              Katalog Produk UMKM Agro-Maritim Banda Neira
+            <h2 className="font-serif" style={{ fontSize: '2rem', fontWeight: 700, color: '#ffffff', margin: 0 }}>
+              Katalog Produk UMKM Agro-Maritim <span style={{ color: '#f4b75e', fontStyle: 'italic' }}>Banda Neira</span>
             </h2>
-            <p style={{ color: '#94a3b8', fontSize: '0.875rem', marginTop: '0.25rem' }}>
+            <p style={{ color: '#cbd5e1', fontSize: '0.875rem', marginTop: '0.25rem' }}>
               Produk rempah pala dan perikanan tangkap nelayan lokal terverifikasi keasliannya via blockchain.
             </p>
           </div>

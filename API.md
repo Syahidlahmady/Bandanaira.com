@@ -137,11 +137,11 @@ RESTful API specification for **Banda Digital Ecosystem**.
 | Method | Endpoint | Roles Allowed | Description |
 |---|---|---|---|
 | `GET` | `/api/v1/tourism/accommodations` & `/api/v1/penginapan` | Public | List accommodations with island, type, price, RO water, and solar backup filters |
-| `POST` | `/api/v1/tourism/accommodations` | `admin`, `village_officer`, `operator_homestay` | Register new accommodation listing into eco-stay catalog |
-| `PUT` | `/api/v1/tourism/accommodations/{id}` | `admin`, `village_officer`, `operator_homestay` | Update accommodation details, room tariffs/night, availability, or verify status |
-| `DELETE` | `/api/v1/tourism/accommodations/{id}` | `admin`, `village_officer`, `operator_homestay` | Delete accommodation listing from catalog |
+| `POST` | `/api/v1/tourism/accommodations` | `admin`, `village_officer`, `homestay_operator` | Register new accommodation listing into eco-stay catalog |
+| `PUT` | `/api/v1/tourism/accommodations/{id}` | `admin`, `village_officer`, `homestay_operator` | Update accommodation details, room tariffs/night, availability, or verify status |
+| `DELETE` | `/api/v1/tourism/accommodations/{id}` | `admin`, `village_officer`, `homestay_operator` | Delete accommodation listing from catalog |
 | `POST` | `/api/v1/tourism/bookings` & `/api/v1/pemesanan` | Public | Create guest booking with automated pricing and deterministic direct click-to-chat WhatsApp link |
-| `GET` | `/api/v1/tourism/bookings` & `/api/v1/pemesanan` | Public / Operator | List incoming guest reservations with optional accommodation filter |
+| `GET` | `/api/v1/tourism/bookings` & `/api/v1/pemesanan` | `admin`, `village_officer`, `homestay_operator`, `smart_tourism_admin` | List incoming guest reservations with optional accommodation filter (Protected PII) |
 | `GET` | `/api/v1/tourism/bookings/{booking_code}` | Public | Lookup booking details and status by unique code |
 | `GET` | `/api/v1/tourism/heritage-catalog` | Public | 177 Cagar Budaya catalog with historical narratives, photo galleries, and audio guide MP3 stream links |
 | `GET` | `/api/v1/tourism/guides` | Public | List licensed Banda tour guides with island and verified filters |

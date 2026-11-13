@@ -3,6 +3,14 @@ from datetime import date, timedelta
 from httpx import AsyncClient
 
 
+async def get_auth_token(client: AsyncClient, username: str = "admin", password: str = "Admin123!") -> str:
+    res = await client.post(
+        "/api/v1/auth/login",
+        json={"username_or_email": username, "password": password},
+    )
+    return res.json()["access_token"]
+
+
 @pytest.mark.asyncio
 async def test_list_accommodations_auto_seed(client: AsyncClient):
     """Uji pembacaan katalog penginapan dan auto-seeding awal."""
@@ -116,7 +124,10 @@ async def test_get_heritage_catalog(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_list_bookings_for_operator(client: AsyncClient):
     """Uji pengambilan daftar reservasi penginapan untuk pengelola eco-stay."""
-    # 1. Create a booking
+    token = await get_auth_token(client, "operator_homestay", "Homestay123!")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 1. Create a booking (public endpoint)
     res_acc = await client.get("/api/v1/tourism/accommodations")
     acc = res_acc.json()[0]
     check_in = date.today() + timedelta(days=7)
@@ -134,15 +145,15 @@ async def test_list_bookings_for_operator(client: AsyncClient):
         },
     )
 
-    # 2. List bookings via main endpoint
-    res_list = await client.get("/api/v1/tourism/bookings")
+    # 2. List bookings via main endpoint (protected)
+    res_list = await client.get("/api/v1/tourism/bookings", headers=headers)
     assert res_list.status_code == 200
     bookings = res_list.json()
     assert len(bookings) >= 1
     assert any(b["guest_name"] == "Wisatawan Pengujian" for b in bookings)
 
-    # 3. List bookings via SRS 11 alias
-    res_alias = await client.get("/api/v1/pemesanan")
+    # 3. List bookings via SRS 11 alias (protected)
+    res_alias = await client.get("/api/v1/pemesanan", headers=headers)
     assert res_alias.status_code == 200
     alias_bookings = res_alias.json()
     assert len(alias_bookings) >= 1
@@ -150,7 +161,10 @@ async def test_list_bookings_for_operator(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_cms_accommodations_crud(client: AsyncClient):
-    """Uji CMS Penginapan: Tambah baru, update tarif kamar, dan hapus penginapan."""
+    """Uji CMS Penginapan: Tambah baru, update tarif kamar, dan hapus penginapan oleh pengelola / admin."""
+    token = await get_auth_token(client, "admin", "Admin123!")
+    headers = {"Authorization": f"Bearer {token}"}
+
     # 1. Create accommodation
     create_payload = {
         "name": "Banda Heritage Villa Baru",
@@ -165,7 +179,7 @@ async def test_cms_accommodations_crud(client: AsyncClient):
         "contact_whatsapp": "6281199887766",
         "description": "Vila peninggalan kolonial dengan pemandangan langsung ke Teluk Banda.",
     }
-    res_create = await client.post("/api/v1/tourism/accommodations", json=create_payload)
+    res_create = await client.post("/api/v1/tourism/accommodations", json=create_payload, headers=headers)
     assert res_create.status_code == 201
     acc_id = res_create.json()["id"]
 
@@ -175,14 +189,14 @@ async def test_cms_accommodations_crud(client: AsyncClient):
         "rooms_available": 6,
         "is_verified": True,
     }
-    res_update = await client.put(f"/api/v1/tourism/accommodations/{acc_id}", json=update_payload)
+    res_update = await client.put(f"/api/v1/tourism/accommodations/{acc_id}", json=update_payload, headers=headers)
     assert res_update.status_code == 200
     updated_acc = res_update.json()
     assert updated_acc["price_per_night_rp"] == 500000.0
     assert updated_acc["rooms_available"] == 6
 
     # 3. Delete accommodation
-    res_del = await client.delete(f"/api/v1/tourism/accommodations/{acc_id}")
+    res_del = await client.delete(f"/api/v1/tourism/accommodations/{acc_id}", headers=headers)
     assert res_del.status_code == 200
     assert "berhasil dihapus" in res_del.json()["message"]
 
@@ -190,7 +204,10 @@ async def test_cms_accommodations_crud(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_cms_tour_guides_crud(client: AsyncClient):
     """Uji CMS Pemandu Wisata: Auto-seed, tambah pemandu, update tarif harian, dan verifikasi admin."""
-    # 1. List auto-seeded guides
+    token = await get_auth_token(client, "admin_wisata", "Wisata123!")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 1. List auto-seeded guides (public)
     res_list = await client.get("/api/v1/tourism/guides")
     assert res_list.status_code == 200
     guides = res_list.json()
@@ -198,7 +215,7 @@ async def test_cms_tour_guides_crud(client: AsyncClient):
     names = [g["name"] for g in guides]
     assert "Dewi Nusantara" in names
 
-    # 2. Create new tour guide
+    # 2. Create new tour guide (protected)
     new_guide = {
         "name": "La Ode Ruslan",
         "license_number": "HPI-BANDA-004",
@@ -211,7 +228,7 @@ async def test_cms_tour_guides_crud(client: AsyncClient):
         "is_verified": False,
         "is_active": True,
     }
-    res_create = await client.post("/api/v1/tourism/guides", json=new_guide)
+    res_create = await client.post("/api/v1/tourism/guides", json=new_guide, headers=headers)
     assert res_create.status_code == 201
     created = res_create.json()
     guide_id = created["id"]
@@ -223,6 +240,7 @@ async def test_cms_tour_guides_crud(client: AsyncClient):
     res_update = await client.put(
         f"/api/v1/tourism/guides/{guide_id}",
         json={"is_verified": True, "fee_per_day_rp": 400000.0},
+        headers=headers,
     )
     assert res_update.status_code == 200
     updated = res_update.json()
@@ -230,8 +248,92 @@ async def test_cms_tour_guides_crud(client: AsyncClient):
     assert updated["fee_per_day_rp"] == 400000.0
 
     # 4. Delete guide
-    res_del = await client.delete(f"/api/v1/tourism/guides/{guide_id}")
+    res_del = await client.delete(f"/api/v1/tourism/guides/{guide_id}", headers=headers)
     assert res_del.status_code == 200
     assert "berhasil dihapus" in res_del.json()["message"]
+
+
+@pytest.mark.asyncio
+async def test_unauthorized_guest_access_blocked(client: AsyncClient):
+    """
+    Keamanan Ketat: Memastikan tamu / publik tanpa autentikasi (unauthenticated)
+    DITOLAK dengan status 401 Unauthorized saat mencoba memodifikasi CMS atau membaca reservasi.
+    """
+    # 1. Mengakses daftar reservasi tamu tanpa login -> 401
+    res_bookings = await client.get("/api/v1/tourism/bookings")
+    assert res_bookings.status_code == 401
+    assert "Could not validate credentials" in res_bookings.json()["detail"]
+
+    # Alias pemesanan -> 401
+    res_alias = await client.get("/api/v1/pemesanan")
+    assert res_alias.status_code == 401
+
+    # 2. Mencoba membuat penginapan baru tanpa login -> 401
+    res_acc_post = await client.post(
+        "/api/v1/tourism/accommodations",
+        json={"name": "Hacked Homestay", "price_per_night_rp": 10000.0},
+    )
+    assert res_acc_post.status_code == 401
+
+    # 3. Mencoba mengubah tarif penginapan tanpa login -> 401
+    res_acc_put = await client.put(
+        "/api/v1/tourism/accommodations/some-fake-id",
+        json={"price_per_night_rp": 1000.0},
+    )
+    assert res_acc_put.status_code == 401
+
+    # 4. Mencoba menghapus penginapan tanpa login -> 401
+    res_acc_del = await client.delete("/api/v1/tourism/accommodations/some-fake-id")
+    assert res_acc_del.status_code == 401
+
+    # 5. Mencoba menambah pemandu wisata tanpa login -> 401
+    res_guide_post = await client.post(
+        "/api/v1/tourism/guides",
+        json={"name": "Pemandu Liar", "fee_per_day_rp": 50000.0},
+    )
+    assert res_guide_post.status_code == 401
+
+    # 6. Mencoba mengubah pemandu wisata tanpa login -> 401
+    res_guide_put = await client.put(
+        "/api/v1/tourism/guides/some-fake-id",
+        json={"fee_per_day_rp": 10000.0},
+    )
+    assert res_guide_put.status_code == 401
+
+    # 7. Mencoba menghapus pemandu wisata tanpa login -> 401
+    res_guide_del = await client.delete("/api/v1/tourism/guides/some-fake-id")
+    assert res_guide_del.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_forbidden_role_access_blocked(client: AsyncClient):
+    """
+    Keamanan RBAC: Memastikan pengguna dengan peran tidak berwenang (misal 'petani' atau 'warga')
+    DITOLAK dengan status 403 Forbidden saat mencoba mengelola CMS penginapan atau pemandu.
+    """
+    farmer_token = await get_auth_token(client, "petani", "Petani123!")
+    farmer_headers = {"Authorization": f"Bearer {farmer_token}"}
+
+    # Petani mencoba melihat reservasi -> 403 Forbidden
+    res_bookings = await client.get("/api/v1/tourism/bookings", headers=farmer_headers)
+    assert res_bookings.status_code == 403
+    assert "Operation not permitted" in res_bookings.json()["detail"]
+
+    # Petani mencoba menambah penginapan -> 403 Forbidden
+    res_acc = await client.post(
+        "/api/v1/tourism/accommodations",
+        json={"name": "Kebun Homestay", "price_per_night_rp": 100000.0},
+        headers=farmer_headers,
+    )
+    assert res_acc.status_code == 403
+
+    # Petani mencoba menambah pemandu wisata -> 403 Forbidden
+    res_guide = await client.post(
+        "/api/v1/tourism/guides",
+        json={"name": "Pemandu Petani", "fee_per_day_rp": 100000.0},
+        headers=farmer_headers,
+    )
+    assert res_guide.status_code == 403
+
 
 

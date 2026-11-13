@@ -6,6 +6,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.app.database.session import get_db
+from backend.app.core.permissions import (
+    ROLE_ADMIN,
+    ROLE_VILLAGE_OFFICER,
+    ROLE_HOMESTAY_OPERATOR,
+    ROLE_SMART_TOURISM_ADMIN,
+    require_roles,
+)
+from backend.app.modules.auth.models import User
 from backend.app.modules.tourism.models import Accommodation, Booking, TourGuide
 from backend.app.modules.tourism.schemas import (
     AccommodationCreateInput,
@@ -21,6 +29,27 @@ from backend.app.modules.tourism.schemas import (
 from backend.app.modules.tourism.heritage_data import HERITAGE_CATALOG
 
 router = APIRouter(prefix="/tourism", tags=["Smart Tourism & Eco-Stay Accommodations"])
+
+HOMESTAY_CMS_ROLES = require_roles(
+    ROLE_ADMIN,
+    ROLE_VILLAGE_OFFICER,
+    ROLE_HOMESTAY_OPERATOR,
+    "operator_homestay",
+)
+
+GUIDE_CMS_ROLES = require_roles(
+    ROLE_ADMIN,
+    ROLE_VILLAGE_OFFICER,
+    ROLE_SMART_TOURISM_ADMIN,
+)
+
+BOOKINGS_VIEW_ROLES = require_roles(
+    ROLE_ADMIN,
+    ROLE_VILLAGE_OFFICER,
+    ROLE_HOMESTAY_OPERATOR,
+    "operator_homestay",
+    ROLE_SMART_TOURISM_ADMIN,
+)
 
 SEED_ACCOMMODATIONS = [
     {
@@ -238,13 +267,14 @@ async def list_accommodations(
     "/accommodations",
     response_model=AccommodationItemResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Daftarkan Penginapan Baru",
+    summary="Daftarkan Penginapan Baru (CMS Operator & Admin)",
 )
 async def create_accommodation(
     payload: AccommodationCreateInput,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(HOMESTAY_CMS_ROLES),
 ):
-    """Mendaftarkan homestay atau vila baru ke ekosistem Smart Tourism Banda."""
+    """Mendaftarkan homestay atau vila baru ke ekosistem Smart Tourism Banda (khusus operator/admin terautentikasi)."""
     acc = Accommodation(
         name=payload.name,
         type=payload.type.upper(),
@@ -292,6 +322,7 @@ async def update_accommodation(
     accommodation_id: str,
     payload: AccommodationUpdateInput,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(HOMESTAY_CMS_ROLES),
 ):
     try:
         acc_uuid = uuid.UUID(accommodation_id)
@@ -332,11 +363,12 @@ async def update_accommodation(
 
 @router.delete(
     "/accommodations/{accommodation_id}",
-    summary="Hapus Penginapan (CMS Admin)",
+    summary="Hapus Penginapan (CMS Admin & Operator)",
 )
 async def delete_accommodation(
     accommodation_id: str,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(HOMESTAY_CMS_ROLES),
 ):
     try:
         acc_uuid = uuid.UUID(accommodation_id)
@@ -500,8 +532,9 @@ async def list_bookings(
     accommodation_id: Optional[str] = Query(None, description="Filter berdasarkan ID penginapan"),
     limit: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(BOOKINGS_VIEW_ROLES),
 ):
-    """Mengambil riwayat dan daftar reservasi penginapan yang masuk."""
+    """Mengambil riwayat dan daftar reservasi penginapan yang masuk (khusus operator/admin terautentikasi)."""
     stmt = (
         select(Booking, Accommodation.name)
         .join(Accommodation, Booking.accommodation_id == Accommodation.id)
@@ -615,8 +648,9 @@ async def list_tour_guides(
 async def create_tour_guide(
     payload: TourGuideCreateInput,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(GUIDE_CMS_ROLES),
 ):
-    """Mendaftarkan pemandu wisata baru ke dalam direktori terverifikasi."""
+    """Mendaftarkan pemandu wisata baru ke dalam direktori terverifikasi (khusus smart tourism admin / admin terautentikasi)."""
     guide = TourGuide(
         name=payload.name,
         license_number=payload.license_number,
@@ -662,6 +696,7 @@ async def update_tour_guide(
     guide_id: str,
     payload: TourGuideUpdateInput,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(GUIDE_CMS_ROLES),
 ):
     """Memperbarui informasi pemandu, tarif harian, atau status verifikasi."""
     try:
@@ -708,6 +743,7 @@ async def update_tour_guide(
 async def delete_tour_guide(
     guide_id: str,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(GUIDE_CMS_ROLES),
 ):
     """Menghapus pemandu wisata dari sistem (khusus admin)."""
     try:
@@ -775,6 +811,8 @@ async def list_pemesanan_alias(
     accommodation_id: Optional[str] = Query(None),
     limit: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(BOOKINGS_VIEW_ROLES),
 ):
-    return await list_bookings(accommodation_id=accommodation_id, limit=limit, db=db)
+    return await list_bookings(accommodation_id=accommodation_id, limit=limit, db=db, current_user=current_user)
+
 

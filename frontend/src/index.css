@@ -1,64 +1,78 @@
-/* Banda Digital Ecosystem - Neo-Obsidian & Cyber-Emerald Bento Design System */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   Banda Digital Ecosystem — Deep Ocean Navy, Spice Gold & 21st.dev Bento UI
+   Harmonized with desainsaatini/BandaHeroSection.tsx & 21st.dev Ocean Breeze
+   ========================================================================== */
 
 :root {
-  /* Brand Theme: Cyber-Obsidian & Neon-Nutmeg */
-  --bg-color: #080c14;
-  --bg-surface: #0f172a;
-  --bg-surface-elevated: #162036;
-  
-  --card-bg: rgba(15, 23, 42, 0.78);
-  --card-border: rgba(255, 255, 255, 0.08);
-  --card-hover-border: rgba(16, 185, 129, 0.4);
-  
+  /* Core Banda Neira Deep Ocean & Spice Gold Palette */
+  --bg-color: #061527;
+  --bg-surface: #081d35;
+  --bg-surface-elevated: #0f2c59;
+
+  --card-bg: rgba(8, 29, 53, 0.84);
+  --card-border: rgba(244, 183, 94, 0.16);
+  --card-hover-border: rgba(244, 183, 94, 0.48);
+
+  /* Primary: Tropical Banda Emerald & Spice Gold Accents */
   --primary: #10b981;
   --primary-hover: #059669;
-  --primary-light: rgba(16, 185, 129, 0.12);
-  --primary-border: rgba(16, 185, 129, 0.3);
-  --primary-gradient: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
-  
+  --primary-light: rgba(16, 185, 129, 0.14);
+  --primary-border: rgba(16, 185, 129, 0.35);
+  --primary-gradient: linear-gradient(135deg, #059669 0%, #10b981 55%, #34d399 100%);
+
+  /* Secondary: Banda Ocean Turquoise & Royal Navy */
   --secondary: #06b6d4;
   --secondary-hover: #0891b2;
-  --secondary-light: rgba(6, 182, 212, 0.12);
-  --secondary-border: rgba(6, 182, 212, 0.3);
-  --secondary-gradient: linear-gradient(135deg, #0891b2 0%, #06b6d4 50%, #38bdf8 100%);
-  
-  --accent-gold: #f59e0b;
-  --accent-gold-light: rgba(245, 158, 11, 0.12);
-  --accent-gold-border: rgba(245, 158, 11, 0.35);
-  --accent-gold-gradient: linear-gradient(135deg, #d97706 0%, #f59e0b 50%, #fbbf24 100%);
+  --secondary-light: rgba(6, 182, 212, 0.14);
+  --secondary-border: rgba(6, 182, 212, 0.35);
+  --secondary-gradient: linear-gradient(135deg, #0f2c59 0%, #0891b2 55%, #38bdf8 100%);
 
+  /* Signature Banda Spice Gold (#f4b75e & #d97706) */
+  --accent-gold: #f4b75e;
+  --accent-gold-strong: #d97706;
+  --accent-gold-light: rgba(217, 119, 6, 0.16);
+  --accent-gold-border: rgba(244, 183, 94, 0.45);
+  --accent-gold-gradient: linear-gradient(135deg, #d97706 0%, #f4b75e 60%, #fbbf24 100%);
+
+  /* Nutmeg Mace Coral */
   --accent-mace: #f43f5e;
-  --accent-mace-light: rgba(244, 63, 94, 0.12);
-  --accent-mace-border: rgba(244, 63, 94, 0.35);
-  
+  --accent-mace-light: rgba(244, 63, 94, 0.14);
+  --accent-mace-border: rgba(244, 63, 94, 0.38);
+
   --danger: #ef4444;
-  --danger-light: rgba(239, 68, 68, 0.12);
-  --danger-border: rgba(239, 68, 68, 0.3);
-  
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-light: #64748b;
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-focus: #10b981;
-  
-  /* Luminous Neon & Shadow Elevations */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 16px 36px -4px rgba(0, 0, 0, 0.7), 0 0 24px rgba(16, 185, 129, 0.08);
-  --shadow-xl: 0 24px 50px -8px rgba(0, 0, 0, 0.8), 0 0 35px rgba(6, 182, 212, 0.12);
+  --danger-light: rgba(239, 68, 68, 0.14);
+  --danger-border: rgba(239, 68, 68, 0.35);
+
+  --text-main: #f7f5f0;
+  --text-muted: #cbd5e1;
+  --text-light: #94a3b8;
+  --border-color: rgba(255, 255, 255, 0.11);
+  --border-focus: #f4b75e;
+
+  /* 21st.dev Ocean Breeze & Bento Shadow Elevations */
+  --shadow-xs: 0 1px 3px rgba(4, 12, 24, 0.45);
+  --shadow-sm: 0 4px 12px rgba(4, 12, 24, 0.55);
+  --shadow-md: 0 12px 28px -6px rgba(4, 12, 24, 0.65), 0 4px 10px rgba(4, 12, 24, 0.45);
+  --shadow-lg: 0 20px 42px -8px rgba(4, 12, 24, 0.78), 0 0 28px rgba(244, 183, 94, 0.10);
+  --shadow-xl: 0 28px 56px -10px rgba(4, 12, 24, 0.88), 0 0 38px rgba(244, 183, 94, 0.16);
   --shadow-glow-emerald: 0 0 24px rgba(16, 185, 129, 0.35);
   --shadow-glow-cyan: 0 0 24px rgba(6, 182, 212, 0.35);
-  --shadow-glow-amber: 0 0 24px rgba(245, 158, 11, 0.35);
+  --shadow-glow-amber: 0 0 24px rgba(244, 183, 94, 0.38);
 
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
   --radius-xl: 28px;
   --radius-full: 9999px;
 
   --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
 
@@ -71,12 +85,12 @@
 body {
   font-family: var(--font-family);
   background-color: var(--bg-color);
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.12) 0px, transparent 45%),
-    radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.12) 0px, transparent 45%),
-    radial-gradient(at 50% 100%, rgba(245, 158, 11, 0.08) 0px, transparent 50%),
-    radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-  background-size: auto, auto, auto, 24px 24px;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(15, 44, 89, 0.65) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(217, 119, 6, 0.14) 0px, transparent 45%),
+    radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.12) 0px, transparent 50%),
+    radial-gradient(rgba(244, 183, 94, 0.045) 1px, transparent 1px);
+  background-size: auto, auto, auto, 28px 28px;
   background-attachment: fixed;
   color: var(--text-main);
   line-height: 1.6;
@@ -85,11 +99,20 @@ body {
   min-height: 100vh;
 }
 
+/* Editorial Heading Enhancement across Workspaces */
+h1, h2 {
+  letter-spacing: -0.02em;
+}
+
+.font-editorial {
+  font-family: var(--font-serif);
+}
+
 /* Animations */
 @keyframes pulse-ring {
-  0% { transform: scale(0.95); opacity: 0.9; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
-  50% { transform: scale(1.05); opacity: 0.4; box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-  100% { transform: scale(0.95); opacity: 0.9; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+  0% { transform: scale(0.95); opacity: 0.9; box-shadow: 0 0 0 0 rgba(244, 183, 94, 0.6); }
+  50% { transform: scale(1.06); opacity: 0.45; box-shadow: 0 0 0 10px rgba(244, 183, 94, 0); }
+  100% { transform: scale(0.95); opacity: 0.9; box-shadow: 0 0 0 0 rgba(244, 183, 94, 0.6); }
 }
 
 @keyframes spin {
@@ -103,8 +126,8 @@ body {
 }
 
 @keyframes floatGlow {
-  0%, 100% { transform: translateY(0px); filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.3)); }
-  50% { transform: translateY(-3px); filter: drop-shadow(0 0 20px rgba(6, 182, 212, 0.5)); }
+  0%, 100% { transform: translateY(0px); filter: drop-shadow(0 0 12px rgba(244, 183, 94, 0.3)); }
+  50% { transform: translateY(-3px); filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.5)); }
 }
 
 .animate-spin {
@@ -112,18 +135,18 @@ body {
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Bento Glass Card */
+/* 21st.dev Glassmorphic Banda Bento Card */
 .app-card {
-  background: var(--card-bg);
+  background: linear-gradient(155deg, rgba(8, 29, 53, 0.88) 0%, rgba(15, 44, 89, 0.62) 100%);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.28s ease;
   position: relative;
   overflow: hidden;
 }
@@ -135,22 +158,22 @@ body {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.15) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(244, 183, 94, 0.35) 50%, transparent 100%);
   pointer-events: none;
 }
 
 .app-card:hover {
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(244, 183, 94, 0.28);
   box-shadow: var(--shadow-lg);
 }
 
 .app-card-interactive:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
   border-color: var(--card-hover-border);
-  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.7), 0 0 24px rgba(16, 185, 129, 0.2);
+  box-shadow: 0 20px 40px -6px rgba(4, 12, 24, 0.8), 0 0 24px rgba(244, 183, 94, 0.18);
 }
 
-/* Futuristic Buttons */
+/* Interactive Buttons with Banda Spice Gold & Emerald Polish */
 button, .btn {
   display: inline-flex;
   align-items: center;
@@ -160,10 +183,10 @@ button, .btn {
   font-size: 0.875rem;
   font-weight: 600;
   border-radius: var(--radius-sm);
-  padding: 0.6rem 1.25rem;
+  padding: 0.62rem 1.3rem;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
   white-space: nowrap;
   letter-spacing: -0.01em;
@@ -183,64 +206,65 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
 }
 
 .btn-primary {
-  background: var(--primary-gradient);
-  color: #042f2e;
-  font-weight: 700;
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, #d97706 0%, #f4b75e 100%);
+  color: #081d35;
+  font-weight: 800;
+  box-shadow: 0 6px 20px rgba(217, 119, 6, 0.35);
+  border-color: rgba(255, 255, 255, 0.28);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-  box-shadow: 0 6px 22px rgba(16, 185, 129, 0.5), 0 0 12px rgba(52, 211, 153, 0.4);
-  color: #022c22;
+  background: linear-gradient(135deg, #f4b75e 0%, #fbbf24 100%);
+  box-shadow: 0 8px 26px rgba(244, 183, 94, 0.5), 0 0 14px rgba(244, 183, 94, 0.4);
+  color: #061527;
+  transform: translateY(-1px);
 }
 
 .btn-secondary {
-  background: rgba(30, 41, 59, 0.75);
-  color: #e2e8f0;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(8, 29, 53, 0.78);
+  color: #f7f5f0;
+  border: 1px solid rgba(244, 183, 94, 0.25);
   backdrop-filter: blur(12px);
   box-shadow: var(--shadow-xs);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: rgba(51, 65, 85, 0.85);
-  border-color: rgba(255, 255, 255, 0.25);
-  color: #ffffff;
-  box-shadow: var(--shadow-sm);
+  background: rgba(15, 44, 89, 0.92);
+  border-color: #f4b75e;
+  color: #f4b75e;
+  box-shadow: 0 4px 16px rgba(244, 183, 94, 0.18);
 }
 
 .btn-success {
   background: var(--primary-gradient);
   color: #022c22;
-  font-weight: 700;
+  font-weight: 800;
   box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
 }
 
 .btn-success:hover:not(:disabled) {
   background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+  box-shadow: 0 6px 22px rgba(16, 185, 129, 0.5);
 }
 
 .btn-outline-primary {
-  background: transparent;
-  color: #34d399;
-  border: 1px solid rgba(52, 211, 153, 0.4);
+  background: rgba(217, 119, 6, 0.14);
+  color: #f4b75e;
+  border: 1px solid rgba(244, 183, 94, 0.5);
 }
 
 .btn-outline-primary:hover:not(:disabled) {
-  background: rgba(16, 185, 129, 0.12);
-  border-color: #34d399;
-  color: #6ee7b7;
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
+  background: rgba(217, 119, 6, 0.26);
+  border-color: #f4b75e;
+  color: #fde68a;
+  box-shadow: 0 0 18px rgba(244, 183, 94, 0.28);
 }
 
 .btn-warning {
   background: var(--accent-gold-gradient);
-  color: #451a03;
-  font-weight: 700;
-  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
+  color: #081d35;
+  font-weight: 800;
+  box-shadow: 0 4px 16px rgba(244, 183, 94, 0.35);
 }
 
 .btn-danger {
@@ -255,31 +279,31 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
 }
 
 .btn-sm {
-  padding: 0.38rem 0.85rem;
+  padding: 0.4rem 0.9rem;
   font-size: 0.8rem;
   border-radius: var(--radius-sm);
 }
 
-/* Modern Dark-Glass Form Controls */
+/* Banda Deep Ocean Glass Form Controls */
 .form-control, .form-input, .form-select, .form-textarea {
   width: 100%;
-  padding: 0.68rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0.7rem 1.05rem;
+  border: 1px solid rgba(244, 183, 94, 0.2);
   border-radius: var(--radius-md);
   font-family: inherit;
   font-size: 0.875rem;
-  color: #f8fafc;
-  background-color: rgba(15, 23, 42, 0.75);
+  color: #f7f5f0;
+  background-color: rgba(6, 21, 39, 0.82);
   backdrop-filter: blur(12px);
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.45);
 }
 
 .form-control:focus, .form-input:focus, .form-select:focus, .form-textarea:focus {
   outline: none;
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2), 0 0 16px rgba(16, 185, 129, 0.15);
-  background-color: rgba(15, 23, 42, 0.95);
+  border-color: #f4b75e;
+  box-shadow: 0 0 0 3px rgba(244, 183, 94, 0.2), 0 0 18px rgba(244, 183, 94, 0.15);
+  background-color: rgba(8, 29, 53, 0.96);
   color: #ffffff;
 }
 
@@ -288,22 +312,21 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
 }
 
 .form-select option {
-  background: #0f172a;
-  color: #f8fafc;
+  background: #081d35;
+  color: #f7f5f0;
 }
 
 .form-label {
   display: block;
-  font-size: 0.8rem;
   font-weight: 700;
-  color: #cbd5e1;
-  margin-bottom: 0.4rem;
-  letter-spacing: -0.01em;
+  color: #f4b75e;
+  margin-bottom: 0.42rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   font-size: 0.725rem;
 }
 
-/* Bento Stat & KPI Cards */
+/* 21st.dev Analytics Bento Stat & KPI Cards */
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -312,13 +335,13 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
 }
 
 .stat-card {
-  background: rgba(15, 23, 42, 0.75);
+  background: linear-gradient(145deg, rgba(8, 29, 53, 0.88) 0%, rgba(15, 44, 89, 0.58) 100%);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(244, 183, 94, 0.18);
   border-radius: var(--radius-lg);
-  padding: 1.35rem 1.4rem;
+  padding: 1.4rem 1.45rem;
   box-shadow: var(--shadow-sm);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
 }
@@ -326,48 +349,48 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
 .stat-card::after {
   content: '';
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 90px;
-  height: 90px;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+  top: -15px;
+  right: -15px;
+  width: 110px;
+  height: 110px;
+  background: radial-gradient(circle, rgba(244, 183, 94, 0.16) 0%, transparent 70%);
   pointer-events: none;
 }
 
 .stat-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(16, 185, 129, 0.4);
-  box-shadow: var(--shadow-lg), 0 0 24px rgba(16, 185, 129, 0.12);
+  transform: translateY(-4px);
+  border-color: rgba(244, 183, 94, 0.45);
+  box-shadow: var(--shadow-lg), 0 0 24px rgba(244, 183, 94, 0.15);
 }
 
 .stat-label {
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   font-weight: 700;
-  color: #94a3b8;
+  color: #cbd5e1;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   display: flex;
   align-items: center;
   gap: 0.4rem;
 }
 
 .stat-value {
-  font-size: 1.85rem;
+  font-size: 1.9rem;
   font-weight: 800;
-  color: #f8fafc;
+  color: #f7f5f0;
   letter-spacing: -0.03em;
-  margin-top: 0.4rem;
+  margin-top: 0.42rem;
   line-height: 1.15;
   font-family: var(--font-mono);
 }
 
-/* Futuristic Data Table */
+/* Banda Ocean Data Table */
 .table-responsive {
   width: 100%;
   overflow-x: auto;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(244, 183, 94, 0.16);
+  background: rgba(8, 29, 53, 0.82);
   backdrop-filter: blur(16px);
   box-shadow: var(--shadow-md);
 }
@@ -380,21 +403,21 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
 }
 
 .data-table th {
-  background: rgba(30, 41, 59, 0.6);
-  color: #94a3b8;
+  background: rgba(15, 44, 89, 0.75);
+  color: #f4b75e;
   font-weight: 700;
   text-transform: uppercase;
   font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  padding: 0.95rem 1.15rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  letter-spacing: 0.07em;
+  padding: 0.98rem 1.15rem;
+  border-bottom: 1px solid rgba(244, 183, 94, 0.22);
   white-space: nowrap;
 }
 
 .data-table td {
   padding: 1rem 1.15rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  color: #e2e8f0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: #f7f5f0;
   vertical-align: middle;
 }
 
@@ -403,15 +426,15 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
 }
 
 .data-table tbody tr:hover {
-  background-color: rgba(51, 65, 85, 0.35);
+  background-color: rgba(15, 44, 89, 0.45);
 }
 
-/* High-Contrast Neon Badges */
+/* High-Contrast Banda Badges */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.28rem 0.75rem;
+  padding: 0.28rem 0.78rem;
   border-radius: var(--radius-full);
   font-size: 0.74rem;
   font-weight: 700;
@@ -420,59 +443,59 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
   backdrop-filter: blur(8px);
 }
 
-.badge-blue {
-  background: rgba(6, 182, 212, 0.12);
+.badge-blue, .badge-cyan {
+  background: rgba(6, 182, 212, 0.15);
   color: #38bdf8;
-  border: 1px solid rgba(6, 182, 212, 0.35);
+  border: 1px solid rgba(6, 182, 212, 0.4);
   box-shadow: 0 0 10px rgba(6, 182, 212, 0.15);
 }
 
 .badge-green, .badge-emerald {
-  background: rgba(16, 185, 129, 0.12);
+  background: rgba(16, 185, 129, 0.15);
   color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.4);
+  border: 1px solid rgba(16, 185, 129, 0.42);
   box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
 }
 
 .badge-amber, .badge-gold {
-  background: rgba(245, 158, 11, 0.14);
-  color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.4);
-  box-shadow: 0 0 10px rgba(245, 158, 11, 0.15);
+  background: rgba(217, 119, 6, 0.18);
+  color: #f4b75e;
+  border: 1px solid rgba(244, 183, 94, 0.5);
+  box-shadow: 0 0 12px rgba(244, 183, 94, 0.18);
 }
 
 .badge-red, .badge-rose {
-  background: rgba(244, 63, 94, 0.14);
+  background: rgba(244, 63, 94, 0.15);
   color: #fb7185;
-  border: 1px solid rgba(244, 63, 94, 0.4);
+  border: 1px solid rgba(244, 63, 94, 0.42);
   box-shadow: 0 0 10px rgba(244, 63, 94, 0.15);
 }
 
 .badge-purple {
-  background: rgba(168, 85, 247, 0.14);
+  background: rgba(168, 85, 247, 0.15);
   color: #c084fc;
-  border: 1px solid rgba(168, 85, 247, 0.4);
+  border: 1px solid rgba(168, 85, 247, 0.42);
   box-shadow: 0 0 10px rgba(168, 85, 247, 0.15);
 }
 
 .badge-secondary {
-  background: rgba(51, 65, 85, 0.5);
-  color: #94a3b8;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 44, 89, 0.6);
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
-/* Floating Command Dock Navigation (Desktop & Bottom Mobile Dock) */
+/* 21st.dev Elevate Pill Command Dock Navigation (Matches BandaHeroSection.tsx) */
 .tab-nav {
   display: flex;
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  padding: 0.45rem;
-  border-radius: var(--radius-xl);
+  background: rgba(8, 29, 53, 0.86);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 0.5rem;
+  border-radius: 18px;
   gap: 0.45rem;
   overflow-x: auto;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 24px rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(244, 183, 94, 0.22);
+  box-shadow: 0 16px 36px rgba(4, 12, 24, 0.65), 0 0 24px rgba(244, 183, 94, 0.08);
   margin-bottom: 2rem;
   position: relative;
   z-index: 100;
@@ -480,34 +503,35 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
 
 .tab-btn {
   flex: 1;
-  min-width: 155px;
-  padding: 0.75rem 1.35rem;
-  border-radius: var(--radius-md);
+  min-width: 150px;
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
   border: 1px solid transparent;
   background: transparent;
-  color: #94a3b8;
+  color: rgba(247, 245, 240, 0.78);
   font-weight: 600;
-  font-size: 0.875rem;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  font-size: 0.85rem;
+  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.55rem;
+  gap: 0.52rem;
   cursor: pointer;
   white-space: nowrap;
+  position: relative;
 }
 
 .tab-btn:hover:not(.active) {
-  color: #f8fafc;
-  background: rgba(30, 41, 59, 0.6);
-  border-color: rgba(255, 255, 255, 0.08);
+  color: #f4b75e;
+  background: rgba(15, 44, 89, 0.65);
+  border-color: rgba(244, 183, 94, 0.2);
 }
 
 .tab-btn.active {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(6, 182, 212, 0.2) 100%);
-  color: #34d399;
-  border: 1px solid rgba(52, 211, 153, 0.45);
-  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.25), inset 0 0 12px rgba(16, 185, 129, 0.15);
+  background: linear-gradient(135deg, rgba(217, 119, 6, 0.24) 0%, rgba(15, 44, 89, 0.85) 100%);
+  color: #f4b75e;
+  border: 1px solid #f4b75e;
+  box-shadow: 0 6px 20px rgba(217, 119, 6, 0.25), inset 0 -2px 0 #f4b75e;
   font-weight: 700;
 }
 
@@ -518,9 +542,9 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(4, 7, 13, 0.8);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: rgba(4, 12, 24, 0.84);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -529,33 +553,33 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
 }
 
 .modal-content {
-  background: #0f172a;
+  background: linear-gradient(155deg, #081d35 0%, #0f2c59 100%);
   border-radius: var(--radius-xl);
   max-width: 680px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
   padding: 2.25rem;
-  box-shadow: var(--shadow-xl), 0 0 35px rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: #f8fafc;
+  box-shadow: var(--shadow-xl), 0 0 38px rgba(244, 183, 94, 0.18);
+  border: 1px solid rgba(244, 183, 94, 0.32);
+  color: #f7f5f0;
 }
 
-/* Smooth Cyber Custom Scrollbar */
+/* Custom Banda Gold & Navy Scrollbar */
 ::-webkit-scrollbar {
   width: 7px;
   height: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(6, 21, 39, 0.9);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.8);
+  background: rgba(15, 44, 89, 0.95);
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(244, 183, 94, 0.25);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #10b981;
+  background: #f4b75e;
 }
 
 /* Print Clean Mode */
@@ -578,9 +602,9 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
     right: 12px;
     margin-bottom: 0;
     z-index: 9999;
-    background: rgba(15, 23, 42, 0.94);
-    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.6), 0 0 20px rgba(16, 185, 129, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(8, 29, 53, 0.96);
+    box-shadow: 0 -8px 28px rgba(4, 12, 24, 0.75), 0 0 20px rgba(244, 183, 94, 0.18);
+    border: 1px solid rgba(244, 183, 94, 0.32);
   }
   .tab-btn {
     min-width: 120px;
@@ -588,7 +612,7 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
     font-size: 0.78rem;
   }
   body {
-    padding-bottom: 80px; /* Space for bottom dock */
+    padding-bottom: 84px;
   }
   .modal-content {
     padding: 1.5rem;

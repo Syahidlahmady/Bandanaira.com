@@ -31,6 +31,9 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 26: Actor Segregation & Dedicated Operational Roles (Koperasi, Homestay, Smart Tourism, Survei)**
 - [x] **Phase 27: Multi-Actor Quick Login Simulator & Homestay Operator Booking Management**
 - [x] **Phase 28: Central Admin Governance & Tourism Master Data CMS (Accommodations Tariff Control, Tour Guides Directory & Licensing)**
+- [x] **Phase 29: Strict RBAC Security Enforcement on Smart Tourism CMS, Tour Guides & Guest Bookings Privacy**
+- [x] **Phase 30: Editorial Slow-Travel Landing Page & Dual-Mode UI System (Desain Beranda Banda Neira & Tailwind CSS Setup)**
+- [x] **Phase 31: Unified Navbar & Footer, Figma Desktop Map Vector Integration, and 21st.dev User Bento Dashboard (Transformasi Landing Page 2)**
 
 ---
 
@@ -370,6 +373,124 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 28.6 Verification & Build:
   - TypeScript compilation and Vite production build verified: `npm --prefix frontend run build` exited with code 0 in 4.40s.
   - Backend test suite: `PYTHONPATH=. pytest backend/tests/test_tourism.py` passed 8/8 (100%).
+
+### Phase 29: Strict RBAC Security Enforcement on Smart Tourism CMS, Tour Guides & Guest Bookings Privacy
+- [x] 29.1 Backend RBAC Dependencies on Tourism Endpoints (`backend/app/modules/tourism/router.py`):
+  - Enforced `HOMESTAY_CMS_ROLES` (`admin`, `village_officer`, `homestay_operator`, `operator_homestay`) on `POST`, `PUT`, and `DELETE /api/v1/tourism/accommodations`.
+  - Enforced `GUIDE_CMS_ROLES` (`admin`, `village_officer`, `smart_tourism_admin`) on `POST`, `PUT`, and `DELETE /api/v1/tourism/guides`.
+  - Enforced `BOOKINGS_VIEW_ROLES` (`admin`, `village_officer`, `homestay_operator`, `operator_homestay`, `smart_tourism_admin`) on `GET /api/v1/tourism/bookings` and alias `GET /api/v1/pemesanan` to protect guest PII (WhatsApp numbers and booking notes).
+- [x] 29.2 Authenticated JWT Headers in Frontend Tourism Service (`frontend/src/services/tourism.ts`):
+  - Added `getAuthHeaders()` reading `access_token` from `localStorage` and injecting `Authorization: Bearer <token>` on protected booking list and CMS mutation requests, with descriptive Indonesian 401/403 error messages.
+- [x] 29.3 Role-Gated Frontend Tabs & Modals (`frontend/src/views/TourismEcoStayWorkspace.tsx`):
+  - Added role permission checks (`canViewBookings`, `canAccessCMS`, `canManageHotels`, `canManageGuides`).
+  - Hid or badged restricted tabs (`📋 Reservasi Masuk` & `⚙️ CMS Pusat & Tarif`) with lock indicators for public guests, plus protective RBAC access-denied gate cards with 1-click Quick Login launcher.
+  - Restricted CMS sub-tabs so `homestay_operator` manages hotels/homestays while `smart_tourism_admin` manages HPI tour guides, and `admin`/`village_officer` oversee both.
+- [x] 29.4 Automated Security & RBAC Tests (`backend/tests/test_tourism.py`):
+  - Updated CRUD and booking list tests with role-specific JWT tokens (`admin`, `operator_homestay`, `admin_wisata`).
+  - Added `test_unauthorized_guest_access_blocked` verifying 401 Unauthorized across all 8 protected endpoints for unauthenticated callers.
+  - Added `test_forbidden_role_access_blocked` verifying 403 Forbidden when an unauthorized role (`petani`) attempts to view bookings or mutate accommodations/guides.
+  - Verified **10/10 passing tests in `test_tourism.py` (85/85 total backend tests)** and clean TypeScript production build (`npm --prefix frontend run build` exits 0 in 2.77s).
+
+### Phase 30: Editorial Slow-Travel Landing Page & Dual-Mode UI System (Desain Beranda Banda Neira & Tailwind CSS Setup)
+- [x] 30.1 Tailwind CSS & PostCSS Tooling Installation (`frontend/package.json`, `frontend/tailwind.config.js`, `frontend/postcss.config.js`):
+  - Installed `tailwindcss@^3.4.17`, `postcss@^8.4.49`, and `autoprefixer@^10.4.20`.
+  - Configured custom Banda Neira color tokens (`teal #173f43`, `teal-dark #102f33`, `coral #e9a66f`, `sand #b46b3c`, `cream #f7f5f0`, `sage #dce8df`, `earth #f2e8dc`).
+  - Added editorial typography font family definitions (`Cormorant Garamond` serif and `Plus Jakarta Sans`).
+- [x] 30.2 CSS Harmonization & Google Fonts (`frontend/src/index.css`):
+  - Injected Google Fonts `@import` for *Cormorant Garamond* and *Plus Jakarta Sans* at line 1 ahead of all statements.
+  - Added `@tailwind base; @tailwind components; @tailwind utilities;` without conflicting with existing custom styles (`.app-card`, `.btn-primary`).
+- [x] 30.3 Responsive Editorial Landing View Component (`frontend/src/views/landing/BandanairaBeranda.tsx`):
+  - Implemented 12 comprehensive sections based on user's Figma export in `desainsaatini`:
+    1. **Top Announcement & System Bar**: Online/offline PWA badge, coordinates, and Quick Login launcher.
+    2. **BandaHeroSection**: Cinematic backdrop, headline "Temukan jalan menuju keajaiban", quick keyword search input, and direct CTAs.
+    3. **IslandIntroductionSection**: Story of 7 Banda islands with 7-island badge.
+    4. **InteractiveIslandMapSection**: Clickable island canvas (Neira, Gunung Api, Hatta, Lonthoir, Ay & Rhun) with dynamic detail cards and 1-click links to 7-Layer PostGIS map.
+    5. **SpiceHeritageSection**: Nutmeg & clove heritage, real-time batch verification input, and link to on-chain passport.
+    6. **MarineExperiencesSection**: Highlight cards for diving, snorkeling, and trekking with link to DSS SAW Smart Planner.
+    7. **IslandStaysSection**: Eco-stay catalog preview and direct WhatsApp booking info.
+    8. **ResidentServicesSection**: 6 island cards (Pemandu HPI, Koperasi & Air RO, Surat Desa, IoT Surya, DSS SAW, Survei ETL).
+    9. **LocalCuisineSection**: Banda nutmeg jam, yellow fish soup, and kenari sambal with link to Marketplace.
+    10. **SustainableTravelSection**: Sustainable travel guidelines (Support local, protect reefs, respect culture).
+    11. **PlanYourVisitSection**: Interactive gateway launcher for all 11 modules with role status.
+    12. **FooterSection**: Complete ecosystem links, coordinates, and Maluku Tengah local government branding.
+- [x] 30.4 Seamless Dual-Mode Integration in Landing Portal (`frontend/src/views/LandingPortalWorkspace.tsx`):
+  - Added `viewMode` toggle state (`'editorial' | 'command'`), defaulting to `'editorial'` (BandanairaBeranda).
+  - Provided 1-click toggle buttons (`🎛️ Mode Dasbor Ekosistem` and `🌊 Desain Wisata Banda`) allowing users and village officials to switch fluidly between the warm editorial travel experience and the dark Neo-Obsidian command center.
+- [x] 30.5 Production Build Verification:
+  - TypeScript compilation and Vite production build verified: `npm --prefix frontend run build` exited with code 0 in 3.64s.
+- [x] 30.6 Penyelarasan Navbar Figma & Integrasi Gambar Latar Belakang (`frontend/src/views/landing/BandanairaBeranda.tsx` & `frontend/src/assets/image.webp`):
+  - Menyesuaikan desain navbar secara presisi sesuai `desainsaatini/BandaHeroSection.tsx` (floating glassmorphic `rounded-2xl` header dengan logo pala `bandanaira.com`, 6 item navigasi `Beranda`, `Peta`, `Sejarah`, `Wisata`, `Penduduk & Fasilitas`, `Layanan UMKM` lengkap dengan indikator garis bawah `#f4b75e`, serta tombol `Masuk / Login` berbingkai `#f4b75e` dan latar `#d9770626`).
+  - Mengintegrasikan aset gambar latar belakang `frontend/src/assets/image.webp` pada bagian hero (`BandaHeroSection`) dan banner senja (`ResidentServicesSection`).
+  - Menyelaraskan seluruh 11 bagian halaman dengan struktur komponen `desainsaatini/*.tsx` dan memverifikasi hasil build produksi (`npm --prefix frontend run build` keluar dengan kode 0, menghasilkan bundel `dist/assets/image-BEYOPXJR.webp`).
+- [x] 30.7 Harmonisasi Desain UI/UX Sistem Menyeluruh berbasis `21st-cli-use` (`21st.dev`) & Identitas Banda Neira:
+  - Mengaktifkan skill `21st-cli-use` (`npx @21st-dev/cli`) yang tersinkronisasi dengan akun `syahidai1720` untuk mengambil referensi arsitektur komponen **Elevate Navbar** (`id: 26786`), **Bento Card** (`id: 10457`), dan tema **Ocean Breeze** (`id: fdff1c09-bbd4-444c-8f0d-b00528372d83`).
+  - Memperbarui token desain global pada `frontend/tailwind.config.js` dan `frontend/src/index.css` ke palet **Banda Deep Ocean Navy & Spice Gold** (`#081d35`, `#0f2c59`, `#f4b75e`, `#d97706`, `#f7f5f0`) sehingga seluruh 11 ruang kerja (`.app-card`, `.stat-card`, `.tab-nav`, `.tab-btn`, `.btn-primary`, `.data-table`, `.form-control`, `.modal-content`) tampil konsisten.
+  - Merombak `HeaderNav.tsx` (navbar global seluruh ruang kerja) agar menggunakan gaya *floating glassmorphic* `bandanaira.com` dengan latar `image.webp`, 6 tautan navigasi berindikator garis bawah emas `#f4b75e`, serta bar status sinyal & sesi pengguna.
+  - Memperbarui `LoginSection.tsx`, `QuickLoginModal.tsx`, `VerifiedMarketplaceModal.tsx`, `PublicVerifyModal.tsx`, `LandingPortalWorkspace.tsx`, dan `App.tsx` dengan latar `image.webp`, tipografi serif *Cormorant Garamond*, dan kartu Bento emas-samudra.
+- [x] 30.8 Implementasi Halaman Pendaftaran Akun (`RegisterSection.tsx`) Sesuai Desain `desainsaatini/register-dekstop`:
+  - Membangun `frontend/src/components/RegisterSection.tsx` yang menggabungkan `IslandLifeIntroSection` (panel kiri `#0f2c59` dengan latar `image.webp`, logo `bandanaira.com`, headline *"Lebih dekat dengan kehidupan pulau."*, kutipan serif miring *"Bertumbuh bersama Banda."*, dan catatan enkripsi AES-256 & HMAC) serta `AccountRegistrationSection` (panel kanan putih dengan pemilih peran 3 kartu `Warga Desa`, `Mitra Usaha`, `Wisatawan`, input `Nama lengkap`, `NIK 16 digit`, `Nomor WhatsApp`, `Buat PIN Pengaman 4 Digit` dengan tombol sembunyikan/tampilkan PIN, persetujuan syarat & ketentuan, tombol `Daftar sebagai {selectedRole}`, tautan `Sudah punya akun? Masuk sekarang`, dan 3 lencana kepercayaan `Enkripsi AES-256`, `Terhubung Blockchain Koperasi`, `Pemdes Banda`).
+  - Menghubungkan halaman pendaftaran (`activeTab === 'register'`) ke `App.tsx`, `BandanairaBeranda.tsx`, `LandingPortalWorkspace.tsx`, `HeaderNav.tsx`, dan `LoginSection.tsx`.
+- [x] 30.9 Implementasi Halaman Login Sesuai `desainsaatini/login-desktop` dengan Preservasi Seluruh 9 Peran Aktor (`LoginSection.tsx`):
+  - Membangun antarmuka login layar-terpisah desktop & responsif mobile yang menggabungkan `BandaServicesIntroSection` (panel kiri `#0f2c59` dengan latar belakang `image.webp`, logo pala `bandanaira.com`, tag `KEPULAUAN BANDA · MALUKU`, headline *"Satu Pintu Layanan Kepulauan Banda"*, kutipan serif *"Bertumbuh bersama Banda."*, dan catatan keamanan AES-256 & HMAC) serta `AccountLoginSection` (panel kanan putih).
+  - Mengimplementasikan tab ganda autentikasi:
+    1. **Tab Warga Desa (Cepat via NIK)**: Form input NIK 16 digit, PIN Pengaman 4 digit dengan toggle lihat/sembunyikan PIN, tautan bantuan PIN, tombol cepat isi NIK contoh (`@warga`), dan tombol aksi login instan.
+    2. **Tab Mitra, Operator & Wisatawan**: Form ID / Username dan Password dengan toggle lihat/sembunyikan kata sandi.
+  - Mempertahankan dan menyematkan seluruh **9 Persona Holografis Akses Cepat** dengan visual badge bergradien neira-gold untuk seluruh peran ekosistem:
+    1. `petugas` - Petugas Kantor Desa (Pemerintahan & Kependudukan)
+    2. `pengelola_koperasi` - Pengelola Koperasi Hatta (Simpan Pinjam, Tabungan & Air Bersih)
+    3. `operator_homestay` - Pengelola Eco-Stay & Wisata (Katalog Homestay & Reservasi)
+    4. `admin_wisata` - Pemandu Smart Tourism & 177 Cagar Budaya (HPI & Destinasi)
+    5. `surveyor` - Surveyor Lapangan & IoT (Telemetry Sensor Tanah & Pompa Air)
+    6. `ketua_kelompok` - Ketua Kelompok Tani (Pala & Cengkeh Lonthoir)
+    7. `petani` - Petani Rempah Pala (Panen & Mutu Rempah Banda)
+    8. `warga` - Warga Masyarakat Desa (Layanan Mandiri & Permohonan Surat)
+    9. `admin` - Administrator Sistem (Superuser & Pengaturan Ekosistem)
+  - Menyertakan radar pencarian dan verifikasi publik batch rempah pala (`PublicVerifyModal`), 3 lencana kepercayaan (`Enkripsi AES-256`, `Terhubung Blockchain Koperasi`, `Pemdes Banda`), dan navigasi footer ke pendaftaran (`Daftar sekarang`) serta bantuan Pemdes.
+  - Memverifikasi build produksi frontend (`npm --prefix frontend run build`) lolos 100% tanpa error TypeScript/Vite dalam 4.32s.
+- [x] 30.11 Redirect Dashboard Otomatis Sesuai Role, Navigasi Dashboard Khusus Role, & Integrasi 4 Modul Publik di Landing Page Utama (`BandanairaBeranda.tsx`, `HeaderNav.tsx`, `App.tsx`, `RegisterSection.tsx`):
+  - **Redirect Dashboard Instan Pasca Register & Login**:
+    - Menghubungkan fungsi pembantu `getRoleDefaultTab(user)` di `App.tsx` ke alur `handleLogin`, `handleQuickLogin`, dan navigasi pasca-daftar di `RegisterSection.tsx`.
+    - Pengguna yang masuk langsung diarahkan ke workspace spesifik perannya:
+      - `resident` (Warga Desa) -> `'letters'` (`CitizenPortalWorkspace` portal mandiri surat & dokumen).
+      - `homestay_operator` (Mitra Usaha) & `smart_tourism_admin` (Wisatawan/Pemandu) -> `'tourism'` (`TourismEcoStayWorkspace`).
+      - `farmer` (Petani Rempah) -> `'traceability'` (`HarvestGradingWorkspace`).
+      - `farmer_group_admin` (Kelompok Tani) -> `'farming'` (`FarmsGisWorkspace`).
+      - `coop_manager` (Koperasi Hatta) -> `'koperasi'` (`KoperasiKasirWorkspace`).
+      - `village_officer` & `admin` -> `'population'` (`ResidentsWorkspace` data warga & permohonan surat).
+      - `field_surveyor` (Surveyor & IoT) -> `'survei'` (`SurveyEtlWorkspace`).
+  - **Navigasi Dashboard Khusus Peran Pengguna (`HeaderNav.tsx` & `App.tsx`)**:
+    - Mengganti tautan navbar dashboard dengan `getRoleNavigationItems(user)` sehingga antarmuka internal hanya menampilkan menu-menu workspace yang diizinkan untuk peran yang sedang aktif (tidak ada layar kasir koperasi atau telemetri server yang mengacaukan dashboard warga biasa).
+    - Membatasi visibilitas Telemetri Infrastruktur Kepulauan (`activeTab === 'iot'`) khusus untuk peran Administrator.
+  - **Integrasi 4 Modul Publik Interaktif Langsung di Landing Page Utama (`BandanairaBeranda.tsx`)**:
+    1. **Peta Eksplorasi Spasial (`#peta`)**: Menambahkan pemilih mode pratinjau cepat dengan kartu detail informasi lokasi (pulau, koordinat, sejarah) dan mode **Peta GIS 7-Layer Leaflet** langsung di halaman.
+    2. **Kalkulator & Rekomendasi Cerdas Wisata SAW (`#wisata`)**: Kalkulator multikriteria **Simple Additive Weighting** live dengan 4 slider bobot (Biaya C1, Waktu Tempuh C2, Fasilitas C3, Daya Tarik C4), 4 preset cepat ("Hemat Budget", "Akses Cepat", "Fasilitas", "Seimbang"), filter pulau dan kategori, kartu destinasi terurut skor $V_i$, rincian amenitas 4A, dan tombol tanya pemandu via WhatsApp.
+    3. **Direktori Penginapan & Eco-Stay (`#eco-stay`)**: Menampilkan katalog 6 penginapan terverifikasi dengan filter pulau, filter Air Bersih RO, filter Listrik Surya, harga per malam, kamar tersedia, serta modal formulir reservasi yang terhubung otomatis ke WhatsApp pengelola.
+    4. **Marketplace Produk UMKM & Rempah Terverifikasi Blockchain (`#layanan-umkm`)**: Katalog produk rempah pala, fuli, ikan asar cakalang, tuna sirip kuning, dan sirup pala dengan filter kategori, pencarian, kode batch rantai pasok, tombol verifikasi sertifikat QR Blockchain (`onPublicVerify`), serta pemesanan langsung via WhatsApp.
+  - Memverifikasi build frontend produksi (`npm --prefix frontend run build`) sukses 100% tanpa error TypeScript maupun Vite bundling (exit code 0 dalam 4.58s).
+
+### Phase 31: Unified Navbar & Footer, Figma Desktop Map Vector Integration, and 21st.dev User Bento Dashboard (Transformasi Landing Page 2)
+- [x] 31.1 Integrasi Komponen Navigasi & Footer Terpadu Ekosistem Banda Neira (`BandaUnifiedNavbar.tsx` & `BandaUnifiedFooter.tsx`):
+  - Membangun `frontend/src/components/common/BandaUnifiedNavbar.tsx` dengan palet warna navy `#081D35` & emas pala `#F4B75E`, logo rempah `bandanaira.com`, navigasi satu pintu (Beranda, Peta Kepulauan, Wisata & Penginapan, Belanja Rempah, DSS & Cagar Budaya), tombol Masuk / Daftar, dan pill status akun aktif + tombol Cepat Ganti Akun / Keluar.
+  - Membangun `frontend/src/components/common/BandaUnifiedFooter.tsx` dengan filosofi *"Bertumbuh bersama Banda."*, tautan 4 pilar ekosistem (Jelajah Pulau, Ekonomi & Rempah, Ekosistem Desa, Kontak & Pos Komando), badge sertifikasi posko dan status operasional real-time.
+  - Memasang `BandaUnifiedFooter` secara seragam di seluruh workspace aplikasi dan bagian bawah antarmuka pengguna di `App.tsx`.
+- [x] 31.2 Integrasi Kode Desain Peta Desktop Figma ke Sistem Map (`JelajahPetaDesktopView.tsx`):
+  - Mengadaptasi 100% struktur vektor SVG pulau (Neira, Banda Besar, Banda Api, Hatta, Ai, Pisang/Syahrir, Run, Batu Kapal), selat, jalur speedboat antar pulau, dan terumbu karang dari `frontend/src/desainsaatini/maps-dekstop/index.tsx`.
+  - Mengintegrasikan fitur pencarian lokasi real-time, filter pulau (Semua, Neira, Banda Besar, Banda Api, Hatta, Ai, Pisang, Run), toggle lapisan layer (Wisata 4A, Sejarah & Budaya, Fasilitas Pulau), dan floating card rincian tempat terpilih.
+  - Menghubungkan komponen peta vektor baru ini ke section `#peta` di `BandanairaBeranda.tsx` serta switcher mode (`🗺️ Peta Vektor Figma` vs `🛰️ 7-Layer Leaflet PostGIS`) di `InteractiveMapWorkspace.tsx`.
+- [x] 31.3 Transformasi Landing Page 2 Menjadi Dashboard Pengguna Terpadu Berbasis 21st.dev Bento Grid (`UserEcosystemDashboard.tsx`):
+  - Mengubah Landing Page 2 menjadi `frontend/src/views/dashboard/UserEcosystemDashboard.tsx` yang secara dinamis menyesuaikan data dan kartu aksi cepat berdasarkan peran pengguna yang login (`resident`, `farmer`, `farmer_group_admin`, `coop_manager`, `homestay_operator`, `smart_tourism_admin`, `field_surveyor`, `village_officer`, `admin`).
+  - Mengimplementasikan kartu Bento Grid modern (elevated cards, gradient neira-gold `#F4B75E`, border halus, dan micro-interactions) terinspirasi oleh komponen 21st.dev.
+  - Menampilkan sambutan personal berdasar role, ringkasan metrik riil (status surat, kuota air RO Koperasi, batch panen pala, rekomendasi SAW, dan 7 Pilar Ekosistem Digital Banda Neira).
+- [x] 31.4 Integrasi Alur Redirect Dashboard di `App.tsx`:
+  - Menambahkan tab `'dashboard'` ke state `activeTab` dan mengarahkan fungsi `getRoleDefaultTab(user)` langsung ke `'dashboard'` setelah login berhasil.
+  - Menambahkan menu `📊 Dasbor` pada seluruh panel tab navigasi role aktor dan `HeaderNav.tsx`.
+- [x] 31.6 Penyatuan Single Canonical Landing Page & Migrasi Seluruh Ruang Kerja Khusus Operasional ke Dalam Dashboard Ber-Sidebar (`DashboardLayout.tsx` & `App.tsx`):
+  - Memastikan **Hanya Ada 1 Landing Page Utama** di seluruh sistem (`BandanairaBeranda.tsx` yang dibungkus `LandingPortalWorkspace.tsx`), menghapus seluruh potensi kebingungan landing page ganda.
+  - Membangun `frontend/src/views/dashboard/DashboardLayout.tsx` yang menyediakan **Sidebar Navigasi di Samping Kiri** bergaya Banda Neira Deep Navy `#081D35` & `#F4B75E` dengan toggle collapse/expand dan drawer responsif di mobile.
+  - Memindahkan seluruh ruang kerja operasional (`population`, `letters`, `farming`, `traceability`, `koperasi`, `tourism`, `gis`, `smart_planner`, `iot`, `survei`, `audit`) langsung ke dalam konten Dashboard di sebelah sidebar, terintegrasi dan difilter dinamis sesuai hak akses peran pengguna (`resident`, `farmer`, `farmer_group_admin`, `coop_manager`, `homestay_operator`, `smart_tourism_admin`, `field_surveyor`, `village_officer`, `admin`).
+  - Menghapus tuntas seluruh deretan tab horizontal mengambang (`tab-nav`) yang menumpuk di atas konten, sehingga setelah login user murni berinteraksi melalui Dasbor ber-Sidebar.
+  - Memverifikasi build frontend produksi (`npm --prefix frontend run build`) sukses tanpa error (exit code 0 dalam 6.21s).
+
 
 
 

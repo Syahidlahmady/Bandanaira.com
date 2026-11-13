@@ -21,13 +21,14 @@ Platform digital terintegrasi untuk mendukung digitalisasi pelayanan masyarakat,
 ---
 
 ## 📖 Dokumentasi Teknis
-- [AGENTS.md](file:///home/masann/Projects/banda%20neira/penduduk/AGENTS.md) — Aturan wajib dan alur kerja AI Coding Agent.
-- [SRS.md](file:///home/masann/Projects/banda%20neira/penduduk/SRS.md) — Software Requirements Specification lengkap.
-- [ARCHITECTURE.md](file:///home/masann/Projects/banda%20neira/penduduk/ARCHITECTURE.md) — Arsitektur teknis modular monolith.
-- [DATABASE.md](file:///home/masann/Projects/banda%20neira/penduduk/DATABASE.md) — Desain skema database dan entitas relasional.
-- [API.md](file:///home/masann/Projects/banda%20neira/penduduk/API.md) — Spesifikasi REST API dan format respon.
-- [TASKS.md](file:///home/masann/Projects/banda%20neira/penduduk/TASKS.md) — Roadmap dan progres pengerjaan bertahap.
-- [USER_GUIDE.md](file:///home/masann/Projects/banda%20neira/penduduk/docs/USER_GUIDE.md) — Panduan operasional dan pengguna lengkap.
+- [ECOSYSTEM_KNOWLEDGE_BASE.md](file:///home/hid/Projects/BTS-NEIRA/penduduk/ECOSYSTEM_KNOWLEDGE_BASE.md) — **Master Knowledge Base & AI Context (Baca ini pertama kali bagi agen AI).**
+- [AGENTS.md](file:///home/hid/Projects/BTS-NEIRA/penduduk/AGENTS.md) — Aturan wajib dan alur kerja AI Coding Agent.
+- [SRS.md](file:///home/hid/Projects/BTS-NEIRA/penduduk/SRS.md) — Software Requirements Specification lengkap.
+- [ARCHITECTURE.md](file:///home/hid/Projects/BTS-NEIRA/penduduk/ARCHITECTURE.md) — Arsitektur teknis modular monolith.
+- [DATABASE.md](file:///home/hid/Projects/BTS-NEIRA/penduduk/DATABASE.md) — Desain skema database dan entitas relasional.
+- [API.md](file:///home/hid/Projects/BTS-NEIRA/penduduk/API.md) — Spesifikasi REST API dan format respon.
+- [TASKS.md](file:///home/hid/Projects/BTS-NEIRA/penduduk/TASKS.md) — Roadmap dan progres pengerjaan bertahap.
+- [USER_GUIDE.md](file:///home/hid/Projects/BTS-NEIRA/penduduk/docs/USER_GUIDE.md) — Panduan operasional dan pengguna lengkap.
 
 ---
 
