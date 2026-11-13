@@ -311,6 +311,15 @@ export const authService = {
     }
   },
 
+  getCachedProfile(): User | null {
+    try {
+      const raw = localStorage.getItem(ACTIVE_PROFILE_KEY)
+      return raw ? JSON.parse(raw) : null
+    } catch {
+      return null
+    }
+  },
+
   logout() {
     this.clearTokens()
   },

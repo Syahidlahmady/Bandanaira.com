@@ -1065,7 +1065,7 @@ export const App: React.FC = () => {
             </button>
           </div>
 
-          {activeTab === 'gis' && <InteractiveMapWorkspace />}
+          {activeTab === 'gis' && <InteractiveMapWorkspace currentUser={currentUser} />}
           {activeTab === 'tourism' && <TourismEcoStayWorkspace currentUser={null} />}
           {activeTab === 'smart_planner' && <SmartPlannerWorkspace />}
         </div>
@@ -1216,7 +1216,7 @@ export const App: React.FC = () => {
 
           {/* TAB 7: PETA SPASIAL INTERAKTIF 7-LAYER */}
           {(isFieldSurveyor || isSmartTourismAdmin || isHomestayOperator || isOfficerOrAdmin) && activeTab === 'gis' && (
-            <InteractiveMapWorkspace />
+            <InteractiveMapWorkspace currentUser={currentUser} />
           )}
 
           {/* TAB 8: PERENCANA CERDAS SAW (DSS) */}

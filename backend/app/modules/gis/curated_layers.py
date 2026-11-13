@@ -3,59 +3,59 @@ from typing import Any, Dict, List
 LAYER_DEFINITIONS: Dict[str, Dict[str, Any]] = {
     "LAYER_TOURISM_4A": {
         "id": "LAYER_TOURISM_4A",
-        "name": "Daya Tarik Wisata 4A",
+        "name": "Wisata & Bahari",
         "category": "publik",
         "color": "#06b6d4",  # Cyan
         "icon": "compass",
-        "description": "Wisata bahari (diving & snorkeling), pantai pasir putih, kuliner tradisional pala, dan panorama alam."
+        "description": "Wisata bahari, spot diving dan snorkeling, pantai pasir putih, dan panorama alam kepulauan."
     },
     "LAYER_HERITAGE": {
         "id": "LAYER_HERITAGE",
-        "name": "177 Cagar Budaya & Benteng VOC",
+        "name": "Cagar Budaya & Sejarah",
         "category": "publik",
         "color": "#f59e0b",  # Amber / Gold
         "icon": "landmark",
-        "description": "Benteng VOC bersejarah (Belgica, Nassau, Revenge), rumah pengasingan tokoh bangsa, dan situs kolonial."
+        "description": "Benteng bersejarah (Belgica, Nassau), rumah pengasingan tokoh bangsa, dan situs cagar budaya."
     },
     "LAYER_ACCOMMODATION": {
         "id": "LAYER_ACCOMMODATION",
-        "name": "Eco-Stay & Penginapan Mandiri",
+        "name": "Penginapan & Homestay",
         "category": "publik",
         "color": "#10b981",  # Emerald
         "icon": "home",
-        "description": "Vila, homestay, dan kabin ramah lingkungan dengan lencana air minum RO dan bauran listrik surya."
+        "description": "Vila, homestay, dan penginapan ramah lingkungan di Kepulauan Banda."
     },
     "LAYER_KOPERASI_UMKM": {
         "id": "LAYER_KOPERASI_UMKM",
-        "name": "Koperasi Hatta & Sentra UMKM",
+        "name": "Koperasi & UMKM Rempah",
         "category": "publik",
         "color": "#8b5cf6",  # Purple
         "icon": "store",
-        "description": "Kantor Koperasi Hatta, bank sampah, gerai produk rempah pala Banda, dan 30 petak kebun pala terverifikasi."
+        "description": "Sentra koperasi, galeri produk rempah pala Banda, dan gerai UMKM lokal."
     },
     "LAYER_PUBLIC_SAFETY": {
         "id": "LAYER_PUBLIC_SAFETY",
-        "name": "Keselamatan Publik & Transportasi",
+        "name": "Fasilitas Umum & Transportasi",
         "category": "publik",
         "color": "#3b82f6",  # Blue
         "icon": "shield",
-        "description": "Dermaga kapal laut PELNI, dermaga speedboat penyeberangan, puskesmas darurat, dan titik rawan ombak/arus selat."
+        "description": "Pelabuhan PELNI, dermaga penyeberangan speedboat antar pulau, dan fasilitas publik."
     },
     "LAYER_WATER_INFRA": {
         "id": "LAYER_WATER_INFRA",
-        "name": "Infrastruktur Air Bersih RO & Sumur",
+        "name": "Infrastruktur Air Bersih",
         "category": "resiliensi",
         "color": "#0ea5e9",  # Sky Teal
         "icon": "droplets",
-        "description": "Stasiun filtrasi air payau (BWRO) dan desalinasi laut (SWRO), tandon komunal, serta status live TDS sensor ESP32."
+        "description": "Stasiun filtrasi air minum, tandon air komunal, dan titik pasokan air bersih."
     },
     "LAYER_ENERGY_WASTE": {
         "id": "LAYER_ENERGY_WASTE",
-        "name": "Energi Surya (PLTS) & Bank Sampah",
+        "name": "Fasilitas Energi & Kebersihan",
         "category": "resiliensi",
         "color": "#f43f5e",  # Rose
         "icon": "zap",
-        "description": "Pembangkit diesel PLTD PLN, pembangkit surya PLTS terbarukan, bank sampah plastik, dan titik reduksi limbah pesisir."
+        "description": "Pembangkit listrik tenaga surya, bank sampah desa, dan titik pengelolaan kebersihan."
     }
 }
 

@@ -34,6 +34,8 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 29: Strict RBAC Security Enforcement on Smart Tourism CMS, Tour Guides & Guest Bookings Privacy**
 - [x] **Phase 30: Editorial Slow-Travel Landing Page & Dual-Mode UI System (Desain Beranda Banda Neira & Tailwind CSS Setup)**
 - [x] **Phase 31: Unified Navbar & Footer, Figma Desktop Map Vector Integration, and 21st.dev User Bento Dashboard (Transformasi Landing Page 2)**
+- [x] **Phase 32: Spatial Studio Map Editor & 4A Geocoding Integration (Editor Titik Peta PostGIS & Google Maps/OSM)**
+- [x] **Phase 33: GIS Map Aesthetic Unification & Editorial Tone Harmonization (Clean Google Maps Style & Slop Removal)**
 
 ---
 
@@ -490,6 +492,38 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Memindahkan seluruh ruang kerja operasional (`population`, `letters`, `farming`, `traceability`, `koperasi`, `tourism`, `gis`, `smart_planner`, `iot`, `survei`, `audit`) langsung ke dalam konten Dashboard di sebelah sidebar, terintegrasi dan difilter dinamis sesuai hak akses peran pengguna (`resident`, `farmer`, `farmer_group_admin`, `coop_manager`, `homestay_operator`, `smart_tourism_admin`, `field_surveyor`, `village_officer`, `admin`).
   - Menghapus tuntas seluruh deretan tab horizontal mengambang (`tab-nav`) yang menumpuk di atas konten, sehingga setelah login user murni berinteraksi melalui Dasbor ber-Sidebar.
   - Memverifikasi build frontend produksi (`npm --prefix frontend run build`) sukses tanpa error (exit code 0 dalam 6.21s).
+
+### Phase 32: Spatial Studio Map Editor & 4A Geocoding Integration (Editor Titik Peta PostGIS & Google Maps/OSM)
+- [x] 32.1 Docker & Environment Harmonization:
+  - Docker Compose running with 4 containers (`banda_backend` 8005, `banda_db` 5435, `banda_frontend` 5175, `banda_mongodb` 27018).
+  - PostGIS database migrated to `HEAD` (12 Alembic revisions applied) and seeded with 66 spatial points across 7 layers.
+- [x] 32.2 Backend Multi-Provider Geocoding & Bounding-Box Geofencing (`backend/app/modules/gis/geocoding.py`):
+  - Added multi-provider geocoder supporting Google Places API (with API Key fallback), OSM Nominatim, and curated offline local gazetteer for the Banda Neira archipelago.
+  - Strict geofence bounding box check (`-4.65` to `-4.45` lat, `129.70` to `130.10` lng) preventing out-of-bounds coordinate contamination.
+- [x] 32.3 Backend RBAC CRUD Endpoints for Spatial Features (`backend/app/modules/gis/router.py`):
+  - `GET /api/v1/gis/cari-eksternal`: External geocoding search endpoint for location autocomplete.
+  - `PUT /api/v1/gis/features/{feature_id}`: Update spatial feature attributes, coordinates, and 4A metadata (role: `admin`, `village_officer`).
+  - `DELETE /api/v1/gis/features/{feature_id}`: Delete spatial point from PostGIS (role: `admin`, `village_officer`).
+  - Automated tests passing in `tests/test_gis.py` (8 passed in 27s).
+- [x] 32.4 Frontend Spatial Studio & Interactive Map Editor (`InteractiveMapWorkspace.tsx` & `gis.ts`):
+  - Leaflet set as primary default map view across `BandanairaBeranda.tsx` and `InteractiveMapWorkspace.tsx`.
+  - Added Mode Studio Editor button for authorized staff (`admin`, `village_officer`).
+  - Tab 1: External Search pulling coordinates, addresses, and suggested layers from Google Maps / OSM Nominatim.
+  - Tab 2: Precision Click-to-Pin and draggable Leaflet marker synchronizing latitude and longitude inputs in real-time.
+  - Form fields tailored for 4A Tourism dimensions (Attraction Subtype & Highlights, Accessibility Boat Access & Travel Time, Amenities Entry Fee & Facilities, Ancillary Contact WhatsApp & Local Guide Checkbox).
+  - Direct Edit and Delete actions in the inspection drawer for existing PostGIS points.
+  - Build verified (`npm --prefix frontend run build` 0 errors, exit code 0).
+
+### Phase 33: GIS Map Aesthetic Unification & Editorial Tone Harmonization (Clean Google Maps Style & Slop Removal)
+- [x] 33.1 AI Slop & Academic Name-Dropping Removal:
+  - Removed "Mandat Fauzan Arisanto & SRS 10.1 (PostGIS & Leaflet)", "5 Lokasi Unggulan, 7 situs Kurasi Inti, 4 stasiun IoT aktif, 50 kWp Micro-grid", and jargon like ESP32 live TDS from UI and layer labels.
+  - Simplified and standardized layer names in backend `curated_layers.py` and frontend (`Wisata & Bahari`, `Cagar Budaya`, `Penginapan`, `Sentra UMKM`, `Fasilitas Umum`, `Air Bersih`, `Energi & Lingkungan`).
+  - Removed bottom bento cards to achieve a clean Google Maps layout.
+- [x] 33.2 Color Palette Harmonization with Banda Neira Editorial Slow-Travel:
+  - Eliminated the pitch-black / slate-900 cyberpunk terminal box (`rgba(15, 23, 42, ...)`, `#0a0f1d`) that clashed with the landing page's warm cream/limestone background (`#f7f5f0`).
+  - Re-themed map card wrapper, search bar, island filter chips, category pills, studio editor, and inspection drawer to crisp white surfaces (`#ffffff`), warm borders (`#cbd5e1`, `#e2e8f0`), deep ocean navy typography (`#0f2c59`), and slate subtexts (`#64748b`).
+  - Changed Leaflet map canvas loading background from `#0a0f1d` to `#e0f2fe` (soft ocean water tone).
+  - Verified with Impeccable mechanical detector (0 violations) and complete production build.
 
 
 

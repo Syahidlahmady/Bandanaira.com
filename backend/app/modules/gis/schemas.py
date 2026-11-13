@@ -23,6 +23,35 @@ class SpatialFeatureCreate(SpatialFeatureBase):
     pass
 
 
+class SpatialFeatureUpdate(BaseModel):
+    name: Optional[str] = Field(None, max_length=150)
+    layer_type: Optional[str] = None
+    category: Optional[str] = None
+    island_name: Optional[str] = None
+    latitude: Optional[float] = Field(None, ge=-90.0, le=90.0)
+    longitude: Optional[float] = Field(None, ge=-180.0, le=180.0)
+    geometry_geojson: Optional[Dict[str, Any]] = None
+    properties_meta: Optional[Dict[str, Any]] = None
+    description: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+class GeocodingSearchResult(BaseModel):
+    name: str
+    lat: float
+    lng: float
+    address: str
+    island: str
+    suggested_layer: str
+    source: str
+
+
+class GeocodingResponse(BaseModel):
+    query: str
+    total: int
+    results: List[GeocodingSearchResult]
+
+
 class SpatialFeatureResponse(SpatialFeatureBase):
     id: uuid.UUID
     model_config = ConfigDict(from_attributes=True)

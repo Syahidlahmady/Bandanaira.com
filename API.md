@@ -155,7 +155,10 @@ RESTful API specification for **Banda Digital Ecosystem**.
 | `GET` | `/api/v1/gis/layers` & `/api/v1/peta/geojson` | Public | Standard RFC 7946 GeoJSON FeatureCollection across 7 layers with layer_type, category, and island filters |
 | `GET` | `/api/v1/gis/meta` & `/api/v1/peta/layers-meta` | Public | Layer metadata catalog detailing all 7 spatial layers, item counts, and active status |
 | `GET` | `/api/v1/gis/cagar-budaya/{slug}` | Public | Retrieve heritage narrative and audio guide URL by slug |
-| `POST` | `/api/v1/gis/features` | `admin`, `village_officer` | Register new spatial feature with coordinates and metadata |
+| `GET` | `/api/v1/gis/cari-eksternal` | Public | Search external geocoding providers (Google Places, OSM Nominatim, Banda Gazetteer) within Banda archipelago bounds |
+| `POST` | `/api/v1/gis/features` | `admin`, `village_officer` | Register new spatial feature with coordinates and 4A metadata |
+| `PUT` | `/api/v1/gis/features/{feature_id}` | `admin`, `village_officer` | Update spatial feature attributes, coordinates, and 4A metadata |
+| `DELETE` | `/api/v1/gis/features/{feature_id}` | `admin`, `village_officer` | Soft/hard delete spatial feature from PostGIS |
 
 ### 2.14 Cryptographic NIK Hardening & OWASP Top 10 (`/api/v1/security` & `/api/v1/warga`)
 | Method | Endpoint | Roles Allowed | Description |

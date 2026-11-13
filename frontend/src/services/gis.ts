@@ -73,6 +73,22 @@ export interface GISSummaryResponse {
   available_islands: string[]
 }
 
+export interface GeocodingResult {
+  name: string
+  lat: number
+  lng: number
+  address: string
+  island: string
+  suggested_layer: string
+  source: string
+}
+
+export interface GeocodingResponse {
+  query: string
+  total: number
+  results: GeocodingResult[]
+}
+
 const getApiBase = () => {
   return typeof window !== 'undefined'
     ? `http://${window.location.hostname}:8005/api/v1`
@@ -142,6 +158,58 @@ export const gisService = {
   getHeritageDetail: async (slug: string): Promise<GeoJSONFeature> => {
     const res = await fetch(`${getApiBase()}/gis/cagar-budaya/${slug}`)
     if (!res.ok) throw new Error(`Situs cagar budaya '${slug}' tidak ditemukan`)
+    return res.json()
+  },
+
+  searchExternal: async (query: string): Promise<GeocodingResponse> => {
+    const res = await fetch(`${getApiBase()}/gis/cari-eksternal?q=${encodeURIComponent(query)}`)
+    if (!res.ok) throw new Error('Gagal mencari titik eksternal')
+    return res.json()
+  },
+
+  createFeature: async (data: any, token: string): Promise<any> => {
+    const res = await fetch(`${getApiBase()}/gis/features`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail || 'Gagal menambahkan titik spasial')
+    }
+    return res.json()
+  },
+
+  updateFeature: async (id: string, data: any, token: string): Promise<any> => {
+    const res = await fetch(`${getApiBase()}/gis/features/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail || 'Gagal memperbarui titik spasial')
+    }
+    return res.json()
+  },
+
+  deleteFeature: async (id: string, token: string): Promise<any> => {
+    const res = await fetch(`${getApiBase()}/gis/features/${id}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail || 'Gagal menghapus titik spasial')
+    }
     return res.json()
   },
 
