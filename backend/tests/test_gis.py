@@ -149,3 +149,77 @@ async def test_create_spatial_feature_rbac(client: AsyncClient):
     detail_res = await client.get(f"/api/v1/gis/features/{feat_id}")
     assert detail_res.status_code == 200
     assert detail_res.json()["id"] == feat_id
+
+
+@pytest.mark.asyncio
+async def test_geocoding_external_search(client: AsyncClient):
+    """Memverifikasi penarikan koordinat via endpoint cari-eksternal (Google/OSM/Gazetteer)."""
+    # 1. Cari benteng
+    res_benteng = await client.get("/api/v1/gis/cari-eksternal?q=Belgica")
+    assert res_benteng.status_code == 200
+    data = res_benteng.json()
+    assert data["total"] >= 1
+    assert any("belgica" in r["name"].lower() for r in data["results"])
+    assert data["results"][0]["suggested_layer"] == "LAYER_HERITAGE"
+    assert data["results"][0]["island"] == "Pulau Neira"
+
+    # 2. Cari daya tarik 4A
+    res_4a = await client.get("/api/v1/gis/cari-eksternal?q=Lava+Flow")
+    assert res_4a.status_code == 200
+    data_4a = res_4a.json()
+    assert data_4a["total"] >= 1
+    assert data_4a["results"][0]["suggested_layer"] == "LAYER_TOURISM_4A"
+    assert data_4a["results"][0]["island"] == "Gunung Api"
+
+
+@pytest.mark.asyncio
+async def test_update_and_delete_spatial_feature(client: AsyncClient):
+    """Memverifikasi pembaruan dan penghapusan titik spasial PostGIS oleh Admin."""
+    admin_token = await get_token(client, "admin", "Admin123!")
+    headers = {"Authorization": f"Bearer {admin_token}"}
+
+    # 1. Buat titik 4A baru
+    create_payload = {
+        "name": "Spot Diving Batu Kapal Neira",
+        "layer_type": "LAYER_TOURISM_4A",
+        "category": "publik",
+        "island_name": "Pulau Neira",
+        "latitude": -4.5125,
+        "longitude": 129.9050,
+        "description": "Batu karang menyerupai haluan kapal dengan terumbu karang kipas.",
+        "properties_meta": {
+            "sub_type": "bahari",
+            "entry_fee_rp": 35000,
+            "boat_access": "10 menit dari dermaga Neira",
+        },
+    }
+    create_res = await client.post("/api/v1/gis/features", json=create_payload, headers=headers)
+    assert create_res.status_code == 201
+    feat_id = create_res.json()["id"]
+
+    # 2. Update metadata 4A
+    update_payload = {
+        "name": "Spot Diving Batu Kapal Neira (Pusat Konservasi)",
+        "properties_meta": {
+            "sub_type": "bahari",
+            "entry_fee_rp": 40000,
+            "boat_access": "10 menit dari dermaga Neira",
+            "highlights": "Gorgonian sea fans, school of barracudas",
+            "guide_whatsapp": "6281234567899",
+        },
+    }
+    update_res = await client.put(f"/api/v1/gis/features/{feat_id}", json=update_payload, headers=headers)
+    assert update_res.status_code == 200
+    updated = update_res.json()
+    assert updated["name"] == "Spot Diving Batu Kapal Neira (Pusat Konservasi)"
+    assert updated["properties_meta"]["entry_fee_rp"] == 40000
+    assert updated["properties_meta"]["highlights"] == "Gorgonian sea fans, school of barracudas"
+
+    # 3. Hapus titik
+    del_res = await client.delete(f"/api/v1/gis/features/{feat_id}", headers=headers)
+    assert del_res.status_code == 200
+    assert del_res.json()["status"] == "success"
+
+    # 4. Pastikan sudah 404
+    check_res = await client.get(f"/api/v1/gis/features/{feat_id}")
+    assert check_res.status_code == 404

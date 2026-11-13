@@ -15,13 +15,16 @@ from backend.app.modules.gis.curated_layers import (
     INITIAL_SPATIAL_FEATURES,
     LAYER_DEFINITIONS,
 )
+from backend.app.modules.gis.geocoding import geocoding_service
 from backend.app.modules.gis.models import SpatialFeature
 from backend.app.modules.gis.schemas import (
     GISSummaryResponse,
     GeoJSONFeatureCollection,
+    GeocodingResponse,
     LayerMetadata,
     SpatialFeatureCreate,
     SpatialFeatureResponse,
+    SpatialFeatureUpdate,
 )
 
 router = APIRouter(prefix="/gis", tags=["7-Layer Spatial GIS Peta Interaktif"])
@@ -191,6 +194,24 @@ async def get_heritage_detail_by_slug(
     return target_feature.to_geojson_feature()
 
 
+@router.get("/cari-eksternal", response_model=GeocodingResponse)
+@peta_alias_router.get("/cari-eksternal", response_model=GeocodingResponse)
+async def cari_titik_eksternal(
+    q: str = Query(..., min_length=2, description="Nama situs sejarah / objek wisata / infrastruktur"),
+    limit: int = Query(default=8, ge=1, le=20),
+) -> GeocodingResponse:
+    """
+    Mencari koordinat presisi [lat, lng] dari Google Maps / OSM Nominatim / Offline Gazetteer Banda.
+    Hasil pencarian bersih tanpa POI sampah luar wilayah Banda.
+    """
+    hasil = geocoding_service.cari_titik(kata_kunci=q, limit=limit)
+    return GeocodingResponse(
+        query=q,
+        total=len(hasil),
+        results=hasil,
+    )
+
+
 @router.get("/features/{feature_id}", response_model=SpatialFeatureResponse)
 async def get_feature_detail(
     feature_id: uuid.UUID,
@@ -205,6 +226,66 @@ async def get_feature_detail(
             detail=f"Fitur spasial ID '{feature_id}' tidak ditemukan.",
         )
     return SpatialFeatureResponse.model_validate(feature)
+
+
+@router.put(
+    "/features/{feature_id}",
+    response_model=SpatialFeatureResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def update_spatial_feature(
+    feature_id: uuid.UUID,
+    data: SpatialFeatureUpdate,
+    current_user: User = Depends(require_roles([ROLE_ADMIN, ROLE_VILLAGE_OFFICER])),
+    db: AsyncSession = Depends(get_db),
+) -> SpatialFeatureResponse:
+    """
+    Mengubah titik spasial dan metadata 4A di PostGIS (Role: Admin / Village Officer).
+    """
+    stmt = select(SpatialFeature).where(SpatialFeature.id == feature_id)
+    feature = (await db.execute(stmt)).scalar_one_or_none()
+    if not feature:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Fitur spasial ID '{feature_id}' tidak ditemukan.",
+        )
+
+    update_data = data.model_dump(exclude_unset=True)
+    for field, val in update_data.items():
+        setattr(feature, field, val)
+
+    await db.commit()
+    await db.refresh(feature)
+    return SpatialFeatureResponse.model_validate(feature)
+
+
+@router.delete(
+    "/features/{feature_id}",
+    status_code=status.HTTP_200_OK,
+)
+async def delete_spatial_feature(
+    feature_id: uuid.UUID,
+    current_user: User = Depends(require_roles([ROLE_ADMIN, ROLE_VILLAGE_OFFICER])),
+    db: AsyncSession = Depends(get_db),
+) -> Dict[str, Any]:
+    """
+    Menghapus titik spasial dari PostGIS (Role: Admin / Village Officer).
+    """
+    stmt = select(SpatialFeature).where(SpatialFeature.id == feature_id)
+    feature = (await db.execute(stmt)).scalar_one_or_none()
+    if not feature:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Fitur spasial ID '{feature_id}' tidak ditemukan.",
+        )
+
+    await db.delete(feature)
+    await db.commit()
+    return {
+        "status": "success",
+        "deleted_id": str(feature_id),
+        "message": f"Titik spasial '{feature.name}' berhasil dihapus dari database PostGIS.",
+    }
 
 
 @router.post(

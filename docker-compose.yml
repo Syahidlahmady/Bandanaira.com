@@ -22,7 +22,7 @@ services:
     container_name: banda_mongodb
     restart: unless-stopped
     ports:
-      - "${MONGO_PORT:-27017}:27017"
+      - "${MONGO_PORT:-27018}:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-mongoadmin}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-mongoadmin}
@@ -57,9 +57,10 @@ services:
     container_name: banda_frontend
     restart: unless-stopped
     ports:
-      - "${FRONTEND_PORT:-5175}:5173"
+      - "${FRONTEND_PORT:-5175}:5175"
     environment:
       - VITE_API_BASE_URL=http://localhost:8005/api/v1
+      - VITE_PROXY_TARGET=http://backend:8000
     depends_on:
       - backend
 

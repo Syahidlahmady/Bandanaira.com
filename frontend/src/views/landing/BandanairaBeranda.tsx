@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import bandaCinematicVideoBackdrop from '../../assets/image.webp'
 import { InteractiveMapWorkspace } from '../InteractiveMapWorkspace'
-import { JelajahPetaDesktopView } from '../maps/JelajahPetaDesktopView'
 import { VERIFIED_MARKETPLACE_PRODUCTS } from '../../components/VerifiedMarketplaceModal'
 import { tourismService, AccommodationItem } from '../../services/tourism'
 
@@ -492,7 +491,6 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
 }) => {
   const [activeNav, setActiveNav] = useState<string>('#beranda')
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false)
-  const [showFullGisEmbed, setShowFullGisEmbed] = useState<boolean>(false)
 
   // SAW Wisata States
   const [sawIslandFilter, setSawIslandFilter] = useState<string>('SEMUA')
@@ -953,50 +951,20 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
             </h2>
           </div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <div className="inline-flex p-1 rounded-xl bg-white border border-[#dce1df] shadow-sm">
-              <button
-                type="button"
-                onClick={() => setShowFullGisEmbed(false)}
-                className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
-                  !showFullGisEmbed
-                    ? 'bg-amber-600 text-white shadow-sm'
-                    : 'text-[#0f2c59] hover:bg-[#f7f5f0]'
-                }`}
-              >
-                Pratinjau Cepat
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowFullGisEmbed(true)}
-                className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
-                  showFullGisEmbed
-                    ? 'bg-amber-600 text-white shadow-sm'
-                    : 'text-[#0f2c59] hover:bg-[#f7f5f0]'
-                }`}
-              >
-                Peta GIS 7-Layer Leaflet
-              </button>
-            </div>
             <button
               type="button"
               onClick={() => onNavigate('gis')}
-              className="inline-flex h-10 items-center gap-2 px-4 bg-[#081d35] hover:bg-[#0f2c59] text-white rounded-lg text-xs font-semibold transition-colors"
+              className="inline-flex h-10 items-center gap-2 px-5 bg-[#081d35] hover:bg-[#0f2c59] text-white rounded-lg text-xs font-semibold transition-colors shadow-sm"
             >
-              <span>Layar Penuh GIS</span>
+              <span>Layar Penuh Peta</span>
               <ArrowUpRightIcon className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
-        {showFullGisEmbed ? (
-          <div className="w-full min-h-[680px] rounded-2xl overflow-hidden border border-[#dce1df] shadow-md bg-slate-900">
-            <InteractiveMapWorkspace />
-          </div>
-        ) : (
-          <div className="w-full rounded-2xl overflow-hidden border border-[#96d4d6] shadow-lg">
-            <JelajahPetaDesktopView onNavigateTab={(tab) => onNavigate(tab as NavTabType)} />
-          </div>
-        )}
+        <div className="w-full min-h-[640px] rounded-2xl overflow-hidden border border-[#dce1df] shadow-md bg-white p-4 sm:p-6">
+          <InteractiveMapWorkspace currentUser={currentUser} />
+        </div>
       </section>
 
       {/* =====================================================================

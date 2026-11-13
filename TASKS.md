@@ -34,6 +34,9 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 29: Strict RBAC Security Enforcement on Smart Tourism CMS, Tour Guides & Guest Bookings Privacy**
 - [x] **Phase 30: Editorial Slow-Travel Landing Page & Dual-Mode UI System (Desain Beranda Banda Neira & Tailwind CSS Setup)**
 - [x] **Phase 31: Unified Navbar & Footer, Figma Desktop Map Vector Integration, and 21st.dev User Bento Dashboard (Transformasi Landing Page 2)**
+- [x] **Phase 32: Spatial Studio Map Editor & 4A Geocoding Integration (Editor Titik Peta PostGIS & Google Maps/OSM)**
+- [x] **Phase 33: GIS Map Aesthetic Unification & Editorial Tone Harmonization (Clean Google Maps Style & Slop Removal)**
+- [x] **Phase 34: Penghapusan Tuntas Desain Lama (Pembersihan desainlama.png), Redesain Global Warm Linen Banda Neira, dan Harmonisasi Workspace**
 
 ---
 
@@ -491,18 +494,50 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Menghapus tuntas seluruh deretan tab horizontal mengambang (`tab-nav`) yang menumpuk di atas konten, sehingga setelah login user murni berinteraksi melalui Dasbor ber-Sidebar.
   - Memverifikasi build frontend produksi (`npm --prefix frontend run build`) sukses tanpa error (exit code 0 dalam 6.21s).
 
-### Phase 32: Penghapusan Tuntas Desain Lama (Pembersihan `desainlama.png`), Redesain Global Warm Linen Banda Neira, dan Harmonisasi Workspace
-- [x] 32.1 Analisis Tuntas Artefak Desain Lama (`frontend/public/desainlama/desainlama.png`):
+### Phase 32: Spatial Studio Map Editor & 4A Geocoding Integration (Editor Titik Peta PostGIS & Google Maps/OSM)
+- [x] 32.1 Docker & Environment Harmonization:
+  - Docker Compose running with 4 containers (`banda_backend` 8005, `banda_db` 5435, `banda_frontend` 5175, `banda_mongodb` 27018).
+  - PostGIS database migrated to `HEAD` (12 Alembic revisions applied) and seeded with 66 spatial points across 7 layers.
+- [x] 32.2 Backend Multi-Provider Geocoding & Bounding-Box Geofencing (`backend/app/modules/gis/geocoding.py`):
+  - Added multi-provider geocoder supporting Google Places API (with API Key fallback), OSM Nominatim, and curated offline local gazetteer for the Banda Neira archipelago.
+  - Strict geofence bounding box check (`-4.65` to `-4.45` lat, `129.70` to `130.10` lng) preventing out-of-bounds coordinate contamination.
+- [x] 32.3 Backend RBAC CRUD Endpoints for Spatial Features (`backend/app/modules/gis/router.py`):
+  - `GET /api/v1/gis/cari-eksternal`: External geocoding search endpoint for location autocomplete.
+  - `PUT /api/v1/gis/features/{feature_id}`: Update spatial feature attributes, coordinates, and 4A metadata (role: `admin`, `village_officer`).
+  - `DELETE /api/v1/gis/features/{feature_id}`: Delete spatial point from PostGIS (role: `admin`, `village_officer`).
+  - Automated tests passing in `tests/test_gis.py` (8 passed in 27s).
+- [x] 32.4 Frontend Spatial Studio & Interactive Map Editor (`InteractiveMapWorkspace.tsx` & `gis.ts`):
+  - Leaflet set as primary default map view across `BandanairaBeranda.tsx` and `InteractiveMapWorkspace.tsx`.
+  - Added Mode Studio Editor button for authorized staff (`admin`, `village_officer`).
+  - Tab 1: External Search pulling coordinates, addresses, and suggested layers from Google Maps / OSM Nominatim.
+  - Tab 2: Precision Click-to-Pin and draggable Leaflet marker synchronizing latitude and longitude inputs in real-time.
+  - Form fields tailored for 4A Tourism dimensions (Attraction Subtype & Highlights, Accessibility Boat Access & Travel Time, Amenities Entry Fee & Facilities, Ancillary Contact WhatsApp & Local Guide Checkbox).
+  - Direct Edit and Delete actions in the inspection drawer for existing PostGIS points.
+  - Build verified (`npm --prefix frontend run build` 0 errors, exit code 0).
+
+### Phase 33: GIS Map Aesthetic Unification & Editorial Tone Harmonization (Clean Google Maps Style & Slop Removal)
+- [x] 33.1 AI Slop & Academic Name-Dropping Removal:
+  - Removed "Mandat Fauzan Arisanto & SRS 10.1 (PostGIS & Leaflet)", "5 Lokasi Unggulan, 7 situs Kurasi Inti, 4 stasiun IoT aktif, 50 kWp Micro-grid", and jargon like ESP32 live TDS from UI and layer labels.
+  - Simplified and standardized layer names in backend `curated_layers.py` and frontend (`Wisata & Bahari`, `Cagar Budaya`, `Penginapan`, `Sentra UMKM`, `Fasilitas Umum`, `Air Bersih`, `Energi & Lingkungan`).
+  - Removed bottom bento cards to achieve a clean Google Maps layout.
+- [x] 33.2 Color Palette Harmonization with Banda Neira Editorial Slow-Travel:
+  - Eliminated the pitch-black / slate-900 cyberpunk terminal box (`rgba(15, 23, 42, ...)`, `#0a0f1d`) that clashed with the landing page's warm cream/limestone background (`#f7f5f0`).
+  - Re-themed map card wrapper, search bar, island filter chips, category pills, studio editor, and inspection drawer to crisp white surfaces (`#ffffff`), warm borders (`#cbd5e1`, `#e2e8f0`), deep ocean navy typography (`#0f2c59`), and slate subtexts (`#64748b`).
+  - Changed Leaflet map canvas loading background from `#0a0f1d` to `#e0f2fe` (soft ocean water tone).
+  - Verified with Impeccable mechanical detector (0 violations) and complete production build.
+
+### Phase 34: Penghapusan Tuntas Desain Lama (Pembersihan `desainlama.png`), Redesain Global Warm Linen Banda Neira, dan Harmonisasi Workspace
+- [x] 34.1 Analisis Tuntas Artefak Desain Lama (`frontend/public/desainlama/desainlama.png`):
   - Mengidentifikasi elemen desain lama yang masih tertinggal: `HeaderNav` gelap usang dengan tab bar mengambang hitam, kartu penginapan gelap `#0B1120`, tombol hijau neon `#10b981`, dan variabel global CSS yang memaksa tema dark cyberpunk.
-- [x] 32.2 Penyelarasan Fondasi CSS Global (`frontend/src/index.css`):
+- [x] 34.2 Penyelarasan Fondasi CSS Global (`frontend/src/index.css`):
   - Menyelaraskan seluruh variabel token `:root` ke tema editorial Banda Neira (Warm Linen `#F7F5F0`, background kartu putih bersih `#FFFFFF`, teks navy `#081D35`, teks sekunder `#475569`, border halus `#E2E8F0`, dan aksen emas pala `#F4B75E`).
   - Memperbarui styling kelas global `.app-card`, `.card`, `.stat-card`, `.table-responsive`, `.data-table`, `.form-control`, `.form-select`, `.modal-content`, `.tab-nav`, dan tombol `.btn-primary` sehingga seluruh workspace operasional (`ResidentsWorkspace`, `LettersWorkspace`, `FarmsGisWorkspace`, `HarvestGradingWorkspace`, `KoperasiKasirWorkspace`, `SmartPlannerWorkspace`, `IslandTelemetryWorkspace`, `SurveyEtlWorkspace`, `AuditTrailWorkspace`, `CitizenPortalWorkspace`) langsung seragam, modern, dan elegan.
-- [x] 32.3 Perombakan Total Modal Marketplace (`frontend/src/components/VerifiedMarketplaceModal.tsx`):
+- [x] 34.3 Perombakan Total Modal Marketplace (`frontend/src/components/VerifiedMarketplaceModal.tsx`):
   - Merombak total modal belanja produk UMKM & rempah dari tema hitam neon ke elevated card putih bersih `#FFFFFF` berlatar warm linen `#F7F5F0`, border emas pala `#F4B75E`, lencana verifikasi blockchain IPFS, tombol hubungi via WhatsApp, dan modal verifikasi QR.
-- [x] 32.4 Redesain Komprehensif Workspace Wisata & Penginapan (`frontend/src/views/TourismEcoStayWorkspace.tsx`):
+- [x] 34.4 Redesain Komprehensif Workspace Wisata & Penginapan (`frontend/src/views/TourismEcoStayWorkspace.tsx`):
   - Mengganti seluruh inline styling gelap (`#0B1120`, `#0f172a`, hijau neon `#10b981`, teks `#f8fafc`) dengan palet Banda Neira (`#FFFFFF`, `#081D35`, `#475569`, `#F4B75E`).
   - Menyelaraskan header, filter bar wilayah dan tipe, kartu katalog penginapan eco-stay, tab 177 cagar budaya & audio guide player, pelacak reservasi, buku tamu operasional, katalog pemandu wisata, serta panel CMS tarif dan modal penambahan data.
-- [x] 32.5 Pembersihan Tuntas Navigasi Lama di `App.tsx`:
+- [x] 34.5 Pembersihan Tuntas Navigasi Lama di `App.tsx`:
   - Menghapus rendering `HeaderNav` lama dan bilah tab mengambang `Guest Public Exploration` bagi tamu non-login. Tamu kini secara mulus hanya menikmati 1 Landing Page Satu Pintu (`BandanairaBeranda`) atau masuk via Login/Register.
   - Memverifikasi build frontend produksi (`npm --prefix frontend run build`) lolos exit code 0 tanpa error TypeScript maupun CSS.
 

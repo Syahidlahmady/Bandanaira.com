@@ -1000,6 +1000,7 @@ export const App: React.FC = () => {
 
 
 
+
       {/* =====================================================================
           4. DASBOR EKOSISTEM DENGAN SIDEBAR NAVIGASI DI SAMPING (UNTUK USER LOGIN)
              Semua Ruang Kerja Operasional Terintegrasi di Dalam Dasbor Sesuai Hak Akses Role
@@ -1145,7 +1146,7 @@ export const App: React.FC = () => {
 
           {/* TAB 7: PETA SPASIAL INTERAKTIF 7-LAYER */}
           {(isFieldSurveyor || isSmartTourismAdmin || isHomestayOperator || isOfficerOrAdmin) && activeTab === 'gis' && (
-            <InteractiveMapWorkspace />
+            <InteractiveMapWorkspace currentUser={currentUser} />
           )}
 
           {/* TAB 8: PERENCANA CERDAS SAW (DSS) */}
