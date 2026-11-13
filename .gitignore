@@ -55,3 +55,6 @@ postgres_data/
 *~
 .DS_Store
 Thumbs.db
+agents/skills/21st-cli-use
+.agents/
+.continue/
