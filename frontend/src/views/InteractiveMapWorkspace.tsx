@@ -26,6 +26,9 @@ import {
   Crosshair,
   Globe,
   Check,
+  Layers,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react'
 import {
   gisService,
@@ -124,6 +127,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
   const [isSavingFeature, setIsSavingFeature] = useState<boolean>(false)
   const [isDeletingFeature, setIsDeletingFeature] = useState<boolean>(false)
+  const [atlasLegendOpen, setAtlasLegendOpen] = useState<boolean>(true)
 
   // Offline Caching State
   const [isOffline, setIsOffline] = useState<boolean>(
@@ -312,15 +316,22 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
       const pinIcon = L.divIcon({
         className: 'draft-editor-pin',
         html: `
-          <div style="position: relative; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;">
-            <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; background: #f59e0b; opacity: 0.45; animation: pulse 1.5s infinite;"></div>
-            <div style="position: relative; width: 26px; height: 26px; border-radius: 50%; background: #081d35; border: 3px solid #f59e0b; box-shadow: 0 0 14px #f59e0b, 0 4px 10px rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; color: #f59e0b;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-            </div>
+          <div style="position: relative; width: 34px; height: 44px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 4px 10px rgba(239, 68, 68, 0.45)); cursor: grab;">
+            <svg width="34" height="44" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M14 0C6.268 0 0 6.268 0 14C0 23.8 12.2 34.6 13.3 35.6C13.7 35.9 14.3 35.9 14.7 35.6C15.8 34.6 28 23.8 28 14C28 6.268 21.732 0 14 0Z"
+                fill="#ef4444"
+                stroke="#ffffff"
+                stroke-width="2"
+              />
+              <circle cx="14" cy="13.5" r="5.5" fill="#ffffff" />
+              <circle cx="14" cy="13.5" r="3" fill="#ef4444" />
+            </svg>
           </div>
         `,
-        iconSize: [34, 34],
-        iconAnchor: [17, 17],
+        iconSize: [34, 44],
+        iconAnchor: [17, 44],
+        popupAnchor: [0, -44],
       })
       const marker = L.marker([lat, lng], {
         icon: pinIcon,
@@ -590,51 +601,42 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
       const color = LAYER_COLORS[layer_type] || '#10b981'
       const label = LAYER_LABELS[layer_type] || layer_type
+      const isSelected = selectedFeature?.id === feat.id
 
-      // Create Custom SVG DivIcon
+      // Cartographic Location Pin SVG (replacing pulse dots)
+      const pinWidth = isSelected ? 32 : 26
+      const pinHeight = isSelected ? 40 : 34
       const iconHtml = `
-        <div style="
+        <div class="banda-gis-pin-wrapper" style="
           position: relative;
-          width: 32px;
-          height: 32px;
+          width: ${pinWidth}px;
+          height: ${pinHeight}px;
           display: flex;
           align-items: center;
           justify-content: center;
+          cursor: pointer;
+          filter: drop-shadow(0 3px 6px rgba(15, 23, 42, 0.35));
+          transition: transform 0.15s ease-out;
         ">
-          <div style="
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: ${color};
-            opacity: 0.3;
-            animation: pulse-ring 2s infinite;
-          "></div>
-          <div style="
-            position: relative;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: #0f172a;
-            border: 2px solid ${color};
-            box-shadow: 0 0 10px ${color}88, 0 2px 6px rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: ${color};
-            font-size: 11px;
-            font-weight: 900;
-          ">
-            ●
-          </div>
+          <svg width="${pinWidth}" height="${pinHeight}" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M14 0C6.268 0 0 6.268 0 14C0 23.8 12.2 34.6 13.3 35.6C13.7 35.9 14.3 35.9 14.7 35.6C15.8 34.6 28 23.8 28 14C28 6.268 21.732 0 14 0Z"
+              fill="${color}"
+              stroke="#ffffff"
+              stroke-width="${isSelected ? '2.2' : '1.8'}"
+            />
+            <circle cx="14" cy="13.5" r="5.5" fill="#ffffff" />
+            <circle cx="14" cy="13.5" r="3.2" fill="${color}" />
+          </svg>
         </div>
       `
 
       const customIcon = L.divIcon({
         className: 'custom-gis-pin',
         html: iconHtml,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
+        iconSize: [pinWidth, pinHeight],
+        iconAnchor: [pinWidth / 2, pinHeight],
+        popupAnchor: [0, -pinHeight],
       })
 
       const marker = L.marker([lat, lng], { icon: customIcon })
@@ -668,7 +670,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
       layerGroupRef.current?.addLayer(marker)
     })
-  }, [filteredFeatures])
+  }, [filteredFeatures, selectedFeature])
 
   // Toggle single layer
   const toggleLayer = (layerId: string) => {
@@ -941,10 +943,11 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               border: 'none',
               color: 'inherit',
               cursor: 'pointer',
-              fontWeight: 800,
+              display: 'inline-flex',
+              alignItems: 'center',
             }}
           >
-            ✕
+            <X size={14} />
           </button>
         </div>
       )}
@@ -1000,10 +1003,11 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                   border: 'none',
                   color: '#94a3b8',
                   cursor: 'pointer',
-                  fontSize: '11px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
                 }}
               >
-                ✕
+                <X size={12} />
               </button>
             )}
           </div>
@@ -1900,31 +1904,160 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
             }}
           />
 
-          {/* Map Legend Footer */}
+          {/* Floating Atlas-Style Map Legend Card (Inside Map - Atlas Cartography Layout) */}
           <div
+            data-lenis-prevent
             style={{
-              padding: '0.65rem 1rem',
-              background: '#f8fafc',
-              borderTop: '1px solid #e2e8f0',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              fontSize: '0.725rem',
-              color: '#64748b',
-              flexWrap: 'wrap',
-              gap: '0.5rem',
+              position: 'absolute',
+              bottom: '16px',
+              left: '16px',
+              zIndex: 1000,
+              background: 'rgba(255, 255, 255, 0.96)',
+              backdropFilter: 'blur(10px)',
+              border: '1.5px solid #cbd5e1',
+              borderRadius: '10px',
+              boxShadow: '0 4px 18px rgba(15, 44, 89, 0.12)',
+              maxWidth: '240px',
+              width: 'calc(100% - 32px)',
+              overflow: 'hidden',
+              pointerEvents: 'auto',
             }}
           >
-            <div style={{ display: 'flex', gap: '0.9rem', alignItems: 'center', flexWrap: 'wrap' }}>
-              <span style={{ fontWeight: 700, color: '#0f2c59' }}>Legenda:</span>
-              {Object.entries(LAYER_COLORS).map(([lyr, col]) => (
-                <span key={lyr} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: '#475569' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: col }}></span>
-                  {LAYER_LABELS[lyr]?.split(' ')[0]}
+            {/* Legend Card Header */}
+            <div
+              onClick={() => setAtlasLegendOpen((prev) => !prev)}
+              style={{
+                padding: '0.55rem 0.75rem',
+                borderBottom: atlasLegendOpen ? '1px solid #e2e8f0' : 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: '#f8fafc',
+                cursor: 'pointer',
+                userSelect: 'none',
+              }}
+              title="Klik untuk menyembunyikan / menampilkan legenda"
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                <Layers size={13} color="#0f2c59" />
+                <span
+                  style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 800,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    color: '#0f2c59',
+                  }}
+                >
+                  Legenda Peta
                 </span>
-              ))}
+              </div>
+              <button
+                type="button"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#64748b',
+                  cursor: 'pointer',
+                  padding: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                {atlasLegendOpen ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+              </button>
             </div>
-            <span style={{ color: '#94a3b8' }}>Peta Kepulauan Banda Neira (WGS 84)</span>
+
+            {/* Legend Content */}
+            {atlasLegendOpen && (
+              <div
+                style={{
+                  padding: '0.55rem 0.75rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.35rem',
+                  maxHeight: '270px',
+                  overflowY: 'auto',
+                }}
+              >
+                {Object.entries(LAYER_COLORS).map(([lyr, col]) => {
+                  const isActive = selectedLayers.has(lyr)
+                  const label = LAYER_LABELS[lyr] || lyr
+                  const count = filteredFeatures.filter((f) => f.properties.layer_type === lyr).length
+                  return (
+                    <div
+                      key={lyr}
+                      onClick={() => toggleLayer(lyr)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '0.45rem',
+                        cursor: 'pointer',
+                        opacity: isActive ? 1 : 0.4,
+                        transition: 'opacity 0.15s ease',
+                        padding: '0.15rem 0',
+                      }}
+                      title={isActive ? `Klik untuk menyembunyikan ${label}` : `Klik untuk menampilkan ${label}`}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                        {/* Miniature Location Pin Matching the Map Pin */}
+                        <svg width="13" height="17" viewBox="0 0 28 36" fill="none" style={{ flexShrink: 0 }}>
+                          <path
+                            d="M14 0C6.268 0 0 6.268 0 14C0 23.8 12.2 34.6 13.3 35.6C13.7 35.9 14.3 35.9 14.7 35.6C15.8 34.6 28 23.8 28 14C28 6.268 21.732 0 14 0Z"
+                            fill={col}
+                            stroke="#ffffff"
+                            strokeWidth="2"
+                          />
+                          <circle cx="14" cy="13.5" r="5" fill="#ffffff" />
+                          <circle cx="14" cy="13.5" r="2.8" fill={col} />
+                        </svg>
+                        <span
+                          style={{
+                            fontSize: '0.72rem',
+                            fontWeight: isActive ? 600 : 500,
+                            color: isActive ? '#0f2c59' : '#94a3b8',
+                            lineHeight: 1.2,
+                          }}
+                        >
+                          {label}
+                        </span>
+                      </div>
+                      <span
+                        style={{
+                          fontSize: '0.675rem',
+                          fontFamily: 'monospace',
+                          fontWeight: 700,
+                          color: isActive ? col : '#94a3b8',
+                          background: `${col}15`,
+                          padding: '0.05rem 0.35rem',
+                          borderRadius: '4px',
+                          flexShrink: 0,
+                        }}
+                      >
+                        {count}
+                      </span>
+                    </div>
+                  )
+                })}
+
+                <div
+                  style={{
+                    borderTop: '1px solid #e2e8f0',
+                    marginTop: '0.3rem',
+                    paddingTop: '0.4rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    fontSize: '0.625rem',
+                    color: '#94a3b8',
+                  }}
+                >
+                  <span>Proyeksi Spasial</span>
+                  <span style={{ fontWeight: 600, color: '#64748b' }}>WGS 84 · RFC 7946</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -1959,11 +2092,9 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '12px',
-                fontWeight: 700,
               }}
             >
-              ✕
+              <X size={13} />
             </button>
 
             {/* Layer Type Tag */}

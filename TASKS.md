@@ -39,6 +39,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 34: Penghapusan Tuntas Desain Lama (Pembersihan desainlama.png), Redesain Global Warm Linen Banda Neira, dan Harmonisasi Workspace**
 - [x] **Phase 35: Modularisasi Komponen Frontend & Penerapan Clean Code Blueprint (fhinisCleanCode.md)**
 - [x] **Phase 36: Landing Page Performance Optimization, Fit-To-Screen Hero, & Lenis Smooth Scrolling**
+- [x] **Phase 37: GIS Map Cartographic Location Pins & In-Map Atlas Legend Overhaul**
 
 ---
 
@@ -565,24 +566,21 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 35.5 Verifikasi Build dan Integritas Fungsionalitas:
   - Memverifikasi build frontend (`npm --prefix frontend run build`) lolos exit code 0 tanpa error TypeScript atau bundle warning (`✓ built in 5.93s`).
 
-### Phase 36: Landing Page Performance Optimization, Fit-To-Screen Hero, & Lenis Smooth Scrolling
-- [x] 36.1 Dynamic Code-Splitting & 88% Initial JS Payload Reduction:
-  - Mengonfigurasi `React.lazy()` dan dynamic chunking untuk 14 workspace operasional (`ResidentsWorkspace`, `FarmsGisWorkspace`, `SmartPlannerWorkspace`, dll.).
-  - Mengonfigurasi Rollup `manualChunks` di `vite.config.ts` untuk memisahkan vendor React dan vendor Leaflet ke dalam chunk terisolasi.
-  - Initial JS bundle berkurang drastis dari 1.298 kB (1.3 MB) menjadi 153 kB (37 kB gzipped).
-- [x] 36.2 IntersectionObserver Preload untuk Peta Interaktif & Leaflet:
-  - Mengisolasi modul Leaflet GIS di `PetaInteractiveSection.tsx` menggunakan `lazy()` dan `IntersectionObserver` dengan root margin 350px.
-  - Modul Leaflet berbobot tinggi dan pemanggilan REST API hanya dimuat ketika pengguna mendekati section `#peta`.
-- [x] 36.3 Eliminasi Render-Blocking CSS & Font Preconnect:
-  - Memindahkan font Google Fonts dari `@import` CSS ke `<link rel="preconnect">` dan `<link rel="stylesheet">` di `index.html` dengan `display=swap`.
-- [x] 36.4 Responsive Fit-To-Screen Hero Section (`HeroSection.tsx`):
-  - Mengganti tinggi statis `min-h-[820px] lg:h-[900px]` dengan `min-h-[100dvh]` dinamis anti-jump browser mobile.
-  - Memusatkan layout vertikal dengan `flex-1 my-auto` dan menyesuaikan skala font display mobile (`text-[34px] sm:text-[56px] lg:text-[76px]`) agar seluruh konten hero muat presisi di layar HP, tablet, maupun monitor desktop.
-  - Menambahkan `loading="eager"`, `decoding="async"`, dan `fetchpriority="high"` pada citra backdrop LCP.
-- [x] 36.5 Kinetic Smooth Scrolling dengan Lenis:
-  - Memasang paket `lenis` dan menyematkan provider smooth scroll di `BandanairaBeranda.tsx`.
-  - Menambahkan atribut `data-lenis-prevent` pada kontainer peta Leaflet agar interaksi zoom roda mouse pada peta tidak berbenturan dengan smooth scroll halaman.
-  - Mendokumentasikan petunjuk instalasi pustaka `lenis` di `README.md`.
+### Phase 37: GIS Map Cartographic Location Pins & In-Map Atlas Legend Overhaul
+- [x] 37.1 Eliminasi Elemen Pulse Marker & Transisi ke Cartographic Location Pins:
+  - Mengganti seluruh marker lingkaran pulsing animasi (`pulse-ring` / `●`) pada `InteractiveMapWorkspace.tsx` menjadi SVG cartographic teardrop location pin presisi tinggi.
+  - Mengonfigurasi `iconAnchor: [width/2, height]` (ujung jarum pin bawah) agar tepat menunjuk koordinat geografis lintang dan bujur WGS 84 tanpa pergeseran visual saat zoom peta.
+  - Mengintegrasikan kode warna kategori unik pada setiap pin (Daya Tarik Wisata, Cagar Budaya, Eco-Stay, Koperasi UMKM, Fasilitas Umum, Air Bersih RO, Energi & Lingkungan).
+  - Memperbarui pin marker draf Admin Spatial Studio menjadi grabable red teardrop pin dengan tooltip navigasi.
+- [x] 37.2 Atlas-Style In-Map Floating Legend (`InteractiveMapWorkspace.tsx` & `FarmMap.tsx`):
+  - Memindahkan legenda eksternal dari footer bawah peta ke dalam kanvas peta sebagai Floating Atlas Legend Card di sudut kiri bawah peta (`z-index: 1000`).
+  - Mengadopsi estetika atlas kartografi: panel frosted-glass (`rgba(255, 255, 255, 0.96)`), header uppercase `LEGENDA PETA`, miniatur pin SVG pencocok warna, nama layer, counter jumlah objek aktif real-time, dan indikator proyeksi spatial `WGS 84 · RFC 7946`.
+  - Menyediakan tombol collapse/expand interaktif (`ChevronDown`/`ChevronUp`) dan menambahkan `data-lenis-prevent` agar scroll daftar legenda terisolasi sempurna dari Lenis smooth scroll halaman.
+  - Memperbarui `FarmMap.tsx` dengan pin komoditas Pala (P) dan Cengkih (C) berbingkai status verifikasi serta kotak legenda atlas mini terpadu.
+- [x] 37.3 Kepatuhan Impeccable Design & Zero Emoji Policy:
+  - Menghapus seluruh karakter emoji pada markup dan tooltip status peta, menggantikannya dengan ikon Lucide (`X`, `ChevronDown`, `ChevronUp`) dan tipografi deskriptif bersih.
+  - Memverifikasi build frontend lolos (`✓ built in 6.73s`) dan lolos pemeriksaan `impeccable detect` (0 issues).
+
 
 
 
