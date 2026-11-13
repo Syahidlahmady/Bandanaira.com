@@ -29,20 +29,20 @@ import { OfflineQueueModal } from './components/OfflineQueueModal.tsx'
 import { PublicVerifyModal } from './components/PublicVerifyModal.tsx'
 import { VerifiedMarketplaceModal } from './components/VerifiedMarketplaceModal.tsx'
 import { QuickLoginModal } from './components/QuickLoginModal.tsx'
-import { ResidentsWorkspace } from './views/ResidentsWorkspace.tsx'
-import { LettersWorkspace } from './views/LettersWorkspace.tsx'
-import { FarmsGisWorkspace } from './views/FarmsGisWorkspace.tsx'
-import { HarvestGradingWorkspace } from './views/HarvestGradingWorkspace.tsx'
-import { CitizenPortalWorkspace } from './views/CitizenPortalWorkspace.tsx'
-import { AuditTrailWorkspace } from './views/AuditTrailWorkspace.tsx'
-import { SmartPlannerWorkspace } from './views/SmartPlannerWorkspace.tsx'
-import { KoperasiKasirWorkspace } from './views/KoperasiKasirWorkspace.tsx'
-import { IslandTelemetryWorkspace } from './views/IslandTelemetryWorkspace.tsx'
-import { TourismEcoStayWorkspace } from './views/TourismEcoStayWorkspace.tsx'
-import { InteractiveMapWorkspace } from './views/InteractiveMapWorkspace.tsx'
-import { SurveyEtlWorkspace } from './views/SurveyEtlWorkspace.tsx'
-import { LandingPortalWorkspace } from './views/LandingPortalWorkspace.tsx'
-import { UserEcosystemDashboard } from './views/dashboard/UserEcosystemDashboard.tsx'
+const ResidentsWorkspace = React.lazy(() => import('./views/ResidentsWorkspace.tsx').then(m => ({ default: m.ResidentsWorkspace })))
+const LettersWorkspace = React.lazy(() => import('./views/LettersWorkspace.tsx').then(m => ({ default: m.LettersWorkspace })))
+const FarmsGisWorkspace = React.lazy(() => import('./views/FarmsGisWorkspace.tsx').then(m => ({ default: m.FarmsGisWorkspace })))
+const HarvestGradingWorkspace = React.lazy(() => import('./views/HarvestGradingWorkspace.tsx').then(m => ({ default: m.HarvestGradingWorkspace })))
+const CitizenPortalWorkspace = React.lazy(() => import('./views/CitizenPortalWorkspace.tsx').then(m => ({ default: m.CitizenPortalWorkspace })))
+const AuditTrailWorkspace = React.lazy(() => import('./views/AuditTrailWorkspace.tsx').then(m => ({ default: m.AuditTrailWorkspace })))
+const SmartPlannerWorkspace = React.lazy(() => import('./views/SmartPlannerWorkspace.tsx').then(m => ({ default: m.SmartPlannerWorkspace })))
+const KoperasiKasirWorkspace = React.lazy(() => import('./views/KoperasiKasirWorkspace.tsx').then(m => ({ default: m.KoperasiKasirWorkspace })))
+const IslandTelemetryWorkspace = React.lazy(() => import('./views/IslandTelemetryWorkspace.tsx').then(m => ({ default: m.IslandTelemetryWorkspace })))
+const TourismEcoStayWorkspace = React.lazy(() => import('./views/TourismEcoStayWorkspace.tsx').then(m => ({ default: m.TourismEcoStayWorkspace })))
+const InteractiveMapWorkspace = React.lazy(() => import('./views/InteractiveMapWorkspace.tsx').then(m => ({ default: m.InteractiveMapWorkspace })))
+const SurveyEtlWorkspace = React.lazy(() => import('./views/SurveyEtlWorkspace.tsx').then(m => ({ default: m.SurveyEtlWorkspace })))
+const LandingPortalWorkspace = React.lazy(() => import('./views/LandingPortalWorkspace.tsx').then(m => ({ default: m.LandingPortalWorkspace })))
+const UserEcosystemDashboard = React.lazy(() => import('./views/dashboard/UserEcosystemDashboard.tsx').then(m => ({ default: m.UserEcosystemDashboard })))
 import { DashboardLayout } from './views/dashboard/DashboardLayout.tsx'
 import { BandaUnifiedFooter } from './components/common/BandaUnifiedFooter.tsx'
 import { offlineDB } from './offline/db.ts'
@@ -1022,6 +1022,7 @@ export const App: React.FC = () => {
           adminPendingLettersCount={adminRequests.filter((r) => r.status === 'submitted').length}
           pendingFarmsCount={farms.filter((f) => f.verification_status === 'pending').length}
         >
+          <React.Suspense fallback={<div className="p-8 text-center text-slate-500 font-medium">Memuat antarmuka...</div>}>
           {/* TAB 0: RINGKASAN DASBOR (OVERVIEW BENTO GRID 21st.dev DENGAN WARNA BERANDA) */}
           {activeTab === 'dashboard' && (
             <UserEcosystemDashboard
@@ -1232,6 +1233,7 @@ export const App: React.FC = () => {
           <div style={{ marginTop: '4rem', marginLeft: '-1rem', marginRight: '-1rem', marginBottom: '-1rem' }}>
             <BandaUnifiedFooter />
           </div>
+          </React.Suspense>
         </DashboardLayout>
       )}
 

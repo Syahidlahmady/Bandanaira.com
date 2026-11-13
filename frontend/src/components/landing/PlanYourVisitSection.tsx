@@ -16,6 +16,8 @@ export const PlanYourVisitSection: React.FC<PlanYourVisitSectionProps> = ({ onNa
         className="absolute inset-0 w-full h-full object-cover"
         alt="Pemandangan pulau Banda saat senja"
         src={bandaCinematicVideoBackdrop}
+        loading="lazy"
+        decoding="async"
       />
       <div
         className="absolute inset-0 w-full h-full bg-[#081d35c8]"

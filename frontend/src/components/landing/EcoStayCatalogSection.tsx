@@ -269,6 +269,8 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
               <img
                 src={acc.photo_url || 'https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=900&q=85'}
                 alt={acc.name}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#081d35cc] via-transparent to-transparent" />

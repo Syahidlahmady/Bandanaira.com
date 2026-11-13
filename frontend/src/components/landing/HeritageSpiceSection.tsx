@@ -28,6 +28,8 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = ({
             className="w-full h-full object-cover"
             alt="Benteng Belgica overlooking the sea in Banda Neira"
             src="https://images.unsplash.com/photo-1596402184320-417e7178b2cd?auto=format&fit=crop&w=1200&q=85"
+            loading="lazy"
+            decoding="async"
           />
           <div
             className="inline-flex flex-col items-start gap-1 px-6 py-5 absolute bottom-6 left-6 bg-[#081d35d9] backdrop-blur-sm rounded-lg border border-[#ffffff24] overflow-hidden"

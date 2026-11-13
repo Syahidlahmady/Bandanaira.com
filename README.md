@@ -13,7 +13,7 @@ Platform digital terintegrasi untuk mendukung digitalisasi pelayanan masyarakat,
 
 ## 🛠️ Tech Stack
 - **Backend:** Python 3.12+, FastAPI, SQLAlchemy, Alembic, Pydantic v2
-- **Frontend:** React 18, Vite, TypeScript, React Router, TanStack Query, Leaflet
+- **Frontend:** React 18, Vite, TypeScript, React Router, TanStack Query, Leaflet, Lenis (Smooth Scroll)
 - **Database:** PostgreSQL 16 + PostGIS 3.4
 - **Blockchain:** Solidity, Local EVM Testnet, Web3.py
 - **Infrastruktur:** Docker & Docker Compose
@@ -51,7 +51,20 @@ poetry run python backend/scripts/demo_seed.py
 ```
 
 ### 4. Akses Layanan
-- **Frontend Web:** `http://localhost:5174` (atau `http://localhost:5173`)
-- **Backend API:** `http://localhost:8005` (atau `http://localhost:8000`)
+- **Frontend Web:** `http://localhost:5175`
+- **Backend API:** `http://localhost:8005`
 - **API Interactive Docs (Swagger):** `http://localhost:8005/docs`
 - **Health Check Endpoint:** `http://localhost:8005/api/v1/health`
+
+---
+
+## ⚡ Optimalisasi Performa & Smooth Scrolling (Lenis)
+Halaman landing page editorial mengimplementasikan *kinetic smooth scrolling* menggunakan **Lenis** dan optimasi Lighthouse (code-splitting dinamis, lazy-loading gambar & modul Leaflet berbobot tinggi):
+
+### Pemasangan Dependensi Lenis
+Jika menginstal dependensi frontend secara manual di luar Docker:
+```bash
+cd frontend
+npm install lenis
+```
+> **Catatan Teknis Leaflet:** Kontainer kanvas peta Leaflet dilengkapi atribut `data-lenis-prevent` guna memastikan *scroll-wheel zoom* pada peta spasial tidak berbenturan dengan *page smooth scroll*.

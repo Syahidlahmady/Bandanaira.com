@@ -1,4 +1,6 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import Lenis from 'lenis'
+import 'lenis/dist/lenis.css'
 import {
   HeroSection,
   PanoramaIslandSection,
@@ -56,6 +58,45 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
   onOpenQuickLogin,
 }) => {
   const [activeNav, setActiveNav] = useState<string>('#beranda')
+
+  // Smooth scrolling initialization via Lenis
+  useEffect(() => {
+    const lenis = new Lenis({
+      autoRaf: false,
+      duration: 1.1,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 1.0,
+      touchMultiplier: 1.2,
+    })
+
+    let rafId: number
+    function raf(time: number) {
+      lenis.raf(time)
+      rafId = requestAnimationFrame(raf)
+    }
+    rafId = requestAnimationFrame(raf)
+
+    // Smooth anchor link click handling
+    const handleAnchorClick = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement).closest('a[href^="#"]') as HTMLAnchorElement | null
+      if (target && target.hash) {
+        const targetElement = document.querySelector(target.hash)
+        if (targetElement) {
+          e.preventDefault()
+          lenis.scrollTo(targetElement, { offset: -20, duration: 1.2 })
+        }
+      }
+    }
+
+    document.addEventListener('click', handleAnchorClick)
+
+    return () => {
+      document.removeEventListener('click', handleAnchorClick)
+      cancelAnimationFrame(rafId)
+      lenis.destroy()
+    }
+  }, [])
 
   return (
     <div className="flex min-h-screen w-full flex-col items-start bg-[#f7f5f0] text-[#0f2c59] selection:bg-[#f4b75e] selection:text-[#081d35]">

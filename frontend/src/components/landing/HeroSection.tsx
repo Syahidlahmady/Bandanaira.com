@@ -40,13 +40,16 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     <section
       id="beranda"
       aria-labelledby="banda-hero-title"
-      className="flex flex-col min-h-[820px] lg:h-[900px] items-start justify-between pt-6 pb-8 px-5 sm:px-8 lg:px-12 relative self-stretch w-full bg-[#081d35] overflow-hidden"
+      className="flex flex-col min-h-[100dvh] items-start justify-between pt-3 sm:pt-6 pb-4 sm:pb-6 px-4 sm:px-8 lg:px-12 relative self-stretch w-full bg-[#081d35] overflow-hidden"
     >
-      {/* Background Image */}
+      {/* Background Image Optimized */}
       <img
         className="absolute inset-0 w-full h-full object-cover"
         alt="Pemandangan Banda Neira dari udara dengan laut dan pulau-pulau di sekitarnya"
         src={bandaCinematicVideoBackdrop}
+        loading="eager"
+        decoding="async"
+        {...({ fetchPriority: 'high' } as any)}
       />
 
       {/* Gradient Overlay */}
@@ -56,7 +59,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       />
 
       {/* NAVBAR */}
-      <header className="flex h-20 items-center justify-between px-6 py-0 relative z-20 self-stretch w-full bg-[#081d354d] rounded-2xl overflow-hidden border border-solid border-[#ffffff38] backdrop-blur-[9px] backdrop-brightness-[100%] [-webkit-backdrop-filter:blur(9px)_brightness(100%)]">
+      <header className="flex h-16 sm:h-20 items-center justify-between px-4 sm:px-6 py-0 relative z-20 self-stretch w-full bg-[#081d354d] rounded-2xl overflow-hidden border border-solid border-[#ffffff38] backdrop-blur-[9px] backdrop-brightness-[100%] [-webkit-backdrop-filter:blur(9px)_brightness(100%)]">
         <a
           href="#beranda"
           onClick={() => setActiveNav('#beranda')}
@@ -215,59 +218,59 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       )}
 
       {/* HERO MAIN CONTENT */}
-      <main className="flex flex-col items-start gap-6 pt-12 lg:pt-[95px] pb-0 px-2 sm:px-8 relative z-10 self-stretch w-full flex-[0_0_auto]">
-        <div className="inline-flex items-center gap-3 relative flex-[0_0_auto]">
+      <main className="flex flex-col items-start gap-3 sm:gap-5 pt-2 sm:pt-4 pb-2 px-2 sm:px-6 lg:px-8 relative z-10 self-stretch w-full flex-1 justify-center max-w-[1100px] my-auto">
+        <div className="inline-flex items-center gap-2.5 relative flex-[0_0_auto]">
           <div aria-hidden="true" className="w-8 relative h-px bg-[#f4b75e]" />
-          <p className="relative w-fit mt-[-1.00px] font-normal text-white text-xs tracking-[2.60px] leading-[normal]">
+          <p className="relative w-fit mt-[-1.00px] font-normal text-white text-[11px] sm:text-xs tracking-[2.60px] leading-[normal]">
             KEPULAUAN BANDA · MALUKU, INDONESIA
           </p>
         </div>
 
         <h1
           id="banda-hero-title"
-          className="relative max-w-[1000px] font-normal text-white text-[44px] sm:text-[64px] lg:text-[80px] leading-[1.05] lg:leading-[83.2px]"
+          className="relative max-w-[1000px] font-normal text-white text-[32px] sm:text-[54px] lg:text-[76px] leading-[1.08] lg:leading-[80px]"
         >
-          <span className="font-medium tracking-[-2.0px] lg:tracking-[-3.20px]">
+          <span className="font-medium tracking-[-1.5px] sm:tracking-[-2.5px] lg:tracking-[-3.20px]">
             Di jantung rempah dunia,
             <br />
           </span>
-          <span className="font-serif font-medium italic text-[52px] sm:text-[74px] lg:text-[94px] tracking-[-1.88px] leading-[1.04] lg:leading-[97.8px]">
+          <span className="font-serif font-medium italic text-[38px] sm:text-[64px] lg:text-[88px] tracking-[-1.5px] sm:tracking-[-2px] leading-[1.05] lg:leading-[90px]">
             temukan Banda.
           </span>
         </h1>
 
-        <p className="relative max-w-[580px] font-normal text-[#c1ced8] text-[16px] sm:text-[17px] tracking-[0] leading-[28.9px]">
+        <p className="relative max-w-[560px] font-normal text-[#c1ced8] text-[14px] sm:text-[16px] tracking-[0] leading-relaxed">
           Laut yang menyimpan keajaiban. Jejak sejarah yang hidup. Satu pintu
           untuk menjelajah dan terhubung dengan kehidupan pulau.
         </p>
 
-        <div className="inline-flex flex-wrap items-start gap-3 pt-2 pb-0 px-0 relative flex-[0_0_auto]">
+        <div className="inline-flex flex-wrap items-start gap-3 pt-1 pb-0 px-0 relative flex-[0_0_auto]">
           <a
             href="#wisata"
             onClick={() => setActiveNav('#wisata')}
-            className="inline-flex h-[54px] items-center gap-4 px-6 py-0 relative flex-[0_0_auto] bg-amber-600 hover:bg-amber-500 transition-colors rounded-lg overflow-hidden border border-solid border-amber-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#081d35]"
+            className="inline-flex h-[48px] sm:h-[54px] items-center gap-3 sm:gap-4 px-5 sm:px-6 py-0 relative flex-[0_0_auto] bg-amber-600 hover:bg-amber-500 transition-colors rounded-lg overflow-hidden border border-solid border-amber-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#081d35]"
           >
-            <span className="font-semibold text-white text-sm tracking-[0] relative w-fit leading-[normal]">
+            <span className="font-semibold text-white text-xs sm:text-sm tracking-[0] relative w-fit leading-[normal]">
               Mulai jelajahi Banda
             </span>
-            <ArrowUpRightIcon className="w-[18px] h-[18px] text-white" />
+            <ArrowUpRightIcon className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-white" />
           </a>
 
           <button
             type="button"
             onClick={() => onNavigate('gis')}
-            className="flex-[0_0_auto] border-[#ffffff38] bg-[#081d3540] hover:bg-[#ffffff1a] transition-colors inline-flex h-[54px] items-center gap-4 px-6 py-0 relative rounded-lg overflow-hidden border border-solid focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#081d35]"
+            className="flex-[0_0_auto] border-[#ffffff38] bg-[#081d3540] hover:bg-[#ffffff1a] transition-colors inline-flex h-[48px] sm:h-[54px] items-center gap-3 sm:gap-4 px-5 sm:px-6 py-0 relative rounded-lg overflow-hidden border border-solid focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#081d35]"
           >
-            <span className="font-semibold text-white text-sm tracking-[0] relative w-fit leading-[normal]">
+            <span className="font-semibold text-white text-xs sm:text-sm tracking-[0] relative w-fit leading-[normal]">
               Lihat peta pulau
             </span>
-            <ArrowUpRightIcon className="w-[18px] h-[18px] text-white" />
+            <ArrowUpRightIcon className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-white" />
           </button>
         </div>
       </main>
 
       {/* HERO FOOTER BAR */}
-      <footer className="flex flex-wrap items-center justify-between gap-4 pt-11 pb-0 px-2 sm:px-8 relative z-10 self-stretch w-full flex-[0_0_auto] border-0 border-none">
+      <footer className="flex flex-wrap items-center justify-between gap-3 pt-2 pb-0 px-2 sm:px-6 lg:px-8 relative z-10 self-stretch w-full border-0 border-none">
         <div className="inline-flex items-center gap-3 relative flex-[0_0_auto]">
           <div className="flex w-9 h-9 items-center justify-center relative rounded-[100px] overflow-hidden border border-solid border-[#ffffff38]">
             <svg

@@ -1,6 +1,11 @@
-import React from 'react'
-import { InteractiveMapWorkspace } from '../../views/InteractiveMapWorkspace'
+import React, { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { ArrowUpRightIcon } from './LandingIcons'
+
+const InteractiveMapWorkspace = lazy(() =>
+  import('../../views/InteractiveMapWorkspace').then((m) => ({
+    default: m.InteractiveMapWorkspace,
+  }))
+)
 
 export interface PetaInteractiveSectionProps {
   onNavigate: (tab: any) => void
@@ -11,6 +16,32 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
   onNavigate,
   currentUser,
 }) => {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [shouldLoadMap, setShouldLoadMap] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (!('IntersectionObserver' in window)) {
+      setShouldLoadMap(true)
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setShouldLoadMap(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '350px' }
+    )
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <section
       id="peta"
@@ -40,8 +71,32 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
         </div>
       </div>
 
-      <div className="w-full min-h-[640px] rounded-2xl overflow-hidden border border-[#dce1df] shadow-md bg-white p-4 sm:p-6">
-        <InteractiveMapWorkspace currentUser={currentUser} />
+      <div
+        ref={containerRef}
+        data-lenis-prevent
+        className="w-full min-h-[640px] rounded-2xl overflow-hidden border border-[#dce1df] shadow-md bg-white p-4 sm:p-6"
+      >
+        {shouldLoadMap ? (
+          <Suspense
+            fallback={
+              <div className="w-full h-[620px] rounded-xl bg-sky-50 border border-slate-200 flex flex-col items-center justify-center gap-3">
+                <div className="w-8 h-8 rounded-full border-2 border-emerald-600 border-t-transparent animate-spin" />
+                <span className="text-xs font-semibold text-slate-500">
+                  Menyiapkan Peta Spasial Banda Neira...
+                </span>
+              </div>
+            }
+          >
+            <InteractiveMapWorkspace currentUser={currentUser} />
+          </Suspense>
+        ) : (
+          <div className="w-full h-[620px] rounded-xl bg-sky-50/40 border border-slate-200 flex flex-col items-center justify-center gap-3">
+            <div className="w-8 h-8 rounded-full border-2 border-emerald-600 border-t-transparent animate-spin" />
+            <span className="text-xs font-semibold text-slate-500">
+              Menyiapkan Peta Spasial Banda Neira...
+            </span>
+          </div>
+        )}
       </div>
     </section>
   )
