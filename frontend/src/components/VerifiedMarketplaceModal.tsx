@@ -5,9 +5,11 @@ import {
   X,
   MapPin,
   Database,
+  MessageCircle,
+  Sparkles,
 } from 'lucide-react'
 
-interface MarketplaceProduct {
+export interface MarketplaceProduct {
   id: string
   name: string
   category: 'REMPAH' | 'PERIKANAN' | 'OLAHAN'
@@ -23,7 +25,7 @@ interface MarketplaceProduct {
   stockQty: number
 }
 
-interface VerifiedMarketplaceModalProps {
+export interface VerifiedMarketplaceModalProps {
   isOpen: boolean
   onClose: () => void
   onVerifyProduct: (token: string) => void
@@ -99,11 +101,26 @@ export const VERIFIED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     producer: 'Fatimah Patty (UMKM Selai & Sirup Banda)',
     originVillage: 'Jl. Cengkeh, Banda Neira',
     batchCode: 'BN-BTC-2026-005',
-    verificationToken: 'BN_VERIFY_SIRUP_PALA_BANDA_NEIRA_2026',
-    ipfsCid: 'QmNutmegSyrupBandaNeiraOrganicCert2026',
+    verificationToken: 'BN_VERIFY_SIRUP_PALA_MURNI_2026_BANDA',
+    ipfsCid: 'QmSirupPalaMurniTradisiBandaNeiraCert2026',
     icon: '🍹',
-    description: 'Daging buah pala segar dimasak dengan gula tebu alami tanpa pemanis buatan. Minuman berkhasiat relaksasi dan kesehatan khas rempah Banda.',
+    description: 'Ekstrak daging buah pala segar kaya antioksidan dengan gula tebu alami. Minuman khas penyegar dahaga pulau dengan rasa eksotis.',
     stockQty: 50,
+  },
+  {
+    id: 'prod-6',
+    name: 'Minyak Atsiri Pala Banda (Pure Essential Oil)',
+    category: 'OLAHAN',
+    priceRp: 120000,
+    weight: '20 ml (Dropper Bottle)',
+    producer: 'Koperasi Hatta Sentra Atsiri',
+    originVillage: 'Pulau Hatta, Kepulauan Banda',
+    batchCode: 'BN-BTC-2026-006',
+    verificationToken: 'BN_VERIFY_MINYAK_ATSIRI_PALA_2026_HATTA',
+    ipfsCid: 'QmMinyakAtsiriPalaDistilasiUapBandaHattaCert',
+    icon: '💧',
+    description: 'Minyak atsiri hasil suling uap biji pala pilihan lereng Hatta dengan kadar myristicin tinggi. Digunakan untuk aromaterapi dan pereda nyeri sendi.',
+    stockQty: 22,
   },
 ]
 
@@ -116,204 +133,196 @@ export const VerifiedMarketplaceModal: React.FC<VerifiedMarketplaceModalProps> =
 
   if (!isOpen) return null
 
-  const filteredProducts = selectedCategory === 'ALL'
-    ? VERIFIED_MARKETPLACE_PRODUCTS
-    : VERIFIED_MARKETPLACE_PRODUCTS.filter((p) => p.category === selectedCategory)
+  const filteredProducts =
+    selectedCategory === 'ALL'
+      ? VERIFIED_MARKETPLACE_PRODUCTS
+      : VERIFIED_MARKETPLACE_PRODUCTS.filter((p) => p.category === selectedCategory)
+
+  const handleOrderWhatsApp = (product: MarketplaceProduct) => {
+    const text = encodeURIComponent(
+      `Halo Koperasi & UMKM Banda Neira, saya ingin memesan:\n` +
+      `*${product.name}*\n` +
+      `• Harga: Rp ${product.priceRp.toLocaleString('id-ID')}\n` +
+      `• Berat: ${product.weight}\n` +
+      `• Kode Batch Blockchain: ${product.batchCode}\n` +
+      `• Produsen: ${product.producer} (${product.originVillage})\n\n` +
+      `Mohon informasi ketersediaan stok dan konfirmasi pengiriman. Terima kasih!`
+    )
+    window.open(`https://wa.me/6281234567890?text=${text}`, '_blank')
+  }
 
   return (
-    <div className="modal-backdrop">
-      <div
-        className="modal-content animate-fade-in"
-        style={{
-          maxWidth: '920px',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          background: 'linear-gradient(155deg, #081d35 0%, #0f2c59 100%)',
-          padding: '2.25rem',
-          border: '1px solid rgba(244, 183, 94, 0.4)',
-          boxShadow: '0 28px 60px -15px rgba(4, 12, 24, 0.85), 0 0 32px rgba(244, 183, 94, 0.18)',
-        }}
-      >
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', borderBottom: '1px solid rgba(244, 183, 94, 0.2)', paddingBottom: '1.25rem' }}>
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 sm:p-6 bg-[#081D35]/75 backdrop-blur-md animate-fade-in">
+      <div className="relative w-full max-w-4xl max-h-[90vh] flex flex-col bg-[#F7F5F0] rounded-3xl border border-[#F4B75E]/30 shadow-2xl overflow-hidden text-[#081D35]">
+        {/* Header Modal */}
+        <div className="flex items-start justify-between p-6 sm:p-8 bg-gradient-to-r from-[#081D35] to-[#0F2C59] text-white border-b border-[#F4B75E]/20">
           <div>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.4rem' }}>
-              <span className="badge badge-gold">
-                <ShieldCheck size={13} /> MARKETPLACE TERDESENTRALISASI RESMI
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#F4B75E]/20 text-[#F4B75E] border border-[#F4B75E]/40">
+                <ShieldCheck size={14} />
+                Marketplace Resmi Terverifikasi Blockchain
               </span>
-              <span className="badge badge-emerald">
-                <Database size={12} /> IPFS &amp; SMART CONTRACT
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                <Database size={13} />
+                IPFS &amp; Smart Contract EVM
               </span>
             </div>
-            <h2 className="font-serif" style={{ fontSize: '2rem', fontWeight: 700, color: '#ffffff', margin: 0 }}>
-              Katalog Produk UMKM Agro-Maritim <span style={{ color: '#f4b75e', fontStyle: 'italic' }}>Banda Neira</span>
+            <h2 className="text-2xl sm:text-3xl font-bold font-serif text-white">
+              Katalog Produk UMKM Agro-Maritim <span className="text-[#F4B75E] italic">Banda Neira</span>
             </h2>
-            <p style={{ color: '#cbd5e1', fontSize: '0.875rem', marginTop: '0.25rem' }}>
-              Produk rempah pala dan perikanan tangkap nelayan lokal terverifikasi keasliannya via blockchain.
+            <p className="text-xs sm:text-sm text-slate-300 mt-1.5 max-w-2xl leading-relaxed">
+              Seluruh komoditas rempah pala, minyak atsiri, dan perikanan tangkap nelayan lokal di bawah ini telah terverifikasi keaslian asal kebunnya melalui bukti kriptografi ledger terdistribusi.
             </p>
           </div>
+
           <button
+            type="button"
             onClick={onClose}
-            style={{
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              borderRadius: '50%',
-              width: '36px',
-              height: '36px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#94a3b8',
-              transition: 'all 0.2s',
-            }}
+            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition shrink-0 ml-4"
+            aria-label="Tutup"
           >
             <X size={20} />
           </button>
         </div>
 
-        {/* Filter Pills */}
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-          {[
-            { id: 'ALL', label: 'Semua Produk' },
-            { id: 'REMPAH', label: '🌿 Rempah & Fuli' },
-            { id: 'PERIKANAN', label: '🐟 Hasil Laut & Nelayan' },
-            { id: 'OLAHAN', label: '🍹 Produk Olahan Pangan' },
-          ].map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              style={{
-                padding: '0.45rem 1rem',
-                borderRadius: 'var(--radius-full)',
-                fontSize: '0.8rem',
-                fontWeight: 700,
-                border: selectedCategory === cat.id ? '2px solid #10b981' : '1px solid rgba(255, 255, 255, 0.12)',
-                background: selectedCategory === cat.id ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                color: selectedCategory === cat.id ? '#34d399' : '#cbd5e1',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-              }}
-            >
-              {cat.label}
-            </button>
-          ))}
+        {/* Filter Bar Kategori */}
+        <div className="px-6 sm:px-8 py-4 bg-white border-b border-[#E2E8F0] flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
+            {[
+              { id: 'ALL', label: 'Semua Produk' },
+              { id: 'REMPAH', label: '🌿 Rempah & Fuli' },
+              { id: 'PERIKANAN', label: '🐟 Hasil Laut & Nelayan' },
+              { id: 'OLAHAN', label: '🍹 Produk Olahan Pangan' },
+            ].map((cat) => (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
+                  selectedCategory === cat.id
+                    ? 'bg-[#081D35] text-[#F4B75E] shadow-sm'
+                    : 'bg-[#F8FAFC] text-[#475569] border border-[#CBD5E1] hover:bg-[#F1F5F9]'
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+
+          <span className="text-xs text-[#64748B] font-medium">
+            Menampilkan <b>{filteredProducts.length}</b> komoditas unggulan
+          </span>
         </div>
 
         {/* Product Cards Grid */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-            gap: '1.25rem',
-            marginBottom: '1.75rem',
-          }}
-        >
+        <div className="flex-1 overflow-y-auto p-6 sm:p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 custom-scrollbar">
           {filteredProducts.map((p) => (
             <div
               key={p.id}
-              style={{
-                background: 'rgba(15, 23, 42, 0.75)',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                padding: '1.25rem',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                transition: 'all 0.25s ease',
-                position: 'relative',
-              }}
+              className="flex flex-col justify-between p-5 rounded-2xl bg-white border border-[#E2E8F0] shadow-sm hover:shadow-md hover:border-[#F4B75E] transition-all group"
             >
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-                  <span style={{ fontSize: '2.5rem', filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.4))' }}>
+                {/* Top Badge & Icon */}
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <span className="text-3xl p-2 rounded-xl bg-[#F7F5F0] border border-[#E2E8F0] group-hover:scale-105 transition-transform">
                     {p.icon}
                   </span>
-                  <span
-                    className={`badge ${
-                      p.category === 'REMPAH'
-                        ? 'badge-emerald'
-                        : p.category === 'PERIKANAN'
-                        ? 'badge-blue'
-                        : 'badge-amber'
-                    }`}
-                  >
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                    p.category === 'REMPAH'
+                      ? 'bg-amber-50 text-amber-900 border-amber-200'
+                      : p.category === 'PERIKANAN'
+                      ? 'bg-sky-50 text-sky-800 border-sky-200'
+                      : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                  }`}>
                     {p.category}
                   </span>
                 </div>
 
-                <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#f8fafc', margin: '0 0 0.35rem' }}>
+                {/* Nama & Deskripsi */}
+                <h4 className="font-bold text-base text-[#081D35] leading-snug group-hover:text-[#D97706] transition-colors">
                   {p.name}
                 </h4>
-
-                <p style={{ fontSize: '0.78rem', color: '#94a3b8', lineHeight: 1.45, marginBottom: '0.85rem' }}>
+                <p className="text-xs text-[#475569] mt-1.5 line-clamp-3 leading-relaxed">
                   {p.description}
                 </p>
 
-                <div style={{ background: 'rgba(255, 255, 255, 0.04)', padding: '0.65rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(255, 255, 255, 0.06)', marginBottom: '0.85rem' }}>
-                  <div style={{ fontSize: '0.72rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <MapPin size={11} color="#38bdf8" /> {p.producer}
+                {/* Info Produsen & Lokasi */}
+                <div className="mt-3 p-2.5 rounded-xl bg-[#F8FAFC] border border-[#F1F5F9] text-[11px] space-y-1">
+                  <div className="flex items-center gap-1.5 text-[#081D35] font-semibold">
+                    <MapPin size={12} className="text-[#D97706] shrink-0" />
+                    <span className="truncate">{p.producer}</span>
                   </div>
-                  <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.15rem' }}>
-                    {p.originVillage} &bull; Berat: <b style={{ color: '#cbd5e1' }}>{p.weight}</b>
+                  <div className="text-[#64748B] pl-4">
+                    {p.originVillage} &bull; Berat: <b className="text-[#081D35]">{p.weight}</b>
                   </div>
-                  <div style={{ fontSize: '0.68rem', color: '#34d399', fontFamily: 'var(--font-mono)', marginTop: '0.25rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    IPFS: {p.ipfsCid.slice(0, 20)}...
+                  <div className="text-[10px] text-emerald-700 font-mono pl-4 truncate">
+                    Batch: {p.batchCode}
                   </div>
                 </div>
               </div>
 
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
+              {/* Harga & Tombol Aksi */}
+              <div className="mt-4 pt-3 border-t border-[#F1F5F9] flex flex-col gap-2">
+                <div className="flex items-baseline justify-between">
                   <div>
-                    <span style={{ fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase' }}>Harga Asli Petani/Nelayan</span>
-                    <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#38bdf8' }}>
+                    <span className="text-[10px] text-[#64748B] uppercase tracking-wider block font-medium">Harga Bersih</span>
+                    <span className="text-lg font-extrabold text-[#081D35] font-serif">
                       Rp {p.priceRp.toLocaleString('id-ID')}
-                    </div>
+                    </span>
                   </div>
-                  <span style={{ fontSize: '0.72rem', color: '#10b981', fontWeight: 700 }}>
+                  <span className="text-[11px] font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                     Stok: {p.stockQty} unit
                   </span>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose()
-                    onVerifyProduct(p.verificationToken)
-                  }}
-                  className="btn btn-primary"
-                  style={{
-                    width: '100%',
-                    padding: '0.65rem',
-                    fontSize: '0.825rem',
-                    fontWeight: 800,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.45rem',
-                  }}
-                >
-                  <QrCode size={15} /> Cek Bukti Asal-Usul (On-Chain)
-                </button>
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onVerifyProduct(p.verificationToken)
+                      onClose()
+                    }}
+                    className="py-2 px-2.5 rounded-xl text-[11px] font-semibold text-[#081D35] bg-[#F7F5F0] border border-[#CBD5E1] hover:bg-[#E2E8F0] transition flex items-center justify-center gap-1.5"
+                    title="Cek Bukti Keaslian Blockchain"
+                  >
+                    <QrCode size={13} className="text-[#D97706]" />
+                    <span>Verifikasi QR</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleOrderWhatsApp(p)}
+                    className="py-2 px-2.5 rounded-xl text-[11px] font-bold text-[#081D35] bg-[#F4B75E] hover:bg-[#E0A24A] shadow-xs transition flex items-center justify-center gap-1.5"
+                    title="Pesan Langsung via WhatsApp"
+                  >
+                    <MessageCircle size={13} />
+                    <span>Pesan WA</span>
+                  </button>
+                </div>
               </div>
             </div>
           ))}
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-          <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
-            💡 Setiap transaksi di marketplace ini menghubungkan pembeli langsung dengan produsen di Banda Neira dan mencatat bukti keaslian di smart contract.
+        {/* Footer Modal Info */}
+        <div className="p-4 sm:p-5 bg-white border-t border-[#E2E8F0] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#64748B]">
+          <div className="flex items-center gap-2">
+            <Sparkles className="size-4 text-[#F4B75E] shrink-0" />
+            <span>
+              Didukung oleh <b>Koperasi Hatta Banda</b> &amp; <b>Sistem Smart Contract EVM</b>
+            </span>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="btn btn-secondary"
-            style={{ marginLeft: 'auto' }}
+            className="px-4 py-1.5 rounded-xl bg-[#081D35] text-white hover:bg-[#0F2C59] transition font-semibold text-xs self-stretch sm:self-auto text-center"
           >
-            Tutup Marketplace
+            Tutup Katalog
           </button>
         </div>
       </div>
     </div>
   )
 }
+
+export default VerifiedMarketplaceModal

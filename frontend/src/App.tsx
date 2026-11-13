@@ -22,7 +22,6 @@ import {
   PublicBatchVerification,
   BlockchainVerification,
 } from './services/traceability.ts'
-import { HeaderNav } from './components/HeaderNav.tsx'
 import { LoginSection } from './components/LoginSection.tsx'
 import { RegisterSection } from './components/RegisterSection.tsx'
 import { BlockchainModal } from './components/BlockchainModal.tsx'
@@ -46,11 +45,6 @@ import { LandingPortalWorkspace } from './views/LandingPortalWorkspace.tsx'
 import { UserEcosystemDashboard } from './views/dashboard/UserEcosystemDashboard.tsx'
 import { DashboardLayout } from './views/dashboard/DashboardLayout.tsx'
 import { BandaUnifiedFooter } from './components/common/BandaUnifiedFooter.tsx'
-import {
-  Layers,
-  Home,
-  Compass,
-} from 'lucide-react'
 import { offlineDB } from './offline/db.ts'
 import { syncManager, SyncQueueItem } from './offline/syncManager.ts'
 
@@ -950,26 +944,8 @@ export const App: React.FC = () => {
         overflowX: 'hidden',
       }}
     >
-      {/* HeaderNav hanya ditampilkan untuk tamu non-login yang sedang menjelajah fitur sebelum login */}
-      {!currentUser && activeTab !== 'landing' && activeTab !== 'register' && activeTab !== 'population' && (
-        <HeaderNav
-          currentUser={currentUser}
-          isOnline={isOnline}
-          pendingSyncCount={pendingSyncCount}
-          isSyncing={isSyncing}
-          activeTab={activeTab}
-          onSelectTab={(tab) => setActiveTab(tab)}
-          onLogout={handleLogout}
-          onManualSync={handleManualSync}
-          onOpenQueueModal={handleOpenQueueModal}
-          onOpenMarketplace={() => setShowMarketplaceModal(true)}
-          onOpenLanding={() => setActiveTab('landing')}
-          onOpenQuickSwitch={() => setShowQuickLoginModal(true)}
-        />
-      )}
-
       {/* 1. LANDING PORTAL UTAMA (SATU PINTU UTAMA EKOSISTEM - HANYA 1 LANDING PAGE) */}
-      {activeTab === 'landing' && (
+      {(!currentUser || activeTab === 'landing') && activeTab !== 'register' && activeTab !== 'population' && (
         <LandingPortalWorkspace
           onNavigate={(tab) =>
             setActiveTab(
@@ -1022,54 +998,7 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* 3. Guest Public Exploration (Hanya ketika tamu belum login menjelajahi modul publik) */}
-      {!currentUser && activeTab !== 'landing' && activeTab !== 'register' && activeTab !== 'population' && (
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1rem' }}>
-          <div className="tab-nav" style={{ marginBottom: '1.75rem', background: 'rgba(15, 23, 42, 0.95)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', padding: '0.4rem' }}>
-            <button
-              type="button"
-              onClick={() => setActiveTab('landing')}
-              className="tab-btn"
-              style={{ color: '#38bdf8', fontWeight: 800 }}
-            >
-              🏠 Beranda Satu Pintu
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('gis')}
-              className={`tab-btn ${activeTab === 'gis' ? 'active' : ''}`}
-            >
-              <Layers size={16} /> 🗺️ Peta 7-Layer
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('tourism')}
-              className={`tab-btn ${activeTab === 'tourism' ? 'active' : ''}`}
-            >
-              <Home size={16} /> 🏡 Eco-Stay &amp; Budaya
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('smart_planner')}
-              className={`tab-btn ${activeTab === 'smart_planner' ? 'active' : ''}`}
-            >
-              <Compass size={16} /> 🧭 Perencana Cerdas (DSS)
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('population')}
-              className="tab-btn"
-              style={{ color: '#fbbf24', marginLeft: 'auto', background: 'rgba(245, 158, 11, 0.15)' }}
-            >
-              🔐 Masuk Akun
-            </button>
-          </div>
 
-          {activeTab === 'gis' && <InteractiveMapWorkspace />}
-          {activeTab === 'tourism' && <TourismEcoStayWorkspace currentUser={null} />}
-          {activeTab === 'smart_planner' && <SmartPlannerWorkspace />}
-        </div>
-      )}
 
       {/* =====================================================================
           4. DASBOR EKOSISTEM DENGAN SIDEBAR NAVIGASI DI SAMPING (UNTUK USER LOGIN)

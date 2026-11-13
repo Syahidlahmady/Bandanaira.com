@@ -458,7 +458,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
       <div className="workspace-header" style={{ marginBottom: '1.75rem' }}>
         <div>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
-            <span className="badge badge-emerald" style={{ display: 'inline-flex', gap: '0.35rem' }}>
+            <span className="badge badge-amber" style={{ display: 'inline-flex', gap: '0.35rem' }}>
               <Compass size={12} /> Mandat Smart Tourism FTI &amp; Komunitas Lokal
             </span>
             {currentUser && (
@@ -467,22 +467,22 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               </span>
             )}
           </div>
-          <h2 style={{ margin: 0, fontSize: '1.65rem', fontWeight: 900, color: '#f8fafc', letterSpacing: '-0.02em' }}>
+          <h2 style={{ margin: 0, fontSize: '1.65rem', fontWeight: 900, color: '#081D35', letterSpacing: '-0.02em' }}>
             Smart Tourism, Eco-Stay &amp; Cagar Budaya
           </h2>
-          <p style={{ margin: '0.35rem 0 0', color: '#94a3b8', fontSize: '0.875rem' }}>
+          <p style={{ margin: '0.35rem 0 0', color: '#475569', fontSize: '0.875rem' }}>
             Katalog penginapan ramah lingkungan (air minum RO &amp; bauran surya), reservasi instan WhatsApp, serta panduan 177 cagar budaya &amp; audio guide.
           </p>
         </div>
 
         {/* Tab Switcher */}
-        <div style={{ display: 'flex', gap: '0.4rem', background: 'rgba(15, 23, 42, 0.8)', padding: '0.35rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '0.4rem', background: '#FFFFFF', padding: '0.4rem', borderRadius: '14px', border: '1px solid #E2E8F0', boxShadow: '0 2px 10px rgba(8, 29, 53, 0.05)', flexWrap: 'wrap' }}>
           <button
             type="button"
             onClick={() => setActiveTab('accommodations')}
             style={{
               padding: '0.5rem 0.95rem',
-              borderRadius: 'var(--radius-md)',
+              borderRadius: '10px',
               border: 'none',
               fontSize: '0.8rem',
               fontWeight: 800,
@@ -491,8 +491,9 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               alignItems: 'center',
               gap: '0.4rem',
               transition: 'all 0.2s',
-              background: activeTab === 'accommodations' ? 'linear-gradient(135deg, #10b981, #06b6d4)' : 'transparent',
-              color: activeTab === 'accommodations' ? '#ffffff' : '#94a3b8',
+              background: activeTab === 'accommodations' ? '#081D35' : 'transparent',
+              color: activeTab === 'accommodations' ? '#F4B75E' : '#64748B',
+              boxShadow: activeTab === 'accommodations' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
             }}
           >
             <Home size={14} /> 🏡 Eco-Stay &amp; Vila
@@ -505,7 +506,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
             }}
             style={{
               padding: '0.5rem 0.95rem',
-              borderRadius: 'var(--radius-md)',
+              borderRadius: '10px',
               border: 'none',
               fontSize: '0.8rem',
               fontWeight: 800,
@@ -514,8 +515,9 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               alignItems: 'center',
               gap: '0.4rem',
               transition: 'all 0.2s',
-              background: activeTab === 'guides' ? 'linear-gradient(135deg, #0284c7, #06b6d4)' : 'transparent',
-              color: activeTab === 'guides' ? '#ffffff' : '#94a3b8',
+              background: activeTab === 'guides' ? '#081D35' : 'transparent',
+              color: activeTab === 'guides' ? '#F4B75E' : '#64748B',
+              boxShadow: activeTab === 'guides' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
             }}
           >
             <Compass size={14} /> 🧭 Pemandu Wisata ({guides.length})
@@ -525,7 +527,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
             onClick={() => setActiveTab('heritage')}
             style={{
               padding: '0.5rem 0.95rem',
-              borderRadius: 'var(--radius-md)',
+              borderRadius: '10px',
               border: 'none',
               fontSize: '0.8rem',
               fontWeight: 800,
@@ -534,8 +536,9 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               alignItems: 'center',
               gap: '0.4rem',
               transition: 'all 0.2s',
-              background: activeTab === 'heritage' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'transparent',
-              color: activeTab === 'heritage' ? '#ffffff' : '#94a3b8',
+              background: activeTab === 'heritage' ? '#081D35' : 'transparent',
+              color: activeTab === 'heritage' ? '#F4B75E' : '#64748B',
+              boxShadow: activeTab === 'heritage' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
             }}
           >
             <Landmark size={14} /> 🏛️ 177 Cagar Budaya &amp; Audio Guide
@@ -545,7 +548,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
             onClick={() => setActiveTab('lookup')}
             style={{
               padding: '0.5rem 0.95rem',
-              borderRadius: 'var(--radius-md)',
+              borderRadius: '10px',
               border: 'none',
               fontSize: '0.8rem',
               fontWeight: 800,
@@ -554,8 +557,9 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               alignItems: 'center',
               gap: '0.4rem',
               transition: 'all 0.2s',
-              background: activeTab === 'lookup' ? 'linear-gradient(135deg, #8b5cf6, #3b82f6)' : 'transparent',
-              color: activeTab === 'lookup' ? '#ffffff' : '#94a3b8',
+              background: activeTab === 'lookup' ? '#081D35' : 'transparent',
+              color: activeTab === 'lookup' ? '#F4B75E' : '#64748B',
+              boxShadow: activeTab === 'lookup' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
             }}
           >
             <Search size={14} /> 🔍 Cek Kode Reservasi
@@ -569,7 +573,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               }}
               style={{
                 padding: '0.5rem 0.95rem',
-                borderRadius: 'var(--radius-md)',
+                borderRadius: '10px',
                 border: 'none',
                 fontSize: '0.8rem',
                 fontWeight: 800,
@@ -578,8 +582,9 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 alignItems: 'center',
                 gap: '0.4rem',
                 transition: 'all 0.2s',
-                background: activeTab === 'bookings' ? 'linear-gradient(135deg, #06b6d4, #0284c7)' : 'transparent',
-                color: activeTab === 'bookings' ? '#ffffff' : '#94a3b8',
+                background: activeTab === 'bookings' ? '#081D35' : 'transparent',
+                color: activeTab === 'bookings' ? '#F4B75E' : '#64748B',
+                boxShadow: activeTab === 'bookings' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
               }}
             >
               <Calendar size={14} /> 📋 Reservasi Masuk ({bookings.length})
@@ -591,7 +596,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               onClick={() => setActiveTab('cms')}
               style={{
                 padding: '0.5rem 0.95rem',
-                borderRadius: 'var(--radius-md)',
+                borderRadius: '10px',
                 border: 'none',
                 fontSize: '0.8rem',
                 fontWeight: 800,
@@ -600,9 +605,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 alignItems: 'center',
                 gap: '0.4rem',
                 transition: 'all 0.2s',
-                background: activeTab === 'cms' ? 'linear-gradient(135deg, #ec4899, #8b5cf6)' : 'rgba(236, 72, 153, 0.12)',
-                color: activeTab === 'cms' ? '#ffffff' : '#f472b6',
-                borderLeft: '1px solid rgba(236, 72, 153, 0.3)',
+                background: activeTab === 'cms' ? '#081D35' : '#F8FAFC',
+                color: activeTab === 'cms' ? '#F4B75E' : '#081D35',
+                borderLeft: '1px solid #E2E8F0',
+                boxShadow: activeTab === 'cms' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
               }}
               title="Kelola harga hotel, penginapan baru, dan tarif pemandu wisata"
             >
@@ -614,8 +620,8 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               onClick={() => setActiveTab('cms')}
               style={{
                 padding: '0.5rem 0.95rem',
-                borderRadius: 'var(--radius-md)',
-                border: activeTab === 'cms' ? '1px solid rgba(239, 68, 68, 0.5)' : '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '10px',
+                border: '1px solid #E2E8F0',
                 fontSize: '0.8rem',
                 fontWeight: 800,
                 cursor: 'pointer',
@@ -623,12 +629,12 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 alignItems: 'center',
                 gap: '0.4rem',
                 transition: 'all 0.2s',
-                background: activeTab === 'cms' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(15, 23, 42, 0.6)',
-                color: activeTab === 'cms' ? '#f87171' : '#64748b',
+                background: activeTab === 'cms' ? '#FEE2E2' : '#F8FAFC',
+                color: activeTab === 'cms' ? '#DC2626' : '#94A3B8',
               }}
               title="Panel CMS dan Kontrol Tarif hanya untuk Pengelola Homestay & Admin Pusat"
             >
-              <Lock size={13} color={activeTab === 'cms' ? '#f87171' : '#64748b'} /> 🔒 CMS &amp; Tarif (Terkunci)
+              <Lock size={13} color={activeTab === 'cms' ? '#DC2626' : '#94A3B8'} /> 🔒 CMS &amp; Tarif (Terkunci)
             </button>
           )}
         </div>
@@ -638,8 +644,8 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
       {activeTab === 'accommodations' && (
         <div>
           {/* Filter Bar */}
-          <div className="card" style={{ padding: '1rem 1.25rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)', marginBottom: '1.25rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#10b981', textTransform: 'uppercase' }}>
+          <div className="card" style={{ padding: '1rem 1.25rem', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '14px', marginBottom: '1.25rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', boxShadow: '0 2px 8px rgba(8, 29, 53, 0.04)' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#081D35', textTransform: 'uppercase' }}>
               Wilayah:
             </span>
             {['', 'Pulau Neira', 'Banda Besar', 'Pulau Hatta', 'Pulau Ay'].map((isl) => (
@@ -651,18 +657,19 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   fontSize: '0.75rem',
                   padding: '0.35rem 0.75rem',
                   borderRadius: '20px',
-                  border: islandFilter === isl ? '1px solid #10b981' : '1px solid var(--border-color)',
-                  background: islandFilter === isl ? 'rgba(16, 185, 129, 0.2)' : 'rgba(15, 23, 42, 0.6)',
-                  color: islandFilter === isl ? '#10b981' : '#94a3b8',
+                  border: islandFilter === isl ? '1px solid #081D35' : '1px solid #E2E8F0',
+                  background: islandFilter === isl ? '#081D35' : '#F8FAFC',
+                  color: islandFilter === isl ? '#F4B75E' : '#64748B',
                   cursor: 'pointer',
                   fontWeight: 700,
+                  transition: 'all 0.15s ease',
                 }}
               >
                 {isl || 'Semua'}
               </button>
             ))}
 
-            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#06b6d4', textTransform: 'uppercase', marginLeft: '0.5rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#081D35', textTransform: 'uppercase', marginLeft: '0.5rem' }}>
               Tipe:
             </span>
             {[
@@ -680,11 +687,12 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   fontSize: '0.75rem',
                   padding: '0.35rem 0.75rem',
                   borderRadius: '20px',
-                  border: typeFilter === tp.val ? '1px solid #06b6d4' : '1px solid var(--border-color)',
-                  background: typeFilter === tp.val ? 'rgba(6, 182, 212, 0.2)' : 'rgba(15, 23, 42, 0.6)',
-                  color: typeFilter === tp.val ? '#06b6d4' : '#94a3b8',
+                  border: typeFilter === tp.val ? '1px solid #081D35' : '1px solid #E2E8F0',
+                  background: typeFilter === tp.val ? '#081D35' : '#F8FAFC',
+                  color: typeFilter === tp.val ? '#F4B75E' : '#64748B',
                   cursor: 'pointer',
                   fontWeight: 700,
+                  transition: 'all 0.15s ease',
                 }}
               >
                 {tp.label}
@@ -692,30 +700,30 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
             ))}
 
             <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-              <label style={{ fontSize: '0.75rem', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer' }}>
+              <label style={{ fontSize: '0.75rem', color: '#081D35', display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer', fontWeight: 600 }}>
                 <input
                   type="checkbox"
                   checked={filterRoOnly}
                   onChange={(e) => setFilterRoOnly(e.target.checked)}
                 />
-                <Droplets size={13} color="#06b6d4" /> Ada Air RO Bersih
+                <Droplets size={13} color="#0284C7" /> Ada Air RO Bersih
               </label>
 
-              <label style={{ fontSize: '0.75rem', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer' }}>
+              <label style={{ fontSize: '0.75rem', color: '#081D35', display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer', fontWeight: 600 }}>
                 <input
                   type="checkbox"
                   checked={filterSolarOnly}
                   onChange={(e) => setFilterSolarOnly(e.target.checked)}
                 />
-                <Sun size={13} color="#f59e0b" /> Ada Listrik Surya
+                <Sun size={13} color="#D97706" /> Ada Listrik Surya
               </label>
             </div>
           </div>
 
           {/* Accommodation Cards Grid */}
           {loadingAccs ? (
-            <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
-              <RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 0.5rem' }} />
+            <div style={{ textAlign: 'center', padding: '3rem', color: '#64748B' }}>
+              <RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 0.5rem', color: '#F4B75E' }} />
               Memuat penginapan eco-stay Banda Neira...
             </div>
           ) : (
@@ -727,14 +735,16 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   style={{
                     padding: 0,
                     overflow: 'hidden',
-                    background: 'var(--surface-color)',
-                    border: '1px solid var(--border-color)',
+                    background: '#FFFFFF',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '16px',
+                    boxShadow: '0 4px 16px rgba(8, 29, 53, 0.05)',
                     display: 'flex',
                     flexDirection: 'column',
                   }}
                 >
                   {/* Photo Banner */}
-                  <div style={{ height: '170px', position: 'relative', overflow: 'hidden', background: '#0f172a' }}>
+                  <div style={{ height: '170px', position: 'relative', overflow: 'hidden', background: '#F1F5F9' }}>
                     <img
                       src={acc.photo_url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80'}
                       alt={acc.name}
@@ -754,39 +764,39 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
 
                   {/* Body Content */}
                   <div style={{ padding: '1.15rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.72rem', color: '#06b6d4', fontWeight: 700, marginBottom: '0.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.72rem', color: '#0369A1', fontWeight: 700, marginBottom: '0.25rem' }}>
                       <MapPin size={12} /> {acc.island_name} — {acc.address}
                     </div>
 
-                    <h3 style={{ margin: '0 0 0.45rem', fontSize: '1.05rem', fontWeight: 800, color: '#f8fafc' }}>
+                    <h3 style={{ margin: '0 0 0.45rem', fontSize: '1.05rem', fontWeight: 800, color: '#081D35' }}>
                       {acc.name}
                     </h3>
 
-                    <p style={{ margin: '0 0 0.85rem', color: '#94a3b8', fontSize: '0.78rem', lineHeight: 1.45, flex: 1 }}>
+                    <p style={{ margin: '0 0 0.85rem', color: '#475569', fontSize: '0.78rem', lineHeight: 1.45, flex: 1 }}>
                       {acc.description}
                     </p>
 
                     {/* Eco Amenities Badges */}
                     <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                       {acc.has_clean_ro_water && (
-                        <span style={{ fontSize: '0.7rem', color: '#38bdf8', background: 'rgba(6, 182, 212, 0.15)', padding: '0.2rem 0.45rem', borderRadius: '4px', border: '1px solid rgba(6, 182, 212, 0.3)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <span style={{ fontSize: '0.7rem', color: '#0369A1', background: '#E0F2FE', padding: '0.2rem 0.45rem', borderRadius: '6px', border: '1px solid #BAE6FD', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontWeight: 600 }}>
                           <Droplets size={11} /> Air Minum RO Gratis
                         </span>
                       )}
                       {acc.has_solar_backup && (
-                        <span style={{ fontSize: '0.7rem', color: '#fbbf24', background: 'rgba(245, 158, 11, 0.15)', padding: '0.2rem 0.45rem', borderRadius: '4px', border: '1px solid rgba(245, 158, 11, 0.3)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <span style={{ fontSize: '0.7rem', color: '#B45309', background: '#FEF3C7', padding: '0.2rem 0.45rem', borderRadius: '6px', border: '1px solid #FDE68A', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontWeight: 600 }}>
                           <Sun size={11} /> Cadangan Surya
                         </span>
                       )}
                     </div>
 
                     {/* Price & Action */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '0.85rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #F1F5F9', paddingTop: '0.85rem' }}>
                       <div>
-                        <div style={{ fontSize: '0.68rem', color: '#94a3b8' }}>Mulai dari:</div>
-                        <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#10b981' }}>
+                        <div style={{ fontSize: '0.68rem', color: '#64748B' }}>Mulai dari:</div>
+                        <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#081D35' }}>
                           Rp {acc.price_per_night_rp.toLocaleString()}
-                          <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 500 }}> / malam</span>
+                          <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 500 }}> / malam</span>
                         </div>
                       </div>
 
@@ -794,7 +804,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                         type="button"
                         onClick={() => handleOpenBookingModal(acc)}
                         className="btn btn-primary"
-                        style={{ padding: '0.5rem 0.95rem', fontSize: '0.8rem', fontWeight: 800, background: 'linear-gradient(135deg, #10b981, #059669)' }}
+                        style={{ padding: '0.5rem 0.95rem', fontSize: '0.8rem', fontWeight: 800, background: 'linear-gradient(135deg, #F4B75E 0%, #E0A24A 100%)', color: '#081D35', border: 'none', boxShadow: '0 4px 12px rgba(244, 183, 94, 0.3)' }}
                       >
                         <MessageCircle size={14} /> Pesan Kamar
                       </button>
@@ -811,8 +821,8 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
       {activeTab === 'heritage' && (
         <div>
           {/* Category Filter */}
-          <div className="card" style={{ padding: '0.85rem 1.15rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)', marginBottom: '1.25rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#f59e0b', alignSelf: 'center', marginRight: '0.25rem' }}>
+          <div className="card" style={{ padding: '0.85rem 1.15rem', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '14px', marginBottom: '1.25rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', boxShadow: '0 2px 8px rgba(8, 29, 53, 0.04)' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#081D35', alignSelf: 'center', marginRight: '0.25rem', textTransform: 'uppercase' }}>
               Kategori Cagar Budaya:
             </span>
             {['', 'BENTENG', 'RUMAH_SEJARAH', 'CAGAR_BUDAYA'].map((cat) => (
@@ -824,11 +834,12 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   fontSize: '0.75rem',
                   padding: '0.35rem 0.75rem',
                   borderRadius: '20px',
-                  border: heritageCategory === cat ? '1px solid #f59e0b' : '1px solid var(--border-color)',
-                  background: heritageCategory === cat ? 'rgba(245, 158, 11, 0.2)' : 'rgba(15, 23, 42, 0.6)',
-                  color: heritageCategory === cat ? '#fbbf24' : '#94a3b8',
+                  border: heritageCategory === cat ? '1px solid #081D35' : '1px solid #E2E8F0',
+                  background: heritageCategory === cat ? '#081D35' : '#F8FAFC',
+                  color: heritageCategory === cat ? '#F4B75E' : '#64748B',
                   cursor: 'pointer',
                   fontWeight: 700,
+                  transition: 'all 0.15s ease',
                 }}
               >
                 {cat || 'Semua Cagar Budaya'}
@@ -844,13 +855,15 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 style={{
                   padding: 0,
                   overflow: 'hidden',
-                  background: 'var(--surface-color)',
-                  border: '1px solid var(--border-color)',
+                  background: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '16px',
+                  boxShadow: '0 4px 16px rgba(8, 29, 53, 0.05)',
                   display: 'flex',
                   flexDirection: 'column',
                 }}
               >
-                <div style={{ height: '170px', position: 'relative', overflow: 'hidden', background: '#0f172a' }}>
+                <div style={{ height: '170px', position: 'relative', overflow: 'hidden', background: '#F1F5F9' }}>
                   <img
                     src={h.photo_url}
                     alt={h.title}
@@ -864,23 +877,23 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 </div>
 
                 <div style={{ padding: '1.15rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                  <div style={{ fontSize: '0.72rem', color: '#f59e0b', fontWeight: 700, marginBottom: '0.2rem' }}>
+                  <div style={{ fontSize: '0.72rem', color: '#B45309', fontWeight: 700, marginBottom: '0.2rem' }}>
                     {h.island} • Periode: {h.historical_period}
                   </div>
 
-                  <h3 style={{ margin: '0 0 0.45rem', fontSize: '1.05rem', fontWeight: 800, color: '#f8fafc' }}>
+                  <h3 style={{ margin: '0 0 0.45rem', fontSize: '1.05rem', fontWeight: 800, color: '#081D35' }}>
                     {h.title}
                   </h3>
 
-                  <p style={{ margin: '0 0 1rem', color: '#94a3b8', fontSize: '0.78rem', lineHeight: 1.5, flex: 1 }}>
+                  <p style={{ margin: '0 0 1rem', color: '#475569', fontSize: '0.78rem', lineHeight: 1.5, flex: 1 }}>
                     {h.narrative}
                   </p>
 
                   {/* Audio Guide Player Section */}
-                  <div style={{ padding: '0.75rem', background: 'rgba(15, 23, 42, 0.7)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(245, 158, 11, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+                  <div style={{ padding: '0.75rem', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                      <Volume2 size={16} color="#fbbf24" />
-                      <span style={{ fontSize: '0.75rem', color: '#cbd5e1', fontWeight: 700 }}>
+                      <Volume2 size={16} color="#D97706" />
+                      <span style={{ fontSize: '0.75rem', color: '#081D35', fontWeight: 700 }}>
                         {activeAudioSlug === h.slug ? 'Sedang Memutar Audio...' : 'Audio Guide Sejarah'}
                       </span>
                     </div>
@@ -903,12 +916,12 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
       {/* TAB 3: BOOKING LOOKUP */}
       {activeTab === 'lookup' && (
         <div style={{ maxWidth: '640px', margin: '0 auto' }}>
-          <div className="card" style={{ padding: '1.75rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)', marginBottom: '1.5rem' }}>
-            <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Search size={18} style={{ color: '#8b5cf6' }} /> Lacak Status Pemesanan Kamar
+          <div className="card" style={{ padding: '1.75rem', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', marginBottom: '1.5rem', boxShadow: '0 4px 16px rgba(8, 29, 53, 0.05)' }}>
+            <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.15rem', fontWeight: 800, color: '#081D35', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Search size={18} style={{ color: '#0284C7' }} /> Lacak Status Pemesanan Kamar
             </h3>
-            <p style={{ margin: '0 0 1.25rem', color: '#94a3b8', fontSize: '0.8rem' }}>
-              Masukkan kode reservasi unik (format: <code>BKG-YYYYMMDD-XXXX</code>) yang Anda dapatkan saat memesan penginapan.
+            <p style={{ margin: '0 0 1.25rem', color: '#475569', fontSize: '0.8rem' }}>
+              Masukkan kode reservasi unik (format: <code style={{ background: '#F1F5F9', padding: '0.15rem 0.4rem', borderRadius: '4px', color: '#081D35' }}>BKG-YYYYMMDD-XXXX</code>) yang Anda dapatkan saat memesan penginapan.
             </p>
 
             <form onSubmit={handleLookupBooking} style={{ display: 'flex', gap: '0.5rem' }}>
@@ -919,10 +932,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 placeholder="Contoh: BKG-20261111-A1B2..."
                 style={{
                   flex: 1,
-                  background: 'rgba(15, 23, 42, 0.8)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 'var(--radius-md)',
-                  color: '#f8fafc',
+                  background: '#FFFFFF',
+                  border: '1px solid #CBD5E1',
+                  borderRadius: '10px',
+                  color: '#081D35',
                   padding: '0.65rem 0.85rem',
                   fontSize: '0.9rem',
                   fontFamily: 'monospace',
@@ -932,31 +945,31 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 type="submit"
                 disabled={loadingLookup}
                 className="btn btn-primary"
-                style={{ padding: '0.65rem 1.15rem', fontWeight: 800, background: 'linear-gradient(135deg, #8b5cf6, #3b82f6)' }}
+                style={{ padding: '0.65rem 1.15rem', fontWeight: 800, background: '#081D35', color: '#F4B75E', border: 'none' }}
               >
                 {loadingLookup ? <RefreshCw size={16} className="animate-spin" /> : 'Lacak'}
               </button>
             </form>
 
             {lookupError && (
-              <div style={{ marginTop: '1rem', padding: '0.65rem 0.85rem', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.4)', borderRadius: 'var(--radius-md)', color: '#f87171', fontSize: '0.8rem' }}>
+              <div style={{ marginTop: '1rem', padding: '0.65rem 0.85rem', background: '#FEE2E2', border: '1px solid #FECDD3', borderRadius: '10px', color: '#BE123C', fontSize: '0.8rem' }}>
                 {lookupError}
               </div>
             )}
           </div>
 
           {lookupResult && (
-            <div className="card" style={{ padding: '1.5rem', background: 'linear-gradient(145deg, rgba(139, 92, 246, 0.1), rgba(6, 182, 212, 0.05))', border: '1px solid rgba(139, 92, 246, 0.4)' }}>
+            <div className="card" style={{ padding: '1.5rem', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', boxShadow: '0 4px 16px rgba(8, 29, 53, 0.05)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                 <div>
-                  <span style={{ fontSize: '0.7rem', color: '#a78bfa', fontFamily: 'monospace', fontWeight: 800 }}>
+                  <span style={{ fontSize: '0.7rem', color: '#0369A1', fontFamily: 'monospace', fontWeight: 800 }}>
                     KODE: {lookupResult.booking_code}
                   </span>
-                  <h3 style={{ margin: '0.2rem 0 0', fontSize: '1.25rem', fontWeight: 900, color: '#f8fafc' }}>
+                  <h3 style={{ margin: '0.2rem 0 0', fontSize: '1.25rem', fontWeight: 900, color: '#081D35' }}>
                     {lookupResult.accommodation_name}
                   </h3>
-                  <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '0.15rem' }}>
-                    Tamu: <b style={{ color: '#f8fafc' }}>{lookupResult.guest_name}</b> ({lookupResult.guest_whatsapp})
+                  <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '0.15rem' }}>
+                    Tamu: <b style={{ color: '#081D35' }}>{lookupResult.guest_name}</b> ({lookupResult.guest_whatsapp})
                   </div>
                 </div>
                 <span className="badge badge-emerald" style={{ fontSize: '0.72rem' }}>
@@ -965,19 +978,19 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
-                <div style={{ padding: '0.65rem 0.85rem', background: 'rgba(15, 23, 42, 0.6)', borderRadius: 'var(--radius-md)' }}>
-                  <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Jadwal Menginap:</div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f8fafc', marginTop: '0.15rem' }}>
+                <div style={{ padding: '0.65rem 0.85rem', background: '#F8FAFC', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                  <div style={{ fontSize: '0.7rem', color: '#64748B' }}>Jadwal Menginap:</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#081D35', marginTop: '0.15rem' }}>
                     {lookupResult.check_in} s/d {lookupResult.check_out}
                   </div>
-                  <div style={{ fontSize: '0.72rem', color: '#06b6d4', marginTop: '0.1rem' }}>
+                  <div style={{ fontSize: '0.72rem', color: '#0284C7', marginTop: '0.1rem' }}>
                     {lookupResult.total_nights} Malam • {lookupResult.rooms_count} Kamar
                   </div>
                 </div>
 
-                <div style={{ padding: '0.65rem 0.85rem', background: 'rgba(15, 23, 42, 0.6)', borderRadius: 'var(--radius-md)' }}>
-                  <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Total Pembayaran:</div>
-                  <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#10b981', marginTop: '0.15rem' }}>
+                <div style={{ padding: '0.65rem 0.85rem', background: '#F8FAFC', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                  <div style={{ fontSize: '0.7rem', color: '#64748B' }}>Total Pembayaran:</div>
+                  <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#081D35', marginTop: '0.15rem' }}>
                     Rp {lookupResult.total_price_rp.toLocaleString()}
                   </div>
                 </div>
@@ -988,7 +1001,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 target="_blank"
                 rel="noreferrer"
                 className="btn btn-primary"
-                style={{ width: '100%', justifyContent: 'center', padding: '0.75rem', background: 'linear-gradient(135deg, #10b981, #059669)', textDecoration: 'none', fontWeight: 800 }}
+                style={{ width: '100%', justifyContent: 'center', padding: '0.75rem', background: 'linear-gradient(135deg, #F4B75E 0%, #E0A24A 100%)', color: '#081D35', textDecoration: 'none', fontWeight: 800, border: 'none', boxShadow: '0 4px 14px rgba(244, 183, 94, 0.35)' }}
               >
                 <MessageCircle size={16} /> Hubungi Host Penginapan via WhatsApp
               </a>
@@ -1000,17 +1013,17 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
       {/* TAB 4: OPERATOR BOOKINGS MANAGEMENT */}
       {activeTab === 'bookings' && (
         !canAccessBookings ? (
-          <div className="card animate-fade-in" style={{ padding: '3.5rem 1.5rem', textAlign: 'center', background: 'var(--surface-color)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-lg)' }}>
-            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
-              <Lock size={32} color="#f87171" />
+          <div className="card animate-fade-in" style={{ padding: '3.5rem 1.5rem', textAlign: 'center', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', boxShadow: '0 4px 16px rgba(8, 29, 53, 0.05)' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#FEE2E2', border: '1px solid #FECDD3', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+              <Lock size={32} color="#DC2626" />
             </div>
             <span className="badge badge-amber" style={{ marginBottom: '0.5rem', display: 'inline-block' }}>
               PRIVASI DATA TAMU &bull; AKSES TERBATAS
             </span>
-            <h3 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#f8fafc', margin: '0.25rem 0 0.5rem' }}>
+            <h3 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#081D35', margin: '0.25rem 0 0.5rem' }}>
               Buku Reservasi Tamu Dilindungi
             </h3>
-            <p style={{ color: '#94a3b8', fontSize: '0.875rem', maxWidth: '560px', margin: '0 auto 1.5rem', lineHeight: 1.6 }}>
+            <p style={{ color: '#475569', fontSize: '0.875rem', maxWidth: '560px', margin: '0 auto 1.5rem', lineHeight: 1.6 }}>
               Nomor WhatsApp tamu, identitas pemesan, dan rincian transaksi menginap bersifat rahasia dan hanya dapat diakses oleh operator penginapan resmi atau petugas desa yang terautentikasi.
             </p>
             {onOpenQuickLogin && (
@@ -1024,8 +1037,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   gap: '0.5rem',
                   padding: '0.75rem 1.5rem',
                   fontWeight: 800,
-                  background: 'linear-gradient(135deg, #10b981, #06b6d4)',
-                  boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)',
+                  background: 'linear-gradient(135deg, #F4B75E 0%, #E0A24A 100%)',
+                  color: '#081D35',
+                  border: 'none',
+                  boxShadow: '0 4px 15px rgba(244, 183, 94, 0.4)',
                 }}
               >
                 <Zap size={16} /> Masuk Akun Operator Homestay
@@ -1043,38 +1058,38 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               marginBottom: '1.5rem',
             }}
           >
-            <div className="card" style={{ padding: '1.25rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>
+            <div className="card" style={{ padding: '1.25rem', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '14px', boxShadow: '0 2px 8px rgba(8, 29, 53, 0.04)' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>
                 Total Reservasi Masuk
               </div>
-              <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#06b6d4', marginTop: '0.25rem' }}>
-                {bookings.length} <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>Pemesanan</span>
+              <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#081D35', marginTop: '0.25rem' }}>
+                {bookings.length} <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748B' }}>Pemesanan</span>
               </div>
-              <div style={{ fontSize: '0.72rem', color: '#10b981', marginTop: '0.35rem' }}>
+              <div style={{ fontSize: '0.72rem', color: '#15803D', marginTop: '0.35rem', fontWeight: 600 }}>
                 ● Status Terverifikasi 100%
               </div>
             </div>
 
-            <div className="card" style={{ padding: '1.25rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>
+            <div className="card" style={{ padding: '1.25rem', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '14px', boxShadow: '0 2px 8px rgba(8, 29, 53, 0.04)' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>
                 Estimasi Omset Homestay
               </div>
-              <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#10b981', marginTop: '0.25rem' }}>
+              <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#081D35', marginTop: '0.25rem' }}>
                 Rp {bookings.reduce((sum, b) => sum + b.total_price_rp, 0).toLocaleString()}
               </div>
-              <div style={{ fontSize: '0.72rem', color: '#38bdf8', marginTop: '0.35rem' }}>
+              <div style={{ fontSize: '0.72rem', color: '#0369A1', marginTop: '0.35rem', fontWeight: 600 }}>
                 Ekonomi Komunitas Banda Neira
               </div>
             </div>
 
-            <div className="card" style={{ padding: '1.25rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>
+            <div className="card" style={{ padding: '1.25rem', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '14px', boxShadow: '0 2px 8px rgba(8, 29, 53, 0.04)' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>
                 Total Malam Menginap
               </div>
-              <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#fbbf24', marginTop: '0.25rem' }}>
-                {bookings.reduce((sum, b) => sum + (b.total_nights * b.rooms_count), 0)} <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>Room-Nights</span>
+              <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#B45309', marginTop: '0.25rem' }}>
+                {bookings.reduce((sum, b) => sum + (b.total_nights * b.rooms_count), 0)} <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748B' }}>Room-Nights</span>
               </div>
-              <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '0.35rem' }}>
+              <div style={{ fontSize: '0.72rem', color: '#64748B', marginTop: '0.35rem' }}>
                 Kamar Ramah Lingkungan &amp; Air RO
               </div>
             </div>
@@ -1082,15 +1097,15 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
 
           {/* Action Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-            <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-              <Calendar size={18} color="#06b6d4" /> Buku Tamu &amp; Riwayat Reservasi Eco-Stay
+            <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#081D35', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <Calendar size={18} color="#0284C7" /> Buku Tamu &amp; Riwayat Reservasi Eco-Stay
             </h3>
             <button
               type="button"
               onClick={loadBookings}
               disabled={loadingBookings}
               className="btn btn-secondary btn-sm"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem' }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#081D35' }}
             >
               <RefreshCw size={13} className={loadingBookings ? 'animate-spin' : ''} />
               {loadingBookings ? 'Menyinkronkan...' : 'Perbarui Data'}
@@ -1099,15 +1114,15 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
 
           {/* Bookings List */}
           {loadingBookings ? (
-            <div style={{ textAlign: 'center', padding: '3rem 0', color: '#94a3b8' }}>
-              <RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 0.75rem' }} />
+            <div style={{ textAlign: 'center', padding: '3rem 0', color: '#64748B' }}>
+              <RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 0.75rem', color: '#F4B75E' }} />
               Memuat data reservasi...
             </div>
           ) : bookings.length === 0 ? (
-            <div className="card" style={{ padding: '3rem 2rem', textAlign: 'center', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
+            <div className="card" style={{ padding: '3rem 2rem', textAlign: 'center', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px' }}>
               <Home size={36} color="#64748b" style={{ margin: '0 auto 0.75rem' }} />
-              <h4 style={{ margin: '0 0 0.35rem', color: '#f8fafc' }}>Belum Ada Reservasi Masuk</h4>
-              <p style={{ margin: 0, fontSize: '0.825rem', color: '#94a3b8' }}>
+              <h4 style={{ margin: '0 0 0.35rem', color: '#081D35' }}>Belum Ada Reservasi Masuk</h4>
+              <p style={{ margin: 0, fontSize: '0.825rem', color: '#64748B' }}>
                 Pemesanan baru oleh wisatawan akan otomatis muncul pada buku tamu ini.
               </p>
             </div>
@@ -1119,8 +1134,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   className="card"
                   style={{
                     padding: '1.25rem',
-                    background: 'var(--surface-color)',
-                    border: '1px solid var(--border-color)',
+                    background: '#FFFFFF',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '16px',
+                    boxShadow: '0 2px 8px rgba(8, 29, 53, 0.04)',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
@@ -1134,8 +1151,8 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                         width: '44px',
                         height: '44px',
                         borderRadius: '12px',
-                        background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%)',
-                        border: '1px solid rgba(6, 182, 212, 0.4)',
+                        background: '#FEF3C7',
+                        border: '1px solid #FDE68A',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -1147,7 +1164,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     </div>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: '0.975rem', fontWeight: 800, color: '#f8fafc' }}>
+                        <span style={{ fontSize: '0.975rem', fontWeight: 800, color: '#081D35' }}>
                           {b.guest_name}
                         </span>
                         <span className="badge badge-emerald" style={{ fontSize: '0.65rem' }}>
@@ -1158,23 +1175,23 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                         </span>
                       </div>
 
-                      <div style={{ fontSize: '0.825rem', fontWeight: 700, color: '#06b6d4', marginTop: '0.2rem' }}>
+                      <div style={{ fontSize: '0.825rem', fontWeight: 700, color: '#0369A1', marginTop: '0.2rem' }}>
                         {b.accommodation_name}
                       </div>
 
-                      <div style={{ display: 'flex', gap: '1rem', marginTop: '0.35rem', fontSize: '0.75rem', color: '#94a3b8', flexWrap: 'wrap' }}>
-                        <span>📅 Check-in: <b>{b.check_in}</b></span>
-                        <span>📅 Check-out: <b>{b.check_out}</b> ({b.total_nights} Malam)</span>
-                        <span>🛏️ <b>{b.rooms_count} Kamar</b></span>
-                        {b.notes && <span style={{ color: '#cbd5e1' }}>📝 Catatan: "{b.notes}"</span>}
+                      <div style={{ display: 'flex', gap: '1rem', marginTop: '0.35rem', fontSize: '0.75rem', color: '#64748B', flexWrap: 'wrap' }}>
+                        <span>📅 Check-in: <b style={{ color: '#081D35' }}>{b.check_in}</b></span>
+                        <span>📅 Check-out: <b style={{ color: '#081D35' }}>{b.check_out}</b> ({b.total_nights} Malam)</span>
+                        <span>🛏️ <b style={{ color: '#081D35' }}>{b.rooms_count} Kamar</b></span>
+                        {b.notes && <span style={{ color: '#475569' }}>📝 Catatan: "{b.notes}"</span>}
                       </div>
                     </div>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Total Tagihan:</div>
-                      <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#10b981' }}>
+                      <div style={{ fontSize: '0.7rem', color: '#64748B' }}>Total Tagihan:</div>
+                      <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#081D35' }}>
                         Rp {b.total_price_rp.toLocaleString()}
                       </div>
                     </div>
@@ -1184,8 +1201,8 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                       target="_blank"
                       rel="noreferrer"
                       style={{
-                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                        color: '#ffffff',
+                        background: 'linear-gradient(135deg, #F4B75E 0%, #E0A24A 100%)',
+                        color: '#081D35',
                         padding: '0.5rem 0.95rem',
                         borderRadius: '10px',
                         fontSize: '0.78rem',
@@ -1194,6 +1211,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '0.4rem',
+                        boxShadow: '0 4px 12px rgba(244, 183, 94, 0.35)',
                       }}
                       title="Hubungi tamu langsung lewat WhatsApp"
                     >
@@ -1212,8 +1230,8 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
       {activeTab === 'guides' && (
         <div>
           {/* Filter Bar */}
-          <div className="card" style={{ padding: '1rem 1.25rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)', marginBottom: '1.25rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#0284c7', textTransform: 'uppercase' }}>
+          <div className="card" style={{ padding: '1rem 1.25rem', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '14px', marginBottom: '1.25rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', boxShadow: '0 2px 8px rgba(8, 29, 53, 0.04)' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#081D35', textTransform: 'uppercase' }}>
               Basis Pulau Pemandu:
             </span>
             {['', 'Pulau Neira', 'Pulau Banda Besar', 'Pulau Hatta', 'Pulau Ay', 'Pulau Rhun'].map((isl) => (
@@ -1225,11 +1243,12 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   fontSize: '0.75rem',
                   padding: '0.35rem 0.75rem',
                   borderRadius: '20px',
-                  border: guideIslandFilter === isl ? '1px solid #0284c7' : '1px solid var(--border-color)',
-                  background: guideIslandFilter === isl ? 'rgba(2, 132, 199, 0.2)' : 'rgba(15, 23, 42, 0.6)',
-                  color: guideIslandFilter === isl ? '#38bdf8' : '#94a3b8',
+                  border: guideIslandFilter === isl ? '1px solid #081D35' : '1px solid #E2E8F0',
+                  background: guideIslandFilter === isl ? '#081D35' : '#F8FAFC',
+                  color: guideIslandFilter === isl ? '#F4B75E' : '#64748B',
                   cursor: 'pointer',
                   fontWeight: 700,
+                  transition: 'all 0.15s ease',
                 }}
               >
                 {isl || 'Semua Pulau'}
@@ -1238,15 +1257,15 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
           </div>
 
           {loadingGuides ? (
-            <div style={{ textAlign: 'center', padding: '3rem 0', color: '#94a3b8' }}>
-              <RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 0.75rem' }} />
+            <div style={{ textAlign: 'center', padding: '3rem 0', color: '#64748B' }}>
+              <RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 0.75rem', color: '#F4B75E' }} />
               Memuat data pemandu wisata...
             </div>
           ) : guides.length === 0 ? (
-            <div className="card" style={{ textAlign: 'center', padding: '3rem 1rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
+            <div className="card" style={{ textAlign: 'center', padding: '3rem 1rem', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px' }}>
               <Compass size={40} color="#64748b" style={{ margin: '0 auto 0.75rem' }} />
-              <h3 style={{ margin: 0, color: '#f8fafc', fontSize: '1.1rem' }}>Belum Ada Pemandu Terdaftar</h3>
-              <p style={{ margin: '0.35rem 0 0', color: '#94a3b8', fontSize: '0.85rem' }}>
+              <h3 style={{ margin: 0, color: '#081D35', fontSize: '1.1rem' }}>Belum Ada Pemandu Terdaftar</h3>
+              <p style={{ margin: '0.35rem 0 0', color: '#64748B', fontSize: '0.85rem' }}>
                 Silakan pilih wilayah lain atau daftarkan pemandu lokal baru melalui panel CMS.
               </p>
             </div>
@@ -1257,15 +1276,16 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   key={guide.id}
                   className="card hover-glow"
                   style={{
-                    background: 'var(--surface-color)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-lg)',
+                    background: '#FFFFFF',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '16px',
+                    boxShadow: '0 4px 16px rgba(8, 29, 53, 0.05)',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
                   }}
                 >
-                  <div style={{ position: 'relative', height: '190px', background: '#1e293b' }}>
+                  <div style={{ position: 'relative', height: '190px', background: '#F1F5F9' }}>
                     <img
                       src={guide.photo_url || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80'}
                       alt={guide.name}
@@ -1274,7 +1294,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     />
                     <div style={{ position: 'absolute', top: '0.75rem', left: '0.75rem', display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                       {guide.is_verified ? (
-                        <span className="badge badge-emerald" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', boxShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
+                        <span className="badge badge-emerald" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
                           <UserCheck size={12} /> HPI Terverifikasi
                         </span>
                       ) : (
@@ -1283,14 +1303,14 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                         </span>
                       )}
                     </div>
-                    <div style={{ position: 'absolute', bottom: '0.75rem', right: '0.75rem', background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(4px)', padding: '0.3rem 0.6rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                      <Star size={12} color="#fbbf24" fill="#fbbf24" /> {guide.rating.toFixed(1)} ({guide.trips_completed} tur)
+                    <div style={{ position: 'absolute', bottom: '0.75rem', right: '0.75rem', background: 'rgba(8, 29, 53, 0.85)', backdropFilter: 'blur(4px)', padding: '0.3rem 0.6rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 800, color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                      <Star size={12} color="#F4B75E" fill="#F4B75E" /> {guide.rating.toFixed(1)} ({guide.trips_completed} tur)
                     </div>
                   </div>
 
                   <div style={{ padding: '1.15rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.35rem' }}>
-                      <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900, color: '#f8fafc' }}>
+                      <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900, color: '#081D35' }}>
                         {guide.name}
                       </h3>
                       <span className="badge badge-blue" style={{ fontSize: '0.68rem' }}>
@@ -1298,43 +1318,43 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                       </span>
                     </div>
 
-                    <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                      <Award size={12} color="#38bdf8" /> No. Registrasi: <code style={{ color: '#cbd5e1' }}>{guide.license_number}</code>
+                    <div style={{ fontSize: '0.72rem', color: '#64748B', marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <Award size={12} color="#0284C7" /> No. Registrasi: <code style={{ color: '#081D35', background: '#F1F5F9', padding: '0.1rem 0.35rem', borderRadius: '4px' }}>{guide.license_number}</code>
                     </div>
 
                     {guide.bio && (
-                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: '#94a3b8', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: '#475569', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                         {guide.bio}
                       </p>
                     )}
 
                     <div style={{ marginBottom: '0.6rem' }}>
-                      <div style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', color: '#64748b', marginBottom: '0.25rem' }}>
+                      <div style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', color: '#64748B', marginBottom: '0.25rem' }}>
                         Keahlian Tur:
                       </div>
-                      <div style={{ fontSize: '0.78rem', color: '#38bdf8', fontWeight: 600 }}>
+                      <div style={{ fontSize: '0.78rem', color: '#0369A1', fontWeight: 600 }}>
                         {guide.specialties}
                       </div>
                     </div>
 
                     <div style={{ marginBottom: '1rem' }}>
-                      <div style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', color: '#64748b', marginBottom: '0.25rem' }}>
+                      <div style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', color: '#64748B', marginBottom: '0.25rem' }}>
                         Bahasa:
                       </div>
                       <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
                         {guide.languages.split(',').map((lang) => (
-                          <span key={lang.trim()} style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', borderRadius: '6px' }}>
+                          <span key={lang.trim()} style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', background: '#E0F2FE', color: '#0369A1', borderRadius: '6px', fontWeight: 600 }}>
                             {lang.trim()}
                           </span>
                         ))}
                       </div>
                     </div>
 
-                    <div style={{ marginTop: 'auto', paddingTop: '0.85rem', borderTop: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ marginTop: 'auto', paddingTop: '0.85rem', borderTop: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
-                        <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Tarif Jasa Pemandu:</div>
-                        <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#10b981' }}>
-                          Rp {guide.fee_per_day_rp.toLocaleString()} <span style={{ fontSize: '0.7rem', fontWeight: 500, color: '#64748b' }}>/ hari</span>
+                        <div style={{ fontSize: '0.7rem', color: '#64748B' }}>Tarif Jasa Pemandu:</div>
+                        <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#081D35' }}>
+                          Rp {guide.fee_per_day_rp.toLocaleString()} <span style={{ fontSize: '0.7rem', fontWeight: 500, color: '#64748B' }}>/ hari</span>
                         </div>
                       </div>
 
@@ -1343,8 +1363,8 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                         target="_blank"
                         rel="noreferrer"
                         style={{
-                          background: 'linear-gradient(135deg, #0284c7 0%, #06b6d4 100%)',
-                          color: '#ffffff',
+                          background: 'linear-gradient(135deg, #F4B75E 0%, #E0A24A 100%)',
+                          color: '#081D35',
                           padding: '0.55rem 0.95rem',
                           borderRadius: '10px',
                           fontSize: '0.78rem',
@@ -1353,7 +1373,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: '0.4rem',
-                          boxShadow: '0 2px 10px rgba(2, 132, 199, 0.3)',
+                          boxShadow: '0 4px 12px rgba(244, 183, 94, 0.35)',
                         }}
                       >
                         <Phone size={14} /> Hubungi Guide
@@ -1370,17 +1390,17 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
       {/* TAB: CMS PUSAT & PENGATURAN TARIF */}
       {activeTab === 'cms' && (
         !canAccessCMS ? (
-          <div className="card animate-fade-in" style={{ padding: '3.5rem 1.5rem', textAlign: 'center', background: 'var(--surface-color)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-lg)' }}>
-            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
-              <Lock size={32} color="#f87171" />
+          <div className="card animate-fade-in" style={{ padding: '3.5rem 1.5rem', textAlign: 'center', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px', boxShadow: '0 4px 16px rgba(8, 29, 53, 0.05)' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#FEE2E2', border: '1px solid #FECDD3', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+              <Lock size={32} color="#DC2626" />
             </div>
             <span className="badge badge-amber" style={{ marginBottom: '0.5rem', display: 'inline-block' }}>
               KONTROL MASTER DATA &bull; ROLE-BASED ACCESS CONTROL
             </span>
-            <h3 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#f8fafc', margin: '0.25rem 0 0.5rem' }}>
+            <h3 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#081D35', margin: '0.25rem 0 0.5rem' }}>
               Panel CMS &amp; Pengaturan Tarif Khusus Petugas
             </h3>
-            <p style={{ color: '#94a3b8', fontSize: '0.875rem', maxWidth: '580px', margin: '0 auto 1.5rem', lineHeight: 1.6 }}>
+            <p style={{ color: '#475569', fontSize: '0.875rem', maxWidth: '580px', margin: '0 auto 1.5rem', lineHeight: 1.6 }}>
               Pengelolaan harga sewa kamar hotel/homestay, penambahan listing penginapan baru, validasi fasilitas Eco-Stay (RO Water &amp; PLTS), serta akreditasi pemandu wisata HPI Banda dilindungi oleh otorisasi backend dan hanya dapat diakses oleh Operator Homestay atau Smart Tourism Admin terdaftar.
             </p>
             {onOpenQuickLogin && (
@@ -1394,8 +1414,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   gap: '0.5rem',
                   padding: '0.75rem 1.5rem',
                   fontWeight: 800,
-                  background: 'linear-gradient(135deg, #ec4899, #8b5cf6)',
-                  boxShadow: '0 4px 15px rgba(236, 72, 153, 0.4)',
+                  background: 'linear-gradient(135deg, #F4B75E 0%, #E0A24A 100%)',
+                  color: '#081D35',
+                  border: 'none',
+                  boxShadow: '0 4px 15px rgba(244, 183, 94, 0.4)',
                 }}
               >
                 <Zap size={16} /> Masuk Akun Operator / Uji Peran Cepat
@@ -1410,10 +1432,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               style={{
                 marginBottom: '1.25rem',
                 padding: '0.75rem 1rem',
-                background: cmsNotice.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                border: `1px solid ${cmsNotice.type === 'success' ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)'}`,
-                borderRadius: 'var(--radius-md)',
-                color: cmsNotice.type === 'success' ? '#34d399' : '#f87171',
+                background: cmsNotice.type === 'success' ? '#DCFCE7' : '#FEE2E2',
+                border: `1px solid ${cmsNotice.type === 'success' ? '#86EFAC' : '#FECDD3'}`,
+                borderRadius: '10px',
+                color: cmsNotice.type === 'success' ? '#166534' : '#991B1B',
                 fontSize: '0.85rem',
                 display: 'flex',
                 alignItems: 'center',
@@ -1436,10 +1458,11 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
             className="card"
             style={{
               padding: '1.25rem',
-              background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.08), rgba(139, 92, 246, 0.08))',
-              border: '1px solid rgba(236, 72, 153, 0.3)',
-              borderRadius: 'var(--radius-lg)',
+              background: '#FFFFFF',
+              border: '1px solid #E2E8F0',
+              borderRadius: '16px',
               marginBottom: '1.5rem',
+              boxShadow: '0 2px 8px rgba(8, 29, 53, 0.04)',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
@@ -1449,15 +1472,15 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
           >
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-                <Shield size={16} color="#ec4899" />
-                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#f472b6', textTransform: 'uppercase' }}>
+                <Shield size={16} color="#0284C7" />
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#0284C7', textTransform: 'uppercase' }}>
                   Panel Tata Kelola &amp; Kontrol Admin Pusat (Smart Tourism FTI)
                 </span>
               </div>
-              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900, color: '#f8fafc' }}>
+              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900, color: '#081D35' }}>
                 Pusat Master Data &amp; Regulasi Tarif Kepulauan Banda
               </h3>
-              <p style={{ margin: '0.3rem 0 0', color: '#94a3b8', fontSize: '0.8rem', maxWidth: '750px' }}>
+              <p style={{ margin: '0.3rem 0 0', color: '#475569', fontSize: '0.8rem', maxWidth: '750px' }}>
                 Operator homestay dapat mengatur tarif kamar masing-masing. Admin Pusat memvalidasi sertifikasi kelayakan Eco-Stay (RO Water &amp; PLTS) serta akreditasi pemandu wisata HPI Banda.
               </p>
             </div>
@@ -1469,7 +1492,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 onClick={() => setCmsSubTab('accommodations')}
                 style={{
                   padding: '0.55rem 0.95rem',
-                  borderRadius: 'var(--radius-md)',
+                  borderRadius: '10px',
                   border: 'none',
                   fontSize: '0.8rem',
                   fontWeight: 800,
@@ -1477,8 +1500,9 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.4rem',
-                  background: cmsSubTab === 'accommodations' ? 'linear-gradient(135deg, #10b981, #06b6d4)' : 'rgba(15, 23, 42, 0.8)',
-                  color: cmsSubTab === 'accommodations' ? '#ffffff' : '#94a3b8',
+                  background: cmsSubTab === 'accommodations' ? '#081D35' : '#F8FAFC',
+                  color: cmsSubTab === 'accommodations' ? '#F4B75E' : '#64748B',
+                  boxShadow: cmsSubTab === 'accommodations' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
                 }}
               >
                 <Home size={14} /> Penginapan &amp; Tarif ({accommodations.length})
@@ -1488,7 +1512,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 onClick={() => setCmsSubTab('guides')}
                 style={{
                   padding: '0.55rem 0.95rem',
-                  borderRadius: 'var(--radius-md)',
+                  borderRadius: '10px',
                   border: 'none',
                   fontSize: '0.8rem',
                   fontWeight: 800,
@@ -1496,8 +1520,9 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.4rem',
-                  background: cmsSubTab === 'guides' ? 'linear-gradient(135deg, #0284c7, #8b5cf6)' : 'rgba(15, 23, 42, 0.8)',
-                  color: cmsSubTab === 'guides' ? '#ffffff' : '#94a3b8',
+                  background: cmsSubTab === 'guides' ? '#081D35' : '#F8FAFC',
+                  color: cmsSubTab === 'guides' ? '#F4B75E' : '#64748B',
+                  boxShadow: cmsSubTab === 'guides' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
                 }}
               >
                 <Users size={14} /> Pemandu Wisata ({guides.length})
@@ -1510,10 +1535,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: '#f8fafc' }}>
+                  <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: '#081D35' }}>
                     Daftar Homestay, Hotel &amp; Vila Terdaftar
                   </h4>
-                  <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                  <span style={{ fontSize: '0.75rem', color: '#64748B' }}>
                     Kelola harga kamar per malam, fasilitas eco-stay, dan status verifikasi.
                   </span>
                 </div>
@@ -1528,7 +1553,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     padding: '0.55rem 1rem',
                     fontSize: '0.8rem',
                     fontWeight: 800,
-                    background: 'linear-gradient(135deg, #10b981, #059669)',
+                    background: 'linear-gradient(135deg, #F4B75E 0%, #E0A24A 100%)',
+                    color: '#081D35',
+                    border: 'none',
+                    boxShadow: '0 4px 12px rgba(244, 183, 94, 0.35)',
                   }}
                 >
                   <Plus size={15} /> Tambah Penginapan Baru
@@ -1542,8 +1570,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     className="card"
                     style={{
                       padding: '1rem 1.25rem',
-                      background: 'var(--surface-color)',
-                      border: '1px solid var(--border-color)',
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '14px',
+                      boxShadow: '0 2px 8px rgba(8, 29, 53, 0.04)',
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
@@ -1555,11 +1585,11 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                       <img
                         src={acc.photo_url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=400&q=80'}
                         alt={acc.name}
-                        style={{ width: '64px', height: '64px', borderRadius: 'var(--radius-md)', objectFit: 'cover' }}
+                        style={{ width: '64px', height: '64px', borderRadius: '12px', objectFit: 'cover' }}
                       />
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#f8fafc' }}>
+                          <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#081D35' }}>
                             {acc.name}
                           </span>
                           <span className="badge badge-blue" style={{ fontSize: '0.65rem' }}>
@@ -1575,21 +1605,21 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                             </span>
                           )}
                         </div>
-                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.2rem', display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.2rem', display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
                           <span><MapPin size={11} style={{ display: 'inline', verticalAlign: 'middle' }} /> {acc.island_name}</span>
                           <span>•</span>
                           <span>{acc.rooms_available} Kamar Tersedia</span>
                           <span>•</span>
-                          <span style={{ color: '#06b6d4' }}>WA: {acc.contact_whatsapp}</span>
+                          <span style={{ color: '#0369A1' }}>WA: {acc.contact_whatsapp}</span>
                         </div>
                         <div style={{ display: 'flex', gap: '0.35rem', marginTop: '0.35rem' }}>
                           {acc.has_clean_ro_water && (
-                            <span style={{ fontSize: '0.65rem', padding: '0.15rem 0.4rem', background: 'rgba(6, 182, 212, 0.15)', color: '#06b6d4', borderRadius: '4px' }}>
+                            <span style={{ fontSize: '0.65rem', padding: '0.15rem 0.4rem', background: '#E0F2FE', color: '#0369A1', borderRadius: '4px', border: '1px solid #BAE6FD', fontWeight: 600 }}>
                               💧 Air Minum RO
                             </span>
                           )}
                           {acc.has_solar_backup && (
-                            <span style={{ fontSize: '0.65rem', padding: '0.15rem 0.4rem', background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', borderRadius: '4px' }}>
+                            <span style={{ fontSize: '0.65rem', padding: '0.15rem 0.4rem', background: '#FEF3C7', color: '#B45309', borderRadius: '4px', border: '1px solid #FDE68A', fontWeight: 600 }}>
                               ☀️ PLTS Surya
                             </span>
                           )}
@@ -1599,8 +1629,8 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Tarif Per Malam:</div>
-                        <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#10b981' }}>
+                        <div style={{ fontSize: '0.7rem', color: '#64748B' }}>Tarif Per Malam:</div>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#081D35' }}>
                           Rp {acc.price_per_night_rp.toLocaleString()}
                         </div>
                         <button
@@ -1609,7 +1639,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                           style={{
                             background: 'transparent',
                             border: 'none',
-                            color: '#38bdf8',
+                            color: '#0284C7',
                             fontSize: '0.72rem',
                             fontWeight: 700,
                             cursor: 'pointer',
@@ -1629,9 +1659,9 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                           style={{
                             padding: '0.45rem 0.75rem',
                             borderRadius: '8px',
-                            border: '1px solid var(--border-color)',
-                            background: acc.is_verified ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-                            color: acc.is_verified ? '#f59e0b' : '#34d399',
+                            border: '1px solid #E2E8F0',
+                            background: acc.is_verified ? '#FEF3C7' : '#DCFCE7',
+                            color: acc.is_verified ? '#B45309' : '#15803D',
                             fontSize: '0.75rem',
                             fontWeight: 700,
                             cursor: 'pointer',
@@ -1647,9 +1677,9 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                           style={{
                             padding: '0.45rem 0.75rem',
                             borderRadius: '8px',
-                            border: '1px solid var(--border-color)',
-                            background: 'rgba(56, 189, 248, 0.12)',
-                            color: '#38bdf8',
+                            border: '1px solid #E2E8F0',
+                            background: '#F8FAFC',
+                            color: '#081D35',
                             fontSize: '0.75rem',
                             fontWeight: 700,
                             cursor: 'pointer',
@@ -1667,9 +1697,9 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                           style={{
                             padding: '0.45rem 0.75rem',
                             borderRadius: '8px',
-                            border: '1px solid rgba(239, 68, 68, 0.3)',
-                            background: 'rgba(239, 68, 68, 0.12)',
-                            color: '#f87171',
+                            border: '1px solid #FECDD3',
+                            background: '#FEE2E2',
+                            color: '#BE123C',
                             fontSize: '0.75rem',
                             fontWeight: 700,
                             cursor: 'pointer',
@@ -1693,10 +1723,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: '#f8fafc' }}>
+                  <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: '#081D35' }}>
                     Daftar Pemandu Wisata &amp; Sertifikasi HPI
                   </h4>
-                  <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                  <span style={{ fontSize: '0.75rem', color: '#64748B' }}>
                     Kelola tarif jasa pemandu per hari, lisensi, spesialisasi rute cagar budaya, dan kontak WhatsApp.
                   </span>
                 </div>
@@ -1711,7 +1741,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     padding: '0.55rem 1rem',
                     fontSize: '0.8rem',
                     fontWeight: 800,
-                    background: 'linear-gradient(135deg, #0284c7, #8b5cf6)',
+                    background: 'linear-gradient(135deg, #F4B75E 0%, #E0A24A 100%)',
+                    color: '#081D35',
+                    border: 'none',
+                    boxShadow: '0 4px 12px rgba(244, 183, 94, 0.35)',
                   }}
                 >
                   <Plus size={15} /> Daftarkan Pemandu Baru
@@ -1725,8 +1758,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     className="card"
                     style={{
                       padding: '1rem 1.25rem',
-                      background: 'var(--surface-color)',
-                      border: '1px solid var(--border-color)',
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '14px',
+                      boxShadow: '0 2px 8px rgba(8, 29, 53, 0.04)',
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
@@ -1738,11 +1773,11 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                       <img
                         src={guide.photo_url || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80'}
                         alt={guide.name}
-                        style={{ width: '64px', height: '64px', borderRadius: 'var(--radius-md)', objectFit: 'cover' }}
+                        style={{ width: '64px', height: '64px', borderRadius: '12px', objectFit: 'cover' }}
                       />
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#f8fafc' }}>
+                          <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#081D35' }}>
                             {guide.name}
                           </span>
                           <span className="badge badge-blue" style={{ fontSize: '0.65rem' }}>
@@ -1758,14 +1793,14 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                             </span>
                           )}
                         </div>
-                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.2rem', display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                          <span>Lisensi: <code style={{ color: '#cbd5e1' }}>{guide.license_number}</code></span>
+                        <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.2rem', display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <span>Lisensi: <code style={{ color: '#081D35', background: '#F1F5F9', padding: '0.1rem 0.35rem', borderRadius: '4px' }}>{guide.license_number}</code></span>
                           <span>•</span>
-                          <span style={{ color: '#06b6d4' }}>WA: {guide.phone_whatsapp}</span>
+                          <span style={{ color: '#0369A1' }}>WA: {guide.phone_whatsapp}</span>
                           <span>•</span>
                           <span>⭐ {guide.rating.toFixed(1)} ({guide.trips_completed} tur)</span>
                         </div>
-                        <div style={{ fontSize: '0.75rem', color: '#38bdf8', marginTop: '0.25rem' }}>
+                        <div style={{ fontSize: '0.75rem', color: '#0284C7', marginTop: '0.25rem', fontWeight: 600 }}>
                           Spesialisasi: {guide.specialties} | Bahasa: {guide.languages}
                         </div>
                       </div>
@@ -1773,8 +1808,8 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Tarif Jasa Per Hari:</div>
-                        <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#10b981' }}>
+                        <div style={{ fontSize: '0.7rem', color: '#64748B' }}>Tarif Jasa Per Hari:</div>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#081D35' }}>
                           Rp {guide.fee_per_day_rp.toLocaleString()}
                         </div>
                         <button
@@ -1783,7 +1818,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                           style={{
                             background: 'transparent',
                             border: 'none',
-                            color: '#38bdf8',
+                            color: '#0284C7',
                             fontSize: '0.72rem',
                             fontWeight: 700,
                             cursor: 'pointer',
@@ -1803,9 +1838,9 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                           style={{
                             padding: '0.45rem 0.75rem',
                             borderRadius: '8px',
-                            border: '1px solid var(--border-color)',
-                            background: guide.is_verified ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-                            color: guide.is_verified ? '#f59e0b' : '#34d399',
+                            border: '1px solid #E2E8F0',
+                            background: guide.is_verified ? '#FEF3C7' : '#DCFCE7',
+                            color: guide.is_verified ? '#B45309' : '#15803D',
                             fontSize: '0.75rem',
                             fontWeight: 700,
                             cursor: 'pointer',
@@ -1821,9 +1856,9 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                           style={{
                             padding: '0.45rem 0.75rem',
                             borderRadius: '8px',
-                            border: '1px solid var(--border-color)',
-                            background: 'rgba(56, 189, 248, 0.12)',
-                            color: '#38bdf8',
+                            border: '1px solid #E2E8F0',
+                            background: '#F8FAFC',
+                            color: '#081D35',
                             fontSize: '0.75rem',
                             fontWeight: 700,
                             cursor: 'pointer',
@@ -1841,9 +1876,9 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                           style={{
                             padding: '0.45rem 0.75rem',
                             borderRadius: '8px',
-                            border: '1px solid rgba(239, 68, 68, 0.3)',
-                            background: 'rgba(239, 68, 68, 0.12)',
-                            color: '#f87171',
+                            border: '1px solid #FECDD3',
+                            background: '#FEE2E2',
+                            color: '#BE123C',
                             fontSize: '0.75rem',
                             fontWeight: 700,
                             cursor: 'pointer',
@@ -1871,7 +1906,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0, 0, 0, 0.85)',
+            background: 'rgba(8, 29, 53, 0.65)',
             backdropFilter: 'blur(8px)',
             display: 'flex',
             alignItems: 'center',
@@ -1886,29 +1921,32 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               maxWidth: '520px',
               width: '100%',
               padding: '1.75rem',
-              background: '#0d131f',
-              border: '1px solid rgba(16, 185, 129, 0.4)',
+              background: '#FFFFFF',
+              border: '1px solid #E2E8F0',
+              borderRadius: '20px',
+              boxShadow: '0 20px 60px rgba(8, 29, 53, 0.2)',
               maxHeight: '90vh',
               overflowY: 'auto',
+              color: '#081D35',
             }}
           >
             {/* Modal Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
               <div>
-                <span className="badge badge-emerald" style={{ fontSize: '0.68rem', marginBottom: '0.35rem' }}>
+                <span className="badge badge-amber" style={{ fontSize: '0.68rem', marginBottom: '0.35rem' }}>
                   RESERVASI PENGINAPAN ECO-STAY
                 </span>
-                <h3 style={{ margin: '0.15rem 0 0', fontSize: '1.25rem', fontWeight: 900, color: '#f8fafc' }}>
+                <h3 style={{ margin: '0.15rem 0 0', fontSize: '1.25rem', fontWeight: 900, color: '#081D35' }}>
                   {selectedAccForBooking.name}
                 </h3>
-                <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
-                  Tarif: <b>Rp {selectedAccForBooking.price_per_night_rp.toLocaleString()}</b> / malam
+                <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
+                  Tarif: <b style={{ color: '#081D35' }}>Rp {selectedAccForBooking.price_per_night_rp.toLocaleString()}</b> / malam
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedAccForBooking(null)}
-                style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+                style={{ background: 'transparent', border: 'none', color: '#64748B', cursor: 'pointer' }}
               >
                 <X size={20} />
               </button>
@@ -1916,7 +1954,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
 
             {/* Error Banner */}
             {bookingError && (
-              <div style={{ marginBottom: '1rem', padding: '0.65rem 0.85rem', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.4)', borderRadius: 'var(--radius-md)', color: '#f87171', fontSize: '0.78rem' }}>
+              <div style={{ marginBottom: '1rem', padding: '0.65rem 0.85rem', background: '#FEE2E2', border: '1px solid #FECDD3', borderRadius: '10px', color: '#BE123C', fontSize: '0.78rem' }}>
                 {bookingError}
               </div>
             )}
@@ -1924,26 +1962,26 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
             {/* If Confirmed: Show Success & WhatsApp Launch Button */}
             {confirmedBooking ? (
               <div style={{ textAlign: 'center', padding: '1rem 0' }}>
-                <CheckCircle2 size={48} color="#10b981" style={{ margin: '0 auto 0.75rem' }} />
-                <h4 style={{ margin: '0 0 0.35rem', fontSize: '1.2rem', fontWeight: 900, color: '#f8fafc' }}>
+                <CheckCircle2 size={48} color="#15803D" style={{ margin: '0 auto 0.75rem' }} />
+                <h4 style={{ margin: '0 0 0.35rem', fontSize: '1.2rem', fontWeight: 900, color: '#081D35' }}>
                   Pemesanan Berhasil Dicatat!
                 </h4>
-                <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '1.25rem' }}>
-                  Kode Reservasi: <b style={{ color: '#38bdf8', fontFamily: 'monospace' }}>{confirmedBooking.booking_code}</b>
+                <div style={{ fontSize: '0.8rem', color: '#64748B', marginBottom: '1.25rem' }}>
+                  Kode Reservasi: <b style={{ color: '#0369A1', fontFamily: 'monospace' }}>{confirmedBooking.booking_code}</b>
                 </div>
 
-                <div style={{ padding: '0.85rem', background: 'rgba(15, 23, 42, 0.7)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(16, 185, 129, 0.3)', marginBottom: '1.5rem', textAlign: 'left', fontSize: '0.8rem' }}>
+                <div style={{ padding: '0.85rem', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0', marginBottom: '1.5rem', textAlign: 'left', fontSize: '0.8rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-                    <span style={{ color: '#94a3b8' }}>Tamu:</span>
-                    <b style={{ color: '#f8fafc' }}>{confirmedBooking.guest_name}</b>
+                    <span style={{ color: '#64748B' }}>Tamu:</span>
+                    <b style={{ color: '#081D35' }}>{confirmedBooking.guest_name}</b>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-                    <span style={{ color: '#94a3b8' }}>Durasi:</span>
-                    <b style={{ color: '#06b6d4' }}>{confirmedBooking.total_nights} Malam ({confirmedBooking.rooms_count} Kamar)</b>
+                    <span style={{ color: '#64748B' }}>Durasi:</span>
+                    <b style={{ color: '#0369A1' }}>{confirmedBooking.total_nights} Malam ({confirmedBooking.rooms_count} Kamar)</b>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '0.35rem' }}>
-                    <span style={{ color: '#94a3b8' }}>Total Tagihan:</span>
-                    <b style={{ color: '#10b981', fontSize: '1rem' }}>Rp {confirmedBooking.total_price_rp.toLocaleString()}</b>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E2E8F0', paddingTop: '0.35rem' }}>
+                    <span style={{ color: '#64748B' }}>Total Tagihan:</span>
+                    <b style={{ color: '#081D35', fontSize: '1rem' }}>Rp {confirmedBooking.total_price_rp.toLocaleString()}</b>
                   </div>
                 </div>
 
@@ -1960,9 +1998,11 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     padding: '0.85rem',
                     fontSize: '0.9rem',
                     fontWeight: 800,
-                    background: 'linear-gradient(135deg, #10b981, #059669)',
+                    background: 'linear-gradient(135deg, #F4B75E 0%, #E0A24A 100%)',
+                    color: '#081D35',
+                    border: 'none',
                     textDecoration: 'none',
-                    boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)',
+                    boxShadow: '0 4px 14px rgba(244, 183, 94, 0.35)',
                   }}
                 >
                   <MessageCircle size={18} /> Kirim Pesan Konfirmasi ke WhatsApp Host
@@ -1972,7 +2012,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               /* Booking Form */
               <form onSubmit={handleSubmitBooking} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                     Nama Lengkap Tamu:
                   </label>
                   <input
@@ -1983,10 +2023,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     placeholder="Contoh: Sarah Jenkins"
                     style={{
                       width: '100%',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: '#f8fafc',
+                      background: '#FFFFFF',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '10px',
+                      color: '#081D35',
                       padding: '0.55rem 0.75rem',
                       fontSize: '0.85rem',
                     }}
@@ -1994,7 +2034,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                     Nomor WhatsApp Tamu (Aktif):
                   </label>
                   <input
@@ -2005,10 +2045,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     placeholder="Contoh: 628123456789"
                     style={{
                       width: '100%',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: '#f8fafc',
+                      background: '#FFFFFF',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '10px',
+                      color: '#081D35',
                       padding: '0.55rem 0.75rem',
                       fontSize: '0.85rem',
                     }}
@@ -2017,7 +2057,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                       Tanggal Check-In:
                     </label>
                     <input
@@ -2027,17 +2067,17 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                       onChange={(e) => setCheckInDate(e.target.value)}
                       style={{
                         width: '100%',
-                        background: 'rgba(15, 23, 42, 0.8)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: 'var(--radius-md)',
-                        color: '#f8fafc',
+                        background: '#FFFFFF',
+                        border: '1px solid #CBD5E1',
+                        borderRadius: '10px',
+                        color: '#081D35',
                         padding: '0.5rem 0.65rem',
                         fontSize: '0.8rem',
                       }}
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                       Tanggal Check-Out:
                     </label>
                     <input
@@ -2047,10 +2087,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                       onChange={(e) => setCheckOutDate(e.target.value)}
                       style={{
                         width: '100%',
-                        background: 'rgba(15, 23, 42, 0.8)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: 'var(--radius-md)',
-                        color: '#f8fafc',
+                        background: '#FFFFFF',
+                        border: '1px solid #CBD5E1',
+                        borderRadius: '10px',
+                        color: '#081D35',
                         padding: '0.5rem 0.65rem',
                         fontSize: '0.8rem',
                       }}
@@ -2059,7 +2099,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                     Jumlah Kamar:
                   </label>
                   <input
@@ -2070,10 +2110,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     onChange={(e) => setRoomsCount(parseInt(e.target.value) || 1)}
                     style={{
                       width: '100%',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: '#f8fafc',
+                      background: '#FFFFFF',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '10px',
+                      color: '#081D35',
                       padding: '0.55rem 0.75rem',
                       fontSize: '0.85rem',
                     }}
@@ -2081,7 +2121,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                     Catatan Tambahan (Opsional):
                   </label>
                   <input
@@ -2091,10 +2131,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     placeholder="Contoh: Jemputan kapal speedboat di pelabuhan Neira"
                     style={{
                       width: '100%',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: '#f8fafc',
+                      background: '#FFFFFF',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '10px',
+                      color: '#081D35',
                       padding: '0.55rem 0.75rem',
                       fontSize: '0.8rem',
                     }}
@@ -2110,7 +2150,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     fontSize: '0.875rem',
                     fontWeight: 800,
                     justifyContent: 'center',
-                    background: 'linear-gradient(135deg, #10b981, #06b6d4)',
+                    background: 'linear-gradient(135deg, #F4B75E 0%, #E0A24A 100%)',
+                    color: '#081D35',
+                    border: 'none',
+                    boxShadow: '0 4px 14px rgba(244, 183, 94, 0.35)',
                     marginTop: '0.5rem',
                   }}
                 >
@@ -2136,7 +2179,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0, 0, 0, 0.85)',
+            background: 'rgba(8, 29, 53, 0.65)',
             backdropFilter: 'blur(8px)',
             display: 'flex',
             alignItems: 'center',
@@ -2151,25 +2194,28 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               maxWidth: '600px',
               width: '100%',
               padding: '1.75rem',
-              background: '#0d131f',
-              border: '1px solid rgba(16, 185, 129, 0.4)',
+              background: '#FFFFFF',
+              border: '1px solid #E2E8F0',
+              borderRadius: '20px',
+              boxShadow: '0 20px 60px rgba(8, 29, 53, 0.18)',
               maxHeight: '92vh',
               overflowY: 'auto',
+              color: '#081D35',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <div>
-                <span className="badge badge-emerald" style={{ fontSize: '0.68rem', marginBottom: '0.35rem' }}>
+                <span className="badge badge-amber" style={{ fontSize: '0.68rem', marginBottom: '0.35rem' }}>
                   CMS PENGINAPAN &amp; TARIF
                 </span>
-                <h3 style={{ margin: '0.15rem 0 0', fontSize: '1.25rem', fontWeight: 900, color: '#f8fafc' }}>
+                <h3 style={{ margin: '0.15rem 0 0', fontSize: '1.25rem', fontWeight: 900, color: '#081D35' }}>
                   {editingAccId ? 'Edit Listing Penginapan & Tarif' : 'Tambah Penginapan Baru'}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowAccModal(false)}
-                style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+                style={{ background: 'transparent', border: 'none', color: '#64748B', cursor: 'pointer' }}
               >
                 <X size={20} />
               </button>
@@ -2177,7 +2223,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
 
             <form onSubmit={handleSaveAccommodation} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                   Nama Penginapan:
                 </label>
                 <input
@@ -2188,10 +2234,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   placeholder="Contoh: The Nutmeg Tree Homestay"
                   style={{
                     width: '100%',
-                    background: 'rgba(15, 23, 42, 0.8)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-md)',
-                    color: '#f8fafc',
+                    background: '#FFFFFF',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '10px',
+                    color: '#081D35',
                     padding: '0.55rem 0.75rem',
                     fontSize: '0.85rem',
                   }}
@@ -2200,7 +2246,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                     Tipe Properti:
                   </label>
                   <select
@@ -2208,10 +2254,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     onChange={(e) => setAccForm({ ...accForm, type: e.target.value })}
                     style={{
                       width: '100%',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: '#f8fafc',
+                      background: '#FFFFFF',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '10px',
+                      color: '#081D35',
                       padding: '0.55rem 0.75rem',
                       fontSize: '0.85rem',
                     }}
@@ -2224,7 +2270,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                     Wilayah Pulau:
                   </label>
                   <select
@@ -2232,10 +2278,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     onChange={(e) => setAccForm({ ...accForm, island_name: e.target.value })}
                     style={{
                       width: '100%',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: '#f8fafc',
+                      background: '#FFFFFF',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '10px',
+                      color: '#081D35',
                       padding: '0.55rem 0.75rem',
                       fontSize: '0.85rem',
                     }}
@@ -2251,7 +2297,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                     Tarif Kamar Per Malam (Rp):
                   </label>
                   <input
@@ -2263,10 +2309,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     onChange={(e) => setAccForm({ ...accForm, price_per_night_rp: parseFloat(e.target.value) || 0 })}
                     style={{
                       width: '100%',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: '#f8fafc',
+                      background: '#FFFFFF',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '10px',
+                      color: '#081D35',
                       padding: '0.55rem 0.75rem',
                       fontSize: '0.85rem',
                     }}
@@ -2274,7 +2320,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                     Kamar Tersedia:
                   </label>
                   <input
@@ -2285,10 +2331,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     onChange={(e) => setAccForm({ ...accForm, rooms_available: parseInt(e.target.value) || 1 })}
                     style={{
                       width: '100%',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: '#f8fafc',
+                      background: '#FFFFFF',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '10px',
+                      color: '#081D35',
                       padding: '0.55rem 0.75rem',
                       fontSize: '0.85rem',
                     }}
@@ -2298,7 +2344,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                     Nomor WhatsApp Pengelola:
                   </label>
                   <input
@@ -2309,10 +2355,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     placeholder="628123456789"
                     style={{
                       width: '100%',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: '#f8fafc',
+                      background: '#FFFFFF',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '10px',
+                      color: '#081D35',
                       padding: '0.55rem 0.75rem',
                       fontSize: '0.85rem',
                     }}
@@ -2320,7 +2366,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                     URL Foto Penginapan:
                   </label>
                   <input
@@ -2330,10 +2376,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     placeholder="https://..."
                     style={{
                       width: '100%',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: '#f8fafc',
+                      background: '#FFFFFF',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '10px',
+                      color: '#081D35',
                       padding: '0.55rem 0.75rem',
                       fontSize: '0.85rem',
                     }}
@@ -2342,7 +2388,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                   Alamat Lengkap:
                 </label>
                 <input
@@ -2353,10 +2399,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   placeholder="Jl. Pelabuhan No. 12, Nusantara, Banda Neira"
                   style={{
                     width: '100%',
-                    background: 'rgba(15, 23, 42, 0.8)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-md)',
-                    color: '#f8fafc',
+                    background: '#FFFFFF',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '10px',
+                    color: '#081D35',
                     padding: '0.55rem 0.75rem',
                     fontSize: '0.85rem',
                   }}
@@ -2364,12 +2410,12 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               </div>
 
               {/* Eco Features Checkboxes */}
-              <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#10b981', display: 'block', marginBottom: '0.5rem' }}>
+              <div style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#081D35', display: 'block', marginBottom: '0.5rem', textTransform: 'uppercase' }}>
                   Fitur Mandat Smart Eco-Stay:
                 </span>
                 <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
-                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: '#cbd5e1', cursor: 'pointer' }}>
+                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: '#081D35', cursor: 'pointer', fontWeight: 600 }}>
                     <input
                       type="checkbox"
                       checked={accForm.has_clean_ro_water}
@@ -2377,7 +2423,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     />
                     💧 Air Minum RO Mandiri
                   </label>
-                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: '#cbd5e1', cursor: 'pointer' }}>
+                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: '#081D35', cursor: 'pointer', fontWeight: 600 }}>
                     <input
                       type="checkbox"
                       checked={accForm.has_solar_backup}
@@ -2385,7 +2431,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     />
                     ☀️ Bauran Surya PLTS
                   </label>
-                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: '#cbd5e1', cursor: 'pointer' }}>
+                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: '#081D35', cursor: 'pointer', fontWeight: 600 }}>
                     <input
                       type="checkbox"
                       checked={accForm.eco_stay_badge}
@@ -2397,7 +2443,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                   Deskripsi / Daya Tarik Homestay:
                 </label>
                 <textarea
@@ -2407,10 +2453,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   placeholder="Keterangan fasilitas, jarak ke benteng, dan view Gunung Api Banda..."
                   style={{
                     width: '100%',
-                    background: 'rgba(15, 23, 42, 0.8)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-md)',
-                    color: '#f8fafc',
+                    background: '#FFFFFF',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '10px',
+                    color: '#081D35',
                     padding: '0.55rem 0.75rem',
                     fontSize: '0.85rem',
                   }}
@@ -2423,10 +2469,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   onClick={() => setShowAccModal(false)}
                   style={{
                     padding: '0.65rem 1.1rem',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--border-color)',
-                    background: 'transparent',
-                    color: '#94a3b8',
+                    borderRadius: '10px',
+                    border: '1px solid #CBD5E1',
+                    background: '#FFFFFF',
+                    color: '#64748B',
                     fontWeight: 700,
                     cursor: 'pointer',
                   }}
@@ -2439,7 +2485,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   style={{
                     padding: '0.65rem 1.25rem',
                     fontWeight: 800,
-                    background: 'linear-gradient(135deg, #10b981, #06b6d4)',
+                    background: 'linear-gradient(135deg, #F4B75E 0%, #E0A24A 100%)',
+                    color: '#081D35',
+                    border: 'none',
+                    boxShadow: '0 4px 12px rgba(244, 183, 94, 0.35)',
                   }}
                 >
                   {editingAccId ? 'Perbarui Penginapan' : 'Simpan Listing Penginapan'}
@@ -2456,7 +2505,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0, 0, 0, 0.85)',
+            background: 'rgba(8, 29, 53, 0.65)',
             backdropFilter: 'blur(8px)',
             display: 'flex',
             alignItems: 'center',
@@ -2471,10 +2520,13 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               maxWidth: '600px',
               width: '100%',
               padding: '1.75rem',
-              background: '#0d131f',
-              border: '1px solid rgba(2, 132, 199, 0.4)',
+              background: '#FFFFFF',
+              border: '1px solid #E2E8F0',
+              borderRadius: '20px',
+              boxShadow: '0 20px 60px rgba(8, 29, 53, 0.18)',
               maxHeight: '92vh',
               overflowY: 'auto',
+              color: '#081D35',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
@@ -2482,14 +2534,14 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 <span className="badge badge-blue" style={{ fontSize: '0.68rem', marginBottom: '0.35rem' }}>
                   CMS PEMANDU WISATA &amp; JASA
                 </span>
-                <h3 style={{ margin: '0.15rem 0 0', fontSize: '1.25rem', fontWeight: 900, color: '#f8fafc' }}>
+                <h3 style={{ margin: '0.15rem 0 0', fontSize: '1.25rem', fontWeight: 900, color: '#081D35' }}>
                   {editingGuideId ? 'Edit Pemandu Wisata' : 'Daftarkan Pemandu Baru'}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowGuideModal(false)}
-                style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+                style={{ background: 'transparent', border: 'none', color: '#64748B', cursor: 'pointer' }}
               >
                 <X size={20} />
               </button>
@@ -2497,7 +2549,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
 
             <form onSubmit={handleSaveTourGuide} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                   Nama Lengkap Pemandu:
                 </label>
                 <input
@@ -2508,10 +2560,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   placeholder="Contoh: Muhammad Ali Baadilla"
                   style={{
                     width: '100%',
-                    background: 'rgba(15, 23, 42, 0.8)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-md)',
-                    color: '#f8fafc',
+                    background: '#FFFFFF',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '10px',
+                    color: '#081D35',
                     padding: '0.55rem 0.75rem',
                     fontSize: '0.85rem',
                   }}
@@ -2520,7 +2572,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                     Nomor Lisensi HPI / Lokal:
                   </label>
                   <input
@@ -2531,10 +2583,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     placeholder="HPI-BANDA-001"
                     style={{
                       width: '100%',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: '#f8fafc',
+                      background: '#FFFFFF',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '10px',
+                      color: '#081D35',
                       padding: '0.55rem 0.75rem',
                       fontSize: '0.85rem',
                     }}
@@ -2542,7 +2594,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                     Basis Wilayah / Pulau:
                   </label>
                   <select
@@ -2550,10 +2602,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     onChange={(e) => setGuideForm({ ...guideForm, island_base: e.target.value })}
                     style={{
                       width: '100%',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: '#f8fafc',
+                      background: '#FFFFFF',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '10px',
+                      color: '#081D35',
                       padding: '0.55rem 0.75rem',
                       fontSize: '0.85rem',
                     }}
@@ -2569,7 +2621,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                     Tarif Jasa Per Hari (Rp):
                   </label>
                   <input
@@ -2581,10 +2633,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     onChange={(e) => setGuideForm({ ...guideForm, fee_per_day_rp: parseFloat(e.target.value) || 0 })}
                     style={{
                       width: '100%',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: '#f8fafc',
+                      background: '#FFFFFF',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '10px',
+                      color: '#081D35',
                       padding: '0.55rem 0.75rem',
                       fontSize: '0.85rem',
                     }}
@@ -2592,7 +2644,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                     Nomor WhatsApp Pemandu:
                   </label>
                   <input
@@ -2603,10 +2655,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     placeholder="628123456789"
                     style={{
                       width: '100%',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: '#f8fafc',
+                      background: '#FFFFFF',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '10px',
+                      color: '#081D35',
                       padding: '0.55rem 0.75rem',
                       fontSize: '0.85rem',
                     }}
@@ -2616,7 +2668,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                     Keahlian / Spesialisasi:
                   </label>
                   <input
@@ -2627,10 +2679,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     placeholder="Contoh: Sejarah Benteng VOC & Budaya Banda"
                     style={{
                       width: '100%',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: '#f8fafc',
+                      background: '#FFFFFF',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '10px',
+                      color: '#081D35',
                       padding: '0.55rem 0.75rem',
                       fontSize: '0.85rem',
                     }}
@@ -2638,7 +2690,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                     Bahasa yang Dikuasai:
                   </label>
                   <input
@@ -2649,10 +2701,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     placeholder="Indonesia, English, Dutch"
                     style={{
                       width: '100%',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: '#f8fafc',
+                      background: '#FFFFFF',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '10px',
+                      color: '#081D35',
                       padding: '0.55rem 0.75rem',
                       fontSize: '0.85rem',
                     }}
@@ -2661,7 +2713,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                   URL Foto Profil:
                 </label>
                 <input
@@ -2671,18 +2723,18 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   placeholder="https://..."
                   style={{
                     width: '100%',
-                    background: 'rgba(15, 23, 42, 0.8)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-md)',
-                    color: '#f8fafc',
+                    background: '#FFFFFF',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '10px',
+                    color: '#081D35',
                     padding: '0.55rem 0.75rem',
                     fontSize: '0.85rem',
                   }}
                 />
               </div>
 
-              <div style={{ background: 'rgba(15, 23, 42, 0.6)', padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', display: 'flex', gap: '1.25rem' }}>
-                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: '#cbd5e1', cursor: 'pointer' }}>
+              <div style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '12px', border: '1px solid #E2E8F0', display: 'flex', gap: '1.25rem' }}>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: '#081D35', cursor: 'pointer', fontWeight: 600 }}>
                   <input
                     type="checkbox"
                     checked={guideForm.is_verified}
@@ -2690,7 +2742,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   />
                   ✓ Lisensi Terverifikasi HPI Banda
                 </label>
-                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: '#cbd5e1', cursor: 'pointer' }}>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: '#081D35', cursor: 'pointer', fontWeight: 600 }}>
                   <input
                     type="checkbox"
                     checked={guideForm.is_active}
@@ -2701,7 +2753,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.35rem' }}>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                   Biografi / Pengalaman Pemandu:
                 </label>
                 <textarea
@@ -2711,10 +2763,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   placeholder="Ceritakan latar belakang, sertifikasi diving/sejarah, dll..."
                   style={{
                     width: '100%',
-                    background: 'rgba(15, 23, 42, 0.8)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-md)',
-                    color: '#f8fafc',
+                    background: '#FFFFFF',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '10px',
+                    color: '#081D35',
                     padding: '0.55rem 0.75rem',
                     fontSize: '0.85rem',
                   }}
@@ -2727,10 +2779,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   onClick={() => setShowGuideModal(false)}
                   style={{
                     padding: '0.65rem 1.1rem',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--border-color)',
-                    background: 'transparent',
-                    color: '#94a3b8',
+                    borderRadius: '10px',
+                    border: '1px solid #CBD5E1',
+                    background: '#FFFFFF',
+                    color: '#64748B',
                     fontWeight: 700,
                     cursor: 'pointer',
                   }}
@@ -2743,10 +2795,13 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   style={{
                     padding: '0.65rem 1.25rem',
                     fontWeight: 800,
-                    background: 'linear-gradient(135deg, #0284c7, #8b5cf6)',
+                    background: 'linear-gradient(135deg, #F4B75E 0%, #E0A24A 100%)',
+                    color: '#081D35',
+                    border: 'none',
+                    boxShadow: '0 4px 12px rgba(244, 183, 94, 0.35)',
                   }}
                 >
-                  {editingGuideId ? 'Perbarui Pemandu' : 'Daftarkan Pemandu Wisata'}
+                  {editingGuideId ? 'Perbarui Pemandu' : 'Daftarkan Pemandu'}
                 </button>
               </div>
             </form>

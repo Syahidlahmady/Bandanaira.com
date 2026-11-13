@@ -491,6 +491,21 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Menghapus tuntas seluruh deretan tab horizontal mengambang (`tab-nav`) yang menumpuk di atas konten, sehingga setelah login user murni berinteraksi melalui Dasbor ber-Sidebar.
   - Memverifikasi build frontend produksi (`npm --prefix frontend run build`) sukses tanpa error (exit code 0 dalam 6.21s).
 
+### Phase 32: Penghapusan Tuntas Desain Lama (Pembersihan `desainlama.png`), Redesain Global Warm Linen Banda Neira, dan Harmonisasi Workspace
+- [x] 32.1 Analisis Tuntas Artefak Desain Lama (`frontend/public/desainlama/desainlama.png`):
+  - Mengidentifikasi elemen desain lama yang masih tertinggal: `HeaderNav` gelap usang dengan tab bar mengambang hitam, kartu penginapan gelap `#0B1120`, tombol hijau neon `#10b981`, dan variabel global CSS yang memaksa tema dark cyberpunk.
+- [x] 32.2 Penyelarasan Fondasi CSS Global (`frontend/src/index.css`):
+  - Menyelaraskan seluruh variabel token `:root` ke tema editorial Banda Neira (Warm Linen `#F7F5F0`, background kartu putih bersih `#FFFFFF`, teks navy `#081D35`, teks sekunder `#475569`, border halus `#E2E8F0`, dan aksen emas pala `#F4B75E`).
+  - Memperbarui styling kelas global `.app-card`, `.card`, `.stat-card`, `.table-responsive`, `.data-table`, `.form-control`, `.form-select`, `.modal-content`, `.tab-nav`, dan tombol `.btn-primary` sehingga seluruh workspace operasional (`ResidentsWorkspace`, `LettersWorkspace`, `FarmsGisWorkspace`, `HarvestGradingWorkspace`, `KoperasiKasirWorkspace`, `SmartPlannerWorkspace`, `IslandTelemetryWorkspace`, `SurveyEtlWorkspace`, `AuditTrailWorkspace`, `CitizenPortalWorkspace`) langsung seragam, modern, dan elegan.
+- [x] 32.3 Perombakan Total Modal Marketplace (`frontend/src/components/VerifiedMarketplaceModal.tsx`):
+  - Merombak total modal belanja produk UMKM & rempah dari tema hitam neon ke elevated card putih bersih `#FFFFFF` berlatar warm linen `#F7F5F0`, border emas pala `#F4B75E`, lencana verifikasi blockchain IPFS, tombol hubungi via WhatsApp, dan modal verifikasi QR.
+- [x] 32.4 Redesain Komprehensif Workspace Wisata & Penginapan (`frontend/src/views/TourismEcoStayWorkspace.tsx`):
+  - Mengganti seluruh inline styling gelap (`#0B1120`, `#0f172a`, hijau neon `#10b981`, teks `#f8fafc`) dengan palet Banda Neira (`#FFFFFF`, `#081D35`, `#475569`, `#F4B75E`).
+  - Menyelaraskan header, filter bar wilayah dan tipe, kartu katalog penginapan eco-stay, tab 177 cagar budaya & audio guide player, pelacak reservasi, buku tamu operasional, katalog pemandu wisata, serta panel CMS tarif dan modal penambahan data.
+- [x] 32.5 Pembersihan Tuntas Navigasi Lama di `App.tsx`:
+  - Menghapus rendering `HeaderNav` lama dan bilah tab mengambang `Guest Public Exploration` bagi tamu non-login. Tamu kini secara mulus hanya menikmati 1 Landing Page Satu Pintu (`BandanairaBeranda`) atau masuk via Login/Register.
+  - Memverifikasi build frontend produksi (`npm --prefix frontend run build`) lolos exit code 0 tanpa error TypeScript maupun CSS.
+
 
 
 
