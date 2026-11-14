@@ -362,3 +362,126 @@ async def reset_gis_seeds(
         "features_added": added_count,
         "message": f"Berhasil menyinkronkan {added_count} fitur spasial kurasi.",
     }
+
+
+# =============================================================================
+# ZONA BATAS WILAYAH DESA (POLYGON / MULTIPOLYGON)
+# =============================================================================
+
+import json
+from pathlib import Path
+
+_VILLAGES_SEED_FILE = Path(__file__).resolve().parent.parent.parent / "seeds" / "banda_villages.geojson"
+_VILLAGE_DETAILS_SEED_FILE = Path(__file__).resolve().parent.parent.parent / "seeds" / "banda_village_details.json"
+
+
+@router.get("/villages")
+@peta_alias_router.get("/villages")
+async def get_villages_geojson() -> Dict[str, Any]:
+    """Mengambil GeoJSON poligon batas wilayah desa/negeri dari seeder terkalibrasi."""
+    if _VILLAGES_SEED_FILE.exists():
+        with open(_VILLAGES_SEED_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    raise HTTPException(status_code=404, detail="Dataset zona desa belum tersedia di seeder")
+
+
+@router.get("/villages/details")
+@peta_alias_router.get("/villages/details")
+async def get_village_details() -> Dict[str, Any]:
+    """Mengambil detail atribut, potensi, dan narasi desa kepulauan."""
+    if _VILLAGE_DETAILS_SEED_FILE.exists():
+        with open(_VILLAGE_DETAILS_SEED_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+
+@router.post("/villages/sync")
+async def sync_villages(
+    payload: Dict[str, Any],
+    user: User = Depends(require_roles([ROLE_ADMIN, ROLE_VILLAGE_OFFICER])),
+    db: AsyncSession = Depends(get_db),
+) -> Dict[str, Any]:
+    """Menyimpan zona poligon desa hasil kalibrasi ke berkas seeder dan database PostGIS."""
+    geojson = payload.get("geojson")
+    details = payload.get("details")
+
+    if not geojson or not isinstance(geojson, dict) or "features" not in geojson:
+        raise HTTPException(status_code=400, detail="Data GeoJSON tidak valid")
+
+    # 1. Simpan ke berkas seeder JSON permanen
+    _VILLAGES_SEED_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with open(_VILLAGES_SEED_FILE, "w", encoding="utf-8") as f:
+        json.dump(geojson, f, indent=2, ensure_ascii=False)
+
+    if details and isinstance(details, dict):
+        with open(_VILLAGE_DETAILS_SEED_FILE, "w", encoding="utf-8") as f:
+            json.dump(details, f, indent=2, ensure_ascii=False)
+
+    # 2. Sinkronkan ke tabel spatial_features sebagai LAYER_DESA_ADMIN (zona_wilayah)
+    count = len(geojson.get("features", []))
+    for feat in geojson.get("features", []):
+        v_name = feat.get("properties", {}).get("name")
+        v_island = feat.get("properties", {}).get("island", "Pulau Neira")
+        if not v_name:
+            continue
+
+        feat_name = f"Batas Wilayah {v_name}"
+        stmt = select(SpatialFeature).where(
+            SpatialFeature.name == feat_name,
+            SpatialFeature.layer_type == "LAYER_DESA_ADMIN",
+        )
+        existing = (await db.execute(stmt)).scalar_one_or_none()
+
+        geom = feat.get("geometry", {})
+        coords = geom.get("coordinates", [])
+        center_lat, center_lng = -4.525, 129.897
+
+        if geom.get("type") == "Polygon" and len(coords) > 0 and len(coords[0]) > 0:
+            ring = coords[0]
+            center_lat = sum(c[1] for c in ring) / len(ring)
+            center_lng = sum(c[0] for c in ring) / len(ring)
+        elif geom.get("type") == "MultiPolygon" and len(coords) > 0 and len(coords[0]) > 0 and len(coords[0][0]) > 0:
+            ring = coords[0][0]
+            center_lat = sum(c[1] for c in ring) / len(ring)
+            center_lng = sum(c[0] for c in ring) / len(ring)
+
+        v_detail = details.get(v_name, {}) if details else {}
+        props = {
+            "village_name": v_name,
+            "color": feat.get("properties", {}).get("color", "#3b82f6"),
+            "population": v_detail.get("population", ""),
+            "main_commodity": v_detail.get("main_commodity", ""),
+            "area_ha": v_detail.get("area_ha", ""),
+            "is_zone": True,
+        }
+
+        if existing:
+            existing.geometry_geojson = geom
+            existing.island_name = v_island
+            existing.latitude = center_lat
+            existing.longitude = center_lng
+            existing.properties_meta = props
+            existing.description = v_detail.get("description", "")
+            existing.is_active = True
+        else:
+            new_f = SpatialFeature(
+                name=feat_name,
+                layer_type="LAYER_DESA_ADMIN",
+                category="zona_wilayah",
+                island_name=v_island,
+                latitude=center_lat,
+                longitude=center_lng,
+                geometry_geojson=geom,
+                properties_meta=props,
+                description=v_detail.get("description", ""),
+                is_active=True,
+            )
+            db.add(new_f)
+
+    await db.commit()
+
+    return {
+        "status": "success",
+        "message": f"Berhasil menyimpan {count} zona wilayah desa ke berkas seeder dan database PostGIS.",
+        "features_count": count,
+    }

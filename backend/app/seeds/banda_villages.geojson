@@ -1,0 +1,637 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "desa-nusantara",
+      "properties": {
+        "name": "Nusantara",
+        "island": "Pulau Neira",
+        "color": "#34d399"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              129.8995,
+              -4.5205
+            ],
+            [
+              129.9055,
+              -4.5205
+            ],
+            [
+              129.9065,
+              -4.5275
+            ],
+            [
+              129.9025,
+              -4.5285
+            ],
+            [
+              129.899,
+              -4.5255
+            ],
+            [
+              129.8995,
+              -4.5205
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "desa-dwiwarna",
+      "properties": {
+        "name": "Dwiwarna",
+        "island": "Pulau Neira",
+        "color": "#a3e635"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              129.8965,
+              -4.5175
+            ],
+            [
+              129.9025,
+              -4.5175
+            ],
+            [
+              129.9025,
+              -4.5235
+            ],
+            [
+              129.8965,
+              -4.5235
+            ],
+            [
+              129.895,
+              -4.5205
+            ],
+            [
+              129.8965,
+              -4.5175
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "desa-merdeka",
+      "properties": {
+        "name": "Merdeka",
+        "island": "Pulau Neira",
+        "color": "#38bdf8"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              129.897,
+              -4.5115
+            ],
+            [
+              129.9045,
+              -4.5115
+            ],
+            [
+              129.9045,
+              -4.5175
+            ],
+            [
+              129.8965,
+              -4.5175
+            ],
+            [
+              129.897,
+              -4.5115
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "desa-rajawali",
+      "properties": {
+        "name": "Rajawali",
+        "island": "Pulau Neira",
+        "color": "#d946ef"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              129.9045,
+              -4.5135
+            ],
+            [
+              129.9115,
+              -4.5145
+            ],
+            [
+              129.9125,
+              -4.5215
+            ],
+            [
+              129.9055,
+              -4.5205
+            ],
+            [
+              129.9045,
+              -4.5135
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "desa-kampung-baru",
+      "properties": {
+        "name": "Kampung Baru",
+        "island": "Pulau Neira",
+        "color": "#ea580c"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              129.9065,
+              -4.5215
+            ],
+            [
+              129.9145,
+              -4.5225
+            ],
+            [
+              129.9135,
+              -4.5295
+            ],
+            [
+              129.906,
+              -4.5285
+            ],
+            [
+              129.9065,
+              -4.5215
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "desa-tanah-rata",
+      "properties": {
+        "name": "Tanah Rata",
+        "island": "Pulau Neira",
+        "color": "#4338ca"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              129.899,
+              -4.5255
+            ],
+            [
+              129.906,
+              -4.5285
+            ],
+            [
+              129.9045,
+              -4.5345
+            ],
+            [
+              129.8975,
+              -4.5325
+            ],
+            [
+              129.899,
+              -4.5255
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "desa-gunung-api",
+      "properties": {
+        "name": "Gunung Api",
+        "island": "Pulau Gunung Api",
+        "color": "#10b981"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              129.8785,
+              -4.5075
+            ],
+            [
+              129.8895,
+              -4.5125
+            ],
+            [
+              129.8935,
+              -4.5245
+            ],
+            [
+              129.8885,
+              -4.5345
+            ],
+            [
+              129.8755,
+              -4.5365
+            ],
+            [
+              129.8685,
+              -4.5275
+            ],
+            [
+              129.8695,
+              -4.5155
+            ],
+            [
+              129.8785,
+              -4.5075
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "desa-pulau-keraka",
+      "properties": {
+        "name": "Pulau Keraka",
+        "island": "Pulau Keraka",
+        "color": "#06b6d4"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              129.8845,
+              -4.501
+            ],
+            [
+              129.8885,
+              -4.5015
+            ],
+            [
+              129.888,
+              -4.5045
+            ],
+            [
+              129.8835,
+              -4.504
+            ],
+            [
+              129.8845,
+              -4.501
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "desa-walling-spanciby",
+      "properties": {
+        "name": "Walling Spanciby",
+        "island": "Banda Besar",
+        "color": "#14b8a6"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              129.868,
+              -4.548
+            ],
+            [
+              129.879,
+              -4.551
+            ],
+            [
+              129.876,
+              -4.563
+            ],
+            [
+              129.865,
+              -4.558
+            ],
+            [
+              129.868,
+              -4.548
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "desa-uring-tutra",
+      "properties": {
+        "name": "Uring Tutra",
+        "island": "Banda Besar",
+        "color": "#2dd4bf"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              129.879,
+              -4.551
+            ],
+            [
+              129.892,
+              -4.554
+            ],
+            [
+              129.889,
+              -4.568
+            ],
+            [
+              129.876,
+              -4.563
+            ],
+            [
+              129.879,
+              -4.551
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "desa-lonthoir",
+      "properties": {
+        "name": "Lonthoir",
+        "island": "Banda Besar",
+        "color": "#86efac"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              129.892,
+              -4.554
+            ],
+            [
+              129.914,
+              -4.555
+            ],
+            [
+              129.912,
+              -4.572
+            ],
+            [
+              129.889,
+              -4.568
+            ],
+            [
+              129.892,
+              -4.554
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "desa-boiyauw",
+      "properties": {
+        "name": "Boiyauw",
+        "island": "Banda Besar",
+        "color": "#2563eb"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              129.914,
+              -4.555
+            ],
+            [
+              129.932,
+              -4.553
+            ],
+            [
+              129.929,
+              -4.575
+            ],
+            [
+              129.912,
+              -4.572
+            ],
+            [
+              129.914,
+              -4.555
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "desa-lautang",
+      "properties": {
+        "name": "Lautang",
+        "island": "Banda Besar",
+        "color": "#22c55e"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              129.932,
+              -4.553
+            ],
+            [
+              129.948,
+              -4.546
+            ],
+            [
+              129.944,
+              -4.568
+            ],
+            [
+              129.929,
+              -4.575
+            ],
+            [
+              129.932,
+              -4.553
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "desa-dender",
+      "properties": {
+        "name": "Dender",
+        "island": "Banda Besar",
+        "color": "#a855f7"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              129.948,
+              -4.546
+            ],
+            [
+              129.959,
+              -4.536
+            ],
+            [
+              129.953,
+              -4.558
+            ],
+            [
+              129.944,
+              -4.568
+            ],
+            [
+              129.948,
+              -4.546
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "desa-selamon",
+      "properties": {
+        "name": "Selamon",
+        "island": "Banda Besar",
+        "color": "#9333ea"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              129.959,
+              -4.536
+            ],
+            [
+              129.969,
+              -4.524
+            ],
+            [
+              129.962,
+              -4.544
+            ],
+            [
+              129.953,
+              -4.558
+            ],
+            [
+              129.959,
+              -4.536
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "desa-waer",
+      "properties": {
+        "name": "Waer",
+        "island": "Banda Besar",
+        "color": "#fb7185"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              129.969,
+              -4.524
+            ],
+            [
+              129.974,
+              -4.512
+            ],
+            [
+              129.968,
+              -4.531
+            ],
+            [
+              129.962,
+              -4.544
+            ],
+            [
+              129.969,
+              -4.524
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "desa-combir-kasestoren",
+      "properties": {
+        "name": "Combir Kasestoren",
+        "island": "Banda Besar",
+        "color": "#eab308"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              129.974,
+              -4.512
+            ],
+            [
+              129.976,
+              -4.498
+            ],
+            [
+              129.97,
+              -4.502
+            ],
+            [
+              129.968,
+              -4.531
+            ],
+            [
+              129.974,
+              -4.512
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

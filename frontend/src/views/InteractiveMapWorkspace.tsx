@@ -187,6 +187,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   const [editingVillagePop, setEditingVillagePop] = useState<string>('')
   const [editingVillageCommodity, setEditingVillageCommodity] = useState<string>('')
   const [editingVillageArea, setEditingVillageArea] = useState<string>('')
+  const [isSyncingVillages, setIsSyncingVillages] = useState<boolean>(false)
 
   const draftPolygonPartsRef = useRef<L.Polygon[]>([])
   const draftPolygonVertexMarkersRef = useRef<L.Marker[]>([])
@@ -293,12 +294,16 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   const loadGISData = async () => {
     setLoading(true)
     try {
-      const [metaRes, layersRes] = await Promise.all([
+      const [metaRes, layersRes, villagesRes] = await Promise.all([
         gisService.getMetadata(),
         gisService.getLayers(),
+        gisService.getVillages(),
       ])
       setGisMeta(metaRes)
       setFeatures(layersRes.features)
+      if (villagesRes && villagesRes.features && !localStorage.getItem('banda_village_polygons_v1')) {
+        setVillageGeoJSON(villagesRes)
+      }
       const status = await gisService.getOfflineGISStatus()
       setCacheInfo(status)
       if (typeof window !== 'undefined' && !window.navigator.onLine) {
@@ -955,12 +960,39 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
       console.error('Gagal menyimpan keterangan desa ke penyimpanan browser', e)
     }
 
+    // Auto-sync ke seeder backend PostGIS jika token tersedia
+    const token = authService.getAccessToken()
+    if (token) {
+      gisService.syncVillages(newGeoJSON, updatedDetails, token).catch(() => {})
+    }
+
     setNotificationMsg({
       type: 'success',
       text: `Batas wilayah desa ${editingVillageName} berhasil disimpan!`,
     })
     setTimeout(() => setNotificationMsg(null), 5000)
     setAdminStudioOpen(false)
+  }
+
+  const handleSyncVillagesToServer = async () => {
+    const token = authService.getAccessToken()
+    if (!token) {
+      alert('Harap masuk sebagai Administrator atau Petugas Desa terlebih dahulu untuk menyinkronkan ke server!')
+      return
+    }
+    setIsSyncingVillages(true)
+    try {
+      const res = await gisService.syncVillages(villageGeoJSON, villageDetailsMap, token)
+      setNotificationMsg({
+        type: 'success',
+        text: `Berhasil! ${res.message || 'Seluruh zona batas wilayah desa telah tersimpan ke seeder dan basis data PostGIS untuk seluruh tim.'}`,
+      })
+      setTimeout(() => setNotificationMsg(null), 5000)
+    } catch (err: any) {
+      alert(`Gagal menyimpan ke server: ${err?.message || 'Terjadi kesalahan'}`)
+    } finally {
+      setIsSyncingVillages(false)
+    }
   }
 
   const handleDeleteVillagePolygon = () => {
@@ -3064,6 +3096,29 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                   >
                     <Edit3 size={12} />
                     + Tambah Wilayah Desa
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSyncVillagesToServer}
+                    disabled={isSyncingVillages}
+                    style={{
+                      padding: '0.4rem 0.85rem',
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      background: '#1d4ed8',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: isSyncingVillages ? 'not-allowed' : 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      boxShadow: '0 1px 3px rgba(29, 78, 216, 0.25)',
+                    }}
+                    title="Simpan zona wilayah desa hasil kalibrasi ke seeder server dan PostGIS untuk seluruh tim"
+                  >
+                    <Save size={12} />
+                    {isSyncingVillages ? 'Menyimpan...' : 'Simpan ke Server & Seeder Tim'}
                   </button>
                   <button
                     type="button"

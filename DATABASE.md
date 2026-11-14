@@ -258,9 +258,9 @@ Documentation of data models, relationships, and constraints for **Banda Digital
   - `description`: TEXT
   - `is_active`: BOOLEAN (DEFAULT TRUE)
   - `created_at`, `updated_at`: TIMESTAMPTZ
-  - **Seed Dataset**: `backend/app/seeds/gis_spatial_features.json` (54 objek autentik kepulauan).
-  - **Seeder Script**: `backend/scripts/seed_spatial_features.py` (juga diintegrasikan ke dalam `backend/scripts/demo_seed.py` tahap 8).
-  - **Geometry Types Supported**: Point (`latitude`, `longitude`) dan LineString rute maritim (`geometry_geojson`).
+  - **Seed Dataset**: `backend/app/seeds/gis_spatial_features.json` (37 objek titik/rute) & `backend/app/seeds/banda_villages.geojson` (17 zona wilayah poligon desa).
+  - **Seeder Script**: `backend/scripts/seed_spatial_features.py` (juga diintegrasikan ke dalam `backend/scripts/demo_seed.py` tahap 8 untuk menyinkronkan 54 total entitas spasial ke PostGIS).
+  - **Geometry Types Supported**: Point (`latitude`, `longitude`), LineString rute maritim (`geometry_geojson`), dan Polygon / MultiPolygon zona wilayah desa (`geometry_geojson`).
 
 ### 2.10 Cryptographic NIK Hardening (Phase 22)
 - Added to **`residents`**:

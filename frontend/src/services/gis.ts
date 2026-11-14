@@ -265,5 +265,50 @@ export const gisService = {
     await offlineDB.deleteCachedData('gis_layers_all')
     await offlineDB.deleteCachedData('gis_meta')
   },
+
+  /**
+   * Mengambil zona batas wilayah desa (poligon) dari seeder backend
+   */
+  getVillages: async (): Promise<any> => {
+    try {
+      const res = await fetch(`${getApiBase()}/gis/villages`)
+      if (!res.ok) return null
+      return await res.json()
+    } catch {
+      return null
+    }
+  },
+
+  /**
+   * Mengambil detail atribut potensi desa dari seeder backend
+   */
+  getVillageDetails: async (): Promise<any> => {
+    try {
+      const res = await fetch(`${getApiBase()}/gis/villages/details`)
+      if (!res.ok) return null
+      return await res.json()
+    } catch {
+      return null
+    }
+  },
+
+  /**
+   * Menyimpan dan menyinkronkan zona batas desa ke seeder backend & PostGIS
+   */
+  syncVillages: async (geojson: any, details: any, token: string): Promise<any> => {
+    const res = await fetch(`${getApiBase()}/gis/villages/sync`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ geojson, details }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail || 'Gagal menyimpan zona desa ke server')
+    }
+    return res.json()
+  },
 }
 
