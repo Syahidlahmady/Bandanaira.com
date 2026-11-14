@@ -48,6 +48,11 @@ docker compose -f infrastructure/docker/docker-compose.yml up -d --build
 ```bash
 poetry run alembic -c backend/alembic.ini upgrade head
 poetry run python backend/scripts/demo_seed.py
+
+# Sinkronisasi 42 titik spasial kurasi PostGIS 7-layer terbaru:
+poetry run python backend/scripts/sync_spatial_features.py
+# atau via Docker:
+docker exec banda_backend python -m backend.scripts.sync_spatial_features
 ```
 
 ### 4. Akses Layanan
