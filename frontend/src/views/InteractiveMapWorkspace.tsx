@@ -175,7 +175,11 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   })
 
   const [editingVillageId, setEditingVillageId] = useState<string | null>(null)
-  const [polygonVertices, setPolygonVertices] = useState<[number, number][]>([])
+  // Dukungan beberapa bagian daratan terpisah (misal pulau/dusun terpisah)
+  const [polygonParts, setPolygonParts] = useState<[number, number][][]>([[]])
+  const [activePartIndex, setActivePartIndex] = useState<number>(0)
+  const [polygonEditMode, setPolygonEditMode] = useState<'move' | 'add'>('move')
+
   const [editingVillageName, setEditingVillageName] = useState<string>('')
   const [editingVillageIsland, setEditingVillageIsland] = useState<string>('Pulau Neira')
   const [editingVillageColor, setEditingVillageColor] = useState<string>('#34d399')
@@ -184,7 +188,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   const [editingVillageCommodity, setEditingVillageCommodity] = useState<string>('')
   const [editingVillageArea, setEditingVillageArea] = useState<string>('')
 
-  const draftPolygonRef = useRef<L.Polygon | null>(null)
+  const draftPolygonPartsRef = useRef<L.Polygon[]>([])
   const draftPolygonVertexMarkersRef = useRef<L.Marker[]>([])
 
   const draftPolylineRef = useRef<L.Polyline | null>(null)
@@ -463,7 +467,16 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
         const lat = parseFloat(e.latlng.lat.toFixed(6))
         const lng = parseFloat(e.latlng.lng.toFixed(6))
         if (adminTab === 'polygon') {
-          setPolygonVertices((prev) => [...prev, [lat, lng]])
+          if (polygonEditMode === 'add') {
+            setPolygonParts((prev) => {
+              const updated = prev.map((part) => [...part])
+              if (!updated[activePartIndex]) {
+                updated[activePartIndex] = []
+              }
+              updated[activePartIndex].push([lat, lng])
+              return updated
+            })
+          }
           return
         }
         if (geometryMode === 'route') {
@@ -480,7 +493,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     return () => {
       map.off('click', onMapClick)
     }
-  }, [adminStudioOpen, adminTab, geometryMode])
+  }, [adminStudioOpen, adminTab, polygonEditMode, activePartIndex, geometryMode])
 
   // Manage draft route polyline and draggable vertex handles for Admin Studio
   useEffect(() => {
@@ -568,43 +581,52 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     })
   }, [adminStudioOpen, geometryMode, routeWaypoints, routeType])
 
-  // Manage draft polygon and draggable vertex handles for Village Polygon Studio
+  // Manage draft polygon parts and draggable vertex handles for Village Polygon Studio
   useEffect(() => {
     if (!mapInstanceRef.current) return
     const map = mapInstanceRef.current
 
-    // Clean up previous draft polygon and handles
-    if (draftPolygonRef.current) {
-      draftPolygonRef.current.remove()
-      draftPolygonRef.current = null
-    }
+    // Clean up previous draft polygon parts and handles
+    draftPolygonPartsRef.current.forEach((p) => p.remove())
+    draftPolygonPartsRef.current = []
     draftPolygonVertexMarkersRef.current.forEach((m) => m.remove())
     draftPolygonVertexMarkersRef.current = []
 
     if (!adminStudioOpen || adminTab !== 'polygon') return
 
-    // Draw polygon if at least 3 points
-    if (polygonVertices.length >= 3) {
-      const poly = L.polygon(polygonVertices, {
-        color: editingVillageColor || '#3b82f6',
-        weight: 3,
-        fillColor: editingVillageColor || '#3b82f6',
-        fillOpacity: 0.45,
-        dashArray: '4, 4',
-      }).addTo(map)
-      draftPolygonRef.current = poly
-    } else if (polygonVertices.length === 2) {
-      // Draw line while defining first 2 points
-      const line = L.polyline(polygonVertices, {
-        color: editingVillageColor || '#3b82f6',
-        weight: 2.5,
-        dashArray: '4, 4',
-      }).addTo(map)
-      draftPolygonRef.current = line as any
-    }
+    // Draw all parts of the village
+    polygonParts.forEach((part, partIdx) => {
+      const isActive = partIdx === activePartIndex
+      if (part.length >= 3) {
+        const poly = L.polygon(part, {
+          color: editingVillageColor || '#059669',
+          weight: isActive ? 3.5 : 2,
+          fillColor: editingVillageColor || '#059669',
+          fillOpacity: isActive ? 0.45 : 0.22,
+          dashArray: isActive ? undefined : '5, 5',
+        }).addTo(map)
 
-    // Draw draggable vertex handles for each point
-    polygonVertices.forEach(([lat, lng], idx) => {
+        // Clicking on an inactive part switches to it
+        if (!isActive) {
+          poly.on('click', (e) => {
+            L.DomEvent.stopPropagation(e)
+            setActivePartIndex(partIdx)
+          })
+        }
+        draftPolygonPartsRef.current.push(poly)
+      } else if (part.length === 2 && isActive) {
+        const line = L.polyline(part, {
+          color: editingVillageColor || '#059669',
+          weight: 2.5,
+          dashArray: '4, 4',
+        }).addTo(map)
+        draftPolygonPartsRef.current.push(line as any)
+      }
+    })
+
+    // Draw vertex handles ONLY on the ACTIVE part to keep UI clean and prevent confusion
+    const activePart = polygonParts[activePartIndex] || []
+    activePart.forEach(([lat, lng], idx) => {
       const vertexIcon = L.divIcon({
         className: 'custom-vertex-handle',
         html: `
@@ -612,7 +634,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
             width: 24px;
             height: 24px;
             background: #ffffff;
-            border: 2.5px solid ${editingVillageColor || '#0284c7'};
+            border: 2.5px solid ${editingVillageColor || '#059669'};
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -638,18 +660,23 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
       marker.on('drag', (ev: any) => {
         const newLatLng = ev.target.getLatLng()
-        const updated = [...polygonVertices]
-        updated[idx] = [parseFloat(newLatLng.lat.toFixed(6)), parseFloat(newLatLng.lng.toFixed(6))]
-        if (draftPolygonRef.current) {
-          draftPolygonRef.current.setLatLngs(updated)
+        const updatedPart = [...activePart]
+        updatedPart[idx] = [parseFloat(newLatLng.lat.toFixed(6)), parseFloat(newLatLng.lng.toFixed(6))]
+        const activePoly = draftPolygonPartsRef.current[activePartIndex]
+        if (activePoly) {
+          activePoly.setLatLngs(updatedPart)
         }
       })
 
       marker.on('dragend', (ev: any) => {
         const newLatLng = ev.target.getLatLng()
-        setPolygonVertices((prev) => {
-          const next = [...prev]
-          next[idx] = [parseFloat(newLatLng.lat.toFixed(6)), parseFloat(newLatLng.lng.toFixed(6))]
+        setPolygonParts((prev) => {
+          const next = prev.map((p, pIdx) => {
+            if (pIdx !== activePartIndex) return [...p]
+            const updated = [...p]
+            updated[idx] = [parseFloat(newLatLng.lat.toFixed(6)), parseFloat(newLatLng.lng.toFixed(6))]
+            return updated
+          })
           return next
         })
       })
@@ -657,12 +684,18 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
       // Right click to delete vertex
       marker.on('contextmenu', (ev: any) => {
         L.DomEvent.stopPropagation(ev)
-        setPolygonVertices((prev) => prev.filter((_, i) => i !== idx))
+        setPolygonParts((prev) => {
+          const next = prev.map((p, pIdx) => {
+            if (pIdx !== activePartIndex) return p
+            return p.filter((_, i) => i !== idx)
+          })
+          return next
+        })
       })
 
       draftPolygonVertexMarkersRef.current.push(marker)
     })
-  }, [adminStudioOpen, adminTab, polygonVertices, editingVillageColor])
+  }, [adminStudioOpen, adminTab, polygonParts, activePartIndex, editingVillageColor])
 
   const handleUndoLastWaypoint = () => {
     setRouteWaypoints((prev) => prev.slice(0, -1))
@@ -729,30 +762,52 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     draftVertexMarkersRef.current.forEach((m) => m.remove())
     draftVertexMarkersRef.current = []
     setRouteWaypoints([])
-    if (draftPolygonRef.current) {
-      draftPolygonRef.current.remove()
-      draftPolygonRef.current = null
-    }
+    draftPolygonPartsRef.current.forEach((p) => p.remove())
+    draftPolygonPartsRef.current = []
     draftPolygonVertexMarkersRef.current.forEach((m) => m.remove())
     draftPolygonVertexMarkersRef.current = []
-    setPolygonVertices([])
+    setPolygonParts([[]])
+    setActivePartIndex(0)
   }
 
-  // Village Polygon Handlers
+  // Village Polygon Handlers (Dukungan Multi-Bagian Wilayah Terpisah)
   const handleStartEditVillagePolygon = (vName: string) => {
     const feat = villageGeoJSON.features.find((f: any) => f.properties.name === vName)
     if (!feat) return
 
-    let latlngs: [number, number][] = []
-    if (feat.geometry?.type === 'Polygon' && Array.isArray(feat.geometry.coordinates[0])) {
-      latlngs = feat.geometry.coordinates[0].map((c: any) => [Number(c[1]), Number(c[0])])
-      if (
-        latlngs.length > 2 &&
-        latlngs[0][0] === latlngs[latlngs.length - 1][0] &&
-        latlngs[0][1] === latlngs[latlngs.length - 1][1]
-      ) {
-        latlngs.pop()
-      }
+    let parts: [number, number][][] = []
+    if (feat.geometry?.type === 'Polygon' && Array.isArray(feat.geometry.coordinates)) {
+      feat.geometry.coordinates.forEach((ring: any) => {
+        if (Array.isArray(ring)) {
+          const latlngs: [number, number][] = ring.map((c: any) => [Number(c[1]), Number(c[0])])
+          if (
+            latlngs.length > 2 &&
+            latlngs[0][0] === latlngs[latlngs.length - 1][0] &&
+            latlngs[0][1] === latlngs[latlngs.length - 1][1]
+          ) {
+            latlngs.pop()
+          }
+          if (latlngs.length > 0) parts.push(latlngs)
+        }
+      })
+    } else if (feat.geometry?.type === 'MultiPolygon' && Array.isArray(feat.geometry.coordinates)) {
+      feat.geometry.coordinates.forEach((poly: any) => {
+        if (Array.isArray(poly) && Array.isArray(poly[0])) {
+          const latlngs: [number, number][] = poly[0].map((c: any) => [Number(c[1]), Number(c[0])])
+          if (
+            latlngs.length > 2 &&
+            latlngs[0][0] === latlngs[latlngs.length - 1][0] &&
+            latlngs[0][1] === latlngs[latlngs.length - 1][1]
+          ) {
+            latlngs.pop()
+          }
+          if (latlngs.length > 0) parts.push(latlngs)
+        }
+      })
+    }
+
+    if (parts.length === 0) {
+      parts = [[]]
     }
 
     const details = villageDetailsMap[vName] || {}
@@ -765,13 +820,17 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     setEditingVillagePop(details.population || '')
     setEditingVillageCommodity(details.main_commodity || '')
     setEditingVillageArea(details.area_ha || '')
-    setPolygonVertices(latlngs)
+    setPolygonParts(parts)
+    setActivePartIndex(0)
+    setPolygonEditMode('move') // Standar mode geser agar aman dan tidak membuat titik liar
 
     setAdminStudioOpen(true)
     setAdminTab('polygon')
 
-    if (mapInstanceRef.current && latlngs.length > 0) {
-      const bounds = L.latLngBounds(latlngs)
+    if (mapInstanceRef.current && parts[0] && parts[0].length > 0) {
+      const allPoints: [number, number][] = []
+      parts.forEach((p) => allPoints.push(...p))
+      const bounds = L.latLngBounds(allPoints)
       mapInstanceRef.current.fitBounds(bounds, { padding: [60, 60], maxZoom: 15 })
     }
   }
@@ -785,28 +844,52 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     setEditingVillagePop('')
     setEditingVillageCommodity('')
     setEditingVillageArea('')
-    setPolygonVertices([])
+    setPolygonParts([[]])
+    setActivePartIndex(0)
+    setPolygonEditMode('add')
     setAdminStudioOpen(true)
     setAdminTab('polygon')
   }
 
+  const handleAddNewVillagePart = () => {
+    setPolygonParts((prev) => [...prev, []])
+    setActivePartIndex(polygonParts.length)
+    setPolygonEditMode('add')
+  }
+
+  const handleDeleteActiveVillagePart = (partIdx: number) => {
+    if (polygonParts.length <= 1) {
+      setPolygonParts([[]])
+      setActivePartIndex(0)
+      return
+    }
+    const updated = polygonParts.filter((_, idx) => idx !== partIdx)
+    setPolygonParts(updated)
+    setActivePartIndex(Math.max(0, partIdx - 1))
+  }
+
   const handleSaveVillagePolygon = () => {
-    if (polygonVertices.length < 3) {
-      alert('Poligon harus memiliki minimal 3 titik simpul!')
+    // Validasi setiap bagian daratan desa
+    const validParts: [number, number][][] = []
+    polygonParts.forEach((part) => {
+      if (part.length >= 3) {
+        const closed: [number, number][] = part.map(([lat, lng]) => [lng, lat])
+        const first = closed[0]
+        const last = closed[closed.length - 1]
+        if (first[0] !== last[0] || first[1] !== last[1]) {
+          closed.push([first[0], first[1]])
+        }
+        validParts.push(closed)
+      }
+    })
+
+    if (validParts.length === 0) {
+      alert('Tentukan setidaknya 3 titik sudut untuk membentuk batas wilayah desa!')
       return
     }
     if (!editingVillageName.trim()) {
-      alert('Nama desa / wilayah harus diisi!')
+      alert('Nama desa / wilayah wajib diisi!')
       return
-    }
-
-    // Convert polygonVertices [lat, lng] to GeoJSON [lng, lat]
-    const closedCoords: [number, number][] = polygonVertices.map(([lat, lng]) => [lng, lat])
-    // Ensure closed loop
-    const first = closedCoords[0]
-    const last = closedCoords[closedCoords.length - 1]
-    if (first[0] !== last[0] || first[1] !== last[1]) {
-      closedCoords.push([first[0], first[1]])
     }
 
     const featureId = editingVillageId || `desa-${editingVillageName.toLowerCase().replace(/\s+/g, '-')}`
@@ -814,6 +897,20 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     const updatedFeatures = villageGeoJSON.features.filter(
       (f: any) => f.id !== featureId && f.properties.name !== editingVillageName
     )
+
+    let geometry: any
+    if (validParts.length === 1) {
+      geometry = {
+        type: 'Polygon',
+        coordinates: [validParts[0]],
+      }
+    } else {
+      geometry = {
+        type: 'MultiPolygon',
+        coordinates: validParts.map((p) => [p]),
+      }
+    }
+
     const newFeature = {
       type: 'Feature',
       id: featureId,
@@ -822,10 +919,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
         island: editingVillageIsland,
         color: editingVillageColor,
       },
-      geometry: {
-        type: 'Polygon',
-        coordinates: [closedCoords],
-      },
+      geometry,
     }
     updatedFeatures.push(newFeature)
 
@@ -838,7 +932,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     try {
       localStorage.setItem('banda_village_polygons_v1', JSON.stringify(newGeoJSON))
     } catch (e) {
-      console.error('Gagal menyimpan poligon ke localStorage', e)
+      console.error('Gagal menyimpan poligon ke penyimpanan browser', e)
     }
 
     // Update village details
@@ -858,12 +952,12 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     try {
       localStorage.setItem('banda_village_details_v1', JSON.stringify(updatedDetails))
     } catch (e) {
-      console.error('Gagal menyimpan details ke localStorage', e)
+      console.error('Gagal menyimpan keterangan desa ke penyimpanan browser', e)
     }
 
     setNotificationMsg({
       type: 'success',
-      text: `Bentuk poligon batas wilayah ${editingVillageName} berhasil disimpan dan disesuaikan!`,
+      text: `Batas wilayah desa ${editingVillageName} berhasil disimpan!`,
     })
     setTimeout(() => setNotificationMsg(null), 5000)
     setAdminStudioOpen(false)
@@ -871,7 +965,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
   const handleDeleteVillagePolygon = () => {
     if (!editingVillageName) return
-    if (!window.confirm(`Hapus poligon batas wilayah ${editingVillageName}?`)) return
+    if (!window.confirm(`Hapus batas wilayah ${editingVillageName}?`)) return
 
     const updatedFeatures = villageGeoJSON.features.filter(
       (f: any) => f.id !== editingVillageId && f.properties.name !== editingVillageName
@@ -883,26 +977,28 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     setVillageGeoJSON(newGeoJSON)
     localStorage.setItem('banda_village_polygons_v1', JSON.stringify(newGeoJSON))
 
-    setPolygonVertices([])
+    setPolygonParts([[]])
+    setActivePartIndex(0)
     setEditingVillageId(null)
     setNotificationMsg({
       type: 'info',
-      text: `Poligon batas wilayah ${editingVillageName} telah dihapus.`,
+      text: `Batas wilayah ${editingVillageName} telah dihapus.`,
     })
     setTimeout(() => setNotificationMsg(null), 4000)
   }
 
   const handleResetVillagePolygons = () => {
-    if (!window.confirm('Kembalikan seluruh poligon desa ke konfigurasi awal? Perubahan manual Anda akan di-reset.')) return
+    if (!window.confirm('Kembalikan seluruh batas wilayah desa ke bentuk awal?')) return
     localStorage.removeItem('banda_village_polygons_v1')
     localStorage.removeItem('banda_village_details_v1')
     setVillageGeoJSON(BANDA_VILLAGES_GEOJSON)
     setVillageDetailsMap(VILLAGE_DETAILS)
-    setPolygonVertices([])
+    setPolygonParts([[]])
+    setActivePartIndex(0)
     setEditingVillageId(null)
     setNotificationMsg({
       type: 'info',
-      text: 'Batas poligon desa telah dikembalikan ke konfigurasi awal.',
+      text: 'Batas wilayah desa telah dikembalikan ke setelan awal.',
     })
     setTimeout(() => setNotificationMsg(null), 4000)
   }
@@ -1916,14 +2012,14 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               <div>
                 <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#0f2c59' }}>
                   {adminTab === 'polygon'
-                    ? `Editor Poligon Batas Desa: ${editingVillageName || 'Wilayah Baru'}`
+                    ? `Batas Wilayah Desa: ${editingVillageName || 'Wilayah Baru'}`
                     : editingFeatureId
                     ? 'Edit Titik Spasial PostGIS'
                     : 'Studio Editor Titik Spasial PostGIS'}
                 </h3>
                 <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748b' }}>
                   {adminTab === 'polygon'
-                    ? 'Tarik dan seret titik-titik sudut di peta untuk menyesuaikan garis batas pulau dan desa secara presisi.'
+                    ? 'Geser titik-titik batas di peta untuk menyesuaikan garis batas pulau dan desa sesuai kondisi lapangan.'
                     : editingFeatureId
                     ? `Memperbarui titik: ${formName || 'Objek Terpilih'}`
                     : 'Tambah titik baru secara presisi atau tarik koordinat dari Google Maps / OSM'}
@@ -2005,7 +2101,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                   }}
                 >
                   <Layers size={12} />
-                  Editor Poligon Batas Desa
+                  Atur Batas Desa
                 </button>
               </div>
 
@@ -2967,7 +3063,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     }}
                   >
                     <Edit3 size={12} />
-                    + Buat Batas Desa Baru
+                    + Tambah Wilayah Desa
                   </button>
                   <button
                     type="button"
@@ -2985,10 +3081,10 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                       alignItems: 'center',
                       gap: '0.35rem',
                     }}
-                    title="Unduh file GeoJSON batas desa yang sudah terkalibrasi"
+                    title="Unduh data batas desa yang sudah disesuaikan"
                   >
                     <Download size={12} />
-                    Unduh GeoJSON
+                    Unduh Data Peta
                   </button>
                   <button
                     type="button"
@@ -3009,33 +3105,207 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     title="Kembalikan semua batas desa ke bentuk awal"
                   >
                     <RefreshCw size={12} />
-                    Reset
+                    Kembalikan Awal
                   </button>
                 </div>
               </div>
 
-              {/* Status & Vertex Editor Guidance Banner */}
+              {/* Controls: Mode Interaksi di Peta & Manajemen Bagian Wilayah Terpisah */}
               <div
                 style={{
-                  background: '#f0fdf4',
-                  border: '1.5px solid #86efac',
-                  padding: '0.75rem 1rem',
+                  background: '#f8fafc',
+                  border: '1.5px solid #cbd5e1',
+                  padding: '0.85rem 1rem',
                   borderRadius: '10px',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '0.5rem',
+                  gap: '0.85rem',
                 }}
               >
+                {/* 1. Mode Kerja di Peta */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.4rem' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#0f2c59', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <Crosshair size={14} />
+                      Mode Kerja di Peta:
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                      Total titik tersimpan: {polygonParts.reduce((acc, p) => acc + p.length, 0)} titik di {polygonParts.length} bagian wilayah
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      onClick={() => setPolygonEditMode('move')}
+                      style={{
+                        flex: '1 1 200px',
+                        padding: '0.5rem 0.85rem',
+                        borderRadius: '8px',
+                        border: polygonEditMode === 'move' ? '2px solid #0f766e' : '1px solid #cbd5e1',
+                        background: polygonEditMode === 'move' ? '#f0fdf4' : '#ffffff',
+                        color: polygonEditMode === 'move' ? '#166534' : '#334155',
+                        fontWeight: 700,
+                        fontSize: '0.78rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.4rem',
+                        boxShadow: polygonEditMode === 'move' ? '0 1px 3px rgba(15, 118, 110, 0.15)' : 'none',
+                      }}
+                    >
+                      <Navigation size={13} />
+                      <span>Hanya Geser Titik Batas</span>
+                      <span style={{ fontSize: '0.68rem', fontWeight: 500, opacity: 0.85 }}>(Aman saat geser peta)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPolygonEditMode('add')}
+                      style={{
+                        flex: '1 1 200px',
+                        padding: '0.5rem 0.85rem',
+                        borderRadius: '8px',
+                        border: polygonEditMode === 'add' ? '2px solid #2563eb' : '1px solid #cbd5e1',
+                        background: polygonEditMode === 'add' ? '#eff6ff' : '#ffffff',
+                        color: polygonEditMode === 'add' ? '#1d4ed8' : '#334155',
+                        fontWeight: 700,
+                        fontSize: '0.78rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.4rem',
+                        boxShadow: polygonEditMode === 'add' ? '0 1px 3px rgba(37, 99, 235, 0.15)' : 'none',
+                      }}
+                    >
+                      <Crosshair size={13} />
+                      <span>+ Tambah Titik Baru</span>
+                      <span style={{ fontSize: '0.68rem', fontWeight: 500, opacity: 0.85 }}>(Klik di peta untuk menambah)</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2. Pemisahan Bagian Daratan Wilayah (Solusi Nusantara, Merdeka, & Wilayah Terpisah) */}
+                <div style={{ background: '#ffffff', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.5rem' }}>
+                    <div>
+                      <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#0f2c59' }}>
+                        Bagian Wilayah Daratan:
+                      </div>
+                      <div style={{ fontSize: '0.7rem', color: '#64748b' }}>
+                        Gunakan bagian terpisah jika desa memiliki daratan di pulau berbeda atau dusun seberang agar garis batas tidak melintasi laut.
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAddNewVillagePart}
+                      style={{
+                        padding: '0.35rem 0.75rem',
+                        fontSize: '0.72rem',
+                        fontWeight: 700,
+                        background: '#047857',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                      }}
+                      title="Tambah bagian daratan terpisah baru untuk desa ini"
+                    >
+                      + Tambah Bagian Wilayah Terpisah
+                    </button>
+                  </div>
+
+                  {/* Part Pills */}
+                  <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                    {polygonParts.map((part, pIdx) => {
+                      const isPartActive = pIdx === activePartIndex
+                      const label = pIdx === 0 ? 'Bagian Utama' : `Wilayah Terpisah ${pIdx + 1}`
+                      return (
+                        <button
+                          key={pIdx}
+                          type="button"
+                          onClick={() => setActivePartIndex(pIdx)}
+                          style={{
+                            padding: '0.3rem 0.7rem',
+                            fontSize: '0.74rem',
+                            fontWeight: 700,
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            border: isPartActive ? '1.5px solid #0f766e' : '1px solid #cbd5e1',
+                            background: isPartActive ? '#0f766e' : '#f8fafc',
+                            color: isPartActive ? '#ffffff' : '#334155',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                          }}
+                        >
+                          <span>{label}</span>
+                          <span
+                            style={{
+                              fontSize: '0.66rem',
+                              padding: '1px 5px',
+                              borderRadius: '999px',
+                              background: isPartActive ? '#115e59' : '#e2e8f0',
+                              color: isPartActive ? '#ccfbf1' : '#475569',
+                            }}
+                          >
+                            {part.length} titik
+                          </span>
+                        </button>
+                      )
+                    })}
+
+                    {polygonParts.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteActiveVillagePart(activePartIndex)}
+                        style={{
+                          padding: '0.3rem 0.6rem',
+                          fontSize: '0.72rem',
+                          fontWeight: 600,
+                          background: '#fff1f2',
+                          border: '1px solid #fecdd3',
+                          color: '#dc2626',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.25rem',
+                          marginLeft: 'auto',
+                        }}
+                        title="Hapus bagian daratan yang sedang aktif ini"
+                      >
+                        <Trash2 size={11} />
+                        Hapus Bagian Ini
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* 3. Pengendali Titik untuk Bagian Aktif */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.8rem', fontWeight: 800, color: '#166534' }}>
-                    <Crosshair size={14} />
-                    <span>Mode Edit Poligon Aktif: {polygonVertices.length} Titik Sudut (Simpul)</span>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 700, color: '#166534', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <CheckCircle2 size={13} />
+                    <span>
+                      Bagian Aktif: {activePartIndex === 0 ? 'Bagian Utama' : `Wilayah Terpisah ${activePartIndex + 1}`} ({(polygonParts[activePartIndex] || []).length} titik batas)
+                    </span>
                   </div>
                   <div style={{ display: 'flex', gap: '0.45rem' }}>
                     <button
                       type="button"
-                      onClick={() => setPolygonVertices((prev) => prev.slice(0, -1))}
-                      disabled={polygonVertices.length === 0}
+                      onClick={() => {
+                        setPolygonParts((prev) => {
+                          const updated = prev.map((part) => [...part])
+                          if (updated[activePartIndex] && updated[activePartIndex].length > 0) {
+                            updated[activePartIndex].pop()
+                          }
+                          return updated
+                        })
+                      }}
+                      disabled={!polygonParts[activePartIndex] || polygonParts[activePartIndex].length === 0}
                       style={{
                         padding: '0.3rem 0.65rem',
                         fontSize: '0.725rem',
@@ -3047,8 +3317,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '0.3rem',
-                        cursor: polygonVertices.length === 0 ? 'not-allowed' : 'pointer',
-                        opacity: polygonVertices.length === 0 ? 0.5 : 1,
+                        cursor: !polygonParts[activePartIndex] || polygonParts[activePartIndex].length === 0 ? 'not-allowed' : 'pointer',
+                        opacity: !polygonParts[activePartIndex] || polygonParts[activePartIndex].length === 0 ? 0.5 : 1,
                       }}
                     >
                       <Undo size={11} />
@@ -3056,8 +3326,16 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     </button>
                     <button
                       type="button"
-                      onClick={() => setPolygonVertices([])}
-                      disabled={polygonVertices.length === 0}
+                      onClick={() => {
+                        setPolygonParts((prev) => {
+                          const updated = prev.map((part) => [...part])
+                          if (updated[activePartIndex]) {
+                            updated[activePartIndex] = []
+                          }
+                          return updated
+                        })
+                      }}
+                      disabled={!polygonParts[activePartIndex] || polygonParts[activePartIndex].length === 0}
                       style={{
                         padding: '0.3rem 0.65rem',
                         fontSize: '0.725rem',
@@ -3069,25 +3347,28 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '0.3rem',
-                        cursor: polygonVertices.length === 0 ? 'not-allowed' : 'pointer',
-                        opacity: polygonVertices.length === 0 ? 0.5 : 1,
+                        cursor: !polygonParts[activePartIndex] || polygonParts[activePartIndex].length === 0 ? 'not-allowed' : 'pointer',
+                        opacity: !polygonParts[activePartIndex] || polygonParts[activePartIndex].length === 0 ? 0.5 : 1,
                       }}
                     >
                       <RotateCcw size={11} />
-                      Bersihkan Semua Titik
+                      Bersihkan Bagian Ini
                     </button>
                   </div>
                 </div>
 
-                <p style={{ margin: 0, fontSize: '0.75rem', color: '#15803d', lineHeight: 1.45 }}>
-                  <b>Cara Menyesuaikan Titik di Peta:</b>
+                {/* 4. Panduan Ringkas Bahasa Awam */}
+                <div style={{ background: '#f0fdf4', padding: '0.6rem 0.75rem', borderRadius: '8px', border: '1px solid #bbf7d0', fontSize: '0.73rem', color: '#166534', lineHeight: 1.5 }}>
+                  <b>Panduan Menyesuaikan Batas Wilayah:</b>
                   <br />
-                  1. <b>Seret Nomor Titik (Drag):</b> Klik &amp; tahan nomor titik bulat di peta untuk menggeser sudut garis batas mengikuti garis pantai pulau.
+                  1. <b>Geser Titik:</b> Tekan dan seret nomor titik di peta untuk menyesuaikan lekukan garis pantai.
                   <br />
-                  2. <b>Tambah Titik Baru:</b> Klik sembarang posisi di peta untuk menambah titik sudut baru.
+                  2. <b>Tambah Titik Baru:</b> Aktifkan mode <i>Tambah Titik Baru</i>, lalu klik di peta pada posisi lekukan daratan.
                   <br />
-                  3. <b>Hapus Titik:</b> Klik kanan pada nomor titik tertentu di peta atau tekan tombol <i>Hapus Titik Terakhir</i>.
-                </p>
+                  3. <b>Wilayah Terpisah (Merdeka / Nusantara):</b> Jika desa memiliki wilayah di pulau atau seberang laut yang terpisah, klik <i>+ Tambah Bagian Wilayah Terpisah</i> agar garis batas tidak melintasi laut.
+                  <br />
+                  4. <b>Hapus Titik:</b> Klik kanan langsung pada nomor titik di peta atau gunakan tombol <i>Hapus Titik Terakhir</i>.
+                </div>
               </div>
 
               {/* Form Input Attributes for Village */}
@@ -3145,7 +3426,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
-                    Warna Arsiran Wilayah (Hex)
+                    Warna Garis &amp; Arsiran Wilayah
                   </label>
                   <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                     <input
@@ -3292,7 +3573,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                       }}
                     >
                       <Trash2 size={13} />
-                      Hapus Poligon Desa Ini
+                      Hapus Batas Wilayah Ini
                     </button>
                   )}
                 </div>
@@ -3317,7 +3598,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                   <button
                     type="button"
                     onClick={handleSaveVillagePolygon}
-                    disabled={polygonVertices.length < 3 || !editingVillageName.trim()}
+                    disabled={!polygonParts.some((p) => p.length >= 3) || !editingVillageName.trim()}
                     style={{
                       fontSize: '0.8rem',
                       padding: '0.45rem 1.35rem',
@@ -3325,16 +3606,16 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                       alignItems: 'center',
                       gap: '0.4rem',
                       fontWeight: 700,
-                      background: polygonVertices.length < 3 ? '#94a3b8' : '#0f766e',
+                      background: !polygonParts.some((p) => p.length >= 3) || !editingVillageName.trim() ? '#94a3b8' : '#0f766e',
                       color: '#ffffff',
                       border: 'none',
                       borderRadius: '8px',
-                      cursor: polygonVertices.length < 3 ? 'not-allowed' : 'pointer',
+                      cursor: !polygonParts.some((p) => p.length >= 3) || !editingVillageName.trim() ? 'not-allowed' : 'pointer',
                       boxShadow: '0 2px 6px rgba(15, 118, 110, 0.25)',
                     }}
                   >
                     <Save size={13} />
-                    Simpan Bentuk Poligon Desa
+                    Simpan Batas Wilayah Desa
                   </button>
                 </div>
               </div>
