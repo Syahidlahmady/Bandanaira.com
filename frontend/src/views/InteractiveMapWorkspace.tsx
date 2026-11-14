@@ -35,6 +35,11 @@ import {
   Navigation,
   Undo,
   RotateCcw,
+  Sun,
+  Moon,
+  Mountain,
+  Map as MapIcon,
+  Eye,
 } from 'lucide-react'
 import {
   gisService,
@@ -87,11 +92,104 @@ const LAYER_LABELS: Record<string, string> = {
   LAYER_ENERGY_WASTE: 'Energi & Lingkungan',
 }
 
+export type BasemapId = 'standard' | 'satellite' | 'terrain' | 'clean' | 'dark'
+
+export interface BasemapConfig {
+  id: BasemapId
+  label: string
+  subtitle: string
+  url: string
+  attribution: string
+  maxZoom: number
+  subdomains?: string[]
+  previewBg: string
+  accentColor: string
+}
+
+export const BASEMAP_CONFIGS: Record<BasemapId, BasemapConfig> = {
+  standard: {
+    id: 'standard',
+    label: 'Standar',
+    subtitle: 'Peta Jalan OSM',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; OpenStreetMap contributors | Banda Digital Ecosystem',
+    maxZoom: 19,
+    subdomains: ['a', 'b', 'c'],
+    previewBg: 'linear-gradient(135deg, #bae6fd 0%, #bbf7d0 50%, #fef08a 100%)',
+    accentColor: '#0284c7',
+  },
+  satellite: {
+    id: 'satellite',
+    label: 'Satelit',
+    subtitle: 'Citra Asli Resolusi Tinggi',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Tiles &copy; Esri &mdash; DigitalGlobe, GeoEye, Earthstar Geographics',
+    maxZoom: 19,
+    previewBg: 'linear-gradient(135deg, #064e3b 0%, #0369a1 45%, #0f172a 100%)',
+    accentColor: '#10b981',
+  },
+  terrain: {
+    id: 'terrain',
+    label: 'Topografi',
+    subtitle: 'Relief & Kontur Alam',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Tiles &copy; Esri &mdash; USGS, DeLorme, NAVTEQ',
+    maxZoom: 19,
+    previewBg: 'linear-gradient(135deg, #d97706 0%, #84cc16 50%, #38bdf8 100%)',
+    accentColor: '#f59e0b',
+  },
+  clean: {
+    id: 'clean',
+    label: 'Minimalis',
+    subtitle: 'Abu Terang Kontras Tinggi',
+    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; OpenStreetMap &copy; CARTO',
+    maxZoom: 19,
+    subdomains: ['a', 'b', 'c', 'd'],
+    previewBg: 'linear-gradient(135deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%)',
+    accentColor: '#64748b',
+  },
+  dark: {
+    id: 'dark',
+    label: 'Mode Gelap',
+    subtitle: 'Nuansa Gelap Malam',
+    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; OpenStreetMap &copy; CARTO',
+    maxZoom: 19,
+    subdomains: ['a', 'b', 'c', 'd'],
+    previewBg: 'linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e293b 100%)',
+    accentColor: '#6366f1',
+  },
+}
+
 export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = ({ currentUser }) => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
   const layerGroupRef = useRef<L.LayerGroup | null>(null)
   const draftMarkerRef = useRef<L.Marker | null>(null)
+
+  // Basemap Tile Layers Management (Google Maps Style Layer Switcher)
+  const baseTileLayerRef = useRef<L.TileLayer | null>(null)
+  const labelsTileLayerRef = useRef<L.TileLayer | null>(null)
+  const [activeBasemap, setActiveBasemap] = useState<BasemapId>(() => {
+    try {
+      const saved = localStorage.getItem('banda_gis_active_basemap')
+      if (saved && ['standard', 'satellite', 'terrain', 'clean', 'dark'].includes(saved)) {
+        return saved as BasemapId
+      }
+    } catch (e) {
+      // ignore
+    }
+    return 'standard'
+  })
+  const [showLabelsOnSatellite, setShowLabelsOnSatellite] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('banda_gis_satellite_labels')
+      if (saved !== null) return saved === 'true'
+    } catch (e) {}
+    return true
+  })
+  const [isLayerMenuOpen, setIsLayerMenuOpen] = useState<boolean>(false)
 
   // Role permissions check
   const activeUser = currentUser || authService.getCachedProfile()
@@ -368,6 +466,70 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     }
   }
 
+  // Basemap Tile Layers Updater
+  const updateBasemapLayer = (targetId: BasemapId, withLabels: boolean, targetMap?: L.Map | null) => {
+    const map = targetMap || mapInstanceRef.current
+    if (!map) return
+    const config = BASEMAP_CONFIGS[targetId] || BASEMAP_CONFIGS.standard
+
+    // Remove old base layer
+    if (baseTileLayerRef.current) {
+      map.removeLayer(baseTileLayerRef.current)
+      baseTileLayerRef.current = null
+    }
+
+    // Remove old labels layer
+    if (labelsTileLayerRef.current) {
+      map.removeLayer(labelsTileLayerRef.current)
+      labelsTileLayerRef.current = null
+    }
+
+    // Add new base layer
+    const newBaseLayer = L.tileLayer(config.url, {
+      attribution: config.attribution,
+      maxZoom: config.maxZoom,
+      subdomains: config.subdomains || ['a', 'b', 'c'],
+    }).addTo(map)
+    newBaseLayer.bringToBack()
+    baseTileLayerRef.current = newBaseLayer
+
+    // If satellite and labels are turned on, overlay the labels
+    if (targetId === 'satellite' && withLabels) {
+      const labelsLayer = L.tileLayer(
+        'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+        {
+          attribution: '&copy; Esri',
+          maxZoom: 19,
+        }
+      ).addTo(map)
+      labelsTileLayerRef.current = labelsLayer
+    }
+  }
+
+  // Update basemap when activeBasemap or showLabelsOnSatellite changes
+  useEffect(() => {
+    if (mapInstanceRef.current) {
+      updateBasemapLayer(activeBasemap, showLabelsOnSatellite)
+    }
+  }, [activeBasemap, showLabelsOnSatellite])
+
+  const handleSelectBasemap = (id: BasemapId) => {
+    setActiveBasemap(id)
+    try {
+      localStorage.setItem('banda_gis_active_basemap', id)
+    } catch (e) {}
+  }
+
+  const handleToggleSatelliteLabels = () => {
+    setShowLabelsOnSatellite((prev) => {
+      const next = !prev
+      try {
+        localStorage.setItem('banda_gis_satellite_labels', String(next))
+      } catch (e) {}
+      return next
+    })
+  }
+
   // Initialize Leaflet Map
   useEffect(() => {
     if (!mapContainerRef.current) return
@@ -381,14 +543,11 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
         maxZoom: 18,
       })
 
-      // OpenStreetMap Tile Layer
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Banda Digital Ecosystem',
-        maxZoom: 19,
-      }).addTo(map)
-
       layerGroupRef.current = L.layerGroup().addTo(map)
       mapInstanceRef.current = map
+
+      // Apply initial basemap from configuration
+      updateBasemapLayer(activeBasemap, showLabelsOnSatellite, map)
 
       setTimeout(() => {
         if (mapInstanceRef.current) {
@@ -3871,13 +4030,420 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
             </div>
           )}
 
+          {/* Google Maps Style "Layers" Floating Control Button & Panel */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '16px',
+              left: '16px',
+              zIndex: 1010,
+            }}
+          >
+            {/* The Floating Square Trigger Button (Matching Google Maps UI) */}
+            <button
+              type="button"
+              onClick={() => setIsLayerMenuOpen((prev) => !prev)}
+              style={{
+                width: '68px',
+                height: '68px',
+                borderRadius: '12px',
+                border: isLayerMenuOpen ? '2.5px solid #0284c7' : '2.5px solid #ffffff',
+                boxShadow: '0 6px 20px rgba(15, 23, 42, 0.3)',
+                background: BASEMAP_CONFIGS[activeBasemap]?.previewBg || 'linear-gradient(135deg, #0284c7, #0f172a)',
+                cursor: 'pointer',
+                position: 'relative',
+                overflow: 'hidden',
+                padding: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                transform: isLayerMenuOpen ? 'scale(1.05)' : 'scale(1)',
+              }}
+              title="Pilih tampilan peta (Satelit, Topografi, Standar) dan lapisan data"
+            >
+              {/* Top Miniature Icon Graphic */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '7px',
+                  width: '26px',
+                  height: '26px',
+                  borderRadius: '50%',
+                  background: 'rgba(255, 255, 255, 0.3)',
+                  backdropFilter: 'blur(4px)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.18)',
+                }}
+              >
+                {activeBasemap === 'satellite' ? (
+                  <Globe size={15} color="#ffffff" />
+                ) : activeBasemap === 'terrain' ? (
+                  <Mountain size={15} color="#ffffff" />
+                ) : activeBasemap === 'clean' ? (
+                  <Sun size={15} color="#334155" />
+                ) : activeBasemap === 'dark' ? (
+                  <Moon size={15} color="#ffffff" />
+                ) : (
+                  <MapIcon size={15} color="#ffffff" />
+                )}
+              </div>
+
+              {/* Bottom Label Badge (Just like Google Maps Layers button) */}
+              <div
+                style={{
+                  width: '100%',
+                  background: 'rgba(15, 23, 42, 0.86)',
+                  backdropFilter: 'blur(6px)',
+                  padding: '4px 0 5px 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  color: '#ffffff',
+                }}
+              >
+                <Layers size={11} color="#38bdf8" />
+                <span
+                  style={{
+                    fontSize: '0.675rem',
+                    fontWeight: 700,
+                    letterSpacing: '0.02em',
+                  }}
+                >
+                  Layers
+                </span>
+              </div>
+            </button>
+
+            {/* Google Maps Style Expanded Popup Panel */}
+            {isLayerMenuOpen && (
+              <div
+                className="animate-fade-in"
+                data-lenis-prevent
+                style={{
+                  position: 'absolute',
+                  bottom: '78px',
+                  left: '0',
+                  zIndex: 1020,
+                  width: '320px',
+                  background: 'rgba(255, 255, 255, 0.98)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1.5px solid #cbd5e1',
+                  borderRadius: '16px',
+                  boxShadow: '0 12px 36px rgba(15, 23, 42, 0.22)',
+                  padding: '14px',
+                }}
+              >
+                {/* Popup Header */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '10px',
+                    paddingBottom: '8px',
+                    borderBottom: '1px solid #f1f5f9',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Layers size={15} color="#0284c7" />
+                    <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#0f2c59' }}>
+                      Tampilan &amp; Lapisan Peta
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsLayerMenuOpen(false)}
+                    style={{
+                      background: '#f1f5f9',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: '22px',
+                      height: '22px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      color: '#64748b',
+                    }}
+                    title="Tutup menu layer"
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+
+                {/* Section 1: Peta Dasar (Basemap Options) */}
+                <div style={{ marginBottom: '12px' }}>
+                  <div
+                    style={{
+                      fontSize: '0.675rem',
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      color: '#64748b',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    Tipe Peta Dasar
+                  </div>
+
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(3, 1fr)',
+                      gap: '8px',
+                    }}
+                  >
+                    {(Object.keys(BASEMAP_CONFIGS) as BasemapId[]).map((bId) => {
+                      const cfg = BASEMAP_CONFIGS[bId]
+                      const isSelected = activeBasemap === bId
+                      return (
+                        <div
+                          key={bId}
+                          onClick={() => handleSelectBasemap(bId)}
+                          style={{
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            textAlign: 'center',
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: '100%',
+                              height: '52px',
+                              borderRadius: '10px',
+                              background: cfg.previewBg,
+                              border: isSelected ? '2.5px solid #0284c7' : '1.5px solid #cbd5e1',
+                              boxShadow: isSelected
+                                ? '0 0 0 2px rgba(2, 132, 199, 0.25), 0 3px 8px rgba(0,0,0,0.1)'
+                                : '0 2px 5px rgba(0,0,0,0.06)',
+                              position: 'relative',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              overflow: 'hidden',
+                              transition: 'all 0.15s ease',
+                              transform: isSelected ? 'scale(1.02)' : 'scale(1)',
+                            }}
+                          >
+                            {isSelected && (
+                              <div
+                                style={{
+                                  position: 'absolute',
+                                  top: '4px',
+                                  right: '4px',
+                                  width: '16px',
+                                  height: '16px',
+                                  borderRadius: '50%',
+                                  background: '#0284c7',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                                }}
+                              >
+                                <Check size={10} color="#ffffff" strokeWidth={3} />
+                              </div>
+                            )}
+
+                            {bId === 'satellite' ? (
+                              <Globe size={18} color="#ffffff" />
+                            ) : bId === 'terrain' ? (
+                              <Mountain size={18} color="#78350f" />
+                            ) : bId === 'clean' ? (
+                              <Sun size={18} color="#475569" />
+                            ) : bId === 'dark' ? (
+                              <Moon size={18} color="#e2e8f0" />
+                            ) : (
+                              <MapIcon size={18} color="#0f766e" />
+                            )}
+                          </div>
+                          <span
+                            style={{
+                              marginTop: '4px',
+                              fontSize: '0.72rem',
+                              fontWeight: isSelected ? 800 : 600,
+                              color: isSelected ? '#0284c7' : '#334155',
+                            }}
+                          >
+                            {cfg.label}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Sub-toggle: Satellite Labels */}
+                {activeBasemap === 'satellite' && (
+                  <div
+                    onClick={handleToggleSatelliteLabels}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '7px 10px',
+                      background: '#f0fdf4',
+                      border: '1px solid #bbf7d0',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      marginBottom: '12px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Eye size={13} color="#15803d" />
+                      <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#166534' }}>
+                        Label Nama Tempat &amp; Jalan
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        width: '16px',
+                        height: '16px',
+                        borderRadius: '4px',
+                        background: showLabelsOnSatellite ? '#16a34a' : '#e2e8f0',
+                        border: '1px solid #cbd5e1',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      {showLabelsOnSatellite && <Check size={11} color="#ffffff" strokeWidth={3} />}
+                    </div>
+                  </div>
+                )}
+
+                {/* Section 2: Spatial Data Overlays */}
+                <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '10px' }}>
+                  <div
+                    style={{
+                      fontSize: '0.675rem',
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      color: '#64748b',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    Lapisan Data Spasial
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {/* Toggle Village Boundaries */}
+                    <div
+                      onClick={() => setShowVillageBoundaries((prev) => !prev)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '6px 8px',
+                        borderRadius: '6px',
+                        background: showVillageBoundaries ? '#ecfdf5' : '#f8fafc',
+                        border: '1px solid',
+                        borderColor: showVillageBoundaries ? '#a7f3d0' : '#e2e8f0',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div
+                          style={{
+                            width: '12px',
+                            height: '10px',
+                            background: 'rgba(52, 211, 153, 0.4)',
+                            border: '1.5px solid #059669',
+                            borderRadius: '2px',
+                          }}
+                        />
+                        <span style={{ fontSize: '0.73rem', fontWeight: 600, color: '#0f2c59' }}>
+                          Batas Administrasi Desa
+                        </span>
+                      </div>
+                      <span
+                        style={{
+                          fontSize: '0.68rem',
+                          fontWeight: 700,
+                          color: showVillageBoundaries ? '#059669' : '#94a3b8',
+                        }}
+                      >
+                        17 Desa
+                      </span>
+                    </div>
+
+                    {/* Toggle Maritime Routes */}
+                    <div
+                      onClick={() => setShowRoutes((prev) => !prev)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '6px 8px',
+                        borderRadius: '6px',
+                        background: showRoutes ? '#f0f9ff' : '#f8fafc',
+                        border: '1px solid',
+                        borderColor: showRoutes ? '#bae6fd' : '#e2e8f0',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div style={{ width: '12px', height: '2.5px', borderTop: '2px dashed #0284c7' }} />
+                        <span style={{ fontSize: '0.73rem', fontWeight: 600, color: '#0f2c59' }}>
+                          Jalur &amp; Rute Maritim
+                        </span>
+                      </div>
+                      <span
+                        style={{
+                          fontSize: '0.68rem',
+                          fontWeight: 700,
+                          color: showRoutes ? '#0284c7' : '#94a3b8',
+                        }}
+                      >
+                        Aktif
+                      </span>
+                    </div>
+
+                    {/* Toggle Open Atlas Legend Shortcut */}
+                    <button
+                      type="button"
+                      onClick={() => setAtlasLegendOpen((prev) => !prev)}
+                      style={{
+                        marginTop: '4px',
+                        padding: '6px 10px',
+                        borderRadius: '6px',
+                        background: '#f8fafc',
+                        border: '1px solid #cbd5e1',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        color: '#334155',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <span>Legenda Kategori &amp; Titik Lokasi</span>
+                      <span style={{ color: '#0284c7', fontWeight: 700 }}>
+                        {atlasLegendOpen ? 'Tutup' : 'Buka'}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Floating Atlas-Style Map Legend Card (Inside Map - Atlas Cartography Layout) */}
           <div
             data-lenis-prevent
             style={{
               position: 'absolute',
               bottom: '16px',
-              left: '16px',
+              right: '16px',
               zIndex: 1000,
               background: 'rgba(255, 255, 255, 0.96)',
               backdropFilter: 'blur(10px)',
