@@ -41,6 +41,11 @@ import {
   GeocodingResult,
 } from '../services/gis'
 import { authService } from '../services/auth'
+import {
+  BANDA_VILLAGES_GEOJSON,
+  VILLAGE_DETAILS,
+  VillageInfo,
+} from '../data/bandaVillagesData'
 
 export interface InteractiveMapWorkspaceProps {
   currentUser?: any
@@ -141,6 +146,11 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   const [routeStartName, setRouteStartName] = useState<string>('')
   const [routeEndName, setRouteEndName] = useState<string>('')
   const [showRoutes, setShowRoutes] = useState<boolean>(true)
+
+  // Village Boundary (Choropleth Polygons) States
+  const [showVillageBoundaries, setShowVillageBoundaries] = useState<boolean>(true)
+  const [selectedVillage, setSelectedVillage] = useState<VillageInfo | null>(null)
+  const villageBoundariesLayerRef = useRef<L.GeoJSON | null>(null)
 
   const draftPolylineRef = useRef<L.Polyline | null>(null)
   const draftVertexMarkersRef = useRef<L.Marker[]>([])
@@ -969,6 +979,96 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
       layerGroupRef.current?.addLayer(marker)
     })
   }, [filteredFeatures, selectedFeature])
+
+  // Manage and Render Administrative Village Boundaries (Choropleth Polygons)
+  useEffect(() => {
+    if (!mapInstanceRef.current) return
+
+    if (villageBoundariesLayerRef.current) {
+      villageBoundariesLayerRef.current.remove()
+      villageBoundariesLayerRef.current = null
+    }
+
+    if (!showVillageBoundaries) return
+
+    const geoJsonLayer = L.geoJSON(BANDA_VILLAGES_GEOJSON, {
+      style: (feat) => {
+        const vName = feat?.properties?.name
+        const isSelected = selectedVillage?.name === vName
+        const baseColor = feat?.properties?.color || '#3b82f6'
+        return {
+          fillColor: baseColor,
+          fillOpacity: isSelected ? 0.62 : 0.28,
+          color: isSelected ? '#0f172a' : baseColor,
+          weight: isSelected ? 2.5 : 1.2,
+          dashArray: isSelected ? undefined : '3, 3',
+        }
+      },
+      onEachFeature: (feat, layer) => {
+        const { name, island, color } = feat.properties
+        const details = VILLAGE_DETAILS[name]
+        layer.bindTooltip(
+          `<div style="font-family: inherit; font-size: 11px; font-weight: 700; color: #0f172a;">
+            <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: ${color}; margin-right: 4px;"></span>
+            <b>${name}</b><br/>
+            <span style="font-size: 9px; color: #64748b; font-weight: 500;">${island}</span>
+          </div>`,
+          { sticky: true, opacity: 0.95 }
+        )
+
+        layer.on({
+          mouseover: (e: any) => {
+            const l = e.target
+            if (selectedVillage?.name !== name) {
+              l.setStyle({
+                fillOpacity: 0.52,
+                weight: 2,
+              })
+            }
+          },
+          mouseout: (e: any) => {
+            const l = e.target
+            if (selectedVillage?.name !== name) {
+              l.setStyle({
+                fillOpacity: 0.28,
+                weight: 1.2,
+              })
+            }
+          },
+          click: (e: any) => {
+            L.DomEvent.stopPropagation(e)
+            if (details) {
+              setSelectedVillage(details)
+            } else {
+              setSelectedVillage({
+                name,
+                island,
+                color,
+                description: 'Wilayah administrasi desa di Kepulauan Banda.',
+              })
+            }
+          },
+        })
+      },
+    })
+
+    geoJsonLayer.addTo(mapInstanceRef.current)
+    geoJsonLayer.bringToBack()
+    villageBoundariesLayerRef.current = geoJsonLayer
+  }, [showVillageBoundaries, selectedVillage])
+
+  const handleFocusVillage = (vName: string) => {
+    const details = VILLAGE_DETAILS[vName]
+    if (details) setSelectedVillage(details)
+    if (villageBoundariesLayerRef.current && mapInstanceRef.current) {
+      villageBoundariesLayerRef.current.eachLayer((layer: any) => {
+        if (layer.feature?.properties?.name === vName) {
+          const bounds = layer.getBounds()
+          mapInstanceRef.current?.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 })
+        }
+      })
+    }
+  }
 
   // Toggle single layer
   const toggleLayer = (layerId: string) => {
@@ -2496,6 +2596,126 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
             }}
           />
 
+          {/* Selected Village Detail Inspection Card (Matching User Mockup) */}
+          {selectedVillage && (
+            <div
+              className="animate-fade-in"
+              data-lenis-prevent
+              style={{
+                position: 'absolute',
+                top: '12px',
+                left: '12px',
+                zIndex: 1000,
+                background: 'rgba(255, 255, 255, 0.98)',
+                backdropFilter: 'blur(10px)',
+                border: '1.5px solid #cbd5e1',
+                borderRadius: '16px',
+                padding: '1.15rem 1.25rem',
+                maxWidth: '310px',
+                width: 'calc(100% - 24px)',
+                boxShadow: '0 10px 30px rgba(15, 44, 89, 0.14)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.35rem' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800, color: '#0f766e', letterSpacing: '-0.02em' }}>
+                    {selectedVillage.name}
+                  </h3>
+                  <div style={{ width: '40px', height: '3.5px', background: '#f97316', borderRadius: '2px', marginTop: '4px' }} />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedVillage(null)}
+                  style={{
+                    background: '#f1f5f9',
+                    border: 'none',
+                    color: '#64748b',
+                    borderRadius: '50%',
+                    width: '24px',
+                    height: '24px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  title="Tutup Profil Desa"
+                >
+                  <X size={13} />
+                </button>
+              </div>
+
+              <p style={{ margin: '0.65rem 0 0.85rem', fontSize: '0.78rem', color: '#475569', lineHeight: 1.5 }}>
+                {selectedVillage.description}
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', borderTop: '1px solid #f1f5f9', paddingTop: '0.65rem', fontSize: '0.73rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b' }}>Pulau:</span>
+                  <span style={{ fontWeight: 700, color: '#0f2c59' }}>{selectedVillage.island}</span>
+                </div>
+                {selectedVillage.population && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: '#64748b' }}>Populasi:</span>
+                    <span style={{ fontWeight: 700, color: '#0f2c59' }}>{selectedVillage.population}</span>
+                  </div>
+                )}
+                {selectedVillage.main_commodity && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: '#64748b' }}>Komoditas / Potensi:</span>
+                    <span style={{ fontWeight: 600, color: '#059669', textAlign: 'right', maxWidth: '170px' }}>{selectedVillage.main_commodity}</span>
+                  </div>
+                )}
+                {selectedVillage.highlights && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed #e2e8f0', paddingTop: '0.3rem' }}>
+                    <span style={{ color: '#64748b' }}>Daya Tarik:</span>
+                    <span style={{ fontWeight: 600, color: '#0284c7', textAlign: 'right', maxWidth: '170px' }}>{selectedVillage.highlights}</span>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.75rem' }}>
+                <button
+                  type="button"
+                  onClick={() => handleFocusVillage(selectedVillage.name)}
+                  style={{
+                    flex: 1,
+                    padding: '0.38rem 0.6rem',
+                    borderRadius: '8px',
+                    fontSize: '0.73rem',
+                    fontWeight: 700,
+                    background: '#081d35',
+                    color: '#ffffff',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.3rem',
+                  }}
+                >
+                  <Compass size={12} />
+                  Fokuskan Wilayah
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedVillage(null)}
+                  style={{
+                    padding: '0.38rem 0.65rem',
+                    borderRadius: '8px',
+                    fontSize: '0.73rem',
+                    fontWeight: 600,
+                    background: '#f1f5f9',
+                    color: '#475569',
+                    border: '1px solid #cbd5e1',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Floating Atlas-Style Map Legend Card (Inside Map - Atlas Cartography Layout) */}
           <div
             data-lenis-prevent
@@ -2679,6 +2899,117 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     {filteredFeatures.filter((f) => f.geometry?.type === 'LineString').length}
                   </span>
                 </div>
+
+                {/* Administrative Village Boundaries (Polygons) Toggle */}
+                <div
+                  onClick={() => setShowVillageBoundaries((prev) => !prev)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '0.45rem',
+                    cursor: 'pointer',
+                    opacity: showVillageBoundaries ? 1 : 0.4,
+                    transition: 'opacity 0.15s ease',
+                    padding: '0.25rem 0',
+                    borderTop: '1px dashed #e2e8f0',
+                    marginTop: '0.2rem',
+                    paddingTop: '0.35rem',
+                  }}
+                  title={showVillageBoundaries ? 'Sembunyikan poligon batas desa' : 'Tampilkan poligon batas desa'}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <div style={{ width: '13px', height: '11px', background: 'rgba(52, 211, 153, 0.4)', border: '1.5px solid #059669', borderRadius: '3px' }} />
+                    <span
+                      style={{
+                        fontSize: '0.72rem',
+                        fontWeight: showVillageBoundaries ? 700 : 500,
+                        color: showVillageBoundaries ? '#0f766e' : '#94a3b8',
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      Batas Administrasi Desa
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: '0.675rem',
+                      fontFamily: 'monospace',
+                      fontWeight: 700,
+                      color: showVillageBoundaries ? '#059669' : '#94a3b8',
+                      background: '#05966918',
+                      padding: '0.05rem 0.35rem',
+                      borderRadius: '4px',
+                      flexShrink: 0,
+                    }}
+                  >
+                    17
+                  </span>
+                </div>
+
+                {/* Sub-list of Villages matching user's exact mockup list */}
+                {showVillageBoundaries && (
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: '0.25rem 0.4rem',
+                      padding: '0.35rem 0.3rem',
+                      background: '#f8fafc',
+                      borderRadius: '6px',
+                      border: '1px solid #e2e8f0',
+                      marginTop: '0.15rem',
+                      maxHeight: '130px',
+                      overflowY: 'auto',
+                    }}
+                  >
+                    {Object.values(VILLAGE_DETAILS).map((v) => {
+                      const isVSelected = selectedVillage?.name === v.name
+                      return (
+                        <div
+                          key={v.name}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleFocusVillage(v.name)
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            cursor: 'pointer',
+                            padding: '0.15rem 0.3rem',
+                            borderRadius: '4px',
+                            background: isVSelected ? '#e2e8f0' : 'transparent',
+                            transition: 'all 0.15s ease',
+                          }}
+                          title={`Klik untuk fokus ke wilayah ${v.name} (${v.island})`}
+                        >
+                          <span
+                            style={{
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              background: v.color,
+                              flexShrink: 0,
+                            }}
+                          />
+                          <span
+                            style={{
+                              fontSize: '0.68rem',
+                              fontWeight: isVSelected ? 800 : 500,
+                              color: isVSelected ? '#0f172a' : '#334155',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
+                            {v.name}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
 
                 <div
                   style={{
