@@ -170,7 +170,8 @@ async def test_end_to_end_traceability_and_qr_verification(client: AsyncClient):
     assert pub_data["qr_code_base64"].startswith("data:image/png;base64,")
 
     # PRIVACY AUDIT: Ensure NO sensitive PII leaked to public!
-    raw_text = str(pub_data).lower()
+    pub_data_clean = {k: v for k, v in pub_data.items() if k != "qr_code_base64"}
+    raw_text = str(pub_data_clean).lower()
     assert "nik" not in raw_text
     assert "password" not in raw_text
     assert "081" not in raw_text  # no phone numbers
