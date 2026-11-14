@@ -134,14 +134,25 @@ export const getInitialTab = (): TabId => {
   if (typeof window === 'undefined') return 'landing'
   const path = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/'
   if (path.startsWith('/verify')) return 'landing'
+
+  const hasToken = Boolean(authService.getAccessToken())
+  const savedTab = localStorage.getItem('banda_active_tab') as TabId | null
+
+  // 1. If URL specifies a specific workspace route (e.g. /gis, /dashboard, /tourism, /letters, /peta)
+  if (path !== '/' && path !== '' && ROUTE_TO_TAB[path]) {
+    return ROUTE_TO_TAB[path]
+  }
+
+  // 2. If on root '/' and user is authenticated, restore their active workspace if previously saved
+  if ((path === '/' || path === '') && hasToken && savedTab && TAB_ROUTES[savedTab] && savedTab !== 'landing') {
+    return savedTab
+  }
+
+  // 3. Fallback to route table for root or default to landing
   if (ROUTE_TO_TAB[path]) {
     return ROUTE_TO_TAB[path]
   }
-  const hasToken = Boolean(authService.getAccessToken())
-  const savedTab = localStorage.getItem('banda_active_tab') as TabId | null
-  if (hasToken && savedTab && TAB_ROUTES[savedTab] && savedTab !== 'landing') {
-    return savedTab
-  }
+
   return 'landing'
 }
 
@@ -1090,8 +1101,18 @@ export const App: React.FC = () => {
         overflowX: 'hidden',
       }}
     >
+      {/* 0. RESTORING SESSION PLACEHOLDER */}
+      {Boolean(authService.getAccessToken()) && !currentUser && activeTab !== 'landing' && activeTab !== 'register' && (
+        <div className="min-h-screen bg-[#081d35] flex items-center justify-center text-amber-300 font-sans">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm font-medium tracking-wide text-slate-300">Memulihkan sesi ruang kerja Banda Neira...</span>
+          </div>
+        </div>
+      )}
+
       {/* 1. LANDING PORTAL UTAMA (SATU PINTU UTAMA EKOSISTEM - HANYA 1 LANDING PAGE) */}
-      {(!currentUser || activeTab === 'landing') && activeTab !== 'register' && activeTab !== 'population' && (
+      {activeTab === 'landing' && (
         <LandingPortalWorkspace
           onNavigate={(tab) =>
             setActiveTab(
@@ -1120,7 +1141,7 @@ export const App: React.FC = () => {
       )}
 
       {/* 2. Login Portal Section for Non-authenticated Users (Sesuai desainsaatini/login-desktop) */}
-      {!currentUser && activeTab === 'population' && (
+      {!currentUser && !authService.getAccessToken() && (activeTab === 'population' || activeTab === 'dashboard') && (
         <LoginSection
           username={username}
           setUsername={setUsername}

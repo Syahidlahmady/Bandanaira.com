@@ -301,6 +301,11 @@ export const authService = {
           user.full_name = parsed.full_name
         }
       }
+      try {
+        localStorage.setItem(ACTIVE_PROFILE_KEY, JSON.stringify(user))
+      } catch {
+        // ignore
+      }
       return user
     } catch (err) {
       const cached = localStorage.getItem(ACTIVE_PROFILE_KEY)
@@ -314,7 +319,27 @@ export const authService = {
   getCachedProfile(): User | null {
     try {
       const raw = localStorage.getItem(ACTIVE_PROFILE_KEY)
-      return raw ? JSON.parse(raw) : null
+      if (raw) return JSON.parse(raw)
+      const token = this.getAccessToken()
+      if (token && token.includes('.')) {
+        const parts = token.split('.')
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1]))
+          return {
+            id: payload.sub || 'cached-user',
+            username: payload.sub || 'user',
+            full_name: payload.sub || 'Pengguna Banda',
+            email: `${payload.sub || 'user'}@bandanaira.id`,
+            is_active: true,
+            is_superuser: Boolean(payload.is_superuser),
+            roles: Array.isArray(payload.roles)
+              ? payload.roles.map((r: any) => (typeof r === 'string' ? { id: r, name: r } : r))
+              : [{ id: 'admin', name: 'admin' }],
+            created_at: new Date().toISOString(),
+          }
+        }
+      }
+      return null
     } catch {
       return null
     }

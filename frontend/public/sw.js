@@ -1,5 +1,5 @@
 // Banda Digital Ecosystem - Service Worker
-const CACHE_NAME = 'banda-digital-v2'
+const CACHE_NAME = 'banda-digital-v3'
 const MAP_TILES_CACHE = 'banda-map-tiles-v1'
 const STATIC_ASSETS = [
   '/',
