@@ -20,6 +20,8 @@ import {
   Trash2,
   MapPin,
   Edit2,
+  Edit3,
+  Download,
   Save,
   X,
   Sparkles,
@@ -29,6 +31,10 @@ import {
   Layers,
   ChevronDown,
   ChevronUp,
+  Route,
+  Navigation,
+  Undo,
+  RotateCcw,
 } from 'lucide-react'
 import {
   gisService,
@@ -37,6 +43,11 @@ import {
   GeocodingResult,
 } from '../services/gis'
 import { authService } from '../services/auth'
+import {
+  BANDA_VILLAGES_GEOJSON,
+  VILLAGE_DETAILS,
+  VillageInfo,
+} from '../data/bandaVillagesData'
 
 export interface InteractiveMapWorkspaceProps {
   currentUser?: any
@@ -49,6 +60,7 @@ const LAYER_ICONS: Record<string, React.ReactNode> = {
   LAYER_ACCOMMODATION: <Home size={14} />,
   LAYER_KOPERASI_UMKM: <Store size={14} />,
   LAYER_PUBLIC_SAFETY: <Shield size={14} />,
+  LAYER_DESA_ADMIN: <Shield size={14} />,
   LAYER_WATER_INFRA: <Droplets size={14} />,
   LAYER_ENERGY_WASTE: <Zap size={14} />,
 }
@@ -59,6 +71,7 @@ const LAYER_COLORS: Record<string, string> = {
   LAYER_ACCOMMODATION: '#10b981', // Emerald
   LAYER_KOPERASI_UMKM: '#8b5cf6', // Violet
   LAYER_PUBLIC_SAFETY: '#3b82f6', // Blue
+  LAYER_DESA_ADMIN: '#3b82f6', // Blue alias
   LAYER_WATER_INFRA: '#0ea5e9', // Sky Teal
   LAYER_ENERGY_WASTE: '#f43f5e', // Rose
 }
@@ -69,6 +82,7 @@ const LAYER_LABELS: Record<string, string> = {
   LAYER_ACCOMMODATION: 'Penginapan',
   LAYER_KOPERASI_UMKM: 'Sentra UMKM',
   LAYER_PUBLIC_SAFETY: 'Fasilitas Umum',
+  LAYER_DESA_ADMIN: 'Fasilitas Umum',
   LAYER_WATER_INFRA: 'Air Bersih',
   LAYER_ENERGY_WASTE: 'Energi & Lingkungan',
 }
@@ -97,7 +111,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
   // Admin Studio States
   const [adminStudioOpen, setAdminStudioOpen] = useState<boolean>(false)
-  const [adminTab, setAdminTab] = useState<'search' | 'form'>('search')
+  const [adminTab, setAdminTab] = useState<'search' | 'form' | 'polygon'>('search')
   const [editingFeatureId, setEditingFeatureId] = useState<string | null>(null)
 
   // External Geocoder States
@@ -124,6 +138,89 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   const [form4aFacilities, setForm4aFacilities] = useState<string>('')
   const [form4aContactWhatsapp, setForm4aContactWhatsapp] = useState<string>('')
   const [form4aGuideAvailable, setForm4aGuideAvailable] = useState<boolean>(true)
+
+  // Route / Polyline Drawing States
+  const [geometryMode, setGeometryMode] = useState<'point' | 'route'>('point')
+  const [routeWaypoints, setRouteWaypoints] = useState<[number, number][]>([])
+  const [routeType, setRouteType] = useState<'maritime' | 'heritage' | 'trekking'>('maritime')
+  const [routeTransport, setRouteTransport] = useState<string>('Speedboat')
+  const [routeTravelTime, setRouteTravelTime] = useState<string>('')
+  const [routeStartName, setRouteStartName] = useState<string>('')
+  const [routeEndName, setRouteEndName] = useState<string>('')
+  const [showRoutes, setShowRoutes] = useState<boolean>(true)
+
+  // Village Boundary (Choropleth Polygons) States
+  const [showVillageBoundaries, setShowVillageBoundaries] = useState<boolean>(true)
+  const [selectedVillage, setSelectedVillage] = useState<VillageInfo | null>(null)
+  const villageBoundariesLayerRef = useRef<L.GeoJSON | null>(null)
+
+  // Village Polygon Interactive Editor States
+  const [villageGeoJSON, setVillageGeoJSON] = useState<any>(() => {
+    try {
+      const cached = localStorage.getItem('banda_village_polygons_v1')
+      if (cached) return JSON.parse(cached)
+    } catch (e) {
+      console.warn('Gagal membaca cache poligon desa', e)
+    }
+    return BANDA_VILLAGES_GEOJSON
+  })
+  const [villageDetailsMap, setVillageDetailsMap] = useState<Record<string, VillageInfo>>(() => {
+    try {
+      const cached = localStorage.getItem('banda_village_details_v1')
+      if (cached) return JSON.parse(cached)
+    } catch (e) {
+      console.warn('Gagal membaca cache details desa', e)
+    }
+    return VILLAGE_DETAILS
+  })
+
+  const [editingVillageId, setEditingVillageId] = useState<string | null>(null)
+  const [polygonVertices, setPolygonVertices] = useState<[number, number][]>([])
+  const [editingVillageName, setEditingVillageName] = useState<string>('')
+  const [editingVillageIsland, setEditingVillageIsland] = useState<string>('Pulau Neira')
+  const [editingVillageColor, setEditingVillageColor] = useState<string>('#34d399')
+  const [editingVillageDesc, setEditingVillageDesc] = useState<string>('')
+  const [editingVillagePop, setEditingVillagePop] = useState<string>('')
+  const [editingVillageCommodity, setEditingVillageCommodity] = useState<string>('')
+  const [editingVillageArea, setEditingVillageArea] = useState<string>('')
+
+  const draftPolygonRef = useRef<L.Polygon | null>(null)
+  const draftPolygonVertexMarkersRef = useRef<L.Marker[]>([])
+
+  const draftPolylineRef = useRef<L.Polyline | null>(null)
+  const draftVertexMarkersRef = useRef<L.Marker[]>([])
+
+  // Calculate distance in km between two [lat, lng] points using Haversine formula
+  const calculateDistanceKm = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371
+    const dLat = ((lat2 - lat1) * Math.PI) / 180
+    const dLon = ((lon2 - lon1) * Math.PI) / 180
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    return R * c
+  }
+
+  const calculateTotalDistance = (waypoints: [number, number][]): { km: number; nm: number } => {
+    if (waypoints.length < 2) return { km: 0, nm: 0 }
+    let totalKm = 0
+    for (let i = 0; i < waypoints.length - 1; i++) {
+      totalKm += calculateDistanceKm(
+        waypoints[i][0],
+        waypoints[i][1],
+        waypoints[i + 1][0],
+        waypoints[i + 1][1]
+      )
+    }
+    return {
+      km: parseFloat(totalKm.toFixed(2)),
+      nm: parseFloat((totalKm * 0.539957).toFixed(2)),
+    }
+  }
 
   const [isSavingFeature, setIsSavingFeature] = useState<boolean>(false)
   const [isDeletingFeature, setIsDeletingFeature] = useState<boolean>(false)
@@ -153,6 +250,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
       'LAYER_ACCOMMODATION',
       'LAYER_KOPERASI_UMKM',
       'LAYER_PUBLIC_SAFETY',
+      'LAYER_DESA_ADMIN',
       'LAYER_WATER_INFRA',
       'LAYER_ENERGY_WASTE',
     ])
@@ -364,9 +462,17 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
       if (adminStudioOpen) {
         const lat = parseFloat(e.latlng.lat.toFixed(6))
         const lng = parseFloat(e.latlng.lng.toFixed(6))
-        setFormLat(lat)
-        setFormLng(lng)
-        updateDraftMarker(lat, lng)
+        if (adminTab === 'polygon') {
+          setPolygonVertices((prev) => [...prev, [lat, lng]])
+          return
+        }
+        if (geometryMode === 'route') {
+          setRouteWaypoints((prev) => [...prev, [lat, lng]])
+        } else {
+          setFormLat(lat)
+          setFormLng(lng)
+          updateDraftMarker(lat, lng)
+        }
       }
     }
 
@@ -374,11 +480,203 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     return () => {
       map.off('click', onMapClick)
     }
-  }, [adminStudioOpen])
+  }, [adminStudioOpen, adminTab, geometryMode])
+
+  // Manage draft route polyline and draggable vertex handles for Admin Studio
+  useEffect(() => {
+    if (!mapInstanceRef.current) return
+    const map = mapInstanceRef.current
+
+    // Clean up previous draft route
+    if (draftPolylineRef.current) {
+      draftPolylineRef.current.remove()
+      draftPolylineRef.current = null
+    }
+    draftVertexMarkersRef.current.forEach((m) => m.remove())
+    draftVertexMarkersRef.current = []
+
+    if (!adminStudioOpen || geometryMode !== 'route') return
+
+    // Draw polyline if at least 2 points
+    if (routeWaypoints.length >= 2) {
+      const color =
+        routeType === 'maritime' ? '#0284c7' : routeType === 'heritage' ? '#b45309' : '#dc2626'
+      const poly = L.polyline(routeWaypoints, {
+        color,
+        weight: 4.5,
+        dashArray: routeType === 'maritime' ? '8, 8' : undefined,
+        opacity: 0.9,
+      }).addTo(map)
+      draftPolylineRef.current = poly
+    }
+
+    // Draw vertex handles for every point in routeWaypoints
+    routeWaypoints.forEach(([lat, lng], idx) => {
+      const isStart = idx === 0
+      const isEnd = idx === routeWaypoints.length - 1
+      const vertexColor = isStart ? '#059669' : isEnd ? '#dc2626' : '#0284c7'
+
+      const vertexIcon = L.divIcon({
+        className: 'route-vertex-handle',
+        html: `
+          <div style="
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 3px solid ${vertexColor};
+            box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 800;
+            color: #0f172a;
+          ">${idx + 1}</div>
+        `,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11],
+      })
+
+      const vertexMarker = L.marker([lat, lng], {
+        icon: vertexIcon,
+        draggable: true,
+      }).addTo(map)
+
+      // Live dragging update
+      vertexMarker.on('drag', (ev: any) => {
+        const pos = ev.target.getLatLng()
+        const updated = [...routeWaypoints]
+        updated[idx] = [parseFloat(pos.lat.toFixed(6)), parseFloat(pos.lng.toFixed(6))]
+        if (draftPolylineRef.current) {
+          draftPolylineRef.current.setLatLngs(updated)
+        }
+      })
+
+      // Commit dragged position on dragend
+      vertexMarker.on('dragend', (ev: any) => {
+        const pos = ev.target.getLatLng()
+        setRouteWaypoints((prev) => {
+          const next = [...prev]
+          next[idx] = [parseFloat(pos.lat.toFixed(6)), parseFloat(pos.lng.toFixed(6))]
+          return next
+        })
+      })
+
+      draftVertexMarkersRef.current.push(vertexMarker)
+    })
+  }, [adminStudioOpen, geometryMode, routeWaypoints, routeType])
+
+  // Manage draft polygon and draggable vertex handles for Village Polygon Studio
+  useEffect(() => {
+    if (!mapInstanceRef.current) return
+    const map = mapInstanceRef.current
+
+    // Clean up previous draft polygon and handles
+    if (draftPolygonRef.current) {
+      draftPolygonRef.current.remove()
+      draftPolygonRef.current = null
+    }
+    draftPolygonVertexMarkersRef.current.forEach((m) => m.remove())
+    draftPolygonVertexMarkersRef.current = []
+
+    if (!adminStudioOpen || adminTab !== 'polygon') return
+
+    // Draw polygon if at least 3 points
+    if (polygonVertices.length >= 3) {
+      const poly = L.polygon(polygonVertices, {
+        color: editingVillageColor || '#3b82f6',
+        weight: 3,
+        fillColor: editingVillageColor || '#3b82f6',
+        fillOpacity: 0.45,
+        dashArray: '4, 4',
+      }).addTo(map)
+      draftPolygonRef.current = poly
+    } else if (polygonVertices.length === 2) {
+      // Draw line while defining first 2 points
+      const line = L.polyline(polygonVertices, {
+        color: editingVillageColor || '#3b82f6',
+        weight: 2.5,
+        dashArray: '4, 4',
+      }).addTo(map)
+      draftPolygonRef.current = line as any
+    }
+
+    // Draw draggable vertex handles for each point
+    polygonVertices.forEach(([lat, lng], idx) => {
+      const vertexIcon = L.divIcon({
+        className: 'custom-vertex-handle',
+        html: `
+          <div style="
+            width: 24px;
+            height: 24px;
+            background: #ffffff;
+            border: 2.5px solid ${editingVillageColor || '#0284c7'};
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 800;
+            color: #0f172a;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            cursor: grab;
+            user-select: none;
+          ">
+            ${idx + 1}
+          </div>
+        `,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+      })
+
+      const marker = L.marker([lat, lng], {
+        icon: vertexIcon,
+        draggable: true,
+      }).addTo(map)
+
+      marker.on('drag', (ev: any) => {
+        const newLatLng = ev.target.getLatLng()
+        const updated = [...polygonVertices]
+        updated[idx] = [parseFloat(newLatLng.lat.toFixed(6)), parseFloat(newLatLng.lng.toFixed(6))]
+        if (draftPolygonRef.current) {
+          draftPolygonRef.current.setLatLngs(updated)
+        }
+      })
+
+      marker.on('dragend', (ev: any) => {
+        const newLatLng = ev.target.getLatLng()
+        setPolygonVertices((prev) => {
+          const next = [...prev]
+          next[idx] = [parseFloat(newLatLng.lat.toFixed(6)), parseFloat(newLatLng.lng.toFixed(6))]
+          return next
+        })
+      })
+
+      // Right click to delete vertex
+      marker.on('contextmenu', (ev: any) => {
+        L.DomEvent.stopPropagation(ev)
+        setPolygonVertices((prev) => prev.filter((_, i) => i !== idx))
+      })
+
+      draftPolygonVertexMarkersRef.current.push(marker)
+    })
+  }, [adminStudioOpen, adminTab, polygonVertices, editingVillageColor])
+
+  const handleUndoLastWaypoint = () => {
+    setRouteWaypoints((prev) => prev.slice(0, -1))
+  }
+
+  const handleClearRoute = () => {
+    setRouteWaypoints([])
+  }
 
   // Admin Studio Handlers
   const handleOpenNewPoint = () => {
     setEditingFeatureId(null)
+    setGeometryMode('point')
+    setRouteWaypoints([])
     setFormName('')
     setFormLayer('LAYER_TOURISM_4A')
     setFormCategory('publik')
@@ -400,10 +698,223 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     updateDraftMarker(-4.5261, 129.8989)
   }
 
+  const handleOpenNewRoute = () => {
+    setEditingFeatureId(null)
+    setGeometryMode('route')
+    setRouteWaypoints([])
+    setRouteType('maritime')
+    setRouteTransport('Speedboat')
+    setRouteTravelTime('25 - 35 Menit')
+    setRouteStartName('Pelabuhan Laut Utama Banda Neira')
+    setRouteEndName('Terminal Dermaga Pulau Ay')
+    setFormName('Jalur Penyeberangan Speedboat Neira - Pulau Ay')
+    setFormLayer('LAYER_PUBLIC_SAFETY')
+    setFormCategory('publik')
+    setFormIsland('Pulau Ay')
+    setFormDescription('Jalur penyeberangan speedboat antar-pulau melintasi perairan Selat Ay.')
+    setAdminTab('form')
+    setAdminStudioOpen(true)
+    removeDraftMarker()
+  }
+
   const handleCloseAdminStudio = () => {
     setAdminStudioOpen(false)
     setEditingFeatureId(null)
+    setEditingVillageId(null)
     removeDraftMarker()
+    if (draftPolylineRef.current) {
+      draftPolylineRef.current.remove()
+      draftPolylineRef.current = null
+    }
+    draftVertexMarkersRef.current.forEach((m) => m.remove())
+    draftVertexMarkersRef.current = []
+    setRouteWaypoints([])
+    if (draftPolygonRef.current) {
+      draftPolygonRef.current.remove()
+      draftPolygonRef.current = null
+    }
+    draftPolygonVertexMarkersRef.current.forEach((m) => m.remove())
+    draftPolygonVertexMarkersRef.current = []
+    setPolygonVertices([])
+  }
+
+  // Village Polygon Handlers
+  const handleStartEditVillagePolygon = (vName: string) => {
+    const feat = villageGeoJSON.features.find((f: any) => f.properties.name === vName)
+    if (!feat) return
+
+    let latlngs: [number, number][] = []
+    if (feat.geometry?.type === 'Polygon' && Array.isArray(feat.geometry.coordinates[0])) {
+      latlngs = feat.geometry.coordinates[0].map((c: any) => [Number(c[1]), Number(c[0])])
+      if (
+        latlngs.length > 2 &&
+        latlngs[0][0] === latlngs[latlngs.length - 1][0] &&
+        latlngs[0][1] === latlngs[latlngs.length - 1][1]
+      ) {
+        latlngs.pop()
+      }
+    }
+
+    const details = villageDetailsMap[vName] || {}
+
+    setEditingVillageId(feat.id || `desa-${vName.toLowerCase().replace(/\s+/g, '-')}`)
+    setEditingVillageName(vName)
+    setEditingVillageIsland(feat.properties.island || details.island || 'Pulau Neira')
+    setEditingVillageColor(feat.properties.color || details.color || '#3b82f6')
+    setEditingVillageDesc(details.description || '')
+    setEditingVillagePop(details.population || '')
+    setEditingVillageCommodity(details.main_commodity || '')
+    setEditingVillageArea(details.area_ha || '')
+    setPolygonVertices(latlngs)
+
+    setAdminStudioOpen(true)
+    setAdminTab('polygon')
+
+    if (mapInstanceRef.current && latlngs.length > 0) {
+      const bounds = L.latLngBounds(latlngs)
+      mapInstanceRef.current.fitBounds(bounds, { padding: [60, 60], maxZoom: 15 })
+    }
+  }
+
+  const handleAddNewVillagePolygon = () => {
+    setEditingVillageId(null)
+    setEditingVillageName('')
+    setEditingVillageIsland('Pulau Neira')
+    setEditingVillageColor('#3b82f6')
+    setEditingVillageDesc('')
+    setEditingVillagePop('')
+    setEditingVillageCommodity('')
+    setEditingVillageArea('')
+    setPolygonVertices([])
+    setAdminStudioOpen(true)
+    setAdminTab('polygon')
+  }
+
+  const handleSaveVillagePolygon = () => {
+    if (polygonVertices.length < 3) {
+      alert('Poligon harus memiliki minimal 3 titik simpul!')
+      return
+    }
+    if (!editingVillageName.trim()) {
+      alert('Nama desa / wilayah harus diisi!')
+      return
+    }
+
+    // Convert polygonVertices [lat, lng] to GeoJSON [lng, lat]
+    const closedCoords: [number, number][] = polygonVertices.map(([lat, lng]) => [lng, lat])
+    // Ensure closed loop
+    const first = closedCoords[0]
+    const last = closedCoords[closedCoords.length - 1]
+    if (first[0] !== last[0] || first[1] !== last[1]) {
+      closedCoords.push([first[0], first[1]])
+    }
+
+    const featureId = editingVillageId || `desa-${editingVillageName.toLowerCase().replace(/\s+/g, '-')}`
+
+    const updatedFeatures = villageGeoJSON.features.filter(
+      (f: any) => f.id !== featureId && f.properties.name !== editingVillageName
+    )
+    const newFeature = {
+      type: 'Feature',
+      id: featureId,
+      properties: {
+        name: editingVillageName,
+        island: editingVillageIsland,
+        color: editingVillageColor,
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [closedCoords],
+      },
+    }
+    updatedFeatures.push(newFeature)
+
+    const newGeoJSON = {
+      ...villageGeoJSON,
+      features: updatedFeatures,
+    }
+
+    setVillageGeoJSON(newGeoJSON)
+    try {
+      localStorage.setItem('banda_village_polygons_v1', JSON.stringify(newGeoJSON))
+    } catch (e) {
+      console.error('Gagal menyimpan poligon ke localStorage', e)
+    }
+
+    // Update village details
+    const updatedDetails = {
+      ...villageDetailsMap,
+      [editingVillageName]: {
+        name: editingVillageName,
+        island: editingVillageIsland,
+        color: editingVillageColor,
+        description: editingVillageDesc || 'Wilayah administrasi desa di Kepulauan Banda.',
+        population: editingVillagePop,
+        main_commodity: editingVillageCommodity,
+        area_ha: editingVillageArea,
+      },
+    }
+    setVillageDetailsMap(updatedDetails)
+    try {
+      localStorage.setItem('banda_village_details_v1', JSON.stringify(updatedDetails))
+    } catch (e) {
+      console.error('Gagal menyimpan details ke localStorage', e)
+    }
+
+    setNotificationMsg({
+      type: 'success',
+      text: `Bentuk poligon batas wilayah ${editingVillageName} berhasil disimpan dan disesuaikan!`,
+    })
+    setTimeout(() => setNotificationMsg(null), 5000)
+    setAdminStudioOpen(false)
+  }
+
+  const handleDeleteVillagePolygon = () => {
+    if (!editingVillageName) return
+    if (!window.confirm(`Hapus poligon batas wilayah ${editingVillageName}?`)) return
+
+    const updatedFeatures = villageGeoJSON.features.filter(
+      (f: any) => f.id !== editingVillageId && f.properties.name !== editingVillageName
+    )
+    const newGeoJSON = {
+      ...villageGeoJSON,
+      features: updatedFeatures,
+    }
+    setVillageGeoJSON(newGeoJSON)
+    localStorage.setItem('banda_village_polygons_v1', JSON.stringify(newGeoJSON))
+
+    setPolygonVertices([])
+    setEditingVillageId(null)
+    setNotificationMsg({
+      type: 'info',
+      text: `Poligon batas wilayah ${editingVillageName} telah dihapus.`,
+    })
+    setTimeout(() => setNotificationMsg(null), 4000)
+  }
+
+  const handleResetVillagePolygons = () => {
+    if (!window.confirm('Kembalikan seluruh poligon desa ke konfigurasi awal? Perubahan manual Anda akan di-reset.')) return
+    localStorage.removeItem('banda_village_polygons_v1')
+    localStorage.removeItem('banda_village_details_v1')
+    setVillageGeoJSON(BANDA_VILLAGES_GEOJSON)
+    setVillageDetailsMap(VILLAGE_DETAILS)
+    setPolygonVertices([])
+    setEditingVillageId(null)
+    setNotificationMsg({
+      type: 'info',
+      text: 'Batas poligon desa telah dikembalikan ke konfigurasi awal.',
+    })
+    setTimeout(() => setNotificationMsg(null), 4000)
+  }
+
+  const handleDownloadVillageGeoJSON = () => {
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(villageGeoJSON, null, 2))
+    const downloadAnchor = document.createElement('a')
+    downloadAnchor.setAttribute('href', dataStr)
+    downloadAnchor.setAttribute('download', 'banda_villages_calibrated.geojson')
+    document.body.appendChild(downloadAnchor)
+    downloadAnchor.click()
+    downloadAnchor.remove()
   }
 
   const handleStartEditFeature = (feat: GeoJSONFeature) => {
@@ -413,10 +924,36 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     setFormLayer(p.layer_type || 'LAYER_TOURISM_4A')
     setFormCategory(p.category || 'publik')
     setFormIsland(p.island_name || 'Pulau Neira')
-    const [lng, lat] = feat.geometry.coordinates
-    setFormLat(lat)
-    setFormLng(lng)
     setFormDescription(p.description || '')
+
+    const isLine = feat.geometry?.type === 'LineString' && Array.isArray(feat.geometry.coordinates)
+    if (isLine) {
+      setGeometryMode('route')
+      const waypoints: [number, number][] = feat.geometry.coordinates.map((c: any) => [
+        Number(c[1]),
+        Number(c[0]),
+      ])
+      setRouteWaypoints(waypoints)
+      setRouteType(p.properties_meta?.route_type || p.route_type || 'maritime')
+      setRouteTransport(p.properties_meta?.transport_mode || p.transport_mode || 'Speedboat')
+      setRouteTravelTime(p.properties_meta?.travel_time || p.travel_time || '')
+      setRouteStartName(p.properties_meta?.start_point || p.start_point || '')
+      setRouteEndName(p.properties_meta?.end_point || p.end_point || '')
+      removeDraftMarker()
+      if (waypoints.length > 0 && mapInstanceRef.current) {
+        mapInstanceRef.current.flyTo(waypoints[0], 13)
+      }
+    } else {
+      setGeometryMode('point')
+      setRouteWaypoints([])
+      const [lng, lat] = feat.geometry.coordinates
+      setFormLat(lat)
+      setFormLng(lng)
+      updateDraftMarker(lat, lng)
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.flyTo([lat, lng], 15)
+      }
+    }
 
     // 4A metadata fields
     setForm4aSubType(p.sub_type || 'bahari')
@@ -431,11 +968,6 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
     setAdminTab('form')
     setAdminStudioOpen(true)
-    updateDraftMarker(lat, lng)
-
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.flyTo([lat, lng], 15)
-    }
   }
 
   const handleSearchGmaps = async (e?: React.FormEvent) => {
@@ -454,6 +986,15 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   }
 
   const handleSelectGmapsResult = (res: GeocodingResult) => {
+    if (geometryMode === 'route') {
+      setRouteWaypoints((prev) => [...prev, [res.lat, res.lng]])
+      setAdminTab('form')
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.flyTo([res.lat, res.lng], 15)
+      }
+      return
+    }
+
     setFormName(res.name)
     setFormLat(res.lat)
     setFormLng(res.lng)
@@ -471,7 +1012,12 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   const handleSaveSpatialFeature = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formName.trim()) {
-      alert('Nama objek/titik wajib diisi.')
+      alert(geometryMode === 'route' ? 'Nama rute jalur wajib diisi.' : 'Nama objek/titik wajib diisi.')
+      return
+    }
+
+    if (geometryMode === 'route' && routeWaypoints.length < 2) {
+      alert('Garis rute memerlukan minimal 2 titik belokan pada peta. Silakan klik peta untuk menambahkan lintasan rute.')
       return
     }
 
@@ -483,56 +1029,90 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
     setIsSavingFeature(true)
     try {
-      const properties_meta: Record<string, any> = {}
-      if (formLayer === 'LAYER_TOURISM_4A') {
-        if (form4aSubType) properties_meta.sub_type = form4aSubType
-        if (form4aHighlights) properties_meta.highlights = form4aHighlights
-        if (form4aBoatAccess) properties_meta.boat_access = form4aBoatAccess
-        if (form4aTravelTime) properties_meta.travel_time = form4aTravelTime
-        if (form4aEntryFee) properties_meta.entry_fee_rp = parseInt(form4aEntryFee, 10) || 0
-        if (form4aBestTime) properties_meta.best_time = form4aBestTime
-        if (form4aFacilities) properties_meta.facilities = form4aFacilities
-        if (form4aContactWhatsapp) properties_meta.contact_whatsapp = form4aContactWhatsapp
-        properties_meta.guide_available = form4aGuideAvailable
-      } else if (formLayer === 'LAYER_ACCOMMODATION') {
-        if (form4aEntryFee) properties_meta.price_per_night_rp = parseInt(form4aEntryFee, 10) || 0
-        if (form4aContactWhatsapp) properties_meta.contact_whatsapp = form4aContactWhatsapp
-        if (form4aFacilities) properties_meta.facilities = form4aFacilities
-      } else if (formLayer === 'LAYER_HERITAGE') {
-        if (form4aHighlights) properties_meta.era = form4aHighlights
-        if (form4aEntryFee) properties_meta.entry_fee_rp = parseInt(form4aEntryFee, 10) || 0
-      }
+      let payload: any = {}
 
-      const payload = {
-        name: formName.trim(),
-        layer_type: formLayer,
-        category: ['LAYER_WATER_INFRA', 'LAYER_ENERGY_WASTE'].includes(formLayer) ? 'resiliensi' : formCategory,
-        island_name: formIsland,
-        latitude: Number(formLat),
-        longitude: Number(formLng),
-        properties_meta,
-        description: formDescription.trim() || undefined,
-        is_active: true,
+      if (geometryMode === 'route') {
+        const dist = calculateTotalDistance(routeWaypoints)
+        const midIdx = Math.floor(routeWaypoints.length / 2)
+        const routePropertiesMeta: Record<string, any> = {
+          is_route: true,
+          route_type: routeType,
+          transport_mode: routeTransport,
+          travel_time: routeTravelTime.trim() || undefined,
+          total_distance_km: dist.km,
+          total_distance_nm: dist.nm,
+          waypoints_count: routeWaypoints.length,
+          start_point: routeStartName.trim() || undefined,
+          end_point: routeEndName.trim() || undefined,
+        }
+
+        payload = {
+          name: formName.trim(),
+          layer_type: formLayer,
+          category: ['LAYER_WATER_INFRA', 'LAYER_ENERGY_WASTE'].includes(formLayer) ? 'resiliensi' : formCategory,
+          island_name: formIsland,
+          latitude: Number(routeWaypoints[midIdx][0]),
+          longitude: Number(routeWaypoints[midIdx][1]),
+          geometry_geojson: {
+            type: 'LineString',
+            coordinates: routeWaypoints.map(([lat, lng]) => [lng, lat]),
+          },
+          properties_meta: routePropertiesMeta,
+          description: formDescription.trim() || undefined,
+          is_active: true,
+        }
+      } else {
+        const properties_meta: Record<string, any> = {}
+        if (formLayer === 'LAYER_TOURISM_4A') {
+          if (form4aSubType) properties_meta.sub_type = form4aSubType
+          if (form4aHighlights) properties_meta.highlights = form4aHighlights
+          if (form4aBoatAccess) properties_meta.boat_access = form4aBoatAccess
+          if (form4aTravelTime) properties_meta.travel_time = form4aTravelTime
+          if (form4aEntryFee) properties_meta.entry_fee_rp = parseInt(form4aEntryFee, 10) || 0
+          if (form4aBestTime) properties_meta.best_time = form4aBestTime
+          if (form4aFacilities) properties_meta.facilities = form4aFacilities
+          if (form4aContactWhatsapp) properties_meta.contact_whatsapp = form4aContactWhatsapp
+          properties_meta.guide_available = form4aGuideAvailable
+        } else if (formLayer === 'LAYER_ACCOMMODATION') {
+          if (form4aEntryFee) properties_meta.price_per_night_rp = parseInt(form4aEntryFee, 10) || 0
+          if (form4aContactWhatsapp) properties_meta.contact_whatsapp = form4aContactWhatsapp
+          if (form4aFacilities) properties_meta.facilities = form4aFacilities
+        } else if (formLayer === 'LAYER_HERITAGE') {
+          if (form4aHighlights) properties_meta.era = form4aHighlights
+          if (form4aEntryFee) properties_meta.entry_fee_rp = parseInt(form4aEntryFee, 10) || 0
+        }
+
+        payload = {
+          name: formName.trim(),
+          layer_type: formLayer,
+          category: ['LAYER_WATER_INFRA', 'LAYER_ENERGY_WASTE'].includes(formLayer) ? 'resiliensi' : formCategory,
+          island_name: formIsland,
+          latitude: Number(formLat),
+          longitude: Number(formLng),
+          properties_meta,
+          description: formDescription.trim() || undefined,
+          is_active: true,
+        }
       }
 
       if (editingFeatureId) {
         await gisService.updateFeature(editingFeatureId, payload, token)
         setNotificationMsg({
           type: 'success',
-          text: `Berhasil memperbarui titik '${formName}' di PostGIS!`,
+          text: `Berhasil memperbarui ${geometryMode === 'route' ? 'garis rute' : 'titik'} '${formName}' di PostGIS!`,
         })
       } else {
         await gisService.createFeature(payload, token)
         setNotificationMsg({
           type: 'success',
-          text: `Berhasil menambahkan titik baru '${formName}' ke layer ${LAYER_LABELS[formLayer]} di PostGIS!`,
+          text: `Berhasil menambahkan ${geometryMode === 'route' ? 'rute baru' : 'titik baru'} '${formName}' di PostGIS!`,
         })
       }
 
       await loadGISData()
       handleCloseAdminStudio()
     } catch (err: any) {
-      alert(`Gagal menyimpan titik: ${err?.message || 'Terjadi kesalahan sistem'}`)
+      alert(`Gagal menyimpan: ${err?.message || 'Terjadi kesalahan sistem'}`)
     } finally {
       setIsSavingFeature(false)
     }
@@ -596,7 +1176,57 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     layerGroupRef.current.clearLayers()
 
     filteredFeatures.forEach((feat) => {
+      // 1. Render Route (LineString) features
+      if (feat.geometry?.type === 'LineString' && Array.isArray(feat.geometry.coordinates)) {
+        if (!showRoutes) return
+        const latlngs: [number, number][] = feat.geometry.coordinates.map((c: any) => [
+          Number(c[1]),
+          Number(c[0]),
+        ])
+        if (latlngs.length < 2) return
+
+        const { name, properties_meta } = feat.properties
+        const rType = properties_meta?.route_type || 'maritime'
+        const isSelected = selectedFeature?.id === feat.id
+
+        const color =
+          rType === 'maritime'
+            ? '#0284c7'
+            : rType === 'heritage'
+            ? '#b45309'
+            : rType === 'trekking'
+            ? '#dc2626'
+            : '#2563eb'
+
+        const polyline = L.polyline(latlngs, {
+          color,
+          weight: isSelected ? 5.5 : 4,
+          dashArray: rType === 'maritime' ? '8, 8' : undefined,
+          opacity: isSelected ? 1 : 0.85,
+        })
+
+        const distKm = properties_meta?.total_distance_km ? `${properties_meta.total_distance_km} km` : ''
+        const tTime = properties_meta?.travel_time ? ` · ${properties_meta.travel_time}` : ''
+        const mode = properties_meta?.transport_mode ? ` · ${properties_meta.transport_mode}` : ''
+
+        polyline.bindTooltip(
+          `<div style="font-family: inherit; font-size: 12px; font-weight: 600;"><b>${name}</b><br/><span style="font-size: 10px; color: #64748b;">${distKm}${tTime}${mode}</span></div>`,
+          { sticky: true }
+        )
+
+        polyline.on('click', () => {
+          setSelectedFeature(feat)
+        })
+
+        layerGroupRef.current?.addLayer(polyline)
+        return
+      }
+
+      // 2. Render Point features
+      if (!feat.geometry?.coordinates || !Array.isArray(feat.geometry.coordinates)) return
       const [lng, lat] = feat.geometry.coordinates
+      if (typeof lng !== 'number' || typeof lat !== 'number') return
+
       const { name, layer_type, island_name, description } = feat.properties
 
       const color = LAYER_COLORS[layer_type] || '#10b981'
@@ -672,6 +1302,101 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     })
   }, [filteredFeatures, selectedFeature])
 
+  // Manage and Render Administrative Village Boundaries (Choropleth Polygons)
+  useEffect(() => {
+    if (!mapInstanceRef.current) return
+
+    if (villageBoundariesLayerRef.current) {
+      villageBoundariesLayerRef.current.remove()
+      villageBoundariesLayerRef.current = null
+    }
+
+    if (!showVillageBoundaries) return
+
+    const geoJsonLayer = L.geoJSON(villageGeoJSON, {
+      style: (feat) => {
+        const vName = feat?.properties?.name
+        const isSelected = selectedVillage?.name === vName
+        const isBeingEdited = adminStudioOpen && adminTab === 'polygon' && editingVillageName === vName
+        if (isBeingEdited) {
+          // Hide polygon while in active edit mode so draft polygon with handles is shown
+          return { fillOpacity: 0, opacity: 0 }
+        }
+        const baseColor = feat?.properties?.color || '#3b82f6'
+        return {
+          fillColor: baseColor,
+          fillOpacity: isSelected ? 0.62 : 0.28,
+          color: isSelected ? '#0f172a' : baseColor,
+          weight: isSelected ? 2.5 : 1.2,
+          dashArray: isSelected ? undefined : '3, 3',
+        }
+      },
+      onEachFeature: (feat, layer) => {
+        const { name, island, color } = feat.properties
+        const details = villageDetailsMap[name]
+        layer.bindTooltip(
+          `<div style="font-family: inherit; font-size: 11px; font-weight: 700; color: #0f172a;">
+            <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: ${color}; margin-right: 4px;"></span>
+            <b>${name}</b><br/>
+            <span style="font-size: 9px; color: #64748b; font-weight: 500;">${island}</span>
+          </div>`,
+          { sticky: true, opacity: 0.95 }
+        )
+
+        layer.on({
+          mouseover: (e: any) => {
+            const l = e.target
+            if (selectedVillage?.name !== name) {
+              l.setStyle({
+                fillOpacity: 0.52,
+                weight: 2,
+              })
+            }
+          },
+          mouseout: (e: any) => {
+            const l = e.target
+            if (selectedVillage?.name !== name) {
+              l.setStyle({
+                fillOpacity: 0.28,
+                weight: 1.2,
+              })
+            }
+          },
+          click: (e: any) => {
+            L.DomEvent.stopPropagation(e)
+            if (details) {
+              setSelectedVillage(details)
+            } else {
+              setSelectedVillage({
+                name,
+                island,
+                color,
+                description: 'Wilayah administrasi desa di Kepulauan Banda.',
+              })
+            }
+          },
+        })
+      },
+    })
+
+    geoJsonLayer.addTo(mapInstanceRef.current)
+    geoJsonLayer.bringToBack()
+    villageBoundariesLayerRef.current = geoJsonLayer
+  }, [showVillageBoundaries, selectedVillage, villageGeoJSON, villageDetailsMap, adminStudioOpen, adminTab, editingVillageName])
+
+  const handleFocusVillage = (vName: string) => {
+    const details = VILLAGE_DETAILS[vName]
+    if (details) setSelectedVillage(details)
+    if (villageBoundariesLayerRef.current && mapInstanceRef.current) {
+      villageBoundariesLayerRef.current.eachLayer((layer: any) => {
+        if (layer.feature?.properties?.name === vName) {
+          const bounds = layer.getBounds()
+          mapInstanceRef.current?.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 })
+        }
+      })
+    }
+  }
+
   // Toggle single layer
   const toggleLayer = (layerId: string) => {
     setSelectedLayers((prev) => {
@@ -708,8 +1433,14 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   const handleFocusFeature = (feat: GeoJSONFeature) => {
     setSelectedFeature(feat)
     if (mapInstanceRef.current) {
-      const [lng, lat] = feat.geometry.coordinates
-      mapInstanceRef.current.setView([lat, lng], 15, { animate: true })
+      if (feat.geometry?.type === 'LineString' && Array.isArray(feat.geometry.coordinates)) {
+        const coords: [number, number][] = feat.geometry.coordinates.map((c: any) => [Number(c[1]), Number(c[0])])
+        const bounds = L.latLngBounds(coords)
+        mapInstanceRef.current.fitBounds(bounds, { padding: [40, 40] })
+      } else if (Array.isArray(feat.geometry?.coordinates)) {
+        const [lng, lat] = feat.geometry.coordinates
+        mapInstanceRef.current.setView([lat, lng], 15, { animate: true })
+      }
     }
   }
 
@@ -860,32 +1591,54 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
           </button>
 
           {isOfficerOrAdmin && (
-            <button
-              type="button"
-              onClick={() => {
-                if (adminStudioOpen) {
-                  handleCloseAdminStudio()
-                } else {
-                  handleOpenNewPoint()
-                }
-              }}
-              style={{
-                fontSize: '0.78rem',
-                padding: '0.4rem 0.85rem',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                background: adminStudioOpen ? '#059669' : '#ffffff',
-                color: adminStudioOpen ? '#ffffff' : '#059669',
-                border: '1.5px solid #059669',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: 600,
-              }}
-            >
-              <Edit2 size={13} />
-              {adminStudioOpen ? 'Tutup Studio' : 'Studio Editor'}
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={handleOpenNewRoute}
+                style={{
+                  fontSize: '0.78rem',
+                  padding: '0.4rem 0.85rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  background: adminStudioOpen && geometryMode === 'route' ? '#0284c7' : '#ffffff',
+                  color: adminStudioOpen && geometryMode === 'route' ? '#ffffff' : '#0284c7',
+                  border: '1.5px solid #0284c7',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                <Route size={13} />
+                Tarik Rute Baru
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (adminStudioOpen) {
+                    handleCloseAdminStudio()
+                  } else {
+                    handleOpenNewPoint()
+                  }
+                }}
+                style={{
+                  fontSize: '0.78rem',
+                  padding: '0.4rem 0.85rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  background: adminStudioOpen && geometryMode === 'point' ? '#059669' : '#ffffff',
+                  color: adminStudioOpen && geometryMode === 'point' ? '#ffffff' : '#059669',
+                  border: '1.5px solid #059669',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                <Edit2 size={13} />
+                {adminStudioOpen && geometryMode === 'point' ? 'Tutup Studio' : 'Tambah Titik'}
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -1162,10 +1915,16 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               </div>
               <div>
                 <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#0f2c59' }}>
-                  {editingFeatureId ? 'Edit Titik Spasial PostGIS' : 'Studio Editor Titik Spasial PostGIS'}
+                  {adminTab === 'polygon'
+                    ? `Editor Poligon Batas Desa: ${editingVillageName || 'Wilayah Baru'}`
+                    : editingFeatureId
+                    ? 'Edit Titik Spasial PostGIS'
+                    : 'Studio Editor Titik Spasial PostGIS'}
                 </h3>
                 <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748b' }}>
-                  {editingFeatureId
+                  {adminTab === 'polygon'
+                    ? 'Tarik dan seret titik-titik sudut di peta untuk menyesuaikan garis batas pulau dan desa secara presisi.'
+                    : editingFeatureId
                     ? `Memperbarui titik: ${formName || 'Objek Terpilih'}`
                     : 'Tambah titik baru secara presisi atau tarik koordinat dari Google Maps / OSM'}
                 </p>
@@ -1222,6 +1981,31 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                 >
                   <Globe size={12} />
                   Cari Google Maps / OSM
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAdminTab('polygon')
+                    if (!editingVillageName && villageGeoJSON.features.length > 0) {
+                      handleStartEditVillagePolygon(villageGeoJSON.features[0].properties.name)
+                    }
+                  }}
+                  style={{
+                    padding: '0.35rem 0.75rem',
+                    borderRadius: '6px',
+                    border: 'none',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    background: adminTab === 'polygon' ? '#0f766e' : 'transparent',
+                    color: adminTab === 'polygon' ? '#ffffff' : '#64748b',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                  }}
+                >
+                  <Layers size={12} />
+                  Editor Poligon Batas Desa
                 </button>
               </div>
 
@@ -1372,24 +2156,159 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
           {/* Tab 2: Form Atribut & 4A Wisata */}
           {adminTab === 'form' && (
             <form onSubmit={handleSaveSpatialFeature} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div
-                style={{
-                  background: '#ecfdf5',
-                  border: '1px solid #a7f3d0',
-                  padding: '0.5rem 0.75rem',
-                  borderRadius: '8px',
-                  fontSize: '0.75rem',
-                  color: '#065f46',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                }}
-              >
-                <Crosshair size={14} />
-                <span>
-                  Tip: Klik pada peta atau seret marker pin merah untuk memperbarui titik koordinat secara langsung.
-                </span>
+              {/* Geometry Mode Switcher: Point vs Route */}
+              <div style={{ display: 'flex', gap: '0.5rem', background: '#f8fafc', padding: '0.35rem', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGeometryMode('point')
+                    if (draftPolylineRef.current) draftPolylineRef.current.remove()
+                    draftVertexMarkersRef.current.forEach((m) => m.remove())
+                    draftVertexMarkersRef.current = []
+                    updateDraftMarker(formLat, formLng)
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '0.5rem',
+                    borderRadius: '8px',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    border: geometryMode === 'point' ? '1.5px solid #0284c7' : '1px solid transparent',
+                    background: geometryMode === 'point' ? '#ffffff' : 'transparent',
+                    color: geometryMode === 'point' ? '#0284c7' : '#64748b',
+                    boxShadow: geometryMode === 'point' ? '0 1px 3px rgba(0,0,0,0.05)' : 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.4rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <MapPin size={14} />
+                  <span>Titik Tunggal (Point)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGeometryMode('route')
+                    removeDraftMarker()
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '0.5rem',
+                    borderRadius: '8px',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    border: geometryMode === 'route' ? '1.5px solid #0284c7' : '1px solid transparent',
+                    background: geometryMode === 'route' ? '#ffffff' : 'transparent',
+                    color: geometryMode === 'route' ? '#0284c7' : '#64748b',
+                    boxShadow: geometryMode === 'route' ? '0 1px 3px rgba(0,0,0,0.05)' : 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.4rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <Route size={14} />
+                  <span>Garis Rute / Jalur (Polyline)</span>
+                </button>
               </div>
+
+              {/* Interactive Instructions / Status */}
+              {geometryMode === 'point' ? (
+                <div
+                  style={{
+                    background: '#ecfdf5',
+                    border: '1px solid #a7f3d0',
+                    padding: '0.5rem 0.75rem',
+                    borderRadius: '8px',
+                    fontSize: '0.75rem',
+                    color: '#065f46',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                  }}
+                >
+                  <Crosshair size={14} />
+                  <span>
+                    Tip: Klik pada peta atau seret marker pin merah untuk memperbarui titik koordinat secara langsung.
+                  </span>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    background: '#f0f9ff',
+                    border: '1px solid #bae6fd',
+                    padding: '0.75rem 0.85rem',
+                    borderRadius: '10px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.5rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#0369a1', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <Navigation size={14} />
+                      <span>{routeWaypoints.length} Titik Lintasan Belokan</span>
+                    </div>
+                    {routeWaypoints.length > 0 && (
+                      <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#0284c7', background: '#ffffff', padding: '0.15rem 0.5rem', borderRadius: '6px', border: '1px solid #bae6fd' }}>
+                        Panjang: {calculateTotalDistance(routeWaypoints).km} km ({calculateTotalDistance(routeWaypoints).nm} NM)
+                      </span>
+                    )}
+                  </div>
+                  <p style={{ margin: 0, fontSize: '0.73rem', color: '#475569', lineHeight: 1.4 }}>
+                    Klik berulang kali pada peta untuk menambah titik belokan jalur. Seret nomor titik di peta untuk membelokkan jalur rute secara presisi.
+                  </p>
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.2rem' }}>
+                    <button
+                      type="button"
+                      onClick={handleUndoLastWaypoint}
+                      disabled={routeWaypoints.length === 0}
+                      style={{
+                        padding: '0.35rem 0.65rem',
+                        borderRadius: '6px',
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        background: '#ffffff',
+                        border: '1px solid #cbd5e1',
+                        color: '#334155',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                        cursor: routeWaypoints.length === 0 ? 'not-allowed' : 'pointer',
+                        opacity: routeWaypoints.length === 0 ? 0.5 : 1,
+                      }}
+                    >
+                      <Undo size={12} />
+                      <span>Hapus Titik Terakhir</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleClearRoute}
+                      disabled={routeWaypoints.length === 0}
+                      style={{
+                        padding: '0.35rem 0.65rem',
+                        borderRadius: '6px',
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        background: '#fff1f2',
+                        border: '1px solid #fecdd3',
+                        color: '#dc2626',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                        cursor: routeWaypoints.length === 0 ? 'not-allowed' : 'pointer',
+                        opacity: routeWaypoints.length === 0 ? 0.5 : 1,
+                      }}
+                    >
+                      <RotateCcw size={12} />
+                      <span>Bersihkan Seluruh Jalur</span>
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Grid 1: Basic Identifiers */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
@@ -1446,7 +2365,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     <option value="LAYER_HERITAGE">Situs Sejarah &amp; Cagar Budaya</option>
                     <option value="LAYER_ACCOMMODATION">Akomodasi &amp; Penginapan</option>
                     <option value="LAYER_KOPERASI_UMKM">Koperasi &amp; Sentra UMKM Rempah</option>
-                    <option value="LAYER_DESA_ADMIN">Fasilitas Desa &amp; Administrasi</option>
+                    <option value="LAYER_PUBLIC_SAFETY">Fasilitas Umum &amp; Transportasi (Dermaga, Pelabuhan, Kantor)</option>
                     <option value="LAYER_WATER_INFRA">Infrastruktur Air RO &amp; Sensor IoT</option>
                     <option value="LAYER_ENERGY_WASTE">Energi Surya &amp; Pengelolaan Sampah</option>
                   </select>
@@ -1505,64 +2424,187 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                 </div>
               </div>
 
-              {/* Coordinates */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.3rem' }}>
-                    Latitude (Lintang) <span style={{ color: '#ef4444' }}>*</span>
-                  </label>
-                  <input
-                    type="number"
-                    step="any"
-                    required
-                    value={formLat}
-                    onChange={(e) => {
-                      const latVal = parseFloat(e.target.value) || 0
-                      setFormLat(latVal)
-                      updateDraftMarker(latVal, formLng)
-                    }}
-                    style={{
-                      width: '100%',
-                      padding: '0.45rem 0.65rem',
-                      fontSize: '0.8rem',
-                      background: '#ffffff',
-                      border: '1px solid #cbd5e1',
-                      borderRadius: '8px',
-                      color: '#0f172a',
-                      outline: 'none',
-                      fontFamily: 'monospace',
-                    }}
-                  />
-                </div>
+              {/* Coordinates or Route Specific Attributes */}
+              {geometryMode === 'point' ? (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.3rem' }}>
+                      Latitude (Lintang) <span style={{ color: '#ef4444' }}>*</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      required
+                      value={formLat}
+                      onChange={(e) => {
+                        const latVal = parseFloat(e.target.value) || 0
+                        setFormLat(latVal)
+                        updateDraftMarker(latVal, formLng)
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '0.45rem 0.65rem',
+                        fontSize: '0.8rem',
+                        background: '#ffffff',
+                        border: '1px solid #cbd5e1',
+                        borderRadius: '8px',
+                        color: '#0f172a',
+                        outline: 'none',
+                        fontFamily: 'monospace',
+                      }}
+                    />
+                  </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.3rem' }}>
-                    Longitude (Bujur) <span style={{ color: '#ef4444' }}>*</span>
-                  </label>
-                  <input
-                    type="number"
-                    step="any"
-                    required
-                    value={formLng}
-                    onChange={(e) => {
-                      const lngVal = parseFloat(e.target.value) || 0
-                      setFormLng(lngVal)
-                      updateDraftMarker(formLat, lngVal)
-                    }}
-                    style={{
-                      width: '100%',
-                      padding: '0.45rem 0.65rem',
-                      fontSize: '0.8rem',
-                      background: '#ffffff',
-                      border: '1px solid #cbd5e1',
-                      borderRadius: '8px',
-                      color: '#0f172a',
-                      outline: 'none',
-                      fontFamily: 'monospace',
-                    }}
-                  />
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.3rem' }}>
+                      Longitude (Bujur) <span style={{ color: '#ef4444' }}>*</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      required
+                      value={formLng}
+                      onChange={(e) => {
+                        const lngVal = parseFloat(e.target.value) || 0
+                        setFormLng(lngVal)
+                        updateDraftMarker(formLat, lngVal)
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '0.45rem 0.65rem',
+                        fontSize: '0.8rem',
+                        background: '#ffffff',
+                        border: '1px solid #cbd5e1',
+                        borderRadius: '8px',
+                        color: '#0f172a',
+                        outline: 'none',
+                        fontFamily: 'monospace',
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', background: '#f8fafc', padding: '0.85rem', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#0369a1', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <Navigation size={14} />
+                    <span>Parameter Jalur &amp; Navigasi Maritim / Trekking</span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.725rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                        Jenis Koridor / Rute
+                      </label>
+                      <select
+                        value={routeType}
+                        onChange={(e) => setRouteType(e.target.value as any)}
+                        style={{
+                          width: '100%',
+                          padding: '0.4rem 0.6rem',
+                          fontSize: '0.775rem',
+                          background: '#ffffff',
+                          border: '1px solid #cbd5e1',
+                          borderRadius: '6px',
+                          color: '#0f172a',
+                          outline: 'none',
+                        }}
+                      >
+                        <option value="maritime">Jalur Pelayaran Laut (Maritime Route)</option>
+                        <option value="heritage">Jalur Napak Tilas Sejarah &amp; Rempah</option>
+                        <option value="trekking">Jalur Trekking &amp; Pendakian Gunung</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.725rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                        Moda Transportasi Utama
+                      </label>
+                      <input
+                        type="text"
+                        value={routeTransport}
+                        onChange={(e) => setRouteTransport(e.target.value)}
+                        placeholder="Contoh: Speedboat 2 Mesin, Perahu Motor Ketinting, Jalan Kaki"
+                        style={{
+                          width: '100%',
+                          padding: '0.4rem 0.6rem',
+                          fontSize: '0.775rem',
+                          background: '#ffffff',
+                          border: '1px solid #cbd5e1',
+                          borderRadius: '6px',
+                          color: '#0f172a',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.725rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                        Titik Awal (Origin)
+                      </label>
+                      <input
+                        type="text"
+                        value={routeStartName}
+                        onChange={(e) => setRouteStartName(e.target.value)}
+                        placeholder="Contoh: Dermaga Banda Neira"
+                        style={{
+                          width: '100%',
+                          padding: '0.4rem 0.6rem',
+                          fontSize: '0.775rem',
+                          background: '#ffffff',
+                          border: '1px solid #cbd5e1',
+                          borderRadius: '6px',
+                          color: '#0f172a',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.725rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                        Titik Tujuan (Destination)
+                      </label>
+                      <input
+                        type="text"
+                        value={routeEndName}
+                        onChange={(e) => setRouteEndName(e.target.value)}
+                        placeholder="Contoh: Terminal Dermaga Pulau Ay"
+                        style={{
+                          width: '100%',
+                          padding: '0.4rem 0.6rem',
+                          fontSize: '0.775rem',
+                          background: '#ffffff',
+                          border: '1px solid #cbd5e1',
+                          borderRadius: '6px',
+                          color: '#0f172a',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.725rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                        Estimasi Waktu Tempuh
+                      </label>
+                      <input
+                        type="text"
+                        value={routeTravelTime}
+                        onChange={(e) => setRouteTravelTime(e.target.value)}
+                        placeholder="Contoh: 30 - 45 Menit"
+                        style={{
+                          width: '100%',
+                          padding: '0.4rem 0.6rem',
+                          fontSize: '0.775rem',
+                          background: '#ffffff',
+                          border: '1px solid #cbd5e1',
+                          borderRadius: '6px',
+                          color: '#0f172a',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Description */}
               <div>
@@ -1847,10 +2889,456 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                   }}
                 >
                   <Save size={13} className={isSavingFeature ? 'animate-spin' : ''} />
-                  {isSavingFeature ? 'Menyimpan ke PostGIS...' : editingFeatureId ? 'Perbarui Titik' : 'Simpan Titik ke PostGIS'}
+                  {isSavingFeature
+                    ? 'Menyimpan ke PostGIS...'
+                    : editingFeatureId
+                    ? geometryMode === 'route'
+                      ? 'Perbarui Jalur Rute'
+                      : 'Perbarui Titik'
+                    : geometryMode === 'route'
+                    ? 'Simpan Jalur Rute ke PostGIS'
+                    : 'Simpan Titik ke PostGIS'}
                 </button>
               </div>
             </form>
+          )}
+
+          {/* Tab 3: Interactive Village Polygon Boundary Editor */}
+          {adminTab === 'polygon' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {/* Top Controls: Village Selector & New Village Button */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '0.75rem',
+                  background: '#f8fafc',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '10px',
+                  border: '1px solid #e2e8f0',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', flex: 1 }}>
+                  <label style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0f2c59', whiteSpace: 'nowrap' }}>
+                    Pilih Desa / Wilayah yang Diedit:
+                  </label>
+                  <select
+                    value={editingVillageName}
+                    onChange={(e) => handleStartEditVillagePolygon(e.target.value)}
+                    style={{
+                      padding: '0.4rem 0.75rem',
+                      fontSize: '0.8rem',
+                      fontWeight: 700,
+                      background: '#ffffff',
+                      border: '1.5px solid #0f766e',
+                      borderRadius: '8px',
+                      color: '#0f2c59',
+                      outline: 'none',
+                      cursor: 'pointer',
+                      minWidth: '200px',
+                    }}
+                  >
+                    {villageGeoJSON.features.map((feat: any) => (
+                      <option key={feat.properties.name} value={feat.properties.name}>
+                        {feat.properties.name} ({feat.properties.island})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={handleAddNewVillagePolygon}
+                    style={{
+                      padding: '0.4rem 0.8rem',
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      background: '#0f766e',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                    }}
+                  >
+                    <Edit3 size={12} />
+                    + Buat Batas Desa Baru
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDownloadVillageGeoJSON}
+                    style={{
+                      padding: '0.4rem 0.75rem',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      background: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      color: '#334155',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                    }}
+                    title="Unduh file GeoJSON batas desa yang sudah terkalibrasi"
+                  >
+                    <Download size={12} />
+                    Unduh GeoJSON
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleResetVillagePolygons}
+                    style={{
+                      padding: '0.4rem 0.75rem',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      background: '#fff1f2',
+                      border: '1px solid #fecdd3',
+                      color: '#dc2626',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                    }}
+                    title="Kembalikan semua batas desa ke bentuk awal"
+                  >
+                    <RefreshCw size={12} />
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              {/* Status & Vertex Editor Guidance Banner */}
+              <div
+                style={{
+                  background: '#f0fdf4',
+                  border: '1.5px solid #86efac',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '10px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.8rem', fontWeight: 800, color: '#166534' }}>
+                    <Crosshair size={14} />
+                    <span>Mode Edit Poligon Aktif: {polygonVertices.length} Titik Sudut (Simpul)</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.45rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => setPolygonVertices((prev) => prev.slice(0, -1))}
+                      disabled={polygonVertices.length === 0}
+                      style={{
+                        padding: '0.3rem 0.65rem',
+                        fontSize: '0.725rem',
+                        fontWeight: 600,
+                        background: '#ffffff',
+                        border: '1px solid #cbd5e1',
+                        borderRadius: '6px',
+                        color: '#334155',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                        cursor: polygonVertices.length === 0 ? 'not-allowed' : 'pointer',
+                        opacity: polygonVertices.length === 0 ? 0.5 : 1,
+                      }}
+                    >
+                      <Undo size={11} />
+                      Hapus Titik Terakhir
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPolygonVertices([])}
+                      disabled={polygonVertices.length === 0}
+                      style={{
+                        padding: '0.3rem 0.65rem',
+                        fontSize: '0.725rem',
+                        fontWeight: 600,
+                        background: '#fff1f2',
+                        border: '1px solid #fecdd3',
+                        color: '#dc2626',
+                        borderRadius: '6px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                        cursor: polygonVertices.length === 0 ? 'not-allowed' : 'pointer',
+                        opacity: polygonVertices.length === 0 ? 0.5 : 1,
+                      }}
+                    >
+                      <RotateCcw size={11} />
+                      Bersihkan Semua Titik
+                    </button>
+                  </div>
+                </div>
+
+                <p style={{ margin: 0, fontSize: '0.75rem', color: '#15803d', lineHeight: 1.45 }}>
+                  <b>Cara Menyesuaikan Titik di Peta:</b>
+                  <br />
+                  1. <b>Seret Nomor Titik (Drag):</b> Klik &amp; tahan nomor titik bulat di peta untuk menggeser sudut garis batas mengikuti garis pantai pulau.
+                  <br />
+                  2. <b>Tambah Titik Baru:</b> Klik sembarang posisi di peta untuk menambah titik sudut baru.
+                  <br />
+                  3. <b>Hapus Titik:</b> Klik kanan pada nomor titik tertentu di peta atau tekan tombol <i>Hapus Titik Terakhir</i>.
+                </p>
+              </div>
+
+              {/* Form Input Attributes for Village */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                    Nama Desa / Wilayah <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editingVillageName}
+                    onChange={(e) => setEditingVillageName(e.target.value)}
+                    placeholder="Contoh: Lonthoir"
+                    style={{
+                      width: '100%',
+                      padding: '0.45rem 0.65rem',
+                      fontSize: '0.8rem',
+                      background: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      color: '#0f172a',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                    Pulau Induk <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                  <select
+                    value={editingVillageIsland}
+                    onChange={(e) => setEditingVillageIsland(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.45rem 0.65rem',
+                      fontSize: '0.8rem',
+                      background: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      color: '#0f172a',
+                      outline: 'none',
+                    }}
+                  >
+                    <option value="Banda Besar">Banda Besar (Lonthoir)</option>
+                    <option value="Pulau Neira">Pulau Neira</option>
+                    <option value="Pulau Gunung Api">Pulau Gunung Api</option>
+                    <option value="Pulau Keraka">Pulau Keraka</option>
+                    <option value="Pulau Ay">Pulau Ay</option>
+                    <option value="Pulau Rhun">Pulau Rhun</option>
+                    <option value="Pulau Hatta">Pulau Hatta</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                    Warna Arsiran Wilayah (Hex)
+                  </label>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input
+                      type="color"
+                      value={editingVillageColor}
+                      onChange={(e) => setEditingVillageColor(e.target.value)}
+                      style={{
+                        width: '36px',
+                        height: '34px',
+                        padding: '1px',
+                        borderRadius: '6px',
+                        border: '1px solid #cbd5e1',
+                        cursor: 'pointer',
+                      }}
+                    />
+                    <input
+                      type="text"
+                      value={editingVillageColor}
+                      onChange={(e) => setEditingVillageColor(e.target.value)}
+                      style={{
+                        flex: 1,
+                        padding: '0.45rem 0.65rem',
+                        fontSize: '0.8rem',
+                        background: '#ffffff',
+                        border: '1px solid #cbd5e1',
+                        borderRadius: '8px',
+                        color: '#0f172a',
+                        outline: 'none',
+                        fontFamily: 'monospace',
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                    Estimasi Jumlah Penduduk
+                  </label>
+                  <input
+                    type="text"
+                    value={editingVillagePop}
+                    onChange={(e) => setEditingVillagePop(e.target.value)}
+                    placeholder="Contoh: 2.620 Jiwa"
+                    style={{
+                      width: '100%',
+                      padding: '0.45rem 0.65rem',
+                      fontSize: '0.8rem',
+                      background: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      color: '#0f172a',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                    Komoditas / Potensi Utama
+                  </label>
+                  <input
+                    type="text"
+                    value={editingVillageCommodity}
+                    onChange={(e) => setEditingVillageCommodity(e.target.value)}
+                    placeholder="Contoh: Pala Lonthoir Grade AAA & Minyak Fuli"
+                    style={{
+                      width: '100%',
+                      padding: '0.45rem 0.65rem',
+                      fontSize: '0.8rem',
+                      background: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      color: '#0f172a',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                    Estimasi Luas Wilayah
+                  </label>
+                  <input
+                    type="text"
+                    value={editingVillageArea}
+                    onChange={(e) => setEditingVillageArea(e.target.value)}
+                    placeholder="Contoh: 340 Hektar"
+                    style={{
+                      width: '100%',
+                      padding: '0.45rem 0.65rem',
+                      fontSize: '0.8rem',
+                      background: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      color: '#0f172a',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                  Deskripsi &amp; Narasi Wilayah
+                </label>
+                <textarea
+                  rows={2}
+                  value={editingVillageDesc}
+                  onChange={(e) => setEditingVillageDesc(e.target.value)}
+                  placeholder="Informasi sejarah, batas alam, dan karakteristik desa..."
+                  style={{
+                    width: '100%',
+                    padding: '0.45rem 0.65rem',
+                    fontSize: '0.8rem',
+                    background: '#ffffff',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                    color: '#0f172a',
+                    outline: 'none',
+                    resize: 'vertical',
+                  }}
+                />
+              </div>
+
+              {/* Action Buttons: Save & Delete */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem', borderTop: '1px solid #e2e8f0', paddingTop: '0.75rem' }}>
+                <div>
+                  {editingVillageId && (
+                    <button
+                      type="button"
+                      onClick={handleDeleteVillagePolygon}
+                      style={{
+                        padding: '0.45rem 0.85rem',
+                        fontSize: '0.78rem',
+                        fontWeight: 700,
+                        background: '#fff1f2',
+                        border: '1px solid #fecdd3',
+                        color: '#dc2626',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                      }}
+                    >
+                      <Trash2 size={13} />
+                      Hapus Poligon Desa Ini
+                    </button>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={handleCloseAdminStudio}
+                    style={{
+                      fontSize: '0.8rem',
+                      padding: '0.45rem 1rem',
+                      background: '#f1f5f9',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      color: '#334155',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveVillagePolygon}
+                    disabled={polygonVertices.length < 3 || !editingVillageName.trim()}
+                    style={{
+                      fontSize: '0.8rem',
+                      padding: '0.45rem 1.35rem',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      fontWeight: 700,
+                      background: polygonVertices.length < 3 ? '#94a3b8' : '#0f766e',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: polygonVertices.length < 3 ? 'not-allowed' : 'pointer',
+                      boxShadow: '0 2px 6px rgba(15, 118, 110, 0.25)',
+                    }}
+                  >
+                    <Save size={13} />
+                    Simpan Bentuk Poligon Desa
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       )}
@@ -1903,6 +3391,149 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               background: '#e0f2fe',
             }}
           />
+
+          {/* Selected Village Detail Inspection Card (Matching User Mockup) */}
+          {selectedVillage && (
+            <div
+              className="animate-fade-in"
+              data-lenis-prevent
+              style={{
+                position: 'absolute',
+                top: '12px',
+                left: '12px',
+                zIndex: 1000,
+                background: 'rgba(255, 255, 255, 0.98)',
+                backdropFilter: 'blur(10px)',
+                border: '1.5px solid #cbd5e1',
+                borderRadius: '16px',
+                padding: '1.15rem 1.25rem',
+                maxWidth: '310px',
+                width: 'calc(100% - 24px)',
+                boxShadow: '0 10px 30px rgba(15, 44, 89, 0.14)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.35rem' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 800, color: '#0f766e', letterSpacing: '-0.02em' }}>
+                    {selectedVillage.name}
+                  </h3>
+                  <div style={{ width: '40px', height: '3.5px', background: '#f97316', borderRadius: '2px', marginTop: '4px' }} />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedVillage(null)}
+                  style={{
+                    background: '#f1f5f9',
+                    border: 'none',
+                    color: '#64748b',
+                    borderRadius: '50%',
+                    width: '24px',
+                    height: '24px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  title="Tutup Profil Desa"
+                >
+                  <X size={13} />
+                </button>
+              </div>
+
+              <p style={{ margin: '0.65rem 0 0.85rem', fontSize: '0.78rem', color: '#475569', lineHeight: 1.5 }}>
+                {selectedVillage.description}
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', borderTop: '1px solid #f1f5f9', paddingTop: '0.65rem', fontSize: '0.73rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b' }}>Pulau:</span>
+                  <span style={{ fontWeight: 700, color: '#0f2c59' }}>{selectedVillage.island}</span>
+                </div>
+                {selectedVillage.population && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: '#64748b' }}>Populasi:</span>
+                    <span style={{ fontWeight: 700, color: '#0f2c59' }}>{selectedVillage.population}</span>
+                  </div>
+                )}
+                {selectedVillage.main_commodity && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: '#64748b' }}>Komoditas / Potensi:</span>
+                    <span style={{ fontWeight: 600, color: '#059669', textAlign: 'right', maxWidth: '170px' }}>{selectedVillage.main_commodity}</span>
+                  </div>
+                )}
+                {selectedVillage.highlights && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed #e2e8f0', paddingTop: '0.3rem' }}>
+                    <span style={{ color: '#64748b' }}>Daya Tarik:</span>
+                    <span style={{ fontWeight: 600, color: '#0284c7', textAlign: 'right', maxWidth: '170px' }}>{selectedVillage.highlights}</span>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.75rem' }}>
+                <button
+                  type="button"
+                  onClick={() => handleFocusVillage(selectedVillage.name)}
+                  style={{
+                    flex: 1,
+                    padding: '0.38rem 0.6rem',
+                    borderRadius: '8px',
+                    fontSize: '0.73rem',
+                    fontWeight: 700,
+                    background: '#081d35',
+                    color: '#ffffff',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.3rem',
+                  }}
+                >
+                  <Compass size={12} />
+                  Fokuskan
+                </button>
+                {isOfficerOrAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => handleStartEditVillagePolygon(selectedVillage.name)}
+                    style={{
+                      padding: '0.38rem 0.65rem',
+                      borderRadius: '8px',
+                      fontSize: '0.73rem',
+                      fontWeight: 700,
+                      background: '#0f766e',
+                      color: '#ffffff',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                    }}
+                    title="Edit dan sesuaikan titik sudut poligon desa ini di peta"
+                  >
+                    <Edit3 size={11} />
+                    Edit Poligon
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setSelectedVillage(null)}
+                  style={{
+                    padding: '0.38rem 0.65rem',
+                    borderRadius: '8px',
+                    fontSize: '0.73rem',
+                    fontWeight: 600,
+                    background: '#f1f5f9',
+                    color: '#475569',
+                    border: '1px solid #cbd5e1',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Floating Atlas-Style Map Legend Card (Inside Map - Atlas Cartography Layout) */}
           <div
@@ -2041,6 +3672,164 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                   )
                 })}
 
+                {/* Routes & Connectivity Toggle */}
+                <div
+                  onClick={() => setShowRoutes((prev) => !prev)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '0.45rem',
+                    cursor: 'pointer',
+                    opacity: showRoutes ? 1 : 0.4,
+                    transition: 'opacity 0.15s ease',
+                    padding: '0.25rem 0',
+                    borderTop: '1px dashed #e2e8f0',
+                    marginTop: '0.2rem',
+                    paddingTop: '0.35rem',
+                  }}
+                  title={showRoutes ? 'Sembunyikan seluruh garis rute' : 'Tampilkan seluruh garis rute'}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <div style={{ width: '13px', height: '3px', borderTop: '2.5px dashed #0284c7' }} />
+                    <span
+                      style={{
+                        fontSize: '0.72rem',
+                        fontWeight: showRoutes ? 700 : 500,
+                        color: showRoutes ? '#0369a1' : '#94a3b8',
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      Jalur &amp; Rute Maritim
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: '0.675rem',
+                      fontFamily: 'monospace',
+                      fontWeight: 700,
+                      color: showRoutes ? '#0284c7' : '#94a3b8',
+                      background: '#0284c718',
+                      padding: '0.05rem 0.35rem',
+                      borderRadius: '4px',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {filteredFeatures.filter((f) => f.geometry?.type === 'LineString').length}
+                  </span>
+                </div>
+
+                {/* Administrative Village Boundaries (Polygons) Toggle */}
+                <div
+                  onClick={() => setShowVillageBoundaries((prev) => !prev)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '0.45rem',
+                    cursor: 'pointer',
+                    opacity: showVillageBoundaries ? 1 : 0.4,
+                    transition: 'opacity 0.15s ease',
+                    padding: '0.25rem 0',
+                    borderTop: '1px dashed #e2e8f0',
+                    marginTop: '0.2rem',
+                    paddingTop: '0.35rem',
+                  }}
+                  title={showVillageBoundaries ? 'Sembunyikan poligon batas desa' : 'Tampilkan poligon batas desa'}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <div style={{ width: '13px', height: '11px', background: 'rgba(52, 211, 153, 0.4)', border: '1.5px solid #059669', borderRadius: '3px' }} />
+                    <span
+                      style={{
+                        fontSize: '0.72rem',
+                        fontWeight: showVillageBoundaries ? 700 : 500,
+                        color: showVillageBoundaries ? '#0f766e' : '#94a3b8',
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      Batas Administrasi Desa
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: '0.675rem',
+                      fontFamily: 'monospace',
+                      fontWeight: 700,
+                      color: showVillageBoundaries ? '#059669' : '#94a3b8',
+                      background: '#05966918',
+                      padding: '0.05rem 0.35rem',
+                      borderRadius: '4px',
+                      flexShrink: 0,
+                    }}
+                  >
+                    17
+                  </span>
+                </div>
+
+                {/* Sub-list of Villages matching user's exact mockup list */}
+                {showVillageBoundaries && (
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: '0.25rem 0.4rem',
+                      padding: '0.35rem 0.3rem',
+                      background: '#f8fafc',
+                      borderRadius: '6px',
+                      border: '1px solid #e2e8f0',
+                      marginTop: '0.15rem',
+                      maxHeight: '130px',
+                      overflowY: 'auto',
+                    }}
+                  >
+                    {Object.values(villageDetailsMap).map((v) => {
+                      const isVSelected = selectedVillage?.name === v.name
+                      return (
+                        <div
+                          key={v.name}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleFocusVillage(v.name)
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            cursor: 'pointer',
+                            padding: '0.15rem 0.3rem',
+                            borderRadius: '4px',
+                            background: isVSelected ? '#e2e8f0' : 'transparent',
+                            transition: 'all 0.15s ease',
+                          }}
+                          title={`Klik untuk fokus ke wilayah ${v.name} (${v.island})`}
+                        >
+                          <span
+                            style={{
+                              width: '8px',
+                              height: '8px',
+                              borderRadius: '50%',
+                              background: v.color,
+                              flexShrink: 0,
+                            }}
+                          />
+                          <span
+                            style={{
+                              fontSize: '0.68rem',
+                              fontWeight: isVSelected ? 800 : 500,
+                              color: isVSelected ? '#0f172a' : '#334155',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
+                            {v.name}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
                 <div
                   style={{
                     borderTop: '1px solid #e2e8f0',
@@ -2135,13 +3924,60 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
             {/* Contextual Data Boxes */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1rem' }}>
-              {/* Coordinates */}
-              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '0.5rem 0.75rem', borderRadius: '8px', fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#64748b' }}>Koordinat:</span>
-                <span style={{ color: '#0f2c59', fontFamily: 'monospace', fontWeight: 600 }}>
-                  {selectedFeature.geometry.coordinates[1].toFixed(5)}, {selectedFeature.geometry.coordinates[0].toFixed(5)}
-                </span>
-              </div>
+              {/* Point Coordinates or LineString Stats */}
+              {selectedFeature.geometry?.type === 'LineString' ? (
+                <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', padding: '0.65rem 0.75rem', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.75rem', color: '#0369a1', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                      <Route size={13} />
+                      Panjang Lintasan:
+                    </span>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 800, color: '#0284c7' }}>
+                      {selectedFeature.properties.properties_meta?.total_distance_km || 0} km
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginLeft: '0.3rem' }}>
+                        ({selectedFeature.properties.properties_meta?.total_distance_nm || 0} NM)
+                      </span>
+                    </span>
+                  </div>
+                  {selectedFeature.properties.properties_meta?.travel_time && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                      <span style={{ color: '#64748b' }}>Waktu Tempuh:</span>
+                      <span style={{ fontWeight: 700, color: '#0f2c59' }}>{selectedFeature.properties.properties_meta.travel_time}</span>
+                    </div>
+                  )}
+                  {selectedFeature.properties.properties_meta?.transport_mode && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                      <span style={{ color: '#64748b' }}>Moda Transportasi:</span>
+                      <span style={{ fontWeight: 600, color: '#0f2c59' }}>{selectedFeature.properties.properties_meta.transport_mode}</span>
+                    </div>
+                  )}
+                  {(selectedFeature.properties.properties_meta?.origin || selectedFeature.properties.properties_meta?.destination) && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', borderTop: '1px dashed #cbd5e1', paddingTop: '0.3rem' }}>
+                      <span style={{ color: '#64748b' }}>Rute:</span>
+                      <span style={{ fontWeight: 600, color: '#0f2c59' }}>
+                        {selectedFeature.properties.properties_meta?.origin || 'Awal'} &rarr; {selectedFeature.properties.properties_meta?.destination || 'Tujuan'}
+                      </span>
+                    </div>
+                  )}
+                  {Array.isArray(selectedFeature.geometry.coordinates) && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#64748b' }}>
+                      <span>Jumlah Belokan (Waypoints):</span>
+                      <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#0284c7' }}>
+                        {selectedFeature.geometry.coordinates.length} titik
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '0.5rem 0.75rem', borderRadius: '8px', fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b' }}>Koordinat:</span>
+                  <span style={{ color: '#0f2c59', fontFamily: 'monospace', fontWeight: 600 }}>
+                    {Array.isArray(selectedFeature.geometry.coordinates) && typeof selectedFeature.geometry.coordinates[1] === 'number'
+                      ? `${selectedFeature.geometry.coordinates[1].toFixed(5)}, ${selectedFeature.geometry.coordinates[0].toFixed(5)}`
+                      : '-'}
+                  </span>
+                </div>
+              )}
 
               {/* Water Infra Attributes */}
               {selectedFeature.properties.layer_type === 'LAYER_WATER_INFRA' && (
@@ -2313,7 +4149,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                 fontWeight: 600,
               }}
             >
-              Fokuskan Titik Ini di Peta
+              {selectedFeature.geometry?.type === 'LineString' ? 'Fokuskan Seluruh Jalur di Peta' : 'Fokuskan Titik Ini di Peta'}
             </button>
 
             {/* Admin Management Actions */}
@@ -2339,7 +4175,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                   }}
                 >
                   <Edit2 size={12} />
-                  Edit Titik Ini
+                  {selectedFeature.geometry?.type === 'LineString' ? 'Edit Garis Rute' : 'Edit Titik Ini'}
                 </button>
                 <button
                   type="button"
@@ -2358,7 +4194,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     alignItems: 'center',
                     gap: '0.3rem',
                   }}
-                  title="Hapus titik ini secara permanen dari PostGIS"
+                  title={selectedFeature.geometry?.type === 'LineString' ? 'Hapus rute ini secara permanen dari PostGIS' : 'Hapus titik ini secara permanen dari PostGIS'}
                 >
                   <Trash2 size={12} />
                   {isDeletingFeature ? 'Menghapus...' : 'Hapus'}

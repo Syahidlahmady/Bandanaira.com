@@ -59,7 +59,7 @@ class SpatialFeatureResponse(SpatialFeatureBase):
 
 class GeoJSONGeometry(BaseModel):
     type: str = "Point"
-    coordinates: List[float]  # [longitude, latitude] or nested list for polygon
+    coordinates: Any  # [longitude, latitude] for Point, [[lng, lat], ...] for LineString, or nested list for polygon
 
 
 class GeoJSONFeature(BaseModel):
