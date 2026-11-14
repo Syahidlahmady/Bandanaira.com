@@ -89,7 +89,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const isCoopManager = roles.includes('coop_manager') || roles.includes('pengelola_koperasi')
   const isSmartTourismAdmin = roles.includes('smart_tourism_admin') || roles.includes('admin_wisata')
   const isSurveyor = roles.includes('field_surveyor') || roles.includes('surveyor')
-  const isResident = roles.includes('resident') || roles.includes('warga')
 
   const getRoleDisplayName = () => {
     if (isSuperuser || roles.includes('admin')) return 'Administrator Sistem'
@@ -136,7 +135,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       icon: Mail,
       badge: isOfficerOrAdmin && adminPendingLettersCount > 0 ? adminPendingLettersCount : undefined,
       badgeColor: 'bg-amber-500 text-white',
-      visible: isResident || isOfficerOrAdmin,
+      visible: true,
     },
     {
       id: 'population',
@@ -166,35 +165,35 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       label: 'Kasir Koperasi & Bank Sampah',
       shortLabel: 'Koperasi Hatta',
       icon: Scale,
-      visible: isCoopManager || isOfficerOrAdmin,
+      visible: true,
     },
     {
       id: 'tourism',
       label: isHomestayOperator ? 'Kelola Eco-Stay & Tamu' : 'Cagar Budaya & Eco-Stay',
       shortLabel: 'Eco-Stay',
       icon: Home,
-      visible: isHomestayOperator || isSmartTourismAdmin || isOfficerOrAdmin,
+      visible: true,
     },
     {
       id: 'gis',
       label: 'Peta Spasial GIS 7-Layer',
       shortLabel: 'Peta GIS',
       icon: Layers,
-      visible: isSmartTourismAdmin || isSurveyor || isOfficerOrAdmin,
+      visible: true,
     },
     {
       id: 'smart_planner',
       label: 'Perencana Cerdas SAW (DSS)',
       shortLabel: 'DSS SAW',
       icon: Compass,
-      visible: isSmartTourismAdmin || isSurveyor || isOfficerOrAdmin,
+      visible: true,
     },
     {
       id: 'iot',
       label: 'Telemetri 4 Stasiun IoT',
       shortLabel: 'Telemetri IoT',
       icon: Radio,
-      visible: isSurveyor || isCoopManager || isOfficerOrAdmin,
+      visible: true,
     },
     {
       id: 'survei',

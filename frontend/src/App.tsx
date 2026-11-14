@@ -45,6 +45,8 @@ const LandingPortalWorkspace = React.lazy(() => import('./views/LandingPortalWor
 const UserEcosystemDashboard = React.lazy(() => import('./views/dashboard/UserEcosystemDashboard.tsx').then(m => ({ default: m.UserEcosystemDashboard })))
 import { DashboardLayout } from './views/dashboard/DashboardLayout.tsx'
 import { BandaUnifiedFooter } from './components/common/BandaUnifiedFooter.tsx'
+import { ErrorBoundary } from './components/common/ErrorBoundary.tsx'
+import { AccessRestrictedNotice } from './components/common/AccessRestrictedNotice.tsx'
 import { offlineDB } from './offline/db.ts'
 import { syncManager, SyncQueueItem } from './offline/syncManager.ts'
 
@@ -533,12 +535,6 @@ export const App: React.FC = () => {
   const isCoopManager = Boolean(
     currentUser && currentUser.roles.some((r) => r.name === 'coop_manager')
   )
-  const isHomestayOperator = Boolean(
-    currentUser && currentUser.roles.some((r) => r.name === 'homestay_operator')
-  )
-  const isSmartTourismAdmin = Boolean(
-    currentUser && currentUser.roles.some((r) => r.name === 'smart_tourism_admin')
-  )
   const isFieldSurveyor = Boolean(
     currentUser && currentUser.roles.some((r) => r.name === 'field_surveyor')
   )
@@ -546,8 +542,10 @@ export const App: React.FC = () => {
     currentUser && currentUser.roles.some((r) => r.name === 'farmer_group_admin')
   )
   const isFarmer = Boolean(currentUser && currentUser.roles.some((r) => r.name === 'farmer'))
-  const isResident = Boolean(currentUser && currentUser.roles.some((r) => r.name === 'resident'))
   const isFarmerOnly = Boolean(isFarmer && !isOfficerOrAdmin && !isFarmerGroupAdmin)
+  const currentRoleTitle = currentUser
+    ? (currentUser.roles || []).map((r) => r.description || r.name).join(', ') || 'Warga Terdaftar'
+    : 'Tamu / Belum Masuk'
 
   useEffect(() => {
     const handleOnline = () => {
@@ -1141,7 +1139,7 @@ export const App: React.FC = () => {
       )}
 
       {/* 2. Login Portal Section for Non-authenticated Users (Sesuai desainsaatini/login-desktop) */}
-      {!currentUser && !authService.getAccessToken() && (activeTab === 'population' || activeTab === 'dashboard') && (
+      {!currentUser && !authService.getAccessToken() && activeTab !== 'landing' && activeTab !== 'register' && (
         <LoginSection
           username={username}
           setUsername={setUsername}
@@ -1165,8 +1163,14 @@ export const App: React.FC = () => {
         />
       )}
 
-
-
+      {/* 2B. Loading State when restoring active user session with valid token */}
+      {!currentUser && Boolean(authService.getAccessToken()) && activeTab !== 'landing' && activeTab !== 'register' && (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-[#081D35] text-white p-6">
+          <div className="w-12 h-12 border-4 border-[#F4B75E] border-t-transparent rounded-full animate-spin mb-4" />
+          <h3 className="font-serif text-lg text-[#F4B75E] font-bold">Memulihkan Sesi Pengguna...</h3>
+          <p className="text-slate-400 text-sm mt-1">Menghubungkan ke node ekosistem Banda Neira</p>
+        </div>
+      )}
 
       {/* =====================================================================
           4. DASBOR EKOSISTEM DENGAN SIDEBAR NAVIGASI DI SAMPING (UNTUK USER LOGIN)
@@ -1189,6 +1193,7 @@ export const App: React.FC = () => {
           adminPendingLettersCount={adminRequests.filter((r) => r.status === 'submitted').length}
           pendingFarmsCount={farms.filter((f) => f.verification_status === 'pending').length}
         >
+          <ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Ruang Kerja">
           <React.Suspense fallback={<div className="p-8 text-center text-slate-500 font-medium">Memuat antarmuka...</div>}>
           {/* TAB 0: RINGKASAN DASBOR (OVERVIEW BENTO GRID 21st.dev DENGAN WARNA BERANDA) */}
           {activeTab === 'dashboard' && (
@@ -1203,26 +1208,36 @@ export const App: React.FC = () => {
           )}
 
           {/* TAB 1: WARGA & PROFESI (POPULATION) */}
-          {isOfficerOrAdmin && activeTab === 'population' && (
-            <ResidentsWorkspace
-              residents={residents}
-              popStats={popStats}
-              loadingPop={loadingPop}
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              selectedOccupationFilter={selectedOccupationFilter}
-              setSelectedOccupationFilter={setSelectedOccupationFilter}
-              popMsg={popMsg}
-              popForm={popForm}
-              setPopForm={setPopForm}
-              fetchPopulationData={fetchPopulationData}
-              handleCreateResident={handleCreateResident}
-              handleVerifyResident={handleVerifyResident}
-            />
+          {activeTab === 'population' && (
+            isOfficerOrAdmin ? (
+              <ResidentsWorkspace
+                residents={residents}
+                popStats={popStats}
+                loadingPop={loadingPop}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                selectedOccupationFilter={selectedOccupationFilter}
+                setSelectedOccupationFilter={setSelectedOccupationFilter}
+                popMsg={popMsg}
+                popForm={popForm}
+                setPopForm={setPopForm}
+                fetchPopulationData={fetchPopulationData}
+                handleCreateResident={handleCreateResident}
+                handleVerifyResident={handleVerifyResident}
+              />
+            ) : (
+              <AccessRestrictedNotice
+                workspaceTitle="Data Kependudukan & Profesi Warga"
+                roleTitle="Administrator Sistem atau Petugas Kantor Desa"
+                currentRole={currentRoleTitle}
+                onBackToDashboard={() => setActiveTab('dashboard')}
+                onOpenQuickSwitch={() => setShowQuickLoginModal(true)}
+              />
+            )
           )}
 
           {/* TAB 2: PELAYANAN SURAT WARGA (LETTERS) */}
-          {(isResident || isOfficerOrAdmin) && activeTab === 'letters' && (
+          {activeTab === 'letters' && (
             isOfficerOrAdmin ? (
               <LettersWorkspace
                 adminRequests={adminRequests}
@@ -1249,92 +1264,132 @@ export const App: React.FC = () => {
           )}
 
           {/* TAB 3: PETA KEBUN & POKTAN (FARMING) */}
-          {(isOfficerOrAdmin || isFarmerGroupAdmin || isFarmer) && activeTab === 'farming' && (
-            <FarmsGisWorkspace
-              farmers={farmers}
-              farmerGroups={farmerGroups}
-              farms={farms}
-              farmGeoJSON={farmGeoJSON}
-              farmStats={farmStats}
-              farmMsg={farmMsg}
-              verifyingFarmId={verifyingFarmId}
-              farmStatusFilter={farmStatusFilter}
-              setFarmStatusFilter={setFarmStatusFilter}
-              handleVerifyFarm={handleVerifyFarm}
-              isOfficerOrAdmin={isOfficerOrAdmin}
-              isFarmerGroupAdmin={isFarmerGroupAdmin}
-              isFarmerOnly={isFarmerOnly}
-              farmForm={farmForm}
-              setFarmForm={setFarmForm}
-              handleCreateQuickFarmerAndFarm={handleCreateQuickFarmerAndFarm}
-              fetchFarmingData={fetchFarmingData}
-            />
+          {activeTab === 'farming' && (
+            (isOfficerOrAdmin || isFarmerGroupAdmin || isFarmer) ? (
+              <FarmsGisWorkspace
+                farmers={farmers}
+                farmerGroups={farmerGroups}
+                farms={farms}
+                farmGeoJSON={farmGeoJSON}
+                farmStats={farmStats}
+                farmMsg={farmMsg}
+                verifyingFarmId={verifyingFarmId}
+                farmStatusFilter={farmStatusFilter}
+                setFarmStatusFilter={setFarmStatusFilter}
+                handleVerifyFarm={handleVerifyFarm}
+                isOfficerOrAdmin={isOfficerOrAdmin}
+                isFarmerGroupAdmin={isFarmerGroupAdmin}
+                isFarmerOnly={isFarmerOnly}
+                farmForm={farmForm}
+                setFarmForm={setFarmForm}
+                handleCreateQuickFarmerAndFarm={handleCreateQuickFarmerAndFarm}
+                fetchFarmingData={fetchFarmingData}
+              />
+            ) : (
+              <AccessRestrictedNotice
+                workspaceTitle="Peta Lahan Kebun & Kelompok Tani"
+                roleTitle="Petani Rempah Pala, Ketua Poktan, atau Petugas Desa"
+                currentRole={currentRoleTitle}
+                onBackToDashboard={() => setActiveTab('dashboard')}
+                onOpenQuickSwitch={() => setShowQuickLoginModal(true)}
+              />
+            )
           )}
 
           {/* TAB 4: PANEN & MUTU REMPAH (TRACEABILITY) */}
-          {(isOfficerOrAdmin || isFarmerGroupAdmin || isFarmer || isCoopManager) && activeTab === 'traceability' && (
-            <HarvestGradingWorkspace
-              harvests={harvests}
-              batches={batches}
-              selectedBatch={selectedBatch}
-              setSelectedBatch={setSelectedBatch}
-              traceMsg={traceMsg}
-              blockchainLoading={blockchainLoading}
-              harvestForm={harvestForm}
-              setHarvestForm={setHarvestForm}
-              handleCreateHarvest={handleCreateHarvest}
-              batchForm={batchForm}
-              setBatchForm={setBatchForm}
-              handleCreateBatch={handleCreateBatch}
-              eventForm={eventForm}
-              setEventForm={setEventForm}
-              handleAppendEvent={handleAppendEvent}
-              handleAnchorBlockchain={handleAnchorBlockchain}
-              handleVerifyBlockchain={handleVerifyBlockchain}
-              handlePublicVerify={handlePublicVerify}
-              farms={farms}
-              farmers={farmers}
-              isOfficerOrAdmin={isOfficerOrAdmin}
-              isFarmerGroupAdmin={isFarmerGroupAdmin}
-              isFarmer={isFarmer}
-              isFarmerOnly={isFarmerOnly}
-              fetchTraceabilityData={fetchTraceabilityData}
-            />
+          {activeTab === 'traceability' && (
+            (isOfficerOrAdmin || isFarmerGroupAdmin || isFarmer || isCoopManager) ? (
+              <HarvestGradingWorkspace
+                harvests={harvests}
+                batches={batches}
+                selectedBatch={selectedBatch}
+                setSelectedBatch={setSelectedBatch}
+                traceMsg={traceMsg}
+                blockchainLoading={blockchainLoading}
+                harvestForm={harvestForm}
+                setHarvestForm={setHarvestForm}
+                handleCreateHarvest={handleCreateHarvest}
+                batchForm={batchForm}
+                setBatchForm={setBatchForm}
+                handleCreateBatch={handleCreateBatch}
+                eventForm={eventForm}
+                setEventForm={setEventForm}
+                handleAppendEvent={handleAppendEvent}
+                handleAnchorBlockchain={handleAnchorBlockchain}
+                handleVerifyBlockchain={handleVerifyBlockchain}
+                handlePublicVerify={handlePublicVerify}
+                farms={farms}
+                farmers={farmers}
+                isOfficerOrAdmin={isOfficerOrAdmin}
+                isFarmerGroupAdmin={isFarmerGroupAdmin}
+                isFarmer={isFarmer}
+                isFarmerOnly={isFarmerOnly}
+                fetchTraceabilityData={fetchTraceabilityData}
+              />
+            ) : (
+              <AccessRestrictedNotice
+                workspaceTitle="Rantai Pasok & Mutu Rempah Pala"
+                roleTitle="Petani Rempah, Ketua Poktan, Pengelola Koperasi, atau Petugas Desa"
+                currentRole={currentRoleTitle}
+                onBackToDashboard={() => setActiveTab('dashboard')}
+                onOpenQuickSwitch={() => setShowQuickLoginModal(true)}
+              />
+            )
           )}
 
           {/* TAB 5: KOPERASI HATTA, BANK SAMPAH & DISPENSER AIR RO */}
-          {(isCoopManager || isOfficerOrAdmin) && activeTab === 'koperasi' && (
+          {activeTab === 'koperasi' && (
             <KoperasiKasirWorkspace />
           )}
 
           {/* TAB 6: SMART TOURISM, ECO-STAY & WARISAN BUDAYA */}
-          {(isHomestayOperator || isSmartTourismAdmin || isOfficerOrAdmin) && activeTab === 'tourism' && (
+          {activeTab === 'tourism' && (
             <TourismEcoStayWorkspace currentUser={currentUser} />
           )}
 
           {/* TAB 7: PETA SPASIAL INTERAKTIF 7-LAYER */}
-          {(isFieldSurveyor || isSmartTourismAdmin || isHomestayOperator || isOfficerOrAdmin) && activeTab === 'gis' && (
+          {activeTab === 'gis' && (
             <InteractiveMapWorkspace currentUser={currentUser} />
           )}
 
           {/* TAB 8: PERENCANA CERDAS SAW (DSS) */}
-          {(isSmartTourismAdmin || isHomestayOperator || isFieldSurveyor || isOfficerOrAdmin) && activeTab === 'smart_planner' && (
+          {activeTab === 'smart_planner' && (
             <SmartPlannerWorkspace />
           )}
 
           {/* TAB 9: PUSAT KOMANDO TELEMETRI IoT & RESILIENSI PULAU */}
-          {(isFieldSurveyor || isCoopManager || isOfficerOrAdmin) && activeTab === 'iot' && (
+          {activeTab === 'iot' && (
             <IslandTelemetryWorkspace />
           )}
 
           {/* TAB 10: SURVEI LAPANGAN DINAMIS & PIPA ETL HYBRID */}
-          {(isFieldSurveyor || isOfficerOrAdmin) && activeTab === 'survei' && (
-            <SurveyEtlWorkspace onNavigateToMap={() => setActiveTab('gis')} />
+          {activeTab === 'survei' && (
+            (isFieldSurveyor || isOfficerOrAdmin) ? (
+              <SurveyEtlWorkspace onNavigateToMap={() => setActiveTab('gis')} />
+            ) : (
+              <AccessRestrictedNotice
+                workspaceTitle="Formulir Survei Dinamis & Pipa ETL"
+                roleTitle="Surveyor Lapangan atau Administrator Sistem"
+                currentRole={currentRoleTitle}
+                onBackToDashboard={() => setActiveTab('dashboard')}
+                onOpenQuickSwitch={() => setShowQuickLoginModal(true)}
+              />
+            )
           )}
 
           {/* TAB 11: REKAPITULASI DESA & AUDIT TRAIL */}
-          {isOfficerOrAdmin && activeTab === 'audit' && (
-            <AuditTrailWorkspace isOnline={isOnline} />
+          {activeTab === 'audit' && (
+            isOfficerOrAdmin ? (
+              <AuditTrailWorkspace isOnline={isOnline} />
+            ) : (
+              <AccessRestrictedNotice
+                workspaceTitle="Rekapitulasi Desa & Jejak Audit Sistem"
+                roleTitle="Administrator Sistem atau Petugas Kantor Desa"
+                currentRole={currentRoleTitle}
+                onBackToDashboard={() => setActiveTab('dashboard')}
+                onOpenQuickSwitch={() => setShowQuickLoginModal(true)}
+              />
+            )
           )}
 
           {/* System Telemetry Section (Khusus untuk Administrator Sistem) */}
@@ -1401,6 +1456,7 @@ export const App: React.FC = () => {
             <BandaUnifiedFooter />
           </div>
           </React.Suspense>
+          </ErrorBoundary>
         </DashboardLayout>
       )}
 
