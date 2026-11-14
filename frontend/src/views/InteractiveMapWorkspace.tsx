@@ -35,8 +35,6 @@ import {
   Navigation,
   Undo,
   RotateCcw,
-  Sun,
-  Moon,
   Mountain,
   Map as MapIcon,
   Eye,
@@ -92,7 +90,7 @@ const LAYER_LABELS: Record<string, string> = {
   LAYER_ENERGY_WASTE: 'Energi & Lingkungan',
 }
 
-export type BasemapId = 'standard' | 'satellite' | 'terrain' | 'clean' | 'dark'
+export type BasemapId = 'standard' | 'satellite' | 'terrain'
 
 export interface BasemapConfig {
   id: BasemapId
@@ -110,7 +108,7 @@ export const BASEMAP_CONFIGS: Record<BasemapId, BasemapConfig> = {
   standard: {
     id: 'standard',
     label: 'Standar',
-    subtitle: 'Peta Jalan OSM',
+    subtitle: 'Peta Jalan',
     url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: '&copy; OpenStreetMap contributors | Banda Digital Ecosystem',
     maxZoom: 19,
@@ -121,7 +119,7 @@ export const BASEMAP_CONFIGS: Record<BasemapId, BasemapConfig> = {
   satellite: {
     id: 'satellite',
     label: 'Satelit',
-    subtitle: 'Citra Asli Resolusi Tinggi',
+    subtitle: 'Citra Asli Satelit',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     attribution: 'Tiles &copy; Esri &mdash; DigitalGlobe, GeoEye, Earthstar Geographics',
     maxZoom: 19,
@@ -131,34 +129,12 @@ export const BASEMAP_CONFIGS: Record<BasemapId, BasemapConfig> = {
   terrain: {
     id: 'terrain',
     label: 'Topografi',
-    subtitle: 'Relief & Kontur Alam',
+    subtitle: 'Kontur & Relief Alam',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
     attribution: 'Tiles &copy; Esri &mdash; USGS, DeLorme, NAVTEQ',
     maxZoom: 19,
     previewBg: 'linear-gradient(135deg, #d97706 0%, #84cc16 50%, #38bdf8 100%)',
     accentColor: '#f59e0b',
-  },
-  clean: {
-    id: 'clean',
-    label: 'Minimalis',
-    subtitle: 'Abu Terang Kontras Tinggi',
-    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-    attribution: '&copy; OpenStreetMap &copy; CARTO',
-    maxZoom: 19,
-    subdomains: ['a', 'b', 'c', 'd'],
-    previewBg: 'linear-gradient(135deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%)',
-    accentColor: '#64748b',
-  },
-  dark: {
-    id: 'dark',
-    label: 'Mode Gelap',
-    subtitle: 'Nuansa Gelap Malam',
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    attribution: '&copy; OpenStreetMap &copy; CARTO',
-    maxZoom: 19,
-    subdomains: ['a', 'b', 'c', 'd'],
-    previewBg: 'linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e293b 100%)',
-    accentColor: '#6366f1',
   },
 }
 
@@ -174,7 +150,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   const [activeBasemap, setActiveBasemap] = useState<BasemapId>(() => {
     try {
       const saved = localStorage.getItem('banda_gis_active_basemap')
-      if (saved && ['standard', 'satellite', 'terrain', 'clean', 'dark'].includes(saved)) {
+      if (saved && ['standard', 'satellite', 'terrain'].includes(saved)) {
         return saved as BasemapId
       }
     } catch (e) {
@@ -4039,84 +4015,60 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               zIndex: 1010,
             }}
           >
-            {/* The Floating Square Trigger Button (Matching Google Maps UI) */}
+            {/* The Floating Square Trigger Button (Clean Stacking Icon & Label) */}
             <button
               type="button"
               onClick={() => setIsLayerMenuOpen((prev) => !prev)}
               style={{
-                width: '68px',
-                height: '68px',
+                width: '66px',
+                height: '66px',
                 borderRadius: '12px',
-                border: isLayerMenuOpen ? '2.5px solid #0284c7' : '2.5px solid #ffffff',
-                boxShadow: '0 6px 20px rgba(15, 23, 42, 0.3)',
+                border: isLayerMenuOpen ? '2.5px solid #0284c7' : '2px solid #ffffff',
+                boxShadow: '0 6px 20px rgba(15, 23, 42, 0.35)',
                 background: BASEMAP_CONFIGS[activeBasemap]?.previewBg || 'linear-gradient(135deg, #0284c7, #0f172a)',
                 cursor: 'pointer',
                 position: 'relative',
                 overflow: 'hidden',
-                padding: 0,
+                padding: '6px 4px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                justifyContent: 'flex-end',
+                justifyContent: 'center',
                 transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                transform: isLayerMenuOpen ? 'scale(1.05)' : 'scale(1)',
+                transform: isLayerMenuOpen ? 'scale(1.04)' : 'scale(1)',
               }}
-              title="Pilih tampilan peta (Satelit, Topografi, Standar) dan lapisan data"
+              title="Pilih gaya peta dan lapisan"
             >
-              {/* Top Miniature Icon Graphic */}
+              {/* Dark subtle overlay for contrast */}
               <div
                 style={{
                   position: 'absolute',
-                  top: '7px',
-                  width: '26px',
-                  height: '26px',
-                  borderRadius: '50%',
-                  background: 'rgba(255, 255, 255, 0.3)',
-                  backdropFilter: 'blur(4px)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.18)',
+                  inset: 0,
+                  background: 'rgba(15, 23, 42, 0.4)',
+                  backdropFilter: 'blur(1px)',
                 }}
-              >
-                {activeBasemap === 'satellite' ? (
-                  <Globe size={15} color="#ffffff" />
-                ) : activeBasemap === 'terrain' ? (
-                  <Mountain size={15} color="#ffffff" />
-                ) : activeBasemap === 'clean' ? (
-                  <Sun size={15} color="#334155" />
-                ) : activeBasemap === 'dark' ? (
-                  <Moon size={15} color="#ffffff" />
-                ) : (
-                  <MapIcon size={15} color="#ffffff" />
-                )}
+              />
+
+              {/* Centered Stacking Layers Icon */}
+              <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Layers size={25} color="#ffffff" strokeWidth={2.2} style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.6))' }} />
               </div>
 
-              {/* Bottom Label Badge (Just like Google Maps Layers button) */}
-              <div
+              {/* Text Label "Layers" */}
+              <span
                 style={{
-                  width: '100%',
-                  background: 'rgba(15, 23, 42, 0.86)',
-                  backdropFilter: 'blur(6px)',
-                  padding: '4px 0 5px 0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '4px',
+                  position: 'relative',
+                  zIndex: 1,
+                  fontSize: '0.68rem',
+                  fontWeight: 700,
                   color: '#ffffff',
+                  letterSpacing: '0.02em',
+                  marginTop: '4px',
+                  textShadow: '0 1px 3px rgba(0,0,0,0.9)',
                 }}
               >
-                <Layers size={11} color="#38bdf8" />
-                <span
-                  style={{
-                    fontSize: '0.675rem',
-                    fontWeight: 700,
-                    letterSpacing: '0.02em',
-                  }}
-                >
-                  Layers
-                </span>
-              </div>
+                Layers
+              </span>
             </button>
 
             {/* Google Maps Style Expanded Popup Panel */}
@@ -4129,7 +4081,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                   bottom: '78px',
                   left: '0',
                   zIndex: 1020,
-                  width: '320px',
+                  width: '300px',
                   background: 'rgba(255, 255, 255, 0.98)',
                   backdropFilter: 'blur(12px)',
                   border: '1.5px solid #cbd5e1',
@@ -4152,7 +4104,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Layers size={15} color="#0284c7" />
                     <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#0f2c59' }}>
-                      Tampilan &amp; Lapisan Peta
+                      Gaya Peta
                     </span>
                   </div>
                   <button
@@ -4170,7 +4122,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                       cursor: 'pointer',
                       color: '#64748b',
                     }}
-                    title="Tutup menu layer"
+                    title="Tutup menu"
                   >
                     <X size={13} />
                   </button>
@@ -4188,7 +4140,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                       marginBottom: '8px',
                     }}
                   >
-                    Tipe Peta Dasar
+                    Peta Dasar
                   </div>
 
                   <div
@@ -4256,10 +4208,6 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                               <Globe size={18} color="#ffffff" />
                             ) : bId === 'terrain' ? (
                               <Mountain size={18} color="#78350f" />
-                            ) : bId === 'clean' ? (
-                              <Sun size={18} color="#475569" />
-                            ) : bId === 'dark' ? (
-                              <Moon size={18} color="#e2e8f0" />
                             ) : (
                               <MapIcon size={18} color="#0f766e" />
                             )}
@@ -4299,7 +4247,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Eye size={13} color="#15803d" />
                       <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#166534' }}>
-                        Label Nama Tempat &amp; Jalan
+                        Nama Tempat &amp; Jalan
                       </span>
                     </div>
                     <div
@@ -4331,7 +4279,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                       marginBottom: '8px',
                     }}
                   >
-                    Lapisan Data Spasial
+                    Informasi Peta
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -4361,7 +4309,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           }}
                         />
                         <span style={{ fontSize: '0.73rem', fontWeight: 600, color: '#0f2c59' }}>
-                          Batas Administrasi Desa
+                          Wilayah Desa
                         </span>
                       </div>
                       <span
@@ -4393,7 +4341,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <div style={{ width: '12px', height: '2.5px', borderTop: '2px dashed #0284c7' }} />
                         <span style={{ fontSize: '0.73rem', fontWeight: 600, color: '#0f2c59' }}>
-                          Jalur &amp; Rute Maritim
+                          Jalur Laut
                         </span>
                       </div>
                       <span
@@ -4403,7 +4351,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           color: showRoutes ? '#0284c7' : '#94a3b8',
                         }}
                       >
-                        Aktif
+                        {filteredFeatures.filter((f) => f.geometry?.type === 'LineString').length > 0 ? 'Aktif' : 'Kosong'}
                       </span>
                     </div>
 
@@ -4426,7 +4374,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                         cursor: 'pointer',
                       }}
                     >
-                      <span>Legenda Kategori &amp; Titik Lokasi</span>
+                      <span>Legenda Lokasi</span>
                       <span style={{ color: '#0284c7', fontWeight: 700 }}>
                         {atlasLegendOpen ? 'Tutup' : 'Buka'}
                       </span>
@@ -4602,7 +4550,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                         lineHeight: 1.2,
                       }}
                     >
-                      Jalur &amp; Rute Maritim
+                      Jalur Laut
                     </span>
                   </div>
                   <span
@@ -4621,7 +4569,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                   </span>
                 </div>
 
-                {/* Administrative Village Boundaries (Polygons) Toggle */}
+                {/* Village Territories (Polygons) Toggle */}
                 <div
                   onClick={() => setShowVillageBoundaries((prev) => !prev)}
                   style={{
@@ -4637,7 +4585,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     marginTop: '0.2rem',
                     paddingTop: '0.35rem',
                   }}
-                  title={showVillageBoundaries ? 'Sembunyikan poligon batas desa' : 'Tampilkan poligon batas desa'}
+                  title={showVillageBoundaries ? 'Sembunyikan wilayah desa' : 'Tampilkan wilayah desa'}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                     <div style={{ width: '13px', height: '11px', background: 'rgba(52, 211, 153, 0.4)', border: '1.5px solid #059669', borderRadius: '3px' }} />
@@ -4649,7 +4597,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                         lineHeight: 1.2,
                       }}
                     >
-                      Batas Administrasi Desa
+                      Wilayah Desa
                     </span>
                   </div>
                   <span
