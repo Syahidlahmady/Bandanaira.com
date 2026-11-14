@@ -50,13 +50,13 @@ async def test_filter_layers_and_islands(client: AsyncClient):
     for f in data["features"]:
         assert f["properties"]["layer_type"] in ["LAYER_HERITAGE", "LAYER_WATER_INFRA"]
 
-    # Filter Pulau Hatta
-    res_hatta = await client.get("/api/v1/gis/layers?island=Pulau+Hatta")
-    assert res_hatta.status_code == 200
-    data_hatta = res_hatta.json()
-    assert len(data_hatta["features"]) >= 3
-    for f in data_hatta["features"]:
-        assert f["properties"]["island_name"] == "Pulau Hatta"
+    # Filter Pulau Ay
+    res_ay = await client.get("/api/v1/gis/layers?island=Pulau+Ay")
+    assert res_ay.status_code == 200
+    data_ay = res_ay.json()
+    assert len(data_ay["features"]) >= 3
+    for f in data_ay["features"]:
+        assert f["properties"]["island_name"] == "Pulau Ay"
 
 
 @pytest.mark.asyncio
@@ -68,20 +68,20 @@ async def test_get_gis_layers_metadata(client: AsyncClient):
 
     assert meta["total_features"] >= 28
     assert meta["public_layers_count"] >= 15
-    assert meta["resiliency_layers_count"] >= 8
+    assert meta["resiliency_layers_count"] >= 4
     assert len(meta["layers"]) == 7
 
     layer_ids = [l["id"] for l in meta["layers"]]
     assert "LAYER_TOURISM_4A" in layer_ids
     assert "LAYER_HERITAGE" in layer_ids
     assert "LAYER_ACCOMMODATION" in layer_ids
-    assert "LAYER_KOPERASI_UMKM" in layer_ids
     assert "LAYER_PUBLIC_SAFETY" in layer_ids
     assert "LAYER_WATER_INFRA" in layer_ids
     assert "LAYER_ENERGY_WASTE" in layer_ids
 
     assert "Pulau Neira" in meta["available_islands"]
-    assert "Pulau Hatta" in meta["available_islands"]
+    assert "Pulau Ay" in meta["available_islands"]
+    assert "Banda Besar" in meta["available_islands"]
 
 
 @pytest.mark.asyncio

@@ -1,18 +1,110 @@
 [
   {
+    "name": "Benteng Nassau (Fort Nassau)",
+    "layer_type": "LAYER_HERITAGE",
     "category": "publik",
-    "description": "Dinding terumbu karang vertikal sedalam 60 meter di ujung selatan Pulau Hatta. Sangat terkenal untuk melihat kawanan penyu dan hiu karang sirip putih.",
-    "island_name": "Pulau Hatta",
-    "latitude": -4.588,
-    "layer_type": "LAYER_TOURISM_4A",
-    "longitude": 129.985,
-    "name": "Hatta Reef Diving Wall & Drop-Off",
+    "island_name": "Pulau Neira",
+    "latitude": -4.528057,
+    "longitude": 129.897618,
+    "geometry_geojson": null,
     "properties_meta": {
-      "depth_range": "5 - 45 meter",
-      "highlights": "White-tip sharks, green sea turtles, giant trevally",
-      "sub_type": "bahari",
-      "visibility_m": 30
-    }
+      "era": "VOC Awal Abad 17"
+    },
+    "description": "Benteng pertama Belanda yang dibangun di atas reruntuhan loji Portugis pada tahun 1609 oleh Laksamana Verhoeff."
+  },
+  {
+    "name": "Istana Mini VOC Banda",
+    "layer_type": "LAYER_HERITAGE",
+    "category": "publik",
+    "island_name": "Pulau Neira",
+    "latitude": -4.528715,
+    "longitude": 129.900531,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "era": "VOC Pemerintahan Kolonial"
+    },
+    "description": "Gedung kantor dan kediaman resmi Gubernur VOC di Banda, arsitektur megah neoklasik yang menjadi prototipe Istana Merdeka Jakarta."
+  },
+  {
+    "name": "Rumah Pengasingan Bung Hatta",
+    "layer_type": "LAYER_HERITAGE",
+    "category": "publik",
+    "island_name": "Pulau Neira",
+    "latitude": -4.527351,
+    "longitude": 129.89978,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "era": "Pergerakan Nasional Indonesia"
+    },
+    "description": "Tempat pengasingan Mohammad Hatta oleh kolonial Belanda (1936-1942). Dilengkapi ruang kelas belajar anak-anak Banda dan koleksi buku asli."
+  },
+  {
+    "name": "Rumah Pengasingan Sutan Sjahrir",
+    "layer_type": "LAYER_HERITAGE",
+    "category": "publik",
+    "island_name": "Pulau Neira",
+    "latitude": -4.525816,
+    "longitude": 129.897333,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "era": "Pergerakan Nasional Indonesia"
+    },
+    "description": "Tempat tinggal Sutan Sjahrir selama dibuang ke Banda Neira. Menampilkan gramofon kuno, meja kerja diplomasi, dan surat korespondensi."
+  },
+  {
+    "name": "Delfika Homestay & Heritage Villa",
+    "layer_type": "LAYER_ACCOMMODATION",
+    "category": "publik",
+    "island_name": "Pulau Neira",
+    "latitude": -4.525779,
+    "longitude": 129.897661,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "price_per_night_rp": 350000,
+      "contact_whatsapp": "6281299887711"
+    },
+    "description": "Penginapan bersejarah di pusat kota Neira dengan kebun asri, air minum RO gratis dari tandon komunal, dan sistem solar backup."
+  },
+  {
+    "name": "Puncak Vulkanik Gunung Api Banda",
+    "layer_type": "LAYER_TOURISM_4A",
+    "category": "publik",
+    "island_name": "Gunung Api",
+    "latitude": -4.522565,
+    "longitude": 129.879867,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "sub_type": "alam",
+      "guide_available": false
+    },
+    "description": "Puncak kawah vulkanik aktif berketinggian 640 mdpl dengan pemandangan 360 derajat seluruh gugusan kepulauan Banda."
+  },
+  {
+    "name": "Maulana Hotel Banda Neira",
+    "layer_type": "LAYER_ACCOMMODATION",
+    "category": "publik",
+    "island_name": "Pulau Neira",
+    "latitude": -4.524368,
+    "longitude": 129.897392,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "price_per_night_rp": 650000,
+      "contact_whatsapp": "6281299887733"
+    },
+    "description": "Hotel tepi pantai legendaris Banda didirikan oleh tokoh budaya Des Alwi, pemandangan langsung ke Gunung Api."
+  },
+  {
+    "name": "Benteng Revenge Pulau Ay",
+    "layer_type": "LAYER_HERITAGE",
+    "category": "publik",
+    "island_name": "Pulau Ay",
+    "latitude": -4.519078,
+    "longitude": 129.773319,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "era": "Konflik VOC vs EIC"
+    },
+    "description": "Benteng pertahanan perebutan monopoli rempah antara armada VOC Belanda dan kongsi dagang Inggris EIC tahun 1616."
   },
   {
     "name": "Lava Flow Snorkeling & Coral Reef",
@@ -33,47 +125,37 @@
     "description": "Terumbu karang alami yang tumbuh subur di atas batuan lava erupsi Gunung Api 1988. Salah satu spot snorkeling terkaya di dunia."
   },
   {
+    "name": "Pelabuhan Laut Utama Banda Neira (Dermaga PELNI)",
+    "layer_type": "LAYER_PUBLIC_SAFETY",
     "category": "publik",
-    "description": "Garis pantai berpasir putih lembut dengan deretan pohon kelapa dan ketapang, terlindung dari ombak besar selat luar.",
-    "island_name": "Banda Besar",
-    "latitude": -4.542,
-    "layer_type": "LAYER_TOURISM_4A",
-    "longitude": 129.932,
-    "name": "Pantai Pasir Enam Lonthoir",
-    "properties_meta": {
-      "entry_fee_rp": 10000,
-      "facilities": "Pondok istirahat bambu, kelapa muda segar",
-      "sub_type": "pantai"
-    }
-  },
-  {
-    "name": "Puncak Vulkanik Gunung Api Banda",
-    "layer_type": "LAYER_TOURISM_4A",
-    "category": "publik",
-    "island_name": "Gunung Api",
-    "latitude": -4.522565,
-    "longitude": 129.879867,
-    "geometry_geojson": null,
-    "properties_meta": {
-      "sub_type": "alam",
-      "guide_available": false
-    },
-    "description": "Puncak kawah vulkanik aktif berketinggian 640 mdpl dengan pemandangan 360 derajat seluruh gugusan kepulauan Banda."
-  },
-  {
-    "category": "publik",
-    "description": "Sentra kuliner tradisional Neira menyajikan sup ikan kuah pala segar, rujak buah pala, dan sambal kenari.",
     "island_name": "Pulau Neira",
-    "latitude": -4.5245,
-    "layer_type": "LAYER_TOURISM_4A",
-    "longitude": 129.903,
-    "name": "Resto Rumah Mande & Kuliner Ikan Kuah Pala",
-    "properties_meta": {
-      "average_meal_rp": 45000,
-      "opening_hours": "10:00 - 22:00 WIT",
-      "specialty": "Ikan Cakalang Kuah Pala & Halwa Pala",
-      "sub_type": "kuliner"
-    }
+    "latitude": -4.524928,
+    "longitude": 129.896722,
+    "geometry_geojson": null,
+    "properties_meta": {},
+    "description": "Dermaga sandar kapal penumpang PELNI (KM Nggapulu, KM Pangrango, KM Sangiang) dan logistik utama antar-pulau."
+  },
+  {
+    "name": "Dermaga Penyeberangan Speedboat Neira - Lonthoir",
+    "layer_type": "LAYER_PUBLIC_SAFETY",
+    "category": "publik",
+    "island_name": "Pulau Neira",
+    "latitude": -4.527039,
+    "longitude": 129.894823,
+    "geometry_geojson": null,
+    "properties_meta": {},
+    "description": "Hub mobilitas warga dan wisatawan menyeberangi selat Neira menuju pulau Banda Besar menggunakan perahu ketinting dan speedboat."
+  },
+  {
+    "name": "Pusat Pembangkit Listrik Tenaga Diesel (PLTD Neira PLN)",
+    "layer_type": "LAYER_ENERGY_WASTE",
+    "category": "resiliensi",
+    "island_name": "Pulau Neira",
+    "latitude": -4.528092,
+    "longitude": 129.906077,
+    "geometry_geojson": null,
+    "properties_meta": {},
+    "description": "Pembangkit diesel PLN penyedia daya listrik jaringan utama kota Neira dengan konsumsi solar ~1200 liter per hari."
   },
   {
     "name": "Benteng Belgica (Fort Belgica)",
@@ -89,16 +171,14 @@
     "description": "Benteng segi lima bertingkat dibangun Pieter Both tahun 1611 di atas bukit Tabaleku untuk mengawasi seluruh teluk Neira."
   },
   {
-    "name": "Benteng Concordia (Waer)",
+    "name": "Rumah Ex Deputi",
     "layer_type": "LAYER_HERITAGE",
     "category": "publik",
-    "island_name": "Banda Besar",
-    "latitude": -4.5583,
-    "longitude": 129.9481,
+    "island_name": "Banda Neira",
+    "latitude": -4.528733,
+    "longitude": 129.90087,
     "geometry_geojson": null,
-    "properties_meta": {
-      "era": "Benteng Peninggalan Masa Kolonialisme"
-    },
+    "properties_meta": {},
     "description": ""
   },
   {
@@ -116,65 +196,54 @@
     "description": ""
   },
   {
-    "name": "Benteng Nassau (Fort Nassau)",
+    "name": "Benteng Concordia (Waer)",
     "layer_type": "LAYER_HERITAGE",
     "category": "publik",
-    "island_name": "Pulau Neira",
-    "latitude": -4.528057,
-    "longitude": 129.897618,
+    "island_name": "Banda Besar",
+    "latitude": -4.5583,
+    "longitude": 129.9481,
     "geometry_geojson": null,
     "properties_meta": {
-      "era": "VOC Awal Abad 17"
+      "era": "Benteng Peninggalan Masa Kolonialisme"
     },
-    "description": "Benteng pertama Belanda yang dibangun di atas reruntuhan loji Portugis pada tahun 1609 oleh Laksamana Verhoeff."
+    "description": ""
   },
   {
-    "name": "Benteng Revenge Pulau Ay",
-    "layer_type": "LAYER_HERITAGE",
-    "category": "publik",
-    "island_name": "Pulau Ay",
-    "latitude": -4.519078,
-    "longitude": 129.773319,
-    "geometry_geojson": null,
-    "properties_meta": {
-      "era": "Konflik VOC vs EIC"
-    },
-    "description": "Benteng pertahanan perebutan monopoli rempah antara armada VOC Belanda dan kongsi dagang Inggris EIC tahun 1616."
-  },
-  {
-    "name": "Gereja Betlehem",
-    "layer_type": "LAYER_HERITAGE",
-    "category": "publik",
-    "island_name": "Pulau Ay",
-    "latitude": -4.520132,
-    "longitude": 129.773592,
+    "name": "Sumur Pusaka Lonthoir",
+    "layer_type": "LAYER_WATER_INFRA",
+    "category": "resiliensi",
+    "island_name": "Banda Besar",
+    "latitude": -4.547939,
+    "longitude": 129.878333,
     "geometry_geojson": null,
     "properties_meta": {},
     "description": ""
   },
   {
-    "name": "Gereja Tua Banda",
+    "name": "Rumah Pengasingan Iwa Kusuma Sumantri",
     "layer_type": "LAYER_HERITAGE",
     "category": "publik",
-    "island_name": "Pulau Neira",
-    "latitude": -4.526933,
-    "longitude": 129.896776,
+    "island_name": "Banda Neira",
+    "latitude": -4.52786,
+    "longitude": 129.901124,
     "geometry_geojson": null,
-    "properties_meta": {},
+    "properties_meta": {
+      "era": "Rumah Pengasingan Tokoh Bersejarah Indonesia"
+    },
     "description": ""
   },
   {
-    "name": "Istana Mini VOC Banda",
+    "name": "Rumah Pengasingan dr. Tjipto Mangunkusumo",
     "layer_type": "LAYER_HERITAGE",
     "category": "publik",
-    "island_name": "Pulau Neira",
-    "latitude": -4.528715,
-    "longitude": 129.900531,
+    "island_name": "Banda Neira",
+    "latitude": -4.528596,
+    "longitude": 129.902875,
     "geometry_geojson": null,
     "properties_meta": {
-      "era": "VOC Pemerintahan Kolonial"
+      "era": "Rumah Pengasingan Tokoh Sejarah"
     },
-    "description": "Gedung kantor dan kediaman resmi Gubernur VOC di Banda, arsitektur megah neoklasik yang menjadi prototipe Istana Merdeka Jakarta."
+    "description": ""
   },
   {
     "name": "Rumah Budaya Banda Neira",
@@ -191,66 +260,25 @@
     "description": ""
   },
   {
-    "name": "Rumah Ex Deputi",
+    "name": "Gereja Tua Banda",
     "layer_type": "LAYER_HERITAGE",
     "category": "publik",
-    "island_name": "Banda Neira",
-    "latitude": -4.528733,
-    "longitude": 129.90087,
+    "island_name": "Pulau Neira",
+    "latitude": -4.526933,
+    "longitude": 129.896776,
     "geometry_geojson": null,
     "properties_meta": {},
     "description": ""
   },
   {
-    "name": "Rumah Pengasingan Bung Hatta",
+    "name": "Gereja Betlehem",
     "layer_type": "LAYER_HERITAGE",
     "category": "publik",
-    "island_name": "Pulau Neira",
-    "latitude": -4.527351,
-    "longitude": 129.89978,
+    "island_name": "Pulau Ay",
+    "latitude": -4.520132,
+    "longitude": 129.773592,
     "geometry_geojson": null,
-    "properties_meta": {
-      "era": "Pergerakan Nasional Indonesia"
-    },
-    "description": "Tempat pengasingan Mohammad Hatta oleh kolonial Belanda (1936-1942). Dilengkapi ruang kelas belajar anak-anak Banda dan koleksi buku asli."
-  },
-  {
-    "name": "Rumah Pengasingan Iwa Kusuma Sumantri",
-    "layer_type": "LAYER_HERITAGE",
-    "category": "publik",
-    "island_name": "Banda Neira",
-    "latitude": -4.52786,
-    "longitude": 129.901124,
-    "geometry_geojson": null,
-    "properties_meta": {
-      "era": "Rumah Pengasingan Tokoh Bersejarah Indonesia"
-    },
-    "description": ""
-  },
-  {
-    "name": "Rumah Pengasingan Sutan Sjahrir",
-    "layer_type": "LAYER_HERITAGE",
-    "category": "publik",
-    "island_name": "Pulau Neira",
-    "latitude": -4.525816,
-    "longitude": 129.897333,
-    "geometry_geojson": null,
-    "properties_meta": {
-      "era": "Pergerakan Nasional Indonesia"
-    },
-    "description": "Tempat tinggal Sutan Sjahrir selama dibuang ke Banda Neira. Menampilkan gramofon kuno, meja kerja diplomasi, dan surat korespondensi."
-  },
-  {
-    "name": "Rumah Pengasingan dr. Tjipto Mangunkusumo",
-    "layer_type": "LAYER_HERITAGE",
-    "category": "publik",
-    "island_name": "Banda Neira",
-    "latitude": -4.528596,
-    "longitude": 129.902875,
-    "geometry_geojson": null,
-    "properties_meta": {
-      "era": "Rumah Pengasingan Tokoh Sejarah"
-    },
+    "properties_meta": {},
     "description": ""
   },
   {
@@ -263,248 +291,6 @@
     "geometry_geojson": null,
     "properties_meta": {},
     "description": ""
-  },
-  {
-    "category": "publik",
-    "description": "Homestay tradisional keluarga petani pala Pulau Ay, menyajikan pengalaman petik rempah dan masakan rumahan khas.",
-    "island_name": "Pulau Ay",
-    "latitude": -4.5295,
-    "layer_type": "LAYER_ACCOMMODATION",
-    "longitude": 129.839,
-    "name": "Ai Spice Island Homestay",
-    "properties_meta": {
-      "contact_whatsapp": "6281299887755",
-      "has_clean_ro_water": true,
-      "has_solar_backup": true,
-      "price_per_night_rp": 280000,
-      "rooms_available": 3,
-      "type": "homestay"
-    }
-  },
-  {
-    "name": "Delfika Homestay & Heritage Villa",
-    "layer_type": "LAYER_ACCOMMODATION",
-    "category": "publik",
-    "island_name": "Pulau Neira",
-    "latitude": -4.525779,
-    "longitude": 129.897661,
-    "geometry_geojson": null,
-    "properties_meta": {
-      "price_per_night_rp": 350000,
-      "contact_whatsapp": "6281299887711"
-    },
-    "description": "Penginapan bersejarah di pusat kota Neira dengan kebun asri, air minum RO gratis dari tandon komunal, dan sistem solar backup."
-  },
-  {
-    "category": "publik",
-    "description": "Kabin kayu ramah lingkungan tepi pantai pasir putih Hatta, beroperasi 100% dengan solar panel mandiri dan air RO.",
-    "island_name": "Pulau Hatta",
-    "latitude": -4.582,
-    "layer_type": "LAYER_ACCOMMODATION",
-    "longitude": 129.981,
-    "name": "Hatta Eco-Reef Cabin",
-    "properties_meta": {
-      "contact_whatsapp": "6281299887744",
-      "has_clean_ro_water": true,
-      "has_solar_backup": true,
-      "price_per_night_rp": 400000,
-      "rooms_available": 5,
-      "saw_rank": 3,
-      "saw_score": 0.865,
-      "type": "cabin"
-    }
-  },
-  {
-    "name": "Maulana Hotel Banda Neira",
-    "layer_type": "LAYER_ACCOMMODATION",
-    "category": "publik",
-    "island_name": "Pulau Neira",
-    "latitude": -4.524368,
-    "longitude": 129.897392,
-    "geometry_geojson": null,
-    "properties_meta": {
-      "price_per_night_rp": 650000,
-      "contact_whatsapp": "6281299887733"
-    },
-    "description": "Hotel tepi pantai legendaris Banda didirikan oleh tokoh budaya Des Alwi, pemandangan langsung ke Gunung Api."
-  },
-  {
-    "category": "publik",
-    "description": "Pondok ramah lingkungan di tengah kebun pala rindang Lonthoir, pemandangan laut dan pasokan air RO terverifikasi.",
-    "island_name": "Banda Besar",
-    "latitude": -4.549,
-    "layer_type": "LAYER_ACCOMMODATION",
-    "longitude": 129.912,
-    "name": "The Nutmeg Tree Homestay Banda Besar",
-    "properties_meta": {
-      "contact_whatsapp": "6281299887722",
-      "has_clean_ro_water": true,
-      "has_solar_backup": false,
-      "price_per_night_rp": 300000,
-      "rooms_available": 4,
-      "saw_rank": 2,
-      "saw_score": 0.88,
-      "type": "homestay"
-    }
-  },
-  {
-    "category": "publik",
-    "description": "Pusat oleh-oleh khas Banda: selai pala alami, sirup pala segar, minyak atsiri fuli murni, dan manisan kering kenari.",
-    "island_name": "Pulau Neira",
-    "latitude": -4.5258,
-    "layer_type": "LAYER_KOPERASI_UMKM",
-    "longitude": 129.904,
-    "name": "Galeri Rempah UMKM Banda Heritage",
-    "properties_meta": {
-      "blockchain_verified": true,
-      "featured_products": "Minyak Atsiri Fuli, Selai Buah Pala, Kopi Rempah",
-      "sub_type": "toko_umkm"
-    }
-  },
-  {
-    "category": "publik",
-    "description": "Pusat penerimaan komoditas pala, fuli, cengkeh, penukaran sampah plastik botol PET ke air RO, dan verifikasi sertifikat blockchain.",
-    "island_name": "Pulau Neira",
-    "latitude": -4.5252,
-    "layer_type": "LAYER_KOPERASI_UMKM",
-    "longitude": 129.9035,
-    "name": "Kantor Pusat Koperasi Hatta & Kasir Timbangan",
-    "properties_meta": {
-      "commodities_accepted": "Pala Super, Fuli Merah, Cengkeh, Cakalang",
-      "operating_hours": "07:30 - 17:00 WIT",
-      "plastic_conversion": "1 kg PET = 10 Liter Air RO + 10 Poin",
-      "sub_type": "koperasi_pusat"
-    }
-  },
-  {
-    "category": "publik",
-    "description": "Fasilitas pengeringan higienis berteknologi surya kubah terpal untuk menjaga kadar air biji pala di bawah 10% dan fuli merah berkilau.",
-    "island_name": "Pulau Ay",
-    "latitude": -4.5275,
-    "layer_type": "LAYER_KOPERASI_UMKM",
-    "longitude": 129.836,
-    "name": "Rumah Jemur Solar Tunnel Fuli & Pala Koperasi",
-    "properties_meta": {
-      "drying_capacity_kg": 1500,
-      "humidity_target": "9.5%",
-      "sub_type": "fasilitas_pasca_panen"
-    }
-  },
-  {
-    "category": "publik",
-    "description": "Petak perkebunan pala organik Lonthoir berumur ratusan tahun, ternaungi pohon kenari raksasa dengan ketertelusuran QR blockchain.",
-    "island_name": "Banda Besar",
-    "latitude": -4.553,
-    "layer_type": "LAYER_KOPERASI_UMKM",
-    "longitude": 129.915,
-    "name": "Sentra Kebun Pala Lonthoir Asli #01",
-    "properties_meta": {
-      "area_sqm": 25000,
-      "primary_commodity": "Myristica fragrans (Pala Banda)",
-      "sub_type": "kebun_pala",
-      "traceability_id": "FARM-BND-LNT-001"
-    }
-  },
-  {
-    "name": "Dermaga Penyeberangan Speedboat Neira - Lonthoir",
-    "layer_type": "LAYER_PUBLIC_SAFETY",
-    "category": "publik",
-    "island_name": "Pulau Neira",
-    "latitude": -4.527039,
-    "longitude": 129.894823,
-    "geometry_geojson": null,
-    "properties_meta": {},
-    "description": "Hub mobilitas warga dan wisatawan menyeberangi selat Neira menuju pulau Banda Besar menggunakan perahu ketinting dan speedboat."
-  },
-  {
-    "name": "Pelabuhan Laut Utama Banda Neira (Dermaga PELNI)",
-    "layer_type": "LAYER_PUBLIC_SAFETY",
-    "category": "publik",
-    "island_name": "Pulau Neira",
-    "latitude": -4.524928,
-    "longitude": 129.896722,
-    "geometry_geojson": null,
-    "properties_meta": {},
-    "description": "Dermaga sandar kapal penumpang PELNI (KM Nggapulu, KM Pangrango, KM Sangiang) dan logistik utama antar-pulau."
-  },
-  {
-    "name": "Puskesmas Perawatan & Pos SAR Banda Neira",
-    "layer_type": "LAYER_PUBLIC_SAFETY",
-    "category": "publik",
-    "island_name": "Pulau Neira",
-    "latitude": -4.528897,
-    "longitude": 129.89846,
-    "geometry_geojson": null,
-    "properties_meta": {},
-    "description": "Fasilitas gawat darurat medis pulau 24 jam dengan ruang rawat inap dan ambulans laut penyeberangan darurat ke RSUD Ambon."
-  },
-  {
-    "category": "publik",
-    "description": "Zona arus selat berputar dan gelombang pecah saat musim angin timur (Juni - Agustus). Diwajibkan pelampung keselamatan.",
-    "island_name": "Banda Besar",
-    "latitude": -4.535,
-    "layer_type": "LAYER_PUBLIC_SAFETY",
-    "longitude": 129.9,
-    "name": "Titik Rawan Ombak Selat Lonthoir (Blind Spot Arus)",
-    "properties_meta": {
-      "alert_level": "Waspada Musim Timur",
-      "hazard_type": "Arus Selat Berputar",
-      "safety_equipment": "Life Jacket Wajib",
-      "sub_type": "hazard_zone"
-    }
-  },
-  {
-    "category": "resiliensi",
-    "description": "Tandon sentral penampungan air hujan dan pemurnian air sumur payau untuk 120 kepala keluarga Pulau Ay.",
-    "island_name": "Pulau Ay",
-    "latitude": -4.53,
-    "layer_type": "LAYER_WATER_INFRA",
-    "longitude": 129.838,
-    "name": "Instalasi Tandon Air Komunal & Filter Pulau Ay #3",
-    "properties_meta": {
-      "live_tds_ppm": 62.0,
-      "station_id": "WS-AY-03",
-      "tank_level_pct": 62.0,
-      "water_quality_status": "LAYAK KONSUMSI",
-      "water_source": "Penampungan Air Hujan & Filter RO"
-    }
-  },
-  {
-    "category": "resiliensi",
-    "description": "Instalasi Reverse Osmosis bertenaga surya mengubah air payau sumur warga Lonthoir menjadi air minum murni sesuai standar WHO.",
-    "island_name": "Banda Besar",
-    "latitude": -4.5389,
-    "layer_type": "LAYER_WATER_INFRA",
-    "longitude": 129.9042,
-    "name": "Stasiun BWRO & Dispenser Mandat Prof. Purwo #1",
-    "properties_meta": {
-      "daily_dispensed_liters": 420.0,
-      "live_tds_ppm": 42.5,
-      "saw_rank": 1,
-      "saw_score": 0.98,
-      "solenoid_valve_status": "ACTIVE_READY",
-      "station_id": "WS-LONTHOIR-01",
-      "tank_level_pct": 88.0,
-      "water_quality_status": "LAYAK KONSUMSI (WHO STANDAR)",
-      "water_source": "Filtrasi Air Payau (BWRO) Tenaga Surya"
-    }
-  },
-  {
-    "category": "resiliensi",
-    "description": "Desalinasi air laut (SWRO) 5000 liter/hari yang menyelesaikan kelangkaan air bersih historis di Pulau Hatta.",
-    "island_name": "Pulau Hatta",
-    "latitude": -4.5815,
-    "layer_type": "LAYER_WATER_INFRA",
-    "longitude": 129.9805,
-    "name": "Stasiun Desalinasi SWRO Bertenaga Surya Pulau Hatta #2",
-    "properties_meta": {
-      "daily_dispensed_liters": 260.0,
-      "live_tds_ppm": 55.0,
-      "station_id": "WS-HATTA-02",
-      "tank_level_pct": 74.0,
-      "water_quality_status": "LAYAK KONSUMSI",
-      "water_source": "Desalinasi Air Laut (SWRO)"
-    }
   },
   {
     "name": "Sumur Air Payau Komunal Warga RT 02 Neira",
@@ -524,71 +310,15 @@
     "description": "Sumur galian komunal warga rentan intrusi air laut saat pasang purnama. Memerlukan pemantauan salinitas dan filtrasi kontinu."
   },
   {
-    "name": "Sumur Pusaka Lonthoir",
-    "layer_type": "LAYER_WATER_INFRA",
-    "category": "resiliensi",
-    "island_name": "Banda Besar",
-    "latitude": -4.547939,
-    "longitude": 129.878333,
+    "name": "Puskesmas Perawatan & Pos SAR Banda Neira",
+    "layer_type": "LAYER_PUBLIC_SAFETY",
+    "category": "publik",
+    "island_name": "Pulau Neira",
+    "latitude": -4.528897,
+    "longitude": 129.89846,
     "geometry_geojson": null,
     "properties_meta": {},
-    "description": ""
-  },
-  {
-    "name": "Pusat Pembangkit Listrik Tenaga Diesel (PLTD Neira PLN)",
-    "layer_type": "LAYER_ENERGY_WASTE",
-    "category": "resiliensi",
-    "island_name": "Pulau Neira",
-    "latitude": -4.528092,
-    "longitude": 129.906077,
-    "geometry_geojson": null,
-    "properties_meta": {},
-    "description": "Pembangkit diesel PLN penyedia daya listrik jaringan utama kota Neira dengan konsumsi solar ~1200 liter per hari."
-  },
-  {
-    "category": "resiliensi",
-    "description": "Micro-grid tenaga surya mandiri 50 kWp dengan sistem baterai Lithium lifepo4 untuk memasok listrik bersih dan mesin SWRO.",
-    "island_name": "Pulau Hatta",
-    "latitude": -4.58,
-    "layer_type": "LAYER_ENERGY_WASTE",
-    "longitude": 129.979,
-    "name": "Pusat Pembangkit Surya Terbarukan (PLTS Hatta 50 kWp)",
-    "properties_meta": {
-      "battery_storage_kwh": 120,
-      "capacity_kwp": 50,
-      "clean_energy_pct": 100,
-      "diesel_saved_liters_daily": 42.0,
-      "sub_type": "plts_surya"
-    }
-  },
-  {
-    "category": "resiliensi",
-    "description": "Pusat penimbangan dan pencacahan limbah botol plastik PET. Terintegrasi dengan kasir digital dan penukaran voucher air minum.",
-    "island_name": "Pulau Neira",
-    "latitude": -4.5255,
-    "layer_type": "LAYER_ENERGY_WASTE",
-    "longitude": 129.9025,
-    "name": "Sentra Bank Sampah Plastik Koperasi Hatta",
-    "properties_meta": {
-      "daily_plastic_quota_liters": 1000,
-      "plastic_conversion_rule": "1 kg botol PET = 10 Liter air RO",
-      "sub_type": "bank_sampah",
-      "total_recycled_kg": 1845.5
-    }
-  },
-  {
-    "category": "resiliensi",
-    "description": "Titik penyisiran dan pengumpulan sampah plastik kiriman arus laut pesisir pantai timur Lonthoir oleh relawan KKN dan pemuda desa.",
-    "island_name": "Banda Besar",
-    "latitude": -4.545,
-    "layer_type": "LAYER_ENERGY_WASTE",
-    "longitude": 129.92,
-    "name": "Sentra Reduksi Sampah Pesisir Pantai Malole",
-    "properties_meta": {
-      "cleanup_schedule": "Setiap Sabtu Pagi",
-      "marine_debris_intercepted_kg": 620.0,
-      "sub_type": "timbulan_pesisir"
-    }
+    "description": "Fasilitas gawat darurat medis pulau 24 jam dengan ruang rawat inap dan ambulans laut penyeberangan darurat ke RSUD Ambon."
   },
   {
     "name": "Terminal Dermaga Pulau Ay",
