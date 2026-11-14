@@ -40,6 +40,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 35: Modularisasi Komponen Frontend & Penerapan Clean Code Blueprint (fhinisCleanCode.md)**
 - [x] **Phase 36: Landing Page Performance Optimization, Fit-To-Screen Hero, & Lenis Smooth Scrolling**
 - [x] **Phase 37: GIS Map Cartographic Location Pins & In-Map Atlas Legend Overhaul**
+- [x] **Phase 38: Client-Side URL Routing, Deep-Linking, Session Restoration & Refresh Persistence**
 
 ---
 
@@ -580,6 +581,21 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 37.3 Kepatuhan Impeccable Design & Zero Emoji Policy:
   - Menghapus seluruh karakter emoji pada markup dan tooltip status peta, menggantikannya dengan ikon Lucide (`X`, `ChevronDown`, `ChevronUp`) dan tipografi deskriptif bersih.
   - Memverifikasi build frontend lolos (`✓ built in 6.73s`) dan lolos pemeriksaan `impeccable detect` (0 issues).
+
+### Phase 38: Client-Side URL Routing, Deep-Linking, Session Restoration & Refresh Persistence
+- [x] 38.1 Pemetaan Rute URL Bersih (Bidirectional URL Routing) untuk 14 Workspace:
+  - Mendefinisikan kamus rute `TAB_ROUTES` dan pencocokan balik `ROUTE_TO_TAB` di `App.tsx` yang memetakan seluruh workspace dan aliasnya (`/`, `/dashboard`, `/population`, `/letters`, `/farming`, `/traceability`, `/koperasi`, `/iot`, `/tourism`, `/gis`, `/audit`, `/smart_planner`, `/survei`, `/register`, `/login`, `/peta`, `/wisata`, `/surat`, dll.).
+- [x] 38.2 Sinkronisasi Otomatis Riwayat Peramban (History API & popstate Listener):
+  - Membungkus navigasi `setActiveTab` dengan sinkronisasi `window.history.pushState` / `replaceState` dan penyimpanan lokal `banda_active_tab`.
+  - Mengimplementasikan pendengar event `popstate` agar tombol Back/Forward peramban berfungsi mulus antar-ruang kerja.
+- [x] 38.3 Inisialisasi State Sinkron & Eliminasi "Kick to Landing Page" saat Refresh:
+  - Menginisialisasi `currentUser` secara sinkron dari profil cache lokal `authService.getCachedProfile()` saat token valid terdeteksi, mencegah *flash* unauthenticated state.
+  - Menginisialisasi `activeTab` secara langsung dari `window.location.pathname` (dan cadangan `banda_active_tab`), memastikan pengguna tetap berada di halaman yang sedang diakses saat me-refresh halaman (F5 / reload).
+- [x] 38.4 Fallback Navigasi Service Worker Offline (SPA Navigation):
+  - Memperbarui `sw.js` dengan penanganan request bernavigasi (`mode === 'navigate'`) agar fallback ke `/index.html` dari cache ketika jaringan terputus atau saat pengguna me-refresh halaman di pulau 3T.
+- [x] 38.5 Verifikasi Build dan Pengujian Regresi Penuh:
+  - Build frontend Vite + TypeScript lolos 100% tanpa galat (`✓ built in 9.56s`).
+  - Seluruh 89 tes backend pytest lolos 100% (`89 passed in 232.12s`).
 
 
 

@@ -46,6 +46,18 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
+  // Handle navigation requests (SPA fallback for offline & refresh on any route)
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match('/index.html').then((response) => {
+          return response || caches.match('/')
+        })
+      })
+    )
+    return
+  }
+
   // Cache-first for OpenStreetMap tiles (Offline GIS Navigation for Banda Islands)
   if (url.hostname.includes('tile.openstreetmap.org') || url.hostname.includes('openstreetmap')) {
     event.respondWith(

@@ -58,9 +58,136 @@ interface HealthResponse {
   }
 }
 
+export type TabId =
+  | 'landing'
+  | 'register'
+  | 'dashboard'
+  | 'population'
+  | 'letters'
+  | 'farming'
+  | 'traceability'
+  | 'koperasi'
+  | 'iot'
+  | 'tourism'
+  | 'gis'
+  | 'audit'
+  | 'smart_planner'
+  | 'survei'
+
+export const TAB_ROUTES: Record<TabId, string> = {
+  landing: '/',
+  register: '/register',
+  dashboard: '/dashboard',
+  population: '/population',
+  letters: '/letters',
+  farming: '/farming',
+  traceability: '/traceability',
+  koperasi: '/koperasi',
+  iot: '/iot',
+  tourism: '/tourism',
+  gis: '/gis',
+  audit: '/audit',
+  smart_planner: '/smart_planner',
+  survei: '/survei',
+}
+
+export const ROUTE_TO_TAB: Record<string, TabId> = {
+  '/': 'landing',
+  '/landing': 'landing',
+  '/beranda': 'landing',
+  '/home': 'landing',
+  '/register': 'register',
+  '/daftar': 'register',
+  '/dashboard': 'dashboard',
+  '/dasbor': 'dashboard',
+  '/population': 'population',
+  '/warga': 'population',
+  '/penduduk': 'population',
+  '/login': 'population',
+  '/masuk': 'population',
+  '/letters': 'letters',
+  '/surat': 'letters',
+  '/farming': 'farming',
+  '/kebun': 'farming',
+  '/lahan': 'farming',
+  '/traceability': 'traceability',
+  '/panen': 'traceability',
+  '/mutu': 'traceability',
+  '/koperasi': 'koperasi',
+  '/iot': 'iot',
+  '/telemetri': 'iot',
+  '/tourism': 'tourism',
+  '/wisata': 'tourism',
+  '/homestay': 'tourism',
+  '/gis': 'gis',
+  '/peta': 'gis',
+  '/map': 'gis',
+  '/maps': 'gis',
+  '/audit': 'audit',
+  '/smart_planner': 'smart_planner',
+  '/planner': 'smart_planner',
+  '/survei': 'survei',
+  '/survey': 'survei',
+}
+
+export const getInitialTab = (): TabId => {
+  if (typeof window === 'undefined') return 'landing'
+  const path = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/'
+  if (path.startsWith('/verify')) return 'landing'
+  if (ROUTE_TO_TAB[path]) {
+    return ROUTE_TO_TAB[path]
+  }
+  const hasToken = Boolean(authService.getAccessToken())
+  const savedTab = localStorage.getItem('banda_active_tab') as TabId | null
+  if (hasToken && savedTab && TAB_ROUTES[savedTab] && savedTab !== 'landing') {
+    return savedTab
+  }
+  return 'landing'
+}
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'landing' | 'register' | 'dashboard' | 'population' | 'letters' | 'farming' | 'traceability' | 'koperasi' | 'iot' | 'tourism' | 'gis' | 'audit' | 'smart_planner' | 'survei'>('landing')
+  const [activeTab, setActiveTabState] = useState<TabId>(getInitialTab)
+
+  const setActiveTab = (tab: TabId, replace: boolean = false) => {
+    setActiveTabState(tab)
+    try {
+      localStorage.setItem('banda_active_tab', tab)
+      const targetPath = TAB_ROUTES[tab] || '/'
+      if (typeof window !== 'undefined' && window.location.pathname !== targetPath) {
+        if (replace) {
+          window.history.replaceState({ tab }, '', targetPath)
+        } else {
+          window.history.pushState({ tab }, '', targetPath)
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  // Synchronize browser history and handle popstate (back/forward)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const currentPath = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/'
+    if (!currentPath.startsWith('/verify')) {
+      const targetPath = TAB_ROUTES[activeTab] || '/'
+      if (currentPath !== targetPath) {
+        window.history.replaceState({ tab: activeTab }, '', targetPath)
+      }
+    }
+
+    const handlePopState = () => {
+      const p = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/'
+      if (p.startsWith('/verify')) return
+      const matchedTab = ROUTE_TO_TAB[p] || 'landing'
+      setActiveTabState(matchedTab)
+      localStorage.setItem('banda_active_tab', matchedTab)
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [activeTab])
+
   const [health, setHealth] = useState<HealthResponse | null>(null)
   const [loadingHealth, setLoadingHealth] = useState<boolean>(true)
   const [healthError, setHealthError] = useState<string | null>(null)
@@ -72,8 +199,14 @@ export const App: React.FC = () => {
   const [showQueueModal, setShowQueueModal] = useState<boolean>(false)
   const [queueList, setQueueList] = useState<SyncQueueItem[]>([])
 
-  // Auth states
-  const [currentUser, setCurrentUser] = useState<User | null>(null)
+  // Auth states: load cached user immediately to prevent flash or unintended redirect to landing
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const token = authService.getAccessToken()
+    if (token) {
+      return authService.getCachedProfile()
+    }
+    return null
+  })
   const [username, setUsername] = useState<string>('admin')
   const [password, setPassword] = useState<string>('Admin123!')
   const [authLoading, setAuthLoading] = useState<boolean>(false)
@@ -463,7 +596,15 @@ export const App: React.FC = () => {
       authService
         .getMe()
         .then((user) => setCurrentUser(user))
-        .catch(() => authService.clearTokens())
+        .catch(() => {
+          authService.clearTokens()
+          localStorage.removeItem('banda_active_tab')
+          setCurrentUser(null)
+          const currentPath = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/'
+          if (currentPath !== '/' && currentPath !== '/landing' && currentPath !== '/register') {
+            setActiveTab('landing', true)
+          }
+        })
     }
 
     // Auto-open public certificate if ?verify=<token> or /verify/<token> is in the URL (e.g. from camera scan)
@@ -533,6 +674,11 @@ export const App: React.FC = () => {
 
   const handleLogout = () => {
     authService.logout()
+    try {
+      localStorage.removeItem('banda_active_tab')
+    } catch {
+      // ignore
+    }
     setCurrentUser(null)
     setActiveTab('landing')
     setResidents([])

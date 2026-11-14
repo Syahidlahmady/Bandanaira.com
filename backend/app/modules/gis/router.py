@@ -191,7 +191,16 @@ async def get_heritage_detail_by_slug(
             detail=f"Situs cagar budaya dengan slug '{slug}' tidak ditemukan.",
         )
 
-    return target_feature.to_geojson_feature()
+    res = target_feature.to_geojson_feature()
+    if "audio_url" not in res["properties"]:
+        audio_guide = (
+            target_feature.properties_meta.get("audio_url")
+            if target_feature.properties_meta
+            else None
+        ) or f"/audio/{slug}.mp3"
+        res["properties"]["audio_url"] = audio_guide
+
+    return res
 
 
 @router.get("/cari-eksternal", response_model=GeocodingResponse)
