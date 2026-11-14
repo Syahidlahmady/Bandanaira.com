@@ -64,7 +64,7 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
     const lenis = new Lenis({
       autoRaf: false,
       duration: 1.1,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       wheelMultiplier: 1.0,
       touchMultiplier: 1.2,
