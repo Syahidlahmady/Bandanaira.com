@@ -30,6 +30,7 @@ from backend.app.modules.harvests.models import Harvest
 from backend.app.modules.population.models import AdministrativeRequest, Resident
 from backend.app.modules.traceability.models import BatchEvent, BatchHarvest, ProductBatch
 from backend.app.modules.traceability.hashing import calculate_event_hash
+from backend.scripts.seed_spatial_features import seed_spatial_features
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("demo_seed")
@@ -490,6 +491,10 @@ async def seed_all():
                     )
                     session.add(req_item)
                     await session.flush()
+
+        # 8. SPATIAL FEATURES (7-Layer GIS & Rute Maritim)
+        logger.info("🗺️ Menginisialisasi 37 Objek Spasial 7-Layer GIS & Rute Maritim...")
+        await seed_spatial_features(session)
 
         await session.commit()
         logger.info("✅ Seeding ekosistem Banda Digital selesai dengan sukses!")

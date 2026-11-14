@@ -551,3 +551,18 @@ INITIAL_SPATIAL_FEATURES: List[Dict[str, Any]] = [   {   'category': 'publik',
         'properties_meta': {   'cleanup_schedule': 'Setiap Sabtu Pagi',
                                'marine_debris_intercepted_kg': 620.0,
                                'sub_type': 'timbulan_pesisir'}}]
+
+# Sinkronisasi dengan dataset geospasial terbaru jika berkas JSON tersedia
+import json
+import os
+from pathlib import Path
+
+_SEED_FILE = Path(__file__).resolve().parent.parent.parent / "seeds" / "gis_spatial_features.json"
+if os.path.exists(_SEED_FILE):
+    try:
+        with open(_SEED_FILE, "r", encoding="utf-8") as _f:
+            _loaded_data = json.load(_f)
+            if isinstance(_loaded_data, list) and len(_loaded_data) > 0:
+                INITIAL_SPATIAL_FEATURES = _loaded_data
+    except Exception:
+        pass

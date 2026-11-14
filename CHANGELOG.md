@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Penyimpanan Dataset Spasial Autentik, Seeder Geospasial 54 Objek & Dokumentasi Peta Interaktif (Phase 39)**:
+  - Menyimpan dan mengekspor seluruh 37 objek spasial autentik PostGIS yang baru dibuat (termasuk rute maritim *Jalur Penyeberangan Speedboat Neira - Pulau Ay* dengan 26 waypoint LineString, RSUD Banda, Hutan Kelle, Blood Stone, pantai barat Pulau Ay, embung komunal, dll.) ke berkas seeder permanen `backend/app/seeds/gis_spatial_features.json`.
+  - Menggabungkan dataset dengan 17 objek infrastruktur pulau lainnya (termasuk spot selam Pulau Hatta, stasiun desalinasi SWRO tenaga surya, microgrid PLTS 50 kWp, dan sentra koperasi) sehingga total mencapai 54 objek spasial terverifikasi di seluruh 6 gugus pulau.
+  - Membangun skrip seeder mandiri `backend/scripts/seed_spatial_features.py` yang mendukung mekanisme *upsert* aman tanpa duplikasi.
+  - Mengintegrasikan seeder spasial ke dalam `backend/scripts/demo_seed.py` (Tahap 8) sehingga rekan tim pengembang dapat menjalankan inisialisasi basis data secara instan (`docker exec banda_backend python -m backend.scripts.demo_seed` atau `python -m backend.scripts.seed_spatial_features`).
+  - Memperbarui `backend/app/modules/gis/router.py` dan `curated_layers.py` agar otomatis menyertakan geometri rute `geometry_geojson` saat *auto-seed on startup*.
+  - Menulis dokumentasi komprehensif `docs/GIS_DATA_DAN_PETA.md` yang merinci 7 layer spasial, 54 objek, spesifikasi API GeoJSON, cara penggunaan studio batas desa non-teknis, serta panduan operasional tim.
+  - Memverifikasi kelulusan 100% dari 89 pengujian otomatis pytest backend.
 - **Client-Side URL Routing, Deep-Linking, Session Restoration & Refresh Persistence (Phase 38)**:
   - Memperbaiki isu navigasi di mana pengguna yang mengakses halaman lain dan melakukan *page refresh* (F5) terlempar kembali ke halaman Beranda/Landing Page.
   - Mengimplementasikan kamus rute dwiarah `TAB_ROUTES` dan `ROUTE_TO_TAB` di `App.tsx` yang memetakan seluruh 14 workspace (`/`, `/dashboard`, `/population`, `/letters`, `/farming`, `/traceability`, `/koperasi`, `/iot`, `/tourism`, `/gis`, `/audit`, `/smart_planner`, `/survei`, `/register`) beserta alias rute (`/peta`, `/wisata`, `/surat`, `/kebun`, `/panen`, `/telemetri`, `/login`, dll.).
