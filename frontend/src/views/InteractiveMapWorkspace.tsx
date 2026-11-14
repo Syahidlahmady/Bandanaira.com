@@ -20,6 +20,8 @@ import {
   Trash2,
   MapPin,
   Edit2,
+  Edit3,
+  Download,
   Save,
   X,
   Sparkles,
@@ -109,7 +111,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
   // Admin Studio States
   const [adminStudioOpen, setAdminStudioOpen] = useState<boolean>(false)
-  const [adminTab, setAdminTab] = useState<'search' | 'form'>('search')
+  const [adminTab, setAdminTab] = useState<'search' | 'form' | 'polygon'>('search')
   const [editingFeatureId, setEditingFeatureId] = useState<string | null>(null)
 
   // External Geocoder States
@@ -151,6 +153,39 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   const [showVillageBoundaries, setShowVillageBoundaries] = useState<boolean>(true)
   const [selectedVillage, setSelectedVillage] = useState<VillageInfo | null>(null)
   const villageBoundariesLayerRef = useRef<L.GeoJSON | null>(null)
+
+  // Village Polygon Interactive Editor States
+  const [villageGeoJSON, setVillageGeoJSON] = useState<any>(() => {
+    try {
+      const cached = localStorage.getItem('banda_village_polygons_v1')
+      if (cached) return JSON.parse(cached)
+    } catch (e) {
+      console.warn('Gagal membaca cache poligon desa', e)
+    }
+    return BANDA_VILLAGES_GEOJSON
+  })
+  const [villageDetailsMap, setVillageDetailsMap] = useState<Record<string, VillageInfo>>(() => {
+    try {
+      const cached = localStorage.getItem('banda_village_details_v1')
+      if (cached) return JSON.parse(cached)
+    } catch (e) {
+      console.warn('Gagal membaca cache details desa', e)
+    }
+    return VILLAGE_DETAILS
+  })
+
+  const [editingVillageId, setEditingVillageId] = useState<string | null>(null)
+  const [polygonVertices, setPolygonVertices] = useState<[number, number][]>([])
+  const [editingVillageName, setEditingVillageName] = useState<string>('')
+  const [editingVillageIsland, setEditingVillageIsland] = useState<string>('Pulau Neira')
+  const [editingVillageColor, setEditingVillageColor] = useState<string>('#34d399')
+  const [editingVillageDesc, setEditingVillageDesc] = useState<string>('')
+  const [editingVillagePop, setEditingVillagePop] = useState<string>('')
+  const [editingVillageCommodity, setEditingVillageCommodity] = useState<string>('')
+  const [editingVillageArea, setEditingVillageArea] = useState<string>('')
+
+  const draftPolygonRef = useRef<L.Polygon | null>(null)
+  const draftPolygonVertexMarkersRef = useRef<L.Marker[]>([])
 
   const draftPolylineRef = useRef<L.Polyline | null>(null)
   const draftVertexMarkersRef = useRef<L.Marker[]>([])
@@ -427,6 +462,10 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
       if (adminStudioOpen) {
         const lat = parseFloat(e.latlng.lat.toFixed(6))
         const lng = parseFloat(e.latlng.lng.toFixed(6))
+        if (adminTab === 'polygon') {
+          setPolygonVertices((prev) => [...prev, [lat, lng]])
+          return
+        }
         if (geometryMode === 'route') {
           setRouteWaypoints((prev) => [...prev, [lat, lng]])
         } else {
@@ -441,7 +480,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     return () => {
       map.off('click', onMapClick)
     }
-  }, [adminStudioOpen, geometryMode])
+  }, [adminStudioOpen, adminTab, geometryMode])
 
   // Manage draft route polyline and draggable vertex handles for Admin Studio
   useEffect(() => {
@@ -529,6 +568,102 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     })
   }, [adminStudioOpen, geometryMode, routeWaypoints, routeType])
 
+  // Manage draft polygon and draggable vertex handles for Village Polygon Studio
+  useEffect(() => {
+    if (!mapInstanceRef.current) return
+    const map = mapInstanceRef.current
+
+    // Clean up previous draft polygon and handles
+    if (draftPolygonRef.current) {
+      draftPolygonRef.current.remove()
+      draftPolygonRef.current = null
+    }
+    draftPolygonVertexMarkersRef.current.forEach((m) => m.remove())
+    draftPolygonVertexMarkersRef.current = []
+
+    if (!adminStudioOpen || adminTab !== 'polygon') return
+
+    // Draw polygon if at least 3 points
+    if (polygonVertices.length >= 3) {
+      const poly = L.polygon(polygonVertices, {
+        color: editingVillageColor || '#3b82f6',
+        weight: 3,
+        fillColor: editingVillageColor || '#3b82f6',
+        fillOpacity: 0.45,
+        dashArray: '4, 4',
+      }).addTo(map)
+      draftPolygonRef.current = poly
+    } else if (polygonVertices.length === 2) {
+      // Draw line while defining first 2 points
+      const line = L.polyline(polygonVertices, {
+        color: editingVillageColor || '#3b82f6',
+        weight: 2.5,
+        dashArray: '4, 4',
+      }).addTo(map)
+      draftPolygonRef.current = line as any
+    }
+
+    // Draw draggable vertex handles for each point
+    polygonVertices.forEach(([lat, lng], idx) => {
+      const vertexIcon = L.divIcon({
+        className: 'custom-vertex-handle',
+        html: `
+          <div style="
+            width: 24px;
+            height: 24px;
+            background: #ffffff;
+            border: 2.5px solid ${editingVillageColor || '#0284c7'};
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 800;
+            color: #0f172a;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            cursor: grab;
+            user-select: none;
+          ">
+            ${idx + 1}
+          </div>
+        `,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+      })
+
+      const marker = L.marker([lat, lng], {
+        icon: vertexIcon,
+        draggable: true,
+      }).addTo(map)
+
+      marker.on('drag', (ev: any) => {
+        const newLatLng = ev.target.getLatLng()
+        const updated = [...polygonVertices]
+        updated[idx] = [parseFloat(newLatLng.lat.toFixed(6)), parseFloat(newLatLng.lng.toFixed(6))]
+        if (draftPolygonRef.current) {
+          draftPolygonRef.current.setLatLngs(updated)
+        }
+      })
+
+      marker.on('dragend', (ev: any) => {
+        const newLatLng = ev.target.getLatLng()
+        setPolygonVertices((prev) => {
+          const next = [...prev]
+          next[idx] = [parseFloat(newLatLng.lat.toFixed(6)), parseFloat(newLatLng.lng.toFixed(6))]
+          return next
+        })
+      })
+
+      // Right click to delete vertex
+      marker.on('contextmenu', (ev: any) => {
+        L.DomEvent.stopPropagation(ev)
+        setPolygonVertices((prev) => prev.filter((_, i) => i !== idx))
+      })
+
+      draftPolygonVertexMarkersRef.current.push(marker)
+    })
+  }, [adminStudioOpen, adminTab, polygonVertices, editingVillageColor])
+
   const handleUndoLastWaypoint = () => {
     setRouteWaypoints((prev) => prev.slice(0, -1))
   }
@@ -585,6 +720,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   const handleCloseAdminStudio = () => {
     setAdminStudioOpen(false)
     setEditingFeatureId(null)
+    setEditingVillageId(null)
     removeDraftMarker()
     if (draftPolylineRef.current) {
       draftPolylineRef.current.remove()
@@ -593,6 +729,192 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     draftVertexMarkersRef.current.forEach((m) => m.remove())
     draftVertexMarkersRef.current = []
     setRouteWaypoints([])
+    if (draftPolygonRef.current) {
+      draftPolygonRef.current.remove()
+      draftPolygonRef.current = null
+    }
+    draftPolygonVertexMarkersRef.current.forEach((m) => m.remove())
+    draftPolygonVertexMarkersRef.current = []
+    setPolygonVertices([])
+  }
+
+  // Village Polygon Handlers
+  const handleStartEditVillagePolygon = (vName: string) => {
+    const feat = villageGeoJSON.features.find((f: any) => f.properties.name === vName)
+    if (!feat) return
+
+    let latlngs: [number, number][] = []
+    if (feat.geometry?.type === 'Polygon' && Array.isArray(feat.geometry.coordinates[0])) {
+      latlngs = feat.geometry.coordinates[0].map((c: any) => [Number(c[1]), Number(c[0])])
+      if (
+        latlngs.length > 2 &&
+        latlngs[0][0] === latlngs[latlngs.length - 1][0] &&
+        latlngs[0][1] === latlngs[latlngs.length - 1][1]
+      ) {
+        latlngs.pop()
+      }
+    }
+
+    const details = villageDetailsMap[vName] || {}
+
+    setEditingVillageId(feat.id || `desa-${vName.toLowerCase().replace(/\s+/g, '-')}`)
+    setEditingVillageName(vName)
+    setEditingVillageIsland(feat.properties.island || details.island || 'Pulau Neira')
+    setEditingVillageColor(feat.properties.color || details.color || '#3b82f6')
+    setEditingVillageDesc(details.description || '')
+    setEditingVillagePop(details.population || '')
+    setEditingVillageCommodity(details.main_commodity || '')
+    setEditingVillageArea(details.area_ha || '')
+    setPolygonVertices(latlngs)
+
+    setAdminStudioOpen(true)
+    setAdminTab('polygon')
+
+    if (mapInstanceRef.current && latlngs.length > 0) {
+      const bounds = L.latLngBounds(latlngs)
+      mapInstanceRef.current.fitBounds(bounds, { padding: [60, 60], maxZoom: 15 })
+    }
+  }
+
+  const handleAddNewVillagePolygon = () => {
+    setEditingVillageId(null)
+    setEditingVillageName('')
+    setEditingVillageIsland('Pulau Neira')
+    setEditingVillageColor('#3b82f6')
+    setEditingVillageDesc('')
+    setEditingVillagePop('')
+    setEditingVillageCommodity('')
+    setEditingVillageArea('')
+    setPolygonVertices([])
+    setAdminStudioOpen(true)
+    setAdminTab('polygon')
+  }
+
+  const handleSaveVillagePolygon = () => {
+    if (polygonVertices.length < 3) {
+      alert('Poligon harus memiliki minimal 3 titik simpul!')
+      return
+    }
+    if (!editingVillageName.trim()) {
+      alert('Nama desa / wilayah harus diisi!')
+      return
+    }
+
+    // Convert polygonVertices [lat, lng] to GeoJSON [lng, lat]
+    const closedCoords: [number, number][] = polygonVertices.map(([lat, lng]) => [lng, lat])
+    // Ensure closed loop
+    const first = closedCoords[0]
+    const last = closedCoords[closedCoords.length - 1]
+    if (first[0] !== last[0] || first[1] !== last[1]) {
+      closedCoords.push([first[0], first[1]])
+    }
+
+    const featureId = editingVillageId || `desa-${editingVillageName.toLowerCase().replace(/\s+/g, '-')}`
+
+    const updatedFeatures = villageGeoJSON.features.filter(
+      (f: any) => f.id !== featureId && f.properties.name !== editingVillageName
+    )
+    const newFeature = {
+      type: 'Feature',
+      id: featureId,
+      properties: {
+        name: editingVillageName,
+        island: editingVillageIsland,
+        color: editingVillageColor,
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [closedCoords],
+      },
+    }
+    updatedFeatures.push(newFeature)
+
+    const newGeoJSON = {
+      ...villageGeoJSON,
+      features: updatedFeatures,
+    }
+
+    setVillageGeoJSON(newGeoJSON)
+    try {
+      localStorage.setItem('banda_village_polygons_v1', JSON.stringify(newGeoJSON))
+    } catch (e) {
+      console.error('Gagal menyimpan poligon ke localStorage', e)
+    }
+
+    // Update village details
+    const updatedDetails = {
+      ...villageDetailsMap,
+      [editingVillageName]: {
+        name: editingVillageName,
+        island: editingVillageIsland,
+        color: editingVillageColor,
+        description: editingVillageDesc || 'Wilayah administrasi desa di Kepulauan Banda.',
+        population: editingVillagePop,
+        main_commodity: editingVillageCommodity,
+        area_ha: editingVillageArea,
+      },
+    }
+    setVillageDetailsMap(updatedDetails)
+    try {
+      localStorage.setItem('banda_village_details_v1', JSON.stringify(updatedDetails))
+    } catch (e) {
+      console.error('Gagal menyimpan details ke localStorage', e)
+    }
+
+    setNotificationMsg({
+      type: 'success',
+      text: `Bentuk poligon batas wilayah ${editingVillageName} berhasil disimpan dan disesuaikan!`,
+    })
+    setTimeout(() => setNotificationMsg(null), 5000)
+    setAdminStudioOpen(false)
+  }
+
+  const handleDeleteVillagePolygon = () => {
+    if (!editingVillageName) return
+    if (!window.confirm(`Hapus poligon batas wilayah ${editingVillageName}?`)) return
+
+    const updatedFeatures = villageGeoJSON.features.filter(
+      (f: any) => f.id !== editingVillageId && f.properties.name !== editingVillageName
+    )
+    const newGeoJSON = {
+      ...villageGeoJSON,
+      features: updatedFeatures,
+    }
+    setVillageGeoJSON(newGeoJSON)
+    localStorage.setItem('banda_village_polygons_v1', JSON.stringify(newGeoJSON))
+
+    setPolygonVertices([])
+    setEditingVillageId(null)
+    setNotificationMsg({
+      type: 'info',
+      text: `Poligon batas wilayah ${editingVillageName} telah dihapus.`,
+    })
+    setTimeout(() => setNotificationMsg(null), 4000)
+  }
+
+  const handleResetVillagePolygons = () => {
+    if (!window.confirm('Kembalikan seluruh poligon desa ke konfigurasi awal? Perubahan manual Anda akan di-reset.')) return
+    localStorage.removeItem('banda_village_polygons_v1')
+    localStorage.removeItem('banda_village_details_v1')
+    setVillageGeoJSON(BANDA_VILLAGES_GEOJSON)
+    setVillageDetailsMap(VILLAGE_DETAILS)
+    setPolygonVertices([])
+    setEditingVillageId(null)
+    setNotificationMsg({
+      type: 'info',
+      text: 'Batas poligon desa telah dikembalikan ke konfigurasi awal.',
+    })
+    setTimeout(() => setNotificationMsg(null), 4000)
+  }
+
+  const handleDownloadVillageGeoJSON = () => {
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(villageGeoJSON, null, 2))
+    const downloadAnchor = document.createElement('a')
+    downloadAnchor.setAttribute('href', dataStr)
+    downloadAnchor.setAttribute('download', 'banda_villages_calibrated.geojson')
+    document.body.appendChild(downloadAnchor)
+    downloadAnchor.click()
+    downloadAnchor.remove()
   }
 
   const handleStartEditFeature = (feat: GeoJSONFeature) => {
@@ -991,10 +1313,15 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
     if (!showVillageBoundaries) return
 
-    const geoJsonLayer = L.geoJSON(BANDA_VILLAGES_GEOJSON, {
+    const geoJsonLayer = L.geoJSON(villageGeoJSON, {
       style: (feat) => {
         const vName = feat?.properties?.name
         const isSelected = selectedVillage?.name === vName
+        const isBeingEdited = adminStudioOpen && adminTab === 'polygon' && editingVillageName === vName
+        if (isBeingEdited) {
+          // Hide polygon while in active edit mode so draft polygon with handles is shown
+          return { fillOpacity: 0, opacity: 0 }
+        }
         const baseColor = feat?.properties?.color || '#3b82f6'
         return {
           fillColor: baseColor,
@@ -1006,7 +1333,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
       },
       onEachFeature: (feat, layer) => {
         const { name, island, color } = feat.properties
-        const details = VILLAGE_DETAILS[name]
+        const details = villageDetailsMap[name]
         layer.bindTooltip(
           `<div style="font-family: inherit; font-size: 11px; font-weight: 700; color: #0f172a;">
             <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: ${color}; margin-right: 4px;"></span>
@@ -1055,7 +1382,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     geoJsonLayer.addTo(mapInstanceRef.current)
     geoJsonLayer.bringToBack()
     villageBoundariesLayerRef.current = geoJsonLayer
-  }, [showVillageBoundaries, selectedVillage])
+  }, [showVillageBoundaries, selectedVillage, villageGeoJSON, villageDetailsMap, adminStudioOpen, adminTab, editingVillageName])
 
   const handleFocusVillage = (vName: string) => {
     const details = VILLAGE_DETAILS[vName]
@@ -1588,10 +1915,16 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               </div>
               <div>
                 <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#0f2c59' }}>
-                  {editingFeatureId ? 'Edit Titik Spasial PostGIS' : 'Studio Editor Titik Spasial PostGIS'}
+                  {adminTab === 'polygon'
+                    ? `Editor Poligon Batas Desa: ${editingVillageName || 'Wilayah Baru'}`
+                    : editingFeatureId
+                    ? 'Edit Titik Spasial PostGIS'
+                    : 'Studio Editor Titik Spasial PostGIS'}
                 </h3>
                 <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748b' }}>
-                  {editingFeatureId
+                  {adminTab === 'polygon'
+                    ? 'Tarik dan seret titik-titik sudut di peta untuk menyesuaikan garis batas pulau dan desa secara presisi.'
+                    : editingFeatureId
                     ? `Memperbarui titik: ${formName || 'Objek Terpilih'}`
                     : 'Tambah titik baru secara presisi atau tarik koordinat dari Google Maps / OSM'}
                 </p>
@@ -1648,6 +1981,31 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                 >
                   <Globe size={12} />
                   Cari Google Maps / OSM
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAdminTab('polygon')
+                    if (!editingVillageName && villageGeoJSON.features.length > 0) {
+                      handleStartEditVillagePolygon(villageGeoJSON.features[0].properties.name)
+                    }
+                  }}
+                  style={{
+                    padding: '0.35rem 0.75rem',
+                    borderRadius: '6px',
+                    border: 'none',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    background: adminTab === 'polygon' ? '#0f766e' : 'transparent',
+                    color: adminTab === 'polygon' ? '#ffffff' : '#64748b',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                  }}
+                >
+                  <Layers size={12} />
+                  Editor Poligon Batas Desa
                 </button>
               </div>
 
@@ -2544,6 +2902,444 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               </div>
             </form>
           )}
+
+          {/* Tab 3: Interactive Village Polygon Boundary Editor */}
+          {adminTab === 'polygon' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {/* Top Controls: Village Selector & New Village Button */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '0.75rem',
+                  background: '#f8fafc',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '10px',
+                  border: '1px solid #e2e8f0',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', flex: 1 }}>
+                  <label style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0f2c59', whiteSpace: 'nowrap' }}>
+                    Pilih Desa / Wilayah yang Diedit:
+                  </label>
+                  <select
+                    value={editingVillageName}
+                    onChange={(e) => handleStartEditVillagePolygon(e.target.value)}
+                    style={{
+                      padding: '0.4rem 0.75rem',
+                      fontSize: '0.8rem',
+                      fontWeight: 700,
+                      background: '#ffffff',
+                      border: '1.5px solid #0f766e',
+                      borderRadius: '8px',
+                      color: '#0f2c59',
+                      outline: 'none',
+                      cursor: 'pointer',
+                      minWidth: '200px',
+                    }}
+                  >
+                    {villageGeoJSON.features.map((feat: any) => (
+                      <option key={feat.properties.name} value={feat.properties.name}>
+                        {feat.properties.name} ({feat.properties.island})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={handleAddNewVillagePolygon}
+                    style={{
+                      padding: '0.4rem 0.8rem',
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      background: '#0f766e',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                    }}
+                  >
+                    <Edit3 size={12} />
+                    + Buat Batas Desa Baru
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDownloadVillageGeoJSON}
+                    style={{
+                      padding: '0.4rem 0.75rem',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      background: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      color: '#334155',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                    }}
+                    title="Unduh file GeoJSON batas desa yang sudah terkalibrasi"
+                  >
+                    <Download size={12} />
+                    Unduh GeoJSON
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleResetVillagePolygons}
+                    style={{
+                      padding: '0.4rem 0.75rem',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      background: '#fff1f2',
+                      border: '1px solid #fecdd3',
+                      color: '#dc2626',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                    }}
+                    title="Kembalikan semua batas desa ke bentuk awal"
+                  >
+                    <RefreshCw size={12} />
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              {/* Status & Vertex Editor Guidance Banner */}
+              <div
+                style={{
+                  background: '#f0fdf4',
+                  border: '1.5px solid #86efac',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '10px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.8rem', fontWeight: 800, color: '#166534' }}>
+                    <Crosshair size={14} />
+                    <span>Mode Edit Poligon Aktif: {polygonVertices.length} Titik Sudut (Simpul)</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.45rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => setPolygonVertices((prev) => prev.slice(0, -1))}
+                      disabled={polygonVertices.length === 0}
+                      style={{
+                        padding: '0.3rem 0.65rem',
+                        fontSize: '0.725rem',
+                        fontWeight: 600,
+                        background: '#ffffff',
+                        border: '1px solid #cbd5e1',
+                        borderRadius: '6px',
+                        color: '#334155',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                        cursor: polygonVertices.length === 0 ? 'not-allowed' : 'pointer',
+                        opacity: polygonVertices.length === 0 ? 0.5 : 1,
+                      }}
+                    >
+                      <Undo size={11} />
+                      Hapus Titik Terakhir
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPolygonVertices([])}
+                      disabled={polygonVertices.length === 0}
+                      style={{
+                        padding: '0.3rem 0.65rem',
+                        fontSize: '0.725rem',
+                        fontWeight: 600,
+                        background: '#fff1f2',
+                        border: '1px solid #fecdd3',
+                        color: '#dc2626',
+                        borderRadius: '6px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                        cursor: polygonVertices.length === 0 ? 'not-allowed' : 'pointer',
+                        opacity: polygonVertices.length === 0 ? 0.5 : 1,
+                      }}
+                    >
+                      <RotateCcw size={11} />
+                      Bersihkan Semua Titik
+                    </button>
+                  </div>
+                </div>
+
+                <p style={{ margin: 0, fontSize: '0.75rem', color: '#15803d', lineHeight: 1.45 }}>
+                  <b>Cara Menyesuaikan Titik di Peta:</b>
+                  <br />
+                  1. <b>Seret Nomor Titik (Drag):</b> Klik &amp; tahan nomor titik bulat di peta untuk menggeser sudut garis batas mengikuti garis pantai pulau.
+                  <br />
+                  2. <b>Tambah Titik Baru:</b> Klik sembarang posisi di peta untuk menambah titik sudut baru.
+                  <br />
+                  3. <b>Hapus Titik:</b> Klik kanan pada nomor titik tertentu di peta atau tekan tombol <i>Hapus Titik Terakhir</i>.
+                </p>
+              </div>
+
+              {/* Form Input Attributes for Village */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                    Nama Desa / Wilayah <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editingVillageName}
+                    onChange={(e) => setEditingVillageName(e.target.value)}
+                    placeholder="Contoh: Lonthoir"
+                    style={{
+                      width: '100%',
+                      padding: '0.45rem 0.65rem',
+                      fontSize: '0.8rem',
+                      background: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      color: '#0f172a',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                    Pulau Induk <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
+                  <select
+                    value={editingVillageIsland}
+                    onChange={(e) => setEditingVillageIsland(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.45rem 0.65rem',
+                      fontSize: '0.8rem',
+                      background: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      color: '#0f172a',
+                      outline: 'none',
+                    }}
+                  >
+                    <option value="Banda Besar">Banda Besar (Lonthoir)</option>
+                    <option value="Pulau Neira">Pulau Neira</option>
+                    <option value="Pulau Gunung Api">Pulau Gunung Api</option>
+                    <option value="Pulau Keraka">Pulau Keraka</option>
+                    <option value="Pulau Ay">Pulau Ay</option>
+                    <option value="Pulau Rhun">Pulau Rhun</option>
+                    <option value="Pulau Hatta">Pulau Hatta</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                    Warna Arsiran Wilayah (Hex)
+                  </label>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input
+                      type="color"
+                      value={editingVillageColor}
+                      onChange={(e) => setEditingVillageColor(e.target.value)}
+                      style={{
+                        width: '36px',
+                        height: '34px',
+                        padding: '1px',
+                        borderRadius: '6px',
+                        border: '1px solid #cbd5e1',
+                        cursor: 'pointer',
+                      }}
+                    />
+                    <input
+                      type="text"
+                      value={editingVillageColor}
+                      onChange={(e) => setEditingVillageColor(e.target.value)}
+                      style={{
+                        flex: 1,
+                        padding: '0.45rem 0.65rem',
+                        fontSize: '0.8rem',
+                        background: '#ffffff',
+                        border: '1px solid #cbd5e1',
+                        borderRadius: '8px',
+                        color: '#0f172a',
+                        outline: 'none',
+                        fontFamily: 'monospace',
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                    Estimasi Jumlah Penduduk
+                  </label>
+                  <input
+                    type="text"
+                    value={editingVillagePop}
+                    onChange={(e) => setEditingVillagePop(e.target.value)}
+                    placeholder="Contoh: 2.620 Jiwa"
+                    style={{
+                      width: '100%',
+                      padding: '0.45rem 0.65rem',
+                      fontSize: '0.8rem',
+                      background: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      color: '#0f172a',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                    Komoditas / Potensi Utama
+                  </label>
+                  <input
+                    type="text"
+                    value={editingVillageCommodity}
+                    onChange={(e) => setEditingVillageCommodity(e.target.value)}
+                    placeholder="Contoh: Pala Lonthoir Grade AAA & Minyak Fuli"
+                    style={{
+                      width: '100%',
+                      padding: '0.45rem 0.65rem',
+                      fontSize: '0.8rem',
+                      background: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      color: '#0f172a',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                    Estimasi Luas Wilayah
+                  </label>
+                  <input
+                    type="text"
+                    value={editingVillageArea}
+                    onChange={(e) => setEditingVillageArea(e.target.value)}
+                    placeholder="Contoh: 340 Hektar"
+                    style={{
+                      width: '100%',
+                      padding: '0.45rem 0.65rem',
+                      fontSize: '0.8rem',
+                      background: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      color: '#0f172a',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                  Deskripsi &amp; Narasi Wilayah
+                </label>
+                <textarea
+                  rows={2}
+                  value={editingVillageDesc}
+                  onChange={(e) => setEditingVillageDesc(e.target.value)}
+                  placeholder="Informasi sejarah, batas alam, dan karakteristik desa..."
+                  style={{
+                    width: '100%',
+                    padding: '0.45rem 0.65rem',
+                    fontSize: '0.8rem',
+                    background: '#ffffff',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                    color: '#0f172a',
+                    outline: 'none',
+                    resize: 'vertical',
+                  }}
+                />
+              </div>
+
+              {/* Action Buttons: Save & Delete */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem', borderTop: '1px solid #e2e8f0', paddingTop: '0.75rem' }}>
+                <div>
+                  {editingVillageId && (
+                    <button
+                      type="button"
+                      onClick={handleDeleteVillagePolygon}
+                      style={{
+                        padding: '0.45rem 0.85rem',
+                        fontSize: '0.78rem',
+                        fontWeight: 700,
+                        background: '#fff1f2',
+                        border: '1px solid #fecdd3',
+                        color: '#dc2626',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                      }}
+                    >
+                      <Trash2 size={13} />
+                      Hapus Poligon Desa Ini
+                    </button>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={handleCloseAdminStudio}
+                    style={{
+                      fontSize: '0.8rem',
+                      padding: '0.45rem 1rem',
+                      background: '#f1f5f9',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      color: '#334155',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveVillagePolygon}
+                    disabled={polygonVertices.length < 3 || !editingVillageName.trim()}
+                    style={{
+                      fontSize: '0.8rem',
+                      padding: '0.45rem 1.35rem',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      fontWeight: 700,
+                      background: polygonVertices.length < 3 ? '#94a3b8' : '#0f766e',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: polygonVertices.length < 3 ? 'not-allowed' : 'pointer',
+                      boxShadow: '0 2px 6px rgba(15, 118, 110, 0.25)',
+                    }}
+                  >
+                    <Save size={13} />
+                    Simpan Bentuk Poligon Desa
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -2694,8 +3490,31 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                   }}
                 >
                   <Compass size={12} />
-                  Fokuskan Wilayah
+                  Fokuskan
                 </button>
+                {isOfficerOrAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => handleStartEditVillagePolygon(selectedVillage.name)}
+                    style={{
+                      padding: '0.38rem 0.65rem',
+                      borderRadius: '8px',
+                      fontSize: '0.73rem',
+                      fontWeight: 700,
+                      background: '#0f766e',
+                      color: '#ffffff',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                    }}
+                    title="Edit dan sesuaikan titik sudut poligon desa ini di peta"
+                  >
+                    <Edit3 size={11} />
+                    Edit Poligon
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setSelectedVillage(null)}
@@ -2963,7 +3782,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                       overflowY: 'auto',
                     }}
                   >
-                    {Object.values(VILLAGE_DETAILS).map((v) => {
+                    {Object.values(villageDetailsMap).map((v) => {
                       const isVSelected = selectedVillage?.name === v.name
                       return (
                         <div
