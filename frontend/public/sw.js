@@ -1,5 +1,5 @@
 // Banda Digital Ecosystem - Service Worker
-const CACHE_NAME = 'banda-digital-v3'
+const CACHE_NAME = 'banda-digital-v4'
 const MAP_TILES_CACHE = 'banda-map-tiles-v1'
 const STATIC_ASSETS = [
   '/',
@@ -43,6 +43,17 @@ self.addEventListener('fetch', (event) => {
 
   // Skip caching for backend API POST/PUT mutations (handled via IndexedDB Sync Queue)
   if (event.request.method !== 'GET') {
+    return
+  }
+
+  // Never intercept Vite development HMR, scripts, and hot reload modules
+  if (
+    url.pathname.startsWith('/src/') ||
+    url.pathname.startsWith('/@vite') ||
+    url.pathname.startsWith('/@fs') ||
+    url.pathname.startsWith('/node_modules/') ||
+    url.pathname.includes('.vite')
+  ) {
     return
   }
 
