@@ -241,8 +241,12 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   })
   const [villageDetailsMap, setVillageDetailsMap] = useState<Record<string, VillageInfo>>(() => {
     try {
-      const cached = localStorage.getItem('banda_village_details_v1')
-      if (cached) return JSON.parse(cached)
+      localStorage.removeItem('banda_village_details_v1') // Hapus paksa cache usang v1
+      const cached = localStorage.getItem('banda_village_details_v2')
+      if (cached) {
+        const parsed = JSON.parse(cached)
+        return { ...VILLAGE_DETAILS, ...parsed }
+      }
     } catch (e) {
       console.warn('Gagal membaca cache details desa', e)
     }
@@ -333,13 +337,22 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   const loadGISData = async () => {
     setLoading(true)
     try {
-      const [layersRes, villagesRes] = await Promise.all([
+      const [layersRes, villagesRes, villageDetailsRes] = await Promise.all([
         gisService.getLayers(),
         gisService.getVillages(),
+        gisService.getVillageDetails(),
       ])
       setFeatures(layersRes.features)
       if (villagesRes && villagesRes.features && !localStorage.getItem('banda_village_polygons_v1')) {
         setVillageGeoJSON(villagesRes)
+      }
+      if (villageDetailsRes && Object.keys(villageDetailsRes).length > 0) {
+        const merged = { ...VILLAGE_DETAILS, ...villageDetailsRes }
+        setVillageDetailsMap(merged)
+        try {
+          localStorage.setItem('banda_village_details_v2', JSON.stringify(merged))
+          localStorage.removeItem('banda_village_details_v1')
+        } catch {}
       }
     } catch (err) {
       console.warn('Gagal memuat data spasial:', err)
@@ -998,7 +1011,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     }
     setVillageDetailsMap(updatedDetails)
     try {
-      localStorage.setItem('banda_village_details_v1', JSON.stringify(updatedDetails))
+      localStorage.setItem('banda_village_details_v2', JSON.stringify(updatedDetails))
+      localStorage.removeItem('banda_village_details_v1')
     } catch (e) {
       console.error('Gagal menyimpan keterangan desa ke penyimpanan browser', e)
     }
@@ -1066,6 +1080,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     if (!window.confirm('Kembalikan seluruh batas wilayah desa ke bentuk awal?')) return
     localStorage.removeItem('banda_village_polygons_v1')
     localStorage.removeItem('banda_village_details_v1')
+    localStorage.removeItem('banda_village_details_v2')
     setVillageGeoJSON(BANDA_VILLAGES_GEOJSON)
     setVillageDetailsMap(VILLAGE_DETAILS)
     setPolygonParts([[]])
@@ -1556,7 +1571,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   }, [showVillageBoundaries, selectedVillage, villageGeoJSON, villageDetailsMap, adminStudioOpen, adminTab, editingVillageName])
 
   const handleFocusVillage = (vName: string) => {
-    const details = VILLAGE_DETAILS[vName]
+    const details = villageDetailsMap[vName] || VILLAGE_DETAILS[vName]
     if (details) setSelectedVillage(details)
     if (villageBoundariesLayerRef.current && mapInstanceRef.current) {
       villageBoundariesLayerRef.current.eachLayer((layer: any) => {
