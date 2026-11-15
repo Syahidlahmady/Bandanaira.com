@@ -634,6 +634,21 @@ async def sync_villages(
             json.dump(details, f, indent=2, ensure_ascii=False)
 
     # 2. Sinkronkan ke tabel spatial_features sebagai LAYER_DESA_ADMIN (zona_wilayah)
+    active_feat_names = {
+        f"Batas Wilayah {feat.get('properties', {}).get('name')}"
+        for feat in geojson.get("features", [])
+        if feat.get("properties", {}).get("name")
+    }
+
+    # Hapus zona desa dari database yang sudah tidak ada di payload (misal dihapus user)
+    from sqlalchemy import delete as sql_delete
+    delete_stmt = sql_delete(SpatialFeature).where(
+        SpatialFeature.layer_type == "LAYER_DESA_ADMIN",
+        SpatialFeature.category == "zona_wilayah",
+        SpatialFeature.name.not_in(active_feat_names),
+    )
+    await db.execute(delete_stmt)
+
     count = len(geojson.get("features", []))
     for feat in geojson.get("features", []):
         v_name = feat.get("properties", {}).get("name")

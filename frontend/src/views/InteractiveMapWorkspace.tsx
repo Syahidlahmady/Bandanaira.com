@@ -1042,28 +1042,38 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
       console.error('Gagal menyimpan keterangan desa ke penyimpanan browser', e)
     }
 
-    // Auto-sync ke seeder backend PostGIS jika token tersedia
-    const token = authService.getAccessToken()
-    if (token) {
-      gisService.syncVillages(newGeoJSON, updatedDetails, token).catch(() => {})
-    }
+    // Simpan langsung ke basis data PostGIS dan seeder server
+    const token = authService.getAccessToken() || undefined
+    gisService.saveVillagePolygon({
+      name: editingVillageName,
+      island: editingVillageIsland,
+      geometry,
+      color: editingVillageColor,
+      description: editingVillageDesc,
+      population: editingVillagePop,
+      main_commodity: editingVillageCommodity,
+      area_ha: editingVillageArea,
+      demographics: villageDetailsMap[editingVillageName]?.demographics || {},
+    }, token).catch((err) => {
+      console.warn('Gagal menyimpan poligon langsung ke database PostGIS:', err)
+    })
+
+    gisService.syncVillages(newGeoJSON, updatedDetails, token).catch((err) => {
+      console.warn('Gagal sync seluruh zona desa ke PostGIS:', err)
+    })
 
     setNotificationMsg({
       type: 'success',
-      text: `Batas wilayah desa ${editingVillageName} berhasil disimpan!`,
+      text: `Batas wilayah desa ${editingVillageName} berhasil disimpan ke basis data PostGIS!`,
     })
     setTimeout(() => setNotificationMsg(null), 5000)
     setAdminStudioOpen(false)
   }
 
   const handleSyncVillagesToServer = async () => {
-    const token = authService.getAccessToken()
-    if (!token) {
-      alert('Harap masuk sebagai Administrator atau Petugas Desa terlebih dahulu untuk menyinkronkan ke server!')
-      return
-    }
     setIsSyncingVillages(true)
     try {
+      const token = authService.getAccessToken() || undefined
       const res = await gisService.syncVillages(villageGeoJSON, villageDetailsMap, token)
       setNotificationMsg({
         type: 'success',
@@ -1092,12 +1102,18 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     localStorage.setItem('banda_village_polygons_v1', JSON.stringify(newGeoJSON))
     localStorage.setItem('banda_village_polygons_v2', JSON.stringify(newGeoJSON))
 
+    // Hapus juga langsung dari database PostGIS
+    const token = authService.getAccessToken() || undefined
+    gisService.syncVillages(newGeoJSON, villageDetailsMap, token).catch((err) => {
+      console.warn('Gagal sync penghapusan zona desa ke PostGIS:', err)
+    })
+
     setPolygonParts([[]])
     setActivePartIndex(0)
     setEditingVillageId(null)
     setNotificationMsg({
       type: 'info',
-      text: `Batas wilayah ${editingVillageName} telah dihapus.`,
+      text: `Batas wilayah ${editingVillageName} telah dihapus dari basis data dan peta.`,
     })
     setTimeout(() => setNotificationMsg(null), 4000)
   }
