@@ -68,26 +68,6 @@
     "area_ha": "92 Hektar",
     "highlights": "Bandar Udara Banda Neira, Sentra Kerajinan Kenari"
   },
-  "Gunung Api": {
-    "name": "Gunung Api",
-    "island": "Pulau Gunung Api",
-    "color": "#10b981",
-    "description": "Gunung api aktif setinggi 640 mdpl yang dikelilingi hutan lindung vulkanik, batuan lava 1988, dan terumbu karang Lava Flow kelas dunia.",
-    "population": "310 Jiwa (Pesisir Selatan)",
-    "main_commodity": "Ekowisata Vulkanik & Diving Snorkeling",
-    "area_ha": "730 Hektar",
-    "highlights": "Kawah Vulkanik Aktif, Lava Flow Reef, Trekking Jalur Utara"
-  },
-  "Pulau Keraka": {
-    "name": "Pulau Keraka",
-    "island": "Pulau Keraka",
-    "color": "#06b6d4",
-    "description": "Pulau karang kecil tak berpenghuni di utara selat Neira yang berfungsi sebagai mercusuar navigasi dan suaka burung kepodang.",
-    "population": "Tak Berpenghuni",
-    "main_commodity": "Zona Konservasi Laut & Navigasi Maritim",
-    "area_ha": "14 Hektar",
-    "highlights": "Mercusuar Selat Utara, Spot Snorkeling Karang Meja"
-  },
   "Lonthoir": {
     "name": "Lonthoir",
     "island": "Banda Besar",
@@ -177,5 +157,36 @@
     "main_commodity": "Kopra, Pala, & Garam Tradisional",
     "area_ha": "220 Hektar",
     "highlights": "Tanjung Walling, Titik Pantau Jalur Barat Neira-Ay"
+  },
+  "Desa Pulau Rhun": {
+    "name": "Desa Pulau Rhun",
+    "island": "Pulau Rhun",
+    "color": "#db2424",
+    "description": "Wilayah administrasi desa di Kepulauan Banda.",
+    "population": "",
+    "main_commodity": "",
+    "area_ha": "",
+    "highlights": "",
+    "demographics": {}
+  },
+  "Pulau Ay": {
+    "name": "Pulau Ay",
+    "island": "Pulau Ay",
+    "color": "#ff6600",
+    "description": "Wilayah administrasi desa di Kepulauan Banda.",
+    "population": "",
+    "main_commodity": "",
+    "area_ha": ""
+  },
+  "Desa Pulau Hatta": {
+    "name": "Desa Pulau Hatta",
+    "island": "Pulau Hatta",
+    "color": "#00ffbf",
+    "description": "Wilayah administrasi desa di Kepulauan Banda.",
+    "population": "",
+    "main_commodity": "",
+    "area_ha": "",
+    "highlights": "",
+    "demographics": {}
   }
 }

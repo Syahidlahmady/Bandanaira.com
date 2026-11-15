@@ -229,24 +229,54 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   const [selectedVillage, setSelectedVillage] = useState<VillageInfo | null>(null)
   const villageBoundariesLayerRef = useRef<L.GeoJSON | null>(null)
 
+  const sanitizeVillageGeoJSON = (data: any) => {
+    if (!data || !data.features || !Array.isArray(data.features)) return data
+    const filtered = data.features
+      .filter((f: any) => {
+        const name = f?.properties?.name
+        return name !== 'Gunung Api' && name !== 'Pulau Keraka'
+      })
+      .map((f: any) => {
+        if (f?.properties?.name === 'Nusantara' && f?.geometry?.type === 'MultiPolygon') {
+          const coords = f.geometry.coordinates || []
+          const cleanParts = coords.filter((part: any) => {
+            const ring = Array.isArray(part[0]) && Array.isArray(part[0][0]) ? part[0] : part
+            if (!ring || ring.length === 0) return false
+            const cLat = ring.reduce((s: number, p: any) => s + p[1], 0) / ring.length
+            const cLng = ring.reduce((s: number, p: any) => s + p[0], 0) / ring.length
+            const isGunungApi = cLng > 129.87 && cLng < 129.89 && cLat < -4.51 && cLat > -4.53
+            return !isGunungApi
+          })
+          return {
+            ...f,
+            geometry: {
+              ...f.geometry,
+              coordinates: cleanParts,
+            },
+          }
+        }
+        return f
+      })
+    return { ...data, features: filtered }
+  }
+
   // Village Polygon Interactive Editor States
   const [villageGeoJSON, setVillageGeoJSON] = useState<any>(() => {
     try {
-      // Prioritaskan draft lokal yang sedang dikerjakan pengguna (v1 atau v2)
-      const cachedV1 = localStorage.getItem('banda_village_polygons_v1')
-      if (cachedV1) {
-        const parsed = JSON.parse(cachedV1)
-        if (parsed?.features?.length > 0) return parsed
-      }
       const cachedV2 = localStorage.getItem('banda_village_polygons_v2')
       if (cachedV2) {
         const parsed = JSON.parse(cachedV2)
-        if (parsed?.features?.length > 0) return parsed
+        if (parsed?.features?.length > 0) return sanitizeVillageGeoJSON(parsed)
+      }
+      const cachedV1 = localStorage.getItem('banda_village_polygons_v1')
+      if (cachedV1) {
+        const parsed = JSON.parse(cachedV1)
+        if (parsed?.features?.length > 0) return sanitizeVillageGeoJSON(parsed)
       }
     } catch (e) {
       console.warn('Gagal membaca cache poligon desa', e)
     }
-    return BANDA_VILLAGES_GEOJSON
+    return sanitizeVillageGeoJSON(BANDA_VILLAGES_GEOJSON)
   })
   const [villageDetailsMap, setVillageDetailsMap] = useState<Record<string, VillageInfo>>(() => {
     try {
@@ -353,22 +383,12 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
       ])
       setFeatures(layersRes.features)
       if (villagesRes && villagesRes.features && villagesRes.features.length > 0) {
-        // Cek jika pengguna punya draft lokal yang sedang dikerjakan di browser
-        const localDraft = localStorage.getItem('banda_village_polygons_v1') || localStorage.getItem('banda_village_polygons_v2')
-        if (localDraft) {
-          try {
-            const parsed = JSON.parse(localDraft)
-            if (parsed?.features?.length > 0) {
-              setVillageGeoJSON(parsed)
-            } else {
-              setVillageGeoJSON(villagesRes)
-            }
-          } catch {
-            setVillageGeoJSON(villagesRes)
-          }
-        } else {
-          setVillageGeoJSON(villagesRes)
-        }
+        const cleanServerData = sanitizeVillageGeoJSON(villagesRes)
+        setVillageGeoJSON(cleanServerData)
+        try {
+          localStorage.setItem('banda_village_polygons_v2', JSON.stringify(cleanServerData))
+          localStorage.removeItem('banda_village_polygons_v1')
+        } catch {}
       }
       if (villageDetailsRes && Object.keys(villageDetailsRes).length > 0) {
         const merged = { ...VILLAGE_DETAILS, ...villageDetailsRes }
@@ -1541,7 +1561,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
     if (!showVillageBoundaries) return
 
-    const geoJsonLayer = L.geoJSON(villageGeoJSON, {
+    const sanitizedData = sanitizeVillageGeoJSON(villageGeoJSON)
+    const geoJsonLayer = L.geoJSON(sanitizedData, {
       style: (feat) => {
         const vName = feat?.properties?.name
         const isSelected = selectedVillage?.name === vName
