@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from fastapi import Depends, FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,6 +26,20 @@ from backend.app.modules.security.router import (
 )
 from backend.app.modules.survei.router import router as survei_router
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Auto-seed GIS spatial features (points + 17 village polygons) on application boot."""
+    try:
+        from backend.app.database.session import AsyncSessionLocal
+        from backend.app.modules.gis.router import ensure_seed_features
+        async with AsyncSessionLocal() as db:
+            await ensure_seed_features(db)
+    except Exception as e:
+        import logging
+        logging.getLogger("uvicorn.error").warning(f"Startup GIS auto-seed warning: {e}")
+    yield
+
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
@@ -32,6 +47,7 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    lifespan=lifespan,
 )
 
 # Register routers

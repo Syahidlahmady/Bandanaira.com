@@ -1,3 +1,5 @@
+import json
+from pathlib import Path
 import uuid
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -30,13 +32,20 @@ from backend.app.modules.gis.schemas import (
 router = APIRouter(prefix="/gis", tags=["7-Layer Spatial GIS Peta Interaktif"])
 peta_alias_router = APIRouter(prefix="/peta", tags=["Peta Interaktif (SRS 11 Parity)"])
 
+_VILLAGES_SEED_FILE = Path(__file__).resolve().parent.parent.parent / "seeds" / "banda_villages.geojson"
+_VILLAGE_DETAILS_SEED_FILE = Path(__file__).resolve().parent.parent.parent / "seeds" / "banda_village_details.json"
+_GIS_FEATURES_SEED_FILE = Path(__file__).resolve().parent.parent.parent / "seeds" / "gis_spatial_features.json"
+
 
 async def ensure_seed_features(db: AsyncSession) -> None:
-    """Auto-seed 28 authentic spatial features across 7 layers if table is empty."""
-    count_stmt = select(func.count(SpatialFeature.id))
-    existing_count = (await db.execute(count_stmt)).scalar() or 0
-    if existing_count == 0:
-        for item in INITIAL_SPATIAL_FEATURES:
+    """Auto-seed 53 authentic spatial features (36 curated points/routes + 17 official village boundary polygons) if missing."""
+    existing_stmt = select(SpatialFeature.name)
+    existing_names = set((await db.execute(existing_stmt)).scalars().all())
+    added = False
+
+    # 1. Seed authentic points & maritime routes from INITIAL_SPATIAL_FEATURES
+    for item in INITIAL_SPATIAL_FEATURES:
+        if item["name"] not in existing_names:
             feat = SpatialFeature(
                 name=item["name"],
                 layer_type=item["layer_type"],
@@ -50,6 +59,68 @@ async def ensure_seed_features(db: AsyncSession) -> None:
                 is_active=True,
             )
             db.add(feat)
+            existing_names.add(item["name"])
+            added = True
+
+    # 2. Ensure all 17 village boundary polygons from banda_villages.geojson are in database
+    if _VILLAGES_SEED_FILE.exists():
+        try:
+            with open(_VILLAGES_SEED_FILE, "r", encoding="utf-8") as vf:
+                villages_data = json.load(vf)
+            village_details = {}
+            if _VILLAGE_DETAILS_SEED_FILE.exists():
+                with open(_VILLAGE_DETAILS_SEED_FILE, "r", encoding="utf-8") as df:
+                    village_details = json.load(df)
+
+            for feat in villages_data.get("features", []):
+                v_name = feat.get("properties", {}).get("name")
+                v_island = feat.get("properties", {}).get("island", "Pulau Neira")
+                if not v_name:
+                    continue
+                feat_name = f"Batas Wilayah {v_name}"
+                if feat_name not in existing_names:
+                    geom = feat.get("geometry", {})
+                    coords = geom.get("coordinates", [])
+                    center_lat, center_lng = -4.525, 129.897
+                    if geom.get("type") == "Polygon" and len(coords) > 0 and len(coords[0]) > 0:
+                        ring = coords[0]
+                        center_lat = sum(c[1] for c in ring) / len(ring)
+                        center_lng = sum(c[0] for c in ring) / len(ring)
+                    elif geom.get("type") == "MultiPolygon" and len(coords) > 0 and len(coords[0]) > 0 and len(coords[0][0]) > 0:
+                        ring = coords[0][0]
+                        center_lat = sum(c[1] for c in ring) / len(ring)
+                        center_lng = sum(c[0] for c in ring) / len(ring)
+
+                    v_detail = village_details.get(v_name, {})
+                    props = {
+                        "village_name": v_name,
+                        "color": feat.get("properties", {}).get("color", "#3b82f6"),
+                        "population": v_detail.get("population", ""),
+                        "main_commodity": v_detail.get("main_commodity", ""),
+                        "area_ha": v_detail.get("area_ha", ""),
+                        "highlights": v_detail.get("highlights", ""),
+                        "demographics": v_detail.get("demographics", {}),
+                        "is_zone": True,
+                    }
+                    new_f = SpatialFeature(
+                        name=feat_name,
+                        layer_type="LAYER_DESA_ADMIN",
+                        category="zona_wilayah",
+                        island_name=v_island,
+                        latitude=round(center_lat, 6),
+                        longitude=round(center_lng, 6),
+                        geometry_geojson=geom,
+                        properties_meta=props,
+                        description=v_detail.get("description", ""),
+                        is_active=True,
+                    )
+                    db.add(new_f)
+                    existing_names.add(feat_name)
+                    added = True
+        except Exception:
+            pass
+
+    if added:
         await db.commit()
 
 
@@ -333,34 +404,16 @@ async def create_spatial_feature(
 async def reset_gis_seeds(
     db: AsyncSession = Depends(get_db),
 ) -> Dict[str, Any]:
-    """Re-seed atau sinkronisasi data kurasi spasial standar Kepulauan Banda."""
-    # Ambil nama yang sudah ada
-    existing_stmt = select(SpatialFeature.name)
-    existing_names = set((await db.execute(existing_stmt)).scalars().all())
-
-    added_count = 0
-    for item in INITIAL_SPATIAL_FEATURES:
-        if item["name"] not in existing_names:
-            feat = SpatialFeature(
-                name=item["name"],
-                layer_type=item["layer_type"],
-                category=item["category"],
-                island_name=item["island_name"],
-                latitude=item["latitude"],
-                longitude=item["longitude"],
-                geometry_geojson=item.get("geometry_geojson"),
-                properties_meta=item.get("properties_meta"),
-                description=item.get("description"),
-                is_active=True,
-            )
-            db.add(feat)
-            added_count += 1
-
-    await db.commit()
+    """Re-seed atau sinkronisasi data kurasi spasial standar Kepulauan Banda (36 titik + 17 poligon desa)."""
+    count_before = (await db.execute(select(func.count(SpatialFeature.id)))).scalar() or 0
+    await ensure_seed_features(db)
+    count_after = (await db.execute(select(func.count(SpatialFeature.id)))).scalar() or 0
+    added_count = count_after - count_before
     return {
         "status": "success",
+        "total_features": count_after,
         "features_added": added_count,
-        "message": f"Berhasil menyinkronkan {added_count} fitur spasial kurasi.",
+        "message": f"Berhasil menyinkronkan {count_after} fitur spasial kurasi (termasuk 17 zona wilayah desa).",
     }
 
 
@@ -368,17 +421,35 @@ async def reset_gis_seeds(
 # ZONA BATAS WILAYAH DESA (POLYGON / MULTIPOLYGON)
 # =============================================================================
 
-import json
-from pathlib import Path
-
-_VILLAGES_SEED_FILE = Path(__file__).resolve().parent.parent.parent / "seeds" / "banda_villages.geojson"
-_VILLAGE_DETAILS_SEED_FILE = Path(__file__).resolve().parent.parent.parent / "seeds" / "banda_village_details.json"
-
 
 @router.get("/villages")
 @peta_alias_router.get("/villages")
-async def get_villages_geojson() -> Dict[str, Any]:
-    """Mengambil GeoJSON poligon batas wilayah desa/negeri dari seeder terkalibrasi."""
+async def get_villages_geojson(db: AsyncSession = Depends(get_db)) -> Dict[str, Any]:
+    """Mengambil GeoJSON poligon batas wilayah desa/negeri dari basis data PostGIS atau seeder terkalibrasi."""
+    stmt = select(SpatialFeature).where(
+        SpatialFeature.layer_type == "LAYER_DESA_ADMIN",
+        SpatialFeature.category == "zona_wilayah",
+        SpatialFeature.is_active == True,
+    )
+    records = (await db.execute(stmt)).scalars().all()
+    if records:
+        features = []
+        for r in records:
+            props = r.properties_meta or {}
+            v_name = props.get("village_name") or r.name.replace("Batas Wilayah ", "").strip()
+            feat_id = f"desa-{v_name.lower().replace(' ', '-')}"
+            features.append({
+                "type": "Feature",
+                "id": feat_id,
+                "properties": {
+                    "name": v_name,
+                    "island": r.island_name,
+                    "color": props.get("color", "#3b82f6"),
+                },
+                "geometry": r.geometry_geojson or {},
+            })
+        return {"type": "FeatureCollection", "features": features}
+
     if _VILLAGES_SEED_FILE.exists():
         with open(_VILLAGES_SEED_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -387,12 +458,50 @@ async def get_villages_geojson() -> Dict[str, Any]:
 
 @router.get("/villages/details")
 @peta_alias_router.get("/villages/details")
-async def get_village_details() -> Dict[str, Any]:
-    """Mengambil detail atribut, potensi, dan narasi desa kepulauan."""
+async def get_village_details(db: AsyncSession = Depends(get_db)) -> Dict[str, Any]:
+    """Mengambil detail atribut, potensi, dan narasi desa kepulauan dari basis data atau seeder."""
+    stmt = select(SpatialFeature).where(
+        SpatialFeature.layer_type == "LAYER_DESA_ADMIN",
+        SpatialFeature.category == "zona_wilayah",
+        SpatialFeature.is_active == True,
+    )
+    records = (await db.execute(stmt)).scalars().all()
+    details: Dict[str, Any] = {}
     if _VILLAGE_DETAILS_SEED_FILE.exists():
         with open(_VILLAGE_DETAILS_SEED_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {}
+            details = json.load(f)
+
+    if records:
+        for r in records:
+            props = r.properties_meta or {}
+            v_name = props.get("village_name") or r.name.replace("Batas Wilayah ", "").strip()
+            if v_name in details:
+                if props.get("population"):
+                    details[v_name]["population"] = props.get("population")
+                if props.get("main_commodity"):
+                    details[v_name]["main_commodity"] = props.get("main_commodity")
+                if props.get("area_ha"):
+                    details[v_name]["area_ha"] = props.get("area_ha")
+                if props.get("highlights"):
+                    details[v_name]["highlights"] = props.get("highlights")
+                if props.get("demographics"):
+                    details[v_name]["demographics"] = props.get("demographics")
+                if r.description:
+                    details[v_name]["description"] = r.description
+            else:
+                details[v_name] = {
+                    "name": v_name,
+                    "island": r.island_name,
+                    "color": props.get("color", "#3b82f6"),
+                    "description": r.description or "Wilayah administrasi desa di Kepulauan Banda.",
+                    "population": props.get("population", ""),
+                    "main_commodity": props.get("main_commodity", ""),
+                    "area_ha": props.get("area_ha", ""),
+                    "highlights": props.get("highlights", ""),
+                    "demographics": props.get("demographics", {}),
+                }
+
+    return details
 
 
 @router.post("/villages/sync")

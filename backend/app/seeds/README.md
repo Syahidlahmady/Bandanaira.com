@@ -10,7 +10,7 @@ Folder `backend/app/seeds/` menyimpan berkas sumber kebenaran (*source of truth*
 
 | Berkas | Format | Deskripsi & Isi Data | Jumlah Entitas |
 | :--- | :--- | :--- | :--- |
-| **`gis_spatial_features.json`** | JSON | Titik-titik objek spasial autentik terkurasi di 7 layer (Cagar Budaya Benteng/Rumah Pengasingan, Wisata Bahari 4A, Penginapan/Eco-Stay, Titik Air Bersih RO, Pos SAR & Dermaga PELNI, Fasilitas Publik, PLTS & Resiliensi Energi). | **36 Objek Titik Terkurasi** |
+| **`gis_spatial_features.json`** | JSON | Sumber kebenaran terpadu (*Master Dataset*) yang memuat 36 titik objek autentik di 7 layer (Cagar Budaya Benteng/Rumah Pengasingan, Wisata Bahari 4A, Penginapan/Eco-Stay, Titik Air Bersih RO, Pos SAR & Dermaga PELNI, Fasilitas Publik, PLTS & Resiliensi Energi) serta **17 Poligon Batas Wilayah Desa/Negeri Administratif**. | **53 Objek Spasial Terpadu (36 Titik + 17 Poligon Wilayah Desa)** |
 | **`banda_villages.geojson`** | GeoJSON (RFC 7946) | Poligon batas administratif wilayah desa/negeri di seluruh gugusan Kepulauan Banda (Neira, Banda Besar, Gunung Api, Ay, Rhun, Hatta, Keraka) berbasis koordinat WGS 84 (EPSG:4326). | **17 Wilayah Desa** |
 | **`banda_village_details.json`** | JSON | Data atribut wilayah desa, warna visual, deskripsi sejarah, komoditas unggulan, serta **data agregat demografi & kependudukan resmi 2026**. | **17 Detail Profil Desa** |
 

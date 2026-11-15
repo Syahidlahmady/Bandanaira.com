@@ -232,8 +232,17 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   // Village Polygon Interactive Editor States
   const [villageGeoJSON, setVillageGeoJSON] = useState<any>(() => {
     try {
-      const cached = localStorage.getItem('banda_village_polygons_v1')
-      if (cached) return JSON.parse(cached)
+      // Prioritaskan draft lokal yang sedang dikerjakan pengguna (v1 atau v2)
+      const cachedV1 = localStorage.getItem('banda_village_polygons_v1')
+      if (cachedV1) {
+        const parsed = JSON.parse(cachedV1)
+        if (parsed?.features?.length > 0) return parsed
+      }
+      const cachedV2 = localStorage.getItem('banda_village_polygons_v2')
+      if (cachedV2) {
+        const parsed = JSON.parse(cachedV2)
+        if (parsed?.features?.length > 0) return parsed
+      }
     } catch (e) {
       console.warn('Gagal membaca cache poligon desa', e)
     }
@@ -343,8 +352,23 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
         gisService.getVillageDetails(),
       ])
       setFeatures(layersRes.features)
-      if (villagesRes && villagesRes.features && !localStorage.getItem('banda_village_polygons_v1')) {
-        setVillageGeoJSON(villagesRes)
+      if (villagesRes && villagesRes.features && villagesRes.features.length > 0) {
+        // Cek jika pengguna punya draft lokal yang sedang dikerjakan di browser
+        const localDraft = localStorage.getItem('banda_village_polygons_v1') || localStorage.getItem('banda_village_polygons_v2')
+        if (localDraft) {
+          try {
+            const parsed = JSON.parse(localDraft)
+            if (parsed?.features?.length > 0) {
+              setVillageGeoJSON(parsed)
+            } else {
+              setVillageGeoJSON(villagesRes)
+            }
+          } catch {
+            setVillageGeoJSON(villagesRes)
+          }
+        } else {
+          setVillageGeoJSON(villagesRes)
+        }
       }
       if (villageDetailsRes && Object.keys(villageDetailsRes).length > 0) {
         const merged = { ...VILLAGE_DETAILS, ...villageDetailsRes }
@@ -992,6 +1016,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     setVillageGeoJSON(newGeoJSON)
     try {
       localStorage.setItem('banda_village_polygons_v1', JSON.stringify(newGeoJSON))
+      localStorage.setItem('banda_village_polygons_v2', JSON.stringify(newGeoJSON))
     } catch (e) {
       console.error('Gagal menyimpan poligon ke penyimpanan browser', e)
     }
@@ -1065,6 +1090,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     }
     setVillageGeoJSON(newGeoJSON)
     localStorage.setItem('banda_village_polygons_v1', JSON.stringify(newGeoJSON))
+    localStorage.setItem('banda_village_polygons_v2', JSON.stringify(newGeoJSON))
 
     setPolygonParts([[]])
     setActivePartIndex(0)

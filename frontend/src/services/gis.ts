@@ -90,6 +90,8 @@ export interface GeocodingResponse {
 }
 
 const getApiBase = () => {
+  const envUrl = import.meta.env?.VITE_API_BASE_URL
+  if (envUrl) return envUrl
   return typeof window !== 'undefined'
     ? `http://${window.location.hostname}:8005/api/v1`
     : 'http://localhost:8005/api/v1'

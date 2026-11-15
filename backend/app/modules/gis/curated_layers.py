@@ -1,4 +1,8 @@
+import json
+from pathlib import Path
 from typing import Any, Dict, List
+
+_SEEDS_PATH = Path(__file__).resolve().parent.parent.parent / "seeds" / "gis_spatial_features.json"
 
 LAYER_DEFINITIONS: Dict[str, Dict[str, Any]] = {   'LAYER_ACCOMMODATION': {   'category': 'publik',
                                'color': '#10b981',
@@ -517,3 +521,11 @@ INITIAL_SPATIAL_FEATURES: List[Dict[str, Any]] = [
         "description": ""
     }
 ]
+
+if _SEEDS_PATH.exists():
+    try:
+        with open(_SEEDS_PATH, "r", encoding="utf-8") as _f:
+            INITIAL_SPATIAL_FEATURES = json.load(_f)
+    except Exception:
+        pass
+
