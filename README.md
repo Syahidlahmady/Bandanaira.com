@@ -47,12 +47,16 @@ docker compose -f infrastructure/docker/docker-compose.yml up -d --build
 ### 3. Jalankan Database Migrations & Seed Data Demonstrasi
 ```bash
 poetry run alembic -c backend/alembic.ini upgrade head
+
+# 1. Seeding Data Lengkap Ekosistem (Pengguna, Petani, Lahan, Koperasi, NIK Kependudukan, & GIS):
+docker compose exec backend python scripts/demo_seed.py
+# atau via Host:
 poetry run python backend/scripts/demo_seed.py
 
-# Sinkronisasi 42 titik spasial kurasi PostGIS 7-layer terbaru:
-poetry run python backend/scripts/sync_spatial_features.py
-# atau via Docker:
-docker exec banda_backend python -m backend.scripts.sync_spatial_features
+# 2. Seeding Spasial & Batas Desa Khusus GIS (36 titik fasilitas + 2 rute maritim + 18 poligon desa resmi):
+docker compose exec backend python scripts/seed_spatial_features.py
+# atau via Host:
+python backend/scripts/seed_spatial_features.py
 ```
 
 ### 4. Akses Layanan
