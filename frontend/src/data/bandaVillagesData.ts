@@ -13,6 +13,15 @@ export interface VillageInfo {
   main_commodity?: string
   area_ha?: string
   highlights?: string
+  demographics?: {
+    total_population?: number
+    households?: number
+    male?: number
+    female?: number
+    productive_age?: number
+    top_occupations?: string
+    umkm_count?: number
+  }
 }
 
 export const VILLAGE_DETAILS: Record<string, VillageInfo> = {
@@ -40,11 +49,20 @@ export const VILLAGE_DETAILS: Record<string, VillageInfo> = {
     name: 'Merdeka',
     island: 'Pulau Neira',
     color: '#38bdf8', // Cyan
-    description: 'Pesisir barat laut Neira dengan panorama langsung menghadap Gunung Api dan alur pelayaran kapal tradisional.',
-    population: '1.420 Jiwa',
-    main_commodity: 'Perikanan Tangkap & Homestay',
+    description: 'Negeri administratif di pesisir barat Neira dengan alur pelayaran tradisional menghadap Gunung Api. Berdasarkan data sensus resmi desa 2026, berpopulasi 834 jiwa (234 KK) dengan 49 nelayan, 41 wiraswasta, 27 petani/pekebun, serta 9 unit UMKM olahan pala, perikanan, dan kerajinan tangan.',
+    population: '834 Jiwa (234 KK)',
+    main_commodity: 'Perikanan Tangkap, Olahan Pala & Ikan',
     area_ha: '65 Hektar',
-    highlights: 'Pesisir Selat Neira-Gunung Api, Sentra Nelayan Cakalang',
+    highlights: 'Pesisir Selat Neira, Sentra Nelayan Cakalang, 9 Sentra UMKM Olahan',
+    demographics: {
+      total_population: 834,
+      households: 234,
+      male: 409,
+      female: 425,
+      productive_age: 417,
+      top_occupations: 'Nelayan (49), Wiraswasta (41), Asongan (32), Petani (27), PNS (26)',
+      umkm_count: 9,
+    },
   },
   Rajawali: {
     name: 'Rajawali',

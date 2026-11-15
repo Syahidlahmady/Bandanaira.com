@@ -515,5 +515,107 @@ INITIAL_SPATIAL_FEATURES: List[Dict[str, Any]] = [
             "guide_available": True
         },
         "description": ""
+    },
+    {
+        "name": "Sentra UMKM RT 01 Negeri Merdeka",
+        "layer_type": "LAYER_KOPERASI_UMKM",
+        "category": "publik",
+        "island_name": "Pulau Neira",
+        "latitude": -4.5128,
+        "longitude": 129.8986,
+        "geometry_geojson": None,
+        "properties_meta": {
+            "rt_area": "RT. 01 Negeri Merdeka",
+            "village": "Negeri Administratif Merdeka",
+            "total_umkm": 4,
+            "established_years": "2022 - 2024",
+            "commodities_accepted": "Olahan Buah Pala & Hasil Perikanan",
+            "umkm_units": [
+                {
+                    "name": "Nurmila",
+                    "business": "UMKM Selai Pala",
+                    "category": "Olahan Pala",
+                    "year": 2024,
+                    "workforce": 1,
+                    "address": "RT. 01 Negeri Merdeka"
+                },
+                {
+                    "name": "Sumarni Abdullah",
+                    "business": "UMKM Pentolan Ikan",
+                    "category": "Olahan Ikan",
+                    "year": 2024,
+                    "workforce": 1,
+                    "address": "RT. 01 Negeri Merdeka"
+                },
+                {
+                    "name": "Sumiati",
+                    "business": "UMKM Pentolan & Bakso Ikan",
+                    "category": "Olahan Ikan",
+                    "year": 2023,
+                    "workforce": 1,
+                    "address": "RT. 01 Negeri Merdeka"
+                },
+                {
+                    "name": "Fatma Nasarudn",
+                    "business": "UMKM Kerupuk Ikan",
+                    "category": "Olahan Ikan",
+                    "year": 2022,
+                    "workforce": 1,
+                    "address": "RT. 01 Negeri Merdeka"
+                }
+            ]
+        },
+        "description": "Sentra usaha mikro warga RT 01 Negeri Merdeka berbasis potensi lokal pesisir dan perkebunan: Selai Pala Alami (Nurmila), Pentolan & Bakso Ikan (Sumarni Abdullah & Sumiati), serta Kerupuk Ikan Gurih (Fatma Nasarudn)."
+    },
+    {
+        "name": "Sentra UMKM RT 02 Negeri Merdeka",
+        "layer_type": "LAYER_KOPERASI_UMKM",
+        "category": "publik",
+        "island_name": "Pulau Neira",
+        "latitude": -4.5142,
+        "longitude": 129.8998,
+        "geometry_geojson": None,
+        "properties_meta": {
+            "rt_area": "RT. 02 Negeri Merdeka",
+            "village": "Negeri Administratif Merdeka",
+            "total_umkm": 5,
+            "established_years": "2023 - 2024",
+            "commodities_accepted": "Olahan Buah Pala, Ikan Asar/Abon & Kerajinan Cendramata",
+            "umkm_units": [
+                {
+                    "name": "Saharia Elwarin",
+                    "business": "UMKM Manisan Pala & Abon Ikan",
+                    "category": "Olahan Pala & Ikan",
+                    "year": 2023,
+                    "workforce": 1,
+                    "address": "RT. 02 Negeri Merdeka"
+                },
+                {
+                    "name": "Aisa Ahmad",
+                    "business": "UMKM Manisan Pala",
+                    "category": "Olahan Pala",
+                    "year": 2024,
+                    "workforce": 1,
+                    "address": "RT. 02 Negeri Merdeka"
+                },
+                {
+                    "name": "Swanty Ekasari Madura",
+                    "business": "UMKM Kerajinan Cendramata",
+                    "category": "Cendramata / Kerajinan",
+                    "year": 2024,
+                    "workforce": 1,
+                    "address": "RT. 02 Negeri Merdeka"
+                },
+                {
+                    "name": "Rasid Madura",
+                    "business": "UMKM Kerajinan Cendramata",
+                    "category": "Cendramata / Kerajinan",
+                    "year": 2023,
+                    "workforce": 1,
+                    "address": "RT. 02 Negeri Merdeka"
+                }
+            ]
+        },
+        "description": "Sentra hilirisasi komoditas dan kerajinan warga RT 02 Jln. Adika Negeri Merdeka: Manisan Buah Pala Segar (Saharia Elwarin & Aisa Ahmad), Abon Ikan Cakalang (Saharia Elwarin), serta Kerajinan Cendramata Khas Banda (Swanty Ekasari Madura & Rasid Madura)."
     }
 ]

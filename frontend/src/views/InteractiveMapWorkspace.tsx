@@ -3644,6 +3644,69 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     <span style={{ fontWeight: 600, color: '#0284c7', textAlign: 'right', maxWidth: '170px' }}>{selectedVillage.highlights}</span>
                   </div>
                 )}
+                {selectedVillage.demographics && (
+                  <div
+                    style={{
+                      marginTop: '0.45rem',
+                      padding: '0.55rem',
+                      background: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: '0.65rem',
+                        fontWeight: 800,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        color: '#0f766e',
+                        marginBottom: '0.35rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <span>Statistik Resmi Desa (2026)</span>
+                      <span style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 600 }}>Tercatat</span>
+                    </div>
+
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(3, 1fr)',
+                        gap: '0.3rem',
+                        textAlign: 'center',
+                        marginBottom: '0.35rem',
+                      }}
+                    >
+                      <div style={{ background: '#ffffff', padding: '0.3rem 0.2rem', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
+                        <div style={{ fontSize: '0.6rem', color: '#64748b' }}>Laki-laki</div>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0f2c59' }}>{selectedVillage.demographics.male}</div>
+                      </div>
+                      <div style={{ background: '#ffffff', padding: '0.3rem 0.2rem', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
+                        <div style={{ fontSize: '0.6rem', color: '#64748b' }}>Perempuan</div>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0f2c59' }}>{selectedVillage.demographics.female}</div>
+                      </div>
+                      <div style={{ background: '#ffffff', padding: '0.3rem 0.2rem', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
+                        <div style={{ fontSize: '0.6rem', color: '#64748b' }}>Keluarga</div>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0f2c59' }}>{selectedVillage.demographics.households} KK</div>
+                      </div>
+                    </div>
+
+                    {selectedVillage.demographics.top_occupations && (
+                      <div style={{ fontSize: '0.66rem', color: '#475569', lineHeight: 1.4, borderTop: '1px dashed #cbd5e1', paddingTop: '0.3rem' }}>
+                        <span style={{ fontWeight: 600, color: '#0f2c59' }}>Profesi Utama: </span>
+                        {selectedVillage.demographics.top_occupations}
+                      </div>
+                    )}
+                    {selectedVillage.demographics.umkm_count && (
+                      <div style={{ fontSize: '0.66rem', color: '#7c3aed', fontWeight: 700, marginTop: '0.25rem' }}>
+                        Terdata {selectedVillage.demographics.umkm_count} Unit UMKM Binaan Aktif
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.75rem' }}>
@@ -4693,13 +4756,109 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                   {selectedFeature.properties.commodities_accepted && (
                     <div style={{ background: '#f5f3ff', border: '1px solid #ddd6fe', padding: '0.5rem 0.75rem', borderRadius: '8px' }}>
                       <span style={{ fontSize: '0.7rem', color: '#6d28d9', display: 'block', marginBottom: '0.2rem', fontWeight: 600 }}>
-                        Komoditas Diterima:
+                        Komoditas / Fokus Produk:
                       </span>
                       <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#7c3aed' }}>
                         {selectedFeature.properties.commodities_accepted}
                       </span>
                     </div>
                   )}
+
+                  {(() => {
+                    const umkmUnits =
+                      selectedFeature.properties.umkm_units ||
+                      selectedFeature.properties.properties_meta?.umkm_units
+                    const rtArea =
+                      selectedFeature.properties.rt_area ||
+                      selectedFeature.properties.properties_meta?.rt_area
+
+                    if (!Array.isArray(umkmUnits) || umkmUnits.length === 0) return null
+
+                    return (
+                      <div
+                        style={{
+                          background: '#faf5ff',
+                          border: '1.5px solid #e9d5ff',
+                          borderRadius: '10px',
+                          padding: '0.65rem 0.75rem',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.5rem',
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            borderBottom: '1px solid #e9d5ff',
+                            paddingBottom: '0.35rem',
+                          }}
+                        >
+                          <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#6b21a8' }}>
+                            Daftar Pelaku Usaha Binaan
+                          </span>
+                          <span
+                            style={{
+                              fontSize: '0.65rem',
+                              fontWeight: 700,
+                              background: '#8b5cf6',
+                              color: '#ffffff',
+                              padding: '0.15rem 0.4rem',
+                              borderRadius: '4px',
+                            }}
+                          >
+                            {umkmUnits.length} UMKM Terdaftar
+                          </span>
+                        </div>
+
+                        {rtArea && (
+                          <div style={{ fontSize: '0.68rem', color: '#7e22ce', fontWeight: 600 }}>
+                            Wilayah: {rtArea}
+                          </div>
+                        )}
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', maxHeight: '180px', overflowY: 'auto' }}>
+                          {umkmUnits.map((u: any, idx: number) => (
+                            <div
+                              key={idx}
+                              style={{
+                                background: '#ffffff',
+                                border: '1px solid #f3e8ff',
+                                borderRadius: '6px',
+                                padding: '0.4rem 0.5rem',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '0.15rem',
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0f2c59' }}>
+                                  {u.business || u.name}
+                                </span>
+                                <span
+                                  style={{
+                                    fontSize: '0.62rem',
+                                    fontWeight: 600,
+                                    padding: '0.1rem 0.35rem',
+                                    background: '#f3e8ff',
+                                    color: '#7e22ce',
+                                    borderRadius: '3px',
+                                  }}
+                                >
+                                  {u.category}
+                                </span>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.67rem', color: '#64748b' }}>
+                                <span>Pemilik: <strong style={{ color: '#334155' }}>{u.name}</strong></span>
+                                {u.year && <span>Berdiri {u.year} · {u.workforce || 1} Tenaga Kerja</span>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })()}
                 </>
               )}
             </div>
