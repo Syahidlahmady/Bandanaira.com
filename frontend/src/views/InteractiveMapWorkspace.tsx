@@ -273,6 +273,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   const [editingVillagePop, setEditingVillagePop] = useState<string>('')
   const [editingVillageCommodity, setEditingVillageCommodity] = useState<string>('')
   const [editingVillageArea, setEditingVillageArea] = useState<string>('')
+  const [editingVillageAreaKm2, setEditingVillageAreaKm2] = useState<string | number>('')
+  const [editingVillageDensity, setEditingVillageDensity] = useState<string | number>('')
   const [isSyncingVillages, setIsSyncingVillages] = useState<boolean>(false)
 
   const draftPolygonPartsRef = useRef<L.Polygon[]>([])
@@ -885,6 +887,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     setEditingVillagePop(details.population || '')
     setEditingVillageCommodity(details.main_commodity || '')
     setEditingVillageArea(details.area_ha || '')
+    setEditingVillageAreaKm2(details.area_km2 || '')
+    setEditingVillageDensity(details.density || '')
     setPolygonParts(parts)
     setActivePartIndex(0)
     setPolygonEditMode('move') // Standar mode geser agar aman dan tidak membuat titik liar
@@ -909,6 +913,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     setEditingVillagePop('')
     setEditingVillageCommodity('')
     setEditingVillageArea('')
+    setEditingVillageAreaKm2('')
+    setEditingVillageDensity('')
     setPolygonParts([[]])
     setActivePartIndex(0)
     setPolygonEditMode('add')
@@ -1006,6 +1012,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
         population: editingVillagePop,
         main_commodity: editingVillageCommodity,
         area_ha: editingVillageArea,
+        area_km2: editingVillageAreaKm2,
+        density: editingVillageDensity,
       },
     }
     setVillageDetailsMap(updatedDetails)
@@ -1021,6 +1029,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
       population: editingVillagePop,
       main_commodity: editingVillageCommodity,
       area_ha: editingVillageArea,
+      area_km2: editingVillageAreaKm2,
+      density: editingVillageDensity,
       demographics: villageDetailsMap[editingVillageName]?.demographics || {},
     }, token).catch((err) => {
       console.warn('Gagal menyimpan poligon langsung ke database PostGIS:', err)
@@ -1530,12 +1540,13 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
       },
       onEachFeature: (feat, layer) => {
         const { name, island, color } = feat.properties
-        const details = villageDetailsMap[name]
+        const details = villageDetailsMap[name] || VILLAGE_DETAILS[name]
         layer.bindTooltip(
           `<div style="font-family: inherit; font-size: 11px; font-weight: 700; color: #0f172a;">
             <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: ${color}; margin-right: 4px;"></span>
             <b>${name}</b><br/>
             <span style="font-size: 9px; color: #64748b; font-weight: 500;">${island}</span>
+            ${details?.area_km2 ? `<br/><span style="font-size: 9px; color: #0f766e; font-weight: 600;">Luas: ${details.area_km2} km² | Kepadatan: ${details.density} jiwa/km²</span>` : ''}
           </div>`,
           { sticky: true, opacity: 0.95 }
         )
@@ -3425,13 +3436,37 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
                 <div>
                   <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
-                    Estimasi Luas Wilayah
+                    Luas Wilayah Resmi (km²)
                   </label>
                   <input
-                    type="text"
-                    value={editingVillageArea}
-                    onChange={(e) => setEditingVillageArea(e.target.value)}
-                    placeholder="Contoh: 340 Hektar"
+                    type="number"
+                    step="0.01"
+                    value={editingVillageAreaKm2}
+                    onChange={(e) => setEditingVillageAreaKm2(e.target.value)}
+                    placeholder="Contoh: 13.16"
+                    style={{
+                      width: '100%',
+                      padding: '0.45rem 0.65rem',
+                      fontSize: '0.8rem',
+                      background: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: '8px',
+                      color: '#0f172a',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                    Kepadatan Penduduk (jiwa/km²)
+                  </label>
+                  <input
+                    type="number"
+                    step="1"
+                    value={editingVillageDensity}
+                    onChange={(e) => setEditingVillageDensity(e.target.value)}
+                    placeholder="Contoh: 122"
                     style={{
                       width: '100%',
                       padding: '0.45rem 0.65rem',
@@ -3654,6 +3689,18 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span style={{ color: '#64748b' }}>Populasi:</span>
                     <span style={{ fontWeight: 700, color: '#0f2c59' }}>{selectedVillage.population}</span>
+                  </div>
+                )}
+                {selectedVillage.area_km2 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: '#64748b' }}>Luas Wilayah:</span>
+                    <span style={{ fontWeight: 700, color: '#0f2c59' }}>{selectedVillage.area_km2} km²</span>
+                  </div>
+                )}
+                {selectedVillage.density && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: '#64748b' }}>Kepadatan Penduduk:</span>
+                    <span style={{ fontWeight: 700, color: '#0f766e' }}>{selectedVillage.density} jiwa/km²</span>
                   </div>
                 )}
                 {selectedVillage.main_commodity && (

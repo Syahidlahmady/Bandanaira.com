@@ -12,6 +12,8 @@ export interface VillageInfo {
   population?: string
   main_commodity?: string
   area_ha?: string
+  area_km2?: number | string
+  density?: number | string
   highlights?: string
   demographics?: {
     total_population?: number
@@ -25,166 +27,213 @@ export interface VillageInfo {
 }
 
 export const VILLAGE_DETAILS: Record<string, VillageInfo> = {
-  Nusantara: {
-    name: 'Nusantara',
-    island: 'Pulau Neira',
-    color: '#34d399', // Mint Green
-    description: 'Pusat aktivitas dan pemerintahan desa, pelabuhan utama PELNI, dan kawasan cagar budaya Benteng Belgica & Nassau.',
-    population: '2.450 Jiwa',
-    main_commodity: 'Pariwisata Bahari & Jasa Perdagangan',
-    area_ha: '84 Hektar',
-    highlights: 'Benteng Belgica, Mini Palace VOC, Pelabuhan Neira',
+  "Nusantara": {
+    "name": "Nusantara",
+    "island": "Pulau Neira",
+    "color": "#34d399",
+    "description": "Batas wilayah administratif resmi Nusantara, Pulau Neira.",
+    "population": "1.865 Jiwa",
+    "main_commodity": "Pariwisata Bahari & Jasa Perdagangan",
+    "area_ha": "1390 Hektar",
+    "area_km2": 13.9,
+    "density": 147
   },
-  Dwiwarna: {
-    name: 'Dwiwarna',
-    island: 'Pulau Neira',
-    color: '#a3e635', // Lime
-    description: 'Pusat perkantoran pemerintahan kecamatan, sentra pendidikan, dan kompleks rumah pengasingan Bung Hatta & Sutan Sjahrir.',
-    population: '2.180 Jiwa',
-    main_commodity: 'Pendidikan & Perdagangan Rempah',
-    area_ha: '72 Hektar',
-    highlights: 'Rumah Budaya Banda Neira, Rumah Pengasingan Bung Hatta',
+  "Dwiwarna": {
+    "name": "Dwiwarna",
+    "island": "Pulau Neira",
+    "color": "#a3e635",
+    "description": "Batas wilayah administratif resmi Dwiwarna, Pulau Neira.",
+    "population": "880 Jiwa",
+    "main_commodity": "Pendidikan & Perdagangan Rempah",
+    "area_ha": "410 Hektar",
+    "area_km2": 4.1,
+    "density": 215
   },
-  Merdeka: {
-    name: 'Merdeka',
-    island: 'Pulau Neira',
-    color: '#38bdf8', // Cyan
-    description: 'Negeri administratif di pesisir barat Neira dengan alur pelayaran tradisional menghadap Gunung Api. Berdasarkan data sensus resmi desa 2026, berpopulasi 834 jiwa (234 KK) dengan 49 nelayan, 41 wiraswasta, 27 petani/pekebun, serta 9 unit UMKM olahan pala, perikanan, dan kerajinan tangan.',
-    population: '834 Jiwa (234 KK)',
-    main_commodity: 'Perikanan Tangkap, Olahan Pala & Ikan',
-    area_ha: '65 Hektar',
-    highlights: 'Pesisir Selat Neira, Sentra Nelayan Cakalang, 9 Sentra UMKM Olahan',
-    demographics: {
-      total_population: 834,
-      households: 234,
-      male: 409,
-      female: 425,
-      productive_age: 417,
-      top_occupations: 'Nelayan (49), Wiraswasta (41), Asongan (32), Petani (27), PNS (26)',
-      umkm_count: 9,
+  "Merdeka": {
+    "name": "Merdeka",
+    "island": "Pulau Neira",
+    "color": "#38bdf8",
+    "description": "Batas wilayah administratif resmi Merdeka, Pulau Neira.",
+    "population": "834 Jiwa (234 KK)",
+    "main_commodity": "Perikanan Tangkap, Olahan Pala & Ikan",
+    "area_ha": "295 Hektar",
+    "area_km2": 2.95,
+    "density": 289
+  },
+  "Rajawali": {
+    "name": "Rajawali",
+    "island": "Pulau Neira",
+    "color": "#d946ef",
+    "description": "Batas wilayah administratif resmi Rajawali, Pulau Neira.",
+    "population": "891 Jiwa",
+    "main_commodity": "Pala & Cengkeh Rakyat",
+    "area_ha": "294 Hektar",
+    "area_km2": 2.94,
+    "density": 303
+  },
+  "Tanah Rata": {
+    "name": "Tanah Rata",
+    "island": "Pulau Neira",
+    "color": "#4338ca",
+    "description": "Batas wilayah administratif resmi Tanah Rata, Pulau Neira.",
+    "population": "906 Jiwa",
+    "main_commodity": "Hasil Laut & Olahan Ikan Asar",
+    "area_ha": "720 Hektar",
+    "area_km2": 7.2,
+    "density": 126
+  },
+  "Kampung Baru": {
+    "name": "Kampung Baru",
+    "island": "Pulau Neira",
+    "color": "#ea580c",
+    "description": "Batas wilayah administratif resmi Kampung Baru, Pulau Neira.",
+    "population": "3.057 Jiwa",
+    "main_commodity": "Transportasi Udara & Logistik",
+    "area_ha": "570 Hektar",
+    "area_km2": 5.7,
+    "density": 537
+  },
+  "Lonthoir": {
+    "name": "Lonthoir",
+    "island": "Banda Besar",
+    "color": "#86efac",
+    "description": "Batas wilayah administratif resmi Lonthoir, Banda Besar.",
+    "population": "2.325 Jiwa",
+    "main_commodity": "Pala Lonthoir Grade AAA & Minyak Fuli",
+    "area_ha": "1607 Hektar",
+    "area_km2": 16.07,
+    "density": 145
+  },
+  "Boiyauw": {
+    "name": "Boiyauw",
+    "island": "Banda Besar",
+    "color": "#2563eb",
+    "description": "Batas wilayah administratif resmi Boiyauw, Banda Besar.",
+    "population": "837 Jiwa",
+    "main_commodity": "Pala Organik & Biji Kenari Hutan",
+    "area_ha": "715 Hektar",
+    "area_km2": 7.15,
+    "density": 117
+  },
+  "Combir Kasestoren": {
+    "name": "Combir Kasestoren",
+    "island": "Banda Besar",
+    "color": "#eab308",
+    "description": "Batas wilayah administratif resmi Combir Kasestoren, Banda Besar.",
+    "population": "710 Jiwa",
+    "main_commodity": "Perikanan Tradisional & Pala",
+    "area_ha": "900 Hektar",
+    "area_km2": 9.0,
+    "density": 79
+  },
+  "Dender": {
+    "name": "Dender",
+    "island": "Banda Besar",
+    "color": "#00eeff",
+    "description": "Batas wilayah administratif resmi Dender, Banda Besar.",
+    "population": "413 Jiwa",
+    "main_commodity": "Cengkeh Petik & Rumput Laut",
+    "area_ha": "210 Hektar",
+    "area_km2": 2.1,
+    "density": 197
+  },
+  "Lautang": {
+    "name": "Lautang",
+    "island": "Banda Besar",
+    "color": "#22c55e",
+    "description": "Batas wilayah administratif resmi Lautang, Banda Besar.",
+    "population": "546 Jiwa",
+    "main_commodity": "Tuna Sirip Kuning & Ikan Cakalang",
+    "area_ha": "470 Hektar",
+    "area_km2": 4.7,
+    "density": 116
+  },
+  "Selamon": {
+    "name": "Selamon",
+    "island": "Banda Besar",
+    "color": "#9333ea",
+    "description": "Batas wilayah administratif resmi Selamon, Banda Besar.",
+    "population": "1.620 Jiwa",
+    "main_commodity": "Pala Warisan Adat & Wisata Budaya",
+    "area_ha": "1209 Hektar",
+    "area_km2": 12.09,
+    "density": 134
+  },
+  "Uring Tutra": {
+    "name": "Uring Tutra",
+    "island": "Banda Besar",
+    "color": "#2dd4bf",
+    "description": "Batas wilayah administratif resmi Uring Tutra, Banda Besar.",
+    "population": "441 Jiwa",
+    "main_commodity": "Pala & Tanaman Hortikultura Kebun",
+    "area_ha": "220 Hektar",
+    "area_km2": 2.2,
+    "density": 200
+  },
+  "Waer": {
+    "name": "Waer",
+    "island": "Banda Besar",
+    "color": "#fb7185",
+    "description": "Batas wilayah administratif resmi Waer, Banda Besar.",
+    "population": "1.444 Jiwa",
+    "main_commodity": "Pala, Cengkeh, & Perikanan Pesisir",
+    "area_ha": "799 Hektar",
+    "area_km2": 7.99,
+    "density": 181
+  },
+  "Walling Spanciby": {
+    "name": "Walling Spanciby",
+    "island": "Banda Besar",
+    "color": "#14b8a6",
+    "description": "Batas wilayah administratif resmi Walling Spanciby, Banda Besar.",
+    "population": "1.202 Jiwa",
+    "main_commodity": "Kopra, Pala, & Garam Tradisional",
+    "area_ha": "840 Hektar",
+    "area_km2": 8.4,
+    "density": 143
+  },
+  "Desa Pulau Rhun": {
+    "name": "Desa Pulau Rhun",
+    "island": "Pulau Rhun",
+    "color": "#db2424",
+    "description": "Batas wilayah administratif resmi Desa Pulau Rhun, Pulau Rhun.",
+    "population": "1.606 Jiwa",
+    "main_commodity": "",
+    "area_ha": "1316 Hektar",
+    "highlights": "",
+    "demographics": {
+      "total_population": 1606
     },
+    "area_km2": 13.16,
+    "density": 122
   },
-  Rajawali: {
-    name: 'Rajawali',
-    island: 'Pulau Neira',
-    color: '#d946ef', // Magenta
-    description: 'Kawasan perbukitan hijau di timur Neira yang memadukan kebun pala warga dengan pemandangan Teluk Banda.',
-    population: '1.150 Jiwa',
-    main_commodity: 'Pala & Cengkeh Rakyat',
-    area_ha: '78 Hektar',
-    highlights: 'Perkebunan Pala Neira Timur, Spot Sunrise Teluk',
+  "Pulau Ay": {
+    "name": "Pulau Ay",
+    "island": "Pulau Ay",
+    "color": "#ff6600",
+    "description": "Batas wilayah administratif resmi Pulau Ay, Pulau Ay.",
+    "population": "1.512 Jiwa",
+    "main_commodity": "",
+    "area_ha": "1319 Hektar",
+    "area_km2": 13.19,
+    "density": 115
   },
-  'Tanah Rata': {
-    name: 'Tanah Rata',
-    island: 'Pulau Neira',
-    color: '#4338ca', // Indigo / Dark Purple
-    description: 'Sisi selatan Pulau Neira yang menghadap langsung ke Selat Lontor dan Gunung Api, sentra pendaratan perahu nelayan.',
-    population: '1.340 Jiwa',
-    main_commodity: 'Hasil Laut & Olahan Ikan Asar',
-    area_ha: '58 Hektar',
-    highlights: 'Pendaratan Ketinting, Sentra Pengasapan Ikan',
-  },
-  'Kampung Baru': {
-    name: 'Kampung Baru',
-    island: 'Pulau Neira',
-    color: '#ea580c', // Orange
-    description: 'Kawasan timur Neira yang menjadi lokasi Bandara Banda Neira dan sentra pemukiman modern kepulauan.',
-    population: '1.890 Jiwa',
-    main_commodity: 'Transportasi Udara & Logistik',
-    area_ha: '92 Hektar',
-    highlights: 'Bandar Udara Banda Neira, Sentra Kerajinan Kenari',
-  },
-  Lonthoir: {
-    name: 'Lonthoir',
-    island: 'Banda Besar',
-    color: '#86efac', // Soft Green
-    description: 'Desa bersejarah pusat perkebunan pala tertua di dunia, Benteng Hollandia, sumur keramat Lonthoir, dan panorama lanskap teluk.',
-    population: '2.620 Jiwa',
-    main_commodity: 'Pala Lonthoir Grade AAA & Minyak Fuli',
-    area_ha: '340 Hektar',
-    highlights: 'Benteng Hollandia, Perkebunan Pala Tua, Pantai Pasir Enam',
-  },
-  Boiyauw: {
-    name: 'Boiyauw',
-    island: 'Banda Besar',
-    color: '#2563eb', // Royal Blue
-    description: 'Wilayah perbukitan subur di selatan Banda Besar dengan kanopi pohon kenari raksasa penaung tanaman pala organik.',
-    population: '1.780 Jiwa',
-    main_commodity: 'Pala Organik & Biji Kenari Hutan',
-    area_ha: '290 Hektar',
-    highlights: 'Hutan Kenari Raksasa, Sumber Mata Air Perbukitan',
-  },
-  'Combir Kasestoren': {
-    name: 'Combir Kasestoren',
-    island: 'Banda Besar',
-    color: '#eab308', // Amber / Yellow
-    description: 'Ujung tanjung timur laut Banda Besar yang menjaga pintu masuk timur perairan Banda dengan tradisi bahari kental.',
-    population: '1.240 Jiwa',
-    main_commodity: 'Perikanan Tradisional & Pala',
-    area_ha: '210 Hektar',
-    highlights: 'Tanjung Timur Banda Besar, Perahu Belang Tradisional',
-  },
-  Dender: {
-    name: 'Dender',
-    island: 'Banda Besar',
-    color: '#a855f7', // Purple
-    description: 'Pemukiman pesisir tenang di lereng tengah Banda Besar dengan kebun cengkeh dan dermaga perahu nelayan antarpulau.',
-    population: '1.120 Jiwa',
-    main_commodity: 'Cengkeh Petik & Rumput Laut',
-    area_ha: '195 Hektar',
-    highlights: 'Dermaga Kayu Dender, Sentra Pengeringan Cengkeh',
-  },
-  Lautang: {
-    name: 'Lautang',
-    island: 'Banda Besar',
-    color: '#22c55e', // Green
-    description: 'Kawasan pesisir pantai selatan Banda Besar yang menghadap laut lepas Banda, kaya potensi perikanan pelagis laut dalam.',
-    population: '980 Jiwa',
-    main_commodity: 'Tuna Sirip Kuning & Ikan Cakalang',
-    area_ha: '175 Hektar',
-    highlights: 'Sentra Pemancingan Tuna, Pantai Tebing Karang',
-  },
-  Selamon: {
-    name: 'Selamon',
-    island: 'Banda Besar',
-    color: '#9333ea', // Deep Violet
-    description: 'Desa adat bersejarah di timur laut Banda Besar dengan tradisi perahu Belang adat, tarian cakalele, dan kebun pala pusaka.',
-    population: '2.050 Jiwa',
-    main_commodity: 'Pala Warisan Adat & Wisata Budaya',
-    area_ha: '310 Hektar',
-    highlights: 'Rumah Adat Belang Selamon, Pohon Pala Keramat',
-  },
-  'Uring Tutra': {
-    name: 'Uring Tutra',
-    island: 'Banda Besar',
-    color: '#2dd4bf', // Teal
-    description: 'Lembah sejuk di barat daya Lonthoir dengan sistem irigasi mata air alami untuk perkebunan pala dan tanaman pangan.',
-    population: '1.050 Jiwa',
-    main_commodity: 'Pala & Tanaman Hortikultura Kebun',
-    area_ha: '160 Hektar',
-    highlights: 'Mata Air Alami Lembah Uring, Perkebunan Buah Lokal',
-  },
-  Waer: {
-    name: 'Waer',
-    island: 'Banda Besar',
-    color: '#fb7185', // Rose Pink
-    description: 'Pesisir timur Banda Besar yang terkenal dengan sumber air tawar alami di bibir pantai dan terumbu karang dangkal.',
-    population: '1.380 Jiwa',
-    main_commodity: 'Pala, Cengkeh, & Perikanan Pesisir',
-    area_ha: '185 Hektar',
-    highlights: 'Mata Air Tawar Pantai Waer, Snorkeling Terumbu Tepi',
-  },
-  'Walling Spanciby': {
-    name: 'Walling Spanciby',
-    island: 'Banda Besar',
-    color: '#14b8a6', // Emerald / Cyan
-    description: 'Tanjung barat daya Banda Besar dengan tebing karst megah yang menghadap langsung ke arah Pulau Ay dan Pulau Rhun.',
-    population: '890 Jiwa',
-    main_commodity: 'Kopra, Pala, & Garam Tradisional',
-    area_ha: '220 Hektar',
-    highlights: 'Tanjung Walling, Titik Pantau Jalur Barat Neira-Ay',
-  },
-}
+  "Desa Pulau Hatta": {
+    "name": "Desa Pulau Hatta",
+    "island": "Pulau Hatta",
+    "color": "#00ffbf",
+    "description": "Batas wilayah administratif resmi Desa Pulau Hatta, Pulau Hatta.",
+    "population": "681 Jiwa",
+    "main_commodity": "",
+    "area_ha": "1588 Hektar",
+    "highlights": "",
+    "demographics": {
+      "total_population": 681
+    },
+    "area_km2": 15.88,
+    "density": 43
+  }
+};
 
 export const BANDA_VILLAGES_GEOJSON: any = {
   "type": "FeatureCollection",

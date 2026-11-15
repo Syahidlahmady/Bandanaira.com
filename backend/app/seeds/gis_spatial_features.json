@@ -494,7 +494,11 @@
     "properties_meta": {
       "village_name": "Uring Tutra",
       "island": "Banda Besar",
-      "color": "#2dd4bf"
+      "color": "#2dd4bf",
+      "area_km2": 2.2,
+      "density": 200,
+      "area_ha": "220 Hektar",
+      "population": "441 Jiwa"
     },
     "description": "Batas wilayah administratif resmi Uring Tutra, Banda Besar.",
     "is_active": true
@@ -644,7 +648,11 @@
     "properties_meta": {
       "village_name": "Pulau Ay",
       "island": "Pulau Ay",
-      "color": "#ff6600"
+      "color": "#ff6600",
+      "area_km2": 13.19,
+      "density": 115,
+      "area_ha": "1319 Hektar",
+      "population": "1.512 Jiwa"
     },
     "description": "Batas wilayah administratif resmi Pulau Ay, Pulau Ay.",
     "is_active": true
@@ -686,7 +694,11 @@
     "properties_meta": {
       "village_name": "Walling Spanciby",
       "island": "Banda Besar",
-      "color": "#14b8a6"
+      "color": "#14b8a6",
+      "area_km2": 8.4,
+      "density": 143,
+      "area_ha": "840 Hektar",
+      "population": "1.202 Jiwa"
     },
     "description": "Batas wilayah administratif resmi Walling Spanciby, Banda Besar.",
     "is_active": true
@@ -728,7 +740,11 @@
     "properties_meta": {
       "village_name": "Lonthoir",
       "island": "Banda Besar",
-      "color": "#86efac"
+      "color": "#86efac",
+      "area_km2": 16.07,
+      "density": 145,
+      "area_ha": "1607 Hektar",
+      "population": "2.325 Jiwa"
     },
     "description": "Batas wilayah administratif resmi Lonthoir, Banda Besar.",
     "is_active": true
@@ -1056,7 +1072,11 @@
     "properties_meta": {
       "village_name": "Desa Pulau Rhun",
       "island": "Pulau Rhun",
-      "color": "#db2424"
+      "color": "#db2424",
+      "area_km2": 13.16,
+      "density": 122,
+      "area_ha": "1316 Hektar",
+      "population": "1.606 Jiwa"
     },
     "description": "Batas wilayah administratif resmi Desa Pulau Rhun, Pulau Rhun.",
     "is_active": true
@@ -1098,7 +1118,11 @@
     "properties_meta": {
       "village_name": "Lautang",
       "island": "Banda Besar",
-      "color": "#22c55e"
+      "color": "#22c55e",
+      "area_km2": 4.7,
+      "density": 116,
+      "area_ha": "470 Hektar",
+      "population": "546 Jiwa"
     },
     "description": "Batas wilayah administratif resmi Lautang, Banda Besar.",
     "is_active": true
@@ -1140,7 +1164,11 @@
     "properties_meta": {
       "village_name": "Dender",
       "island": "Banda Besar",
-      "color": "#a855f7"
+      "color": "#a855f7",
+      "area_km2": 2.1,
+      "density": 197,
+      "area_ha": "210 Hektar",
+      "population": "413 Jiwa"
     },
     "description": "Batas wilayah administratif resmi Dender, Banda Besar.",
     "is_active": true
@@ -1182,7 +1210,11 @@
     "properties_meta": {
       "village_name": "Boiyauw",
       "island": "Banda Besar",
-      "color": "#2563eb"
+      "color": "#2563eb",
+      "area_km2": 7.15,
+      "density": 117,
+      "area_ha": "715 Hektar",
+      "population": "837 Jiwa"
     },
     "description": "Batas wilayah administratif resmi Boiyauw, Banda Besar.",
     "is_active": true
@@ -1224,7 +1256,11 @@
     "properties_meta": {
       "village_name": "Waer",
       "island": "Banda Besar",
-      "color": "#fb7185"
+      "color": "#fb7185",
+      "area_km2": 7.99,
+      "density": 181,
+      "area_ha": "799 Hektar",
+      "population": "1.444 Jiwa"
     },
     "description": "Batas wilayah administratif resmi Waer, Banda Besar.",
     "is_active": true
@@ -1266,7 +1302,11 @@
     "properties_meta": {
       "village_name": "Selamon",
       "island": "Banda Besar",
-      "color": "#9333ea"
+      "color": "#9333ea",
+      "area_km2": 12.09,
+      "density": 134,
+      "area_ha": "1209 Hektar",
+      "population": "1.620 Jiwa"
     },
     "description": "Batas wilayah administratif resmi Selamon, Banda Besar.",
     "is_active": true
@@ -1464,7 +1504,11 @@
     "properties_meta": {
       "village_name": "Desa Pulau Hatta",
       "island": "Pulau Hatta",
-      "color": "#00ffbf"
+      "color": "#00ffbf",
+      "area_km2": 15.88,
+      "density": 43,
+      "area_ha": "1588 Hektar",
+      "population": "681 Jiwa"
     },
     "description": "Batas wilayah administratif resmi Desa Pulau Hatta, Pulau Hatta.",
     "is_active": true
@@ -1506,7 +1550,11 @@
     "properties_meta": {
       "village_name": "Combir Kasestoren",
       "island": "Banda Besar",
-      "color": "#eab308"
+      "color": "#eab308",
+      "area_km2": 9.0,
+      "density": 79,
+      "area_ha": "900 Hektar",
+      "population": "710 Jiwa"
     },
     "description": "Batas wilayah administratif resmi Combir Kasestoren, Banda Besar.",
     "is_active": true
@@ -1576,7 +1624,11 @@
     "properties_meta": {
       "village_name": "Tanah Rata",
       "island": "Pulau Neira",
-      "color": "#4338ca"
+      "color": "#4338ca",
+      "area_km2": 7.2,
+      "density": 126,
+      "area_ha": "720 Hektar",
+      "population": "906 Jiwa"
     },
     "description": "Batas wilayah administratif resmi Tanah Rata, Pulau Neira.",
     "is_active": true
@@ -1750,7 +1802,11 @@
     "properties_meta": {
       "village_name": "Kampung Baru",
       "island": "Pulau Neira",
-      "color": "#ea580c"
+      "color": "#ea580c",
+      "area_km2": 5.7,
+      "density": 537,
+      "area_ha": "570 Hektar",
+      "population": "3.057 Jiwa"
     },
     "description": "Batas wilayah administratif resmi Kampung Baru, Pulau Neira.",
     "is_active": true
@@ -1906,7 +1962,11 @@
     "properties_meta": {
       "village_name": "Rajawali",
       "island": "Pulau Neira",
-      "color": "#d946ef"
+      "color": "#d946ef",
+      "area_km2": 2.94,
+      "density": 303,
+      "area_ha": "294 Hektar",
+      "population": "891 Jiwa"
     },
     "description": "Batas wilayah administratif resmi Rajawali, Pulau Neira.",
     "is_active": true
@@ -2214,7 +2274,10 @@
     "properties_meta": {
       "village_name": "Merdeka",
       "island": "Pulau Neira",
-      "color": "#38bdf8"
+      "color": "#38bdf8",
+      "area_km2": 2.95,
+      "density": 289,
+      "area_ha": "295 Hektar"
     },
     "description": "Batas wilayah administratif resmi Merdeka, Pulau Neira.",
     "is_active": true
@@ -2324,7 +2387,11 @@
     "properties_meta": {
       "village_name": "Dwiwarna",
       "island": "Pulau Neira",
-      "color": "#a3e635"
+      "color": "#a3e635",
+      "area_km2": 4.1,
+      "density": 215,
+      "area_ha": "410 Hektar",
+      "population": "880 Jiwa"
     },
     "description": "Batas wilayah administratif resmi Dwiwarna, Pulau Neira.",
     "is_active": true
@@ -3384,7 +3451,11 @@
     "properties_meta": {
       "village_name": "Nusantara",
       "island": "Pulau Neira",
-      "color": "#34d399"
+      "color": "#34d399",
+      "area_km2": 13.9,
+      "density": 147,
+      "area_ha": "1390 Hektar",
+      "population": "1.865 Jiwa"
     },
     "description": "Batas wilayah administratif resmi Nusantara, Pulau Neira.",
     "is_active": true

@@ -98,6 +98,8 @@ async def ensure_seed_features(db: AsyncSession) -> None:
                         "population": v_detail.get("population", ""),
                         "main_commodity": v_detail.get("main_commodity", ""),
                         "area_ha": v_detail.get("area_ha", ""),
+                        "area_km2": v_detail.get("area_km2", ""),
+                        "density": v_detail.get("density", ""),
                         "highlights": v_detail.get("highlights", ""),
                         "demographics": v_detail.get("demographics", {}),
                         "is_zone": True,
@@ -482,6 +484,10 @@ async def get_village_details(db: AsyncSession = Depends(get_db)) -> Dict[str, A
                     details[v_name]["main_commodity"] = props.get("main_commodity")
                 if props.get("area_ha"):
                     details[v_name]["area_ha"] = props.get("area_ha")
+                if props.get("area_km2"):
+                    details[v_name]["area_km2"] = props.get("area_km2")
+                if props.get("density"):
+                    details[v_name]["density"] = props.get("density")
                 if props.get("highlights"):
                     details[v_name]["highlights"] = props.get("highlights")
                 if props.get("demographics"):
@@ -497,6 +503,8 @@ async def get_village_details(db: AsyncSession = Depends(get_db)) -> Dict[str, A
                     "population": props.get("population", ""),
                     "main_commodity": props.get("main_commodity", ""),
                     "area_ha": props.get("area_ha", ""),
+                    "area_km2": props.get("area_km2", ""),
+                    "density": props.get("density", ""),
                     "highlights": props.get("highlights", ""),
                     "demographics": props.get("demographics", {}),
                 }
@@ -541,6 +549,8 @@ async def save_village_polygon(
         "population": payload.get("population", ""),
         "main_commodity": payload.get("main_commodity", ""),
         "area_ha": payload.get("area_ha", ""),
+        "area_km2": payload.get("area_km2", ""),
+        "density": payload.get("density", ""),
         "highlights": payload.get("highlights", ""),
         "demographics": payload.get("demographics", {}),
         "is_zone": True,

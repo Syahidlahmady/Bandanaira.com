@@ -611,6 +611,12 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Memastikan data real Merdeka tersimpan utuh di PostGIS (`properties_meta.demographics`).
   - Memperbarui `docker-compose.yml` dengan bind mount volume `./backend/scripts:/app/scripts`.
   - Menyusun dokumentasi seeder lengkap pada `DATABASE.md` dan `backend/app/seeds/README.md` untuk panduan seluruh tim pengembang.
+- [x] 40.8 Integrasi Data Luas Wilayah & Kepadatan Penduduk Resmi 18 Desa Kepulauan Banda:
+  - Mengintegrasikan data resmi Luas Wilayah (km²) dan Kepadatan Penduduk (jiwa/km²) untuk seluruh 18 desa Kecamatan Kepulauan Banda ke dalam PostGIS (`spatial_features.properties_meta`), seeder (`banda_village_details.json`, `gis_spatial_features.json`), dan dataset frontend (`bandaVillagesData.ts`).
+  - Mengisolasi dan mempertahankan data sensus spesifik Desa Merdeka (834 Jiwa, 234 KK, rasio gender, profesi utama, UMKM) sambil menambahkan `area_km2: 2.95` dan `density: 289`.
+  - Memperbarui antarmuka `InteractiveMapWorkspace.tsx` agar memunculkan Luas Wilayah dan Kepadatan Penduduk saat poligon desa diklik (pada kartu inspeksi) serta pada tooltip hover Leaflet.
+  - Memverifikasi endpoint API `GET /api/v1/gis/villages/details` dan `POST /api/v1/gis/villages/save-polygon` mendukung atribut Luas dan Kepadatan secara konsisten.
+
 
 
 
