@@ -458,1992 +458,54 @@
     "description": ""
   },
   {
-    "name": "Batas Wilayah Rajawali",
-    "layer_type": "LAYER_DESA_ADMIN",
-    "category": "zona_wilayah",
-    "island_name": "Pulau Neira",
-    "latitude": -4.508395,
-    "longitude": 129.900891,
-    "geometry_geojson": {
-      "type": "Polygon",
-      "coordinates": [
-        [
-          [
-            129.904876,
-            -4.505067
-          ],
-          [
-            129.906657,
-            -4.506479
-          ],
-          [
-            129.907172,
-            -4.507762
-          ],
-          [
-            129.897859,
-            -4.515078
-          ],
-          [
-            129.896314,
-            -4.512853
-          ],
-          [
-            129.896035,
-            -4.511228
-          ],
-          [
-            129.896014,
-            -4.508981
-          ],
-          [
-            129.8967,
-            -4.507527
-          ],
-          [
-            129.902408,
-            -4.503912
-          ],
-          [
-            129.904876,
-            -4.505067
-          ]
-        ]
-      ]
-    },
-    "properties_meta": {
-      "village_name": "Rajawali",
-      "color": "#d946ef",
-      "population": "1.150 Jiwa",
-      "main_commodity": "Pala & Cengkeh Rakyat",
-      "area_ha": "78 Hektar",
-      "highlights": "Perkebunan Pala Neira Timur, Spot Sunrise Teluk",
-      "demographics": {},
-      "is_zone": true
-    },
-    "description": "Kawasan perbukitan hijau di timur Neira yang memadukan kebun pala warga dengan pemandangan Teluk Banda.",
-    "is_active": true
-  },
-  {
-    "name": "Batas Wilayah Tanah Rata",
-    "layer_type": "LAYER_DESA_ADMIN",
-    "category": "zona_wilayah",
-    "island_name": "Pulau Neira",
-    "latitude": -4.513816,
-    "longitude": 129.901915,
-    "geometry_geojson": {
-      "type": "Polygon",
-      "coordinates": [
-        [
-          [
-            129.898095,
-            -4.514778
-          ],
-          [
-            129.907064,
-            -4.508062
-          ],
-          [
-            129.908051,
-            -4.512939
-          ],
-          [
-            129.900413,
-            -4.516875
-          ],
-          [
-            129.899769,
-            -4.515463
-          ],
-          [
-            129.898095,
-            -4.514778
-          ]
-        ]
-      ]
-    },
-    "properties_meta": {
-      "village_name": "Tanah Rata",
-      "color": "#f5d400",
-      "population": "1.340 Jiwa",
-      "main_commodity": "Hasil Laut & Olahan Ikan Asar",
-      "area_ha": "58 Hektar",
-      "highlights": "Pendaratan Ketinting, Sentra Pengasapan Ikan",
-      "demographics": {},
-      "is_zone": true
-    },
-    "description": "Sisi selatan Pulau Neira yang menghadap langsung ke Selat Lontor dan Gunung Api, sentra pendaratan perahu nelayan.",
-    "is_active": true
-  },
-  {
-    "name": "Batas Wilayah Kampung Baru",
-    "layer_type": "LAYER_DESA_ADMIN",
-    "category": "zona_wilayah",
-    "island_name": "Pulau Neira",
-    "latitude": -4.521932,
-    "longitude": 129.906155,
-    "geometry_geojson": {
-      "type": "Polygon",
-      "coordinates": [
-        [
-          [
-            129.910069,
-            -4.522265
-          ],
-          [
-            129.909747,
-            -4.523463
-          ],
-          [
-            129.908137,
-            -4.523078
-          ],
-          [
-            129.907558,
-            -4.52834
-          ],
-          [
-            129.904747,
-            -4.531185
-          ],
-          [
-            129.904726,
-            -4.524768
-          ],
-          [
-            129.905584,
-            -4.524618
-          ],
-          [
-            129.905648,
-            -4.523142
-          ],
-          [
-            129.905734,
-            -4.52034
-          ],
-          [
-            129.900305,
-            -4.520404
-          ],
-          [
-            129.901121,
-            -4.518158
-          ],
-          [
-            129.900434,
-            -4.517003
-          ],
-          [
-            129.908094,
-            -4.512939
-          ],
-          [
-            129.908996,
-            -4.517623
-          ],
-          [
-            129.907515,
-            -4.521324
-          ],
-          [
-            129.910069,
-            -4.522265
-          ]
-        ]
-      ]
-    },
-    "properties_meta": {
-      "village_name": "Kampung Baru",
-      "color": "#ea580c",
-      "population": "1.890 Jiwa",
-      "main_commodity": "Transportasi Udara & Logistik",
-      "area_ha": "92 Hektar",
-      "highlights": "Bandar Udara Banda Neira, Sentra Kerajinan Kenari",
-      "demographics": {},
-      "is_zone": true
-    },
-    "description": "Kawasan timur Neira yang menjadi lokasi Bandara Banda Neira dan sentra pemukiman modern kepulauan.",
-    "is_active": true
-  },
-  {
-    "name": "Batas Wilayah Merdeka",
-    "layer_type": "LAYER_DESA_ADMIN",
-    "category": "zona_wilayah",
-    "island_name": "Pulau Neira",
-    "latitude": -4.52312,
-    "longitude": 129.901919,
-    "geometry_geojson": {
-      "type": "MultiPolygon",
-      "coordinates": [
-        [
-          [
-            [
-              129.900112,
-              -4.520458
-            ],
-            [
-              129.905723,
-              -4.520372
-            ],
-            [
-              129.905605,
-              -4.524747
-            ],
-            [
-              129.902902,
-              -4.524219
-            ],
-            [
-              129.902387,
-              -4.524261
-            ],
-            [
-              129.901872,
-              -4.524989
-            ],
-            [
-              129.901056,
-              -4.525474
-            ],
-            [
-              129.900241,
-              -4.523934
-            ],
-            [
-              129.899179,
-              -4.522287
-            ],
-            [
-              129.900112,
-              -4.520458
-            ]
-          ]
-        ],
-        [
-          [
-            [
-              129.896786,
-              -4.507199
-            ],
-            [
-              129.90243,
-              -4.503933
-            ],
-            [
-              129.900241,
-              -4.502792
-            ],
-            [
-              129.89846,
-              -4.503862
-            ],
-            [
-              129.897473,
-              -4.504182
-            ],
-            [
-              129.897022,
-              -4.504182
-            ],
-            [
-              129.896529,
-              -4.503669
-            ],
-            [
-              129.895971,
-              -4.503626
-            ],
-            [
-              129.895563,
-              -4.503519
-            ],
-            [
-              129.894898,
-              -4.502329
-            ],
-            [
-              129.894426,
-              -4.502214
-            ],
-            [
-              129.893525,
-              -4.50245
-            ],
-            [
-              129.893031,
-              -4.50245
-            ],
-            [
-              129.892645,
-              -4.502642
-            ],
-            [
-              129.892173,
-              -4.50307
-            ],
-            [
-              129.892044,
-              -4.503862
-            ],
-            [
-              129.892817,
-              -4.504425
-            ],
-            [
-              129.893696,
-              -4.504446
-            ],
-            [
-              129.89449,
-              -4.503755
-            ],
-            [
-              129.894855,
-              -4.503969
-            ],
-            [
-              129.895456,
-              -4.504396
-            ],
-            [
-              129.895842,
-              -4.505217
-            ],
-            [
-              129.896464,
-              -4.505509
-            ],
-            [
-              129.896786,
-              -4.506001
-            ],
-            [
-              129.896786,
-              -4.507199
-            ]
-          ]
-        ]
-      ]
-    },
-    "properties_meta": {
-      "village_name": "Merdeka",
-      "color": "#38bdf8",
-      "population": "834 Jiwa (234 KK)",
-      "main_commodity": "Perikanan Tangkap, Olahan Pala & Ikan",
-      "area_ha": "65 Hektar",
-      "highlights": "Pesisir Selat Neira, Sentra Nelayan Cakalang, 9 Sentra UMKM Olahan",
-      "demographics": {
-        "total_population": 834,
-        "households": 234,
-        "male": 409,
-        "female": 425,
-        "productive_age": 417,
-        "top_occupations": "Nelayan (49), Wiraswasta (41), Asongan (32), Petani (27), PNS (26)",
-        "umkm_count": 9
-      },
-      "is_zone": true
-    },
-    "description": "Negeri administratif di pesisir barat Neira dengan alur pelayaran tradisional menghadap Gunung Api. Berdasarkan data sensus resmi desa 2026, berpopulasi 834 jiwa (234 KK) dengan 49 nelayan, 41 wiraswasta, 27 petani/pekebun, serta 9 unit UMKM olahan pala, perikanan, dan kerajinan tangan.",
-    "is_active": true
-  },
-  {
-    "name": "Batas Wilayah Dwiwarna",
-    "layer_type": "LAYER_DESA_ADMIN",
-    "category": "zona_wilayah",
-    "island_name": "Pulau Neira",
-    "latitude": -4.529084,
-    "longitude": 129.90223,
-    "geometry_geojson": {
-      "type": "Polygon",
-      "coordinates": [
-        [
-          [
-            129.900981,
-            -4.525545
-          ],
-          [
-            129.900101,
-            -4.529278
-          ],
-          [
-            129.900509,
-            -4.529556
-          ],
-          [
-            129.900573,
-            -4.530394
-          ],
-          [
-            129.90067,
-            -4.53003
-          ],
-          [
-            129.901282,
-            -4.529984
-          ],
-          [
-            129.901711,
-            -4.530294
-          ],
-          [
-            129.90244,
-            -4.530711
-          ],
-          [
-            129.902945,
-            -4.531032
-          ],
-          [
-            129.903213,
-            -4.531171
-          ],
-          [
-            129.903781,
-            -4.531171
-          ],
-          [
-            129.904329,
-            -4.53101
-          ],
-          [
-            129.904747,
-            -4.530779
-          ],
-          [
-            129.904801,
-            -4.52465
-          ],
-          [
-            129.902612,
-            -4.524201
-          ],
-          [
-            129.900981,
-            -4.525545
-          ]
-        ]
-      ]
-    },
-    "properties_meta": {
-      "village_name": "Dwiwarna",
-      "color": "#ff0000",
-      "population": "2.180 Jiwa",
-      "main_commodity": "Pendidikan & Perdagangan Rempah",
-      "area_ha": "72 Hektar",
-      "highlights": "Rumah Budaya Banda Neira, Rumah Pengasingan Bung Hatta",
-      "demographics": {},
-      "is_zone": true
-    },
-    "description": "Pusat perkantoran pemerintahan kecamatan, sentra pendidikan, dan kompleks rumah pengasingan Bung Hatta & Sutan Sjahrir.",
-    "is_active": true
-  },
-  {
-    "name": "Batas Wilayah Combir Kasestoren",
-    "layer_type": "LAYER_DESA_ADMIN",
-    "category": "zona_wilayah",
-    "island_name": "Banda Besar",
-    "latitude": -4.516426,
-    "longitude": 129.942877,
-    "geometry_geojson": {
-      "type": "Polygon",
-      "coordinates": [
-        [
-          [
-            129.939895,
-            -4.511998
-          ],
-          [
-            129.93938,
-            -4.517131
-          ],
-          [
-            129.941311,
-            -4.523035
-          ],
-          [
-            129.939122,
-            -4.527699
-          ],
-          [
-            129.948435,
-            -4.525046
-          ],
-          [
-            129.944444,
-            -4.522736
-          ],
-          [
-            129.945946,
-            -4.518372
-          ],
-          [
-            129.943886,
-            -4.513794
-          ],
-          [
-            129.947319,
-            -4.508062
-          ],
-          [
-            129.943585,
-            -4.507805
-          ],
-          [
-            129.941311,
-            -4.509431
-          ],
-          [
-            129.939895,
-            -4.511998
-          ]
-        ]
-      ]
-    },
-    "properties_meta": {
-      "village_name": "Combir Kasestoren",
-      "color": "#eab308",
-      "population": "1.240 Jiwa",
-      "main_commodity": "Perikanan Tradisional & Pala",
-      "area_ha": "210 Hektar",
-      "highlights": "Tanjung Timur Banda Besar, Perahu Belang Tradisional",
-      "demographics": {},
-      "is_zone": true
-    },
-    "description": "Ujung tanjung timur laut Banda Besar yang menjaga pintu masuk timur perairan Banda dengan tradisi bahari kental.",
-    "is_active": true
-  },
-  {
-    "name": "Batas Wilayah Selamon",
-    "layer_type": "LAYER_DESA_ADMIN",
-    "category": "zona_wilayah",
-    "island_name": "Banda Besar",
-    "latitude": -4.537838,
-    "longitude": 129.938011,
-    "geometry_geojson": {
-      "type": "Polygon",
-      "coordinates": [
-        [
-          [
-            129.925346,
-            -4.540148
-          ],
-          [
-            129.938993,
-            -4.527827
-          ],
-          [
-            129.948435,
-            -4.525773
-          ],
-          [
-            129.939508,
-            -4.536469
-          ],
-          [
-            129.94689,
-            -4.538522
-          ],
-          [
-            129.947319,
-            -4.544768
-          ],
-          [
-            129.941826,
-            -4.545367
-          ],
-          [
-            129.928436,
-            -4.541517
-          ],
-          [
-            129.925346,
-            -4.540148
-          ]
-        ]
-      ]
-    },
-    "properties_meta": {
-      "village_name": "Selamon",
-      "color": "#9333ea",
-      "population": "2.050 Jiwa",
-      "main_commodity": "Pala Warisan Adat & Wisata Budaya",
-      "area_ha": "310 Hektar",
-      "highlights": "Rumah Adat Belang Selamon, Pohon Pala Keramat",
-      "demographics": {},
-      "is_zone": true
-    },
-    "description": "Desa adat bersejarah di timur laut Banda Besar dengan tradisi perahu Belang adat, tarian cakalele, dan kebun pala pusaka.",
-    "is_active": true
-  },
-  {
-    "name": "Batas Wilayah Waer",
-    "layer_type": "LAYER_DESA_ADMIN",
-    "category": "zona_wilayah",
-    "island_name": "Banda Besar",
-    "latitude": -4.546233,
-    "longitude": 129.950656,
-    "geometry_geojson": {
-      "type": "Polygon",
-      "coordinates": [
-        [
-          [
-            129.946933,
-            -4.538779
-          ],
-          [
-            129.952383,
-            -4.540832
-          ],
-          [
-            129.954014,
-            -4.544982
-          ],
-          [
-            129.957447,
-            -4.546522
-          ],
-          [
-            129.95749,
-            -4.548918
-          ],
-          [
-            129.954872,
-            -4.549945
-          ],
-          [
-            129.952641,
-            -4.549517
-          ],
-          [
-            129.949036,
-            -4.551314
-          ],
-          [
-            129.948263,
-            -4.554907
-          ],
-          [
-            129.940624,
-            -4.545367
-          ],
-          [
-            129.947233,
-            -4.544939
-          ],
-          [
-            129.946933,
-            -4.538779
-          ]
-        ]
-      ]
-    },
-    "properties_meta": {
-      "village_name": "Waer",
-      "color": "#fb7185",
-      "population": "1.380 Jiwa",
-      "main_commodity": "Pala, Cengkeh, & Perikanan Pesisir",
-      "area_ha": "185 Hektar",
-      "highlights": "Mata Air Tawar Pantai Waer, Snorkeling Terumbu Tepi",
-      "demographics": {},
-      "is_zone": true
-    },
-    "description": "Pesisir timur Banda Besar yang terkenal dengan sumber air tawar alami di bibir pantai dan terumbu karang dangkal.",
-    "is_active": true
-  },
-  {
-    "name": "Batas Wilayah Lautang",
-    "layer_type": "LAYER_DESA_ADMIN",
-    "category": "zona_wilayah",
-    "island_name": "Banda Besar",
-    "latitude": -4.553127,
-    "longitude": 129.945851,
-    "geometry_geojson": {
-      "type": "Polygon",
-      "coordinates": [
-        [
-          [
-            129.944229,
-            -4.550415
-          ],
-          [
-            129.94895,
-            -4.55495
-          ],
-          [
-            129.950795,
-            -4.557388
-          ],
-          [
-            129.941053,
-            -4.552469
-          ],
-          [
-            129.944229,
-            -4.550415
-          ]
-        ]
-      ]
-    },
-    "properties_meta": {
-      "village_name": "Lautang",
-      "color": "#22c55e",
-      "population": "980 Jiwa",
-      "main_commodity": "Tuna Sirip Kuning & Ikan Cakalang",
-      "area_ha": "175 Hektar",
-      "highlights": "Sentra Pemancingan Tuna, Pantai Tebing Karang",
-      "demographics": {},
-      "is_zone": true
-    },
-    "description": "Kawasan pesisir pantai selatan Banda Besar yang menghadap laut lepas Banda, kaya potensi perikanan pelagis laut dalam.",
-    "is_active": true
-  },
-  {
-    "name": "Batas Wilayah Walling Spanciby",
-    "layer_type": "LAYER_DESA_ADMIN",
-    "category": "zona_wilayah",
-    "island_name": "Banda Besar",
-    "latitude": -4.544648,
-    "longitude": 129.92599,
-    "geometry_geojson": {
-      "type": "Polygon",
-      "coordinates": [
-        [
-          [
-            129.925561,
-            -4.540447
-          ],
-          [
-            129.934616,
-            -4.543485
-          ],
-          [
-            129.923372,
-            -4.553153
-          ],
-          [
-            129.92084,
-            -4.545709
-          ],
-          [
-            129.925561,
-            -4.540447
-          ]
-        ]
-      ]
-    },
-    "properties_meta": {
-      "village_name": "Walling Spanciby",
-      "color": "#14b8a6",
-      "population": "890 Jiwa",
-      "main_commodity": "Kopra, Pala, & Garam Tradisional",
-      "area_ha": "220 Hektar",
-      "highlights": "Tanjung Walling, Titik Pantau Jalur Barat Neira-Ay",
-      "demographics": {},
-      "is_zone": true
-    },
-    "description": "Tanjung barat daya Banda Besar dengan tebing karst megah yang menghadap langsung ke arah Pulau Ay dan Pulau Rhun.",
-    "is_active": true
-  },
-  {
-    "name": "Batas Wilayah Boiyauw",
-    "layer_type": "LAYER_DESA_ADMIN",
-    "category": "zona_wilayah",
-    "island_name": "Banda Besar",
-    "latitude": -4.550774,
-    "longitude": 129.913999,
-    "geometry_geojson": {
-      "type": "Polygon",
-      "coordinates": [
-        [
-          [
-            129.907751,
-            -4.549388
-          ],
-          [
-            129.920797,
-            -4.545538
-          ],
-          [
-            129.923029,
-            -4.553752
-          ],
-          [
-            129.910669,
-            -4.555805
-          ],
-          [
-            129.907751,
-            -4.549388
-          ]
-        ]
-      ]
-    },
-    "properties_meta": {
-      "village_name": "Boiyauw",
-      "color": "#2563eb",
-      "population": "1.780 Jiwa",
-      "main_commodity": "Pala Organik & Biji Kenari Hutan",
-      "area_ha": "290 Hektar",
-      "highlights": "Hutan Kenari Raksasa, Sumber Mata Air Perbukitan",
-      "demographics": {},
-      "is_zone": true
-    },
-    "description": "Wilayah perbukitan subur di selatan Banda Besar dengan kanopi pohon kenari raksasa penaung tanaman pala organik.",
-    "is_active": true
-  },
-  {
     "name": "Batas Wilayah Uring Tutra",
     "layer_type": "LAYER_DESA_ADMIN",
     "category": "zona_wilayah",
     "island_name": "Banda Besar",
-    "latitude": -4.560986,
-    "longitude": 129.945195,
+    "latitude": -4.5573999999999995,
+    "longitude": 129.88299999999998,
     "geometry_geojson": {
       "type": "Polygon",
       "coordinates": [
         [
           [
-            129.947276,
-            -4.55572
+            129.879,
+            -4.551
           ],
           [
-            129.951181,
-            -4.557773
+            129.892,
+            -4.554
           ],
           [
-            129.950194,
-            -4.560725
+            129.889,
+            -4.568
           ],
           [
-            129.946332,
-            -4.560725
+            129.876,
+            -4.563
           ],
           [
-            129.94247,
-            -4.56549
-          ],
-          [
-            129.939723,
-            -4.565746
-          ],
-          [
-            129.937105,
-            -4.565987
-          ],
-          [
-            129.947276,
-            -4.55572
+            129.879,
+            -4.551
           ]
         ]
       ]
     },
     "properties_meta": {
       "village_name": "Uring Tutra",
-      "color": "#2dd4bf",
-      "population": "1.050 Jiwa",
-      "main_commodity": "Pala & Tanaman Hortikultura Kebun",
-      "area_ha": "160 Hektar",
-      "highlights": "Mata Air Alami Lembah Uring, Perkebunan Buah Lokal",
-      "demographics": {},
-      "is_zone": true
+      "island": "Banda Besar",
+      "color": "#2dd4bf"
     },
-    "description": "Lembah sejuk di barat daya Lonthoir dengan sistem irigasi mata air alami untuk perkebunan pala dan tanaman pangan.",
-    "is_active": true
-  },
-  {
-    "name": "Batas Wilayah Desa Pulau Hatta",
-    "layer_type": "LAYER_DESA_ADMIN",
-    "category": "zona_wilayah",
-    "island_name": "Pulau Hatta",
-    "latitude": -4.593502,
-    "longitude": 130.04012,
-    "geometry_geojson": {
-      "type": "Polygon",
-      "coordinates": [
-        [
-          [
-            130.03448,
-            -4.583826
-          ],
-          [
-            130.035424,
-            -4.57989
-          ],
-          [
-            130.039115,
-            -4.578592
-          ],
-          [
-            130.041819,
-            -4.579661
-          ],
-          [
-            130.043063,
-            -4.580731
-          ],
-          [
-            130.044823,
-            -4.582356
-          ],
-          [
-            130.04581,
-            -4.58334
-          ],
-          [
-            130.047269,
-            -4.583597
-          ],
-          [
-            130.048728,
-            -4.58411
-          ],
-          [
-            130.049329,
-            -4.584795
-          ],
-          [
-            130.047441,
-            -4.585265
-          ],
-          [
-            130.047183,
-            -4.586035
-          ],
-          [
-            130.046883,
-            -4.588816
-          ],
-          [
-            130.045896,
-            -4.591596
-          ],
-          [
-            130.045509,
-            -4.592709
-          ],
-          [
-            130.046411,
-            -4.593094
-          ],
-          [
-            130.046968,
-            -4.593949
-          ],
-          [
-            130.046797,
-            -4.595789
-          ],
-          [
-            130.044694,
-            -4.599125
-          ],
-          [
-            130.043535,
-            -4.602034
-          ],
-          [
-            130.045338,
-            -4.603959
-          ],
-          [
-            130.046368,
-            -4.606483
-          ],
-          [
-            130.047183,
-            -4.607809
-          ],
-          [
-            130.045938,
-            -4.608194
-          ],
-          [
-            130.044951,
-            -4.608493
-          ],
-          [
-            130.042934,
-            -4.606397
-          ],
-          [
-            130.04066,
-            -4.605499
-          ],
-          [
-            130.038471,
-            -4.604344
-          ],
-          [
-            130.037098,
-            -4.60413
-          ],
-          [
-            130.036025,
-            -4.60413
-          ],
-          [
-            130.034351,
-            -4.602975
-          ],
-          [
-            130.033493,
-            -4.602334
-          ],
-          [
-            130.033493,
-            -4.598669
-          ],
-          [
-            130.03315,
-            -4.597671
-          ],
-          [
-            130.031862,
-            -4.597329
-          ],
-          [
-            130.031304,
-            -4.595703
-          ],
-          [
-            130.031476,
-            -4.594206
-          ],
-          [
-            130.031476,
-            -4.592153
-          ],
-          [
-            130.030618,
-            -4.590998
-          ],
-          [
-            130.030017,
-            -4.588773
-          ],
-          [
-            130.030017,
-            -4.587789
-          ],
-          [
-            130.030618,
-            -4.586891
-          ],
-          [
-            130.032763,
-            -4.586007
-          ],
-          [
-            130.03448,
-            -4.583826
-          ]
-        ]
-      ]
-    },
-    "properties_meta": {
-      "village_name": "Desa Pulau Hatta",
-      "color": "#00ffbf",
-      "population": "",
-      "main_commodity": "",
-      "area_ha": "",
-      "highlights": "",
-      "demographics": {},
-      "is_zone": true
-    },
-    "description": "",
-    "is_active": true
-  },
-  {
-    "name": "Batas Wilayah Lonthoir",
-    "layer_type": "LAYER_DESA_ADMIN",
-    "category": "zona_wilayah",
-    "island_name": "Banda Besar",
-    "latitude": -4.555051,
-    "longitude": 129.892221,
-    "geometry_geojson": {
-      "type": "Polygon",
-      "coordinates": [
-        [
-          [
-            129.940667,
-            -4.552511
-          ],
-          [
-            129.947062,
-            -4.555763
-          ],
-          [
-            129.936633,
-            -4.56603
-          ],
-          [
-            129.934487,
-            -4.572233
-          ],
-          [
-            129.932556,
-            -4.573259
-          ],
-          [
-            129.928865,
-            -4.570179
-          ],
-          [
-            129.92672,
-            -4.57112
-          ],
-          [
-            129.921441,
-            -4.567527
-          ],
-          [
-            129.91775,
-            -4.571463
-          ],
-          [
-            129.90788,
-            -4.563292
-          ],
-          [
-            129.904618,
-            -4.565046
-          ],
-          [
-            129.902902,
-            -4.563548
-          ],
-          [
-            129.90346,
-            -4.56265
-          ],
-          [
-            129.899211,
-            -4.556704
-          ],
-          [
-            129.896808,
-            -4.557474
-          ],
-          [
-            129.893804,
-            -4.559955
-          ],
-          [
-            129.893374,
-            -4.557517
-          ],
-          [
-            129.89213,
-            -4.55696
-          ],
-          [
-            129.889727,
-            -4.557773
-          ],
-          [
-            129.887624,
-            -4.561837
-          ],
-          [
-            129.885607,
-            -4.560768
-          ],
-          [
-            129.884534,
-            -4.556704
-          ],
-          [
-            129.884019,
-            -4.55264
-          ],
-          [
-            129.881873,
-            -4.551827
-          ],
-          [
-            129.879169,
-            -4.554009
-          ],
-          [
-            129.874856,
-            -4.555527
-          ],
-          [
-            129.873977,
-            -4.556255
-          ],
-          [
-            129.874063,
-            -4.556918
-          ],
-          [
-            129.87314,
-            -4.557431
-          ],
-          [
-            129.873097,
-            -4.559442
-          ],
-          [
-            129.872496,
-            -4.560426
-          ],
-          [
-            129.870672,
-            -4.560746
-          ],
-          [
-            129.869385,
-            -4.561859
-          ],
-          [
-            129.868741,
-            -4.563163
-          ],
-          [
-            129.868956,
-            -4.564062
-          ],
-          [
-            129.866209,
-            -4.563292
-          ],
-          [
-            129.865565,
-            -4.562629
-          ],
-          [
-            129.86505,
-            -4.562757
-          ],
-          [
-            129.861295,
-            -4.557217
-          ],
-          [
-            129.86063,
-            -4.555313
-          ],
-          [
-            129.861059,
-            -4.553838
-          ],
-          [
-            129.860566,
-            -4.551827
-          ],
-          [
-            129.861209,
-            -4.550437
-          ],
-          [
-            129.860952,
-            -4.548832
-          ],
-          [
-            129.862218,
-            -4.546843
-          ],
-          [
-            129.863269,
-            -4.54618
-          ],
-          [
-            129.864686,
-            -4.545431
-          ],
-          [
-            129.86726,
-            -4.545645
-          ],
-          [
-            129.869428,
-            -4.544362
-          ],
-          [
-            129.873698,
-            -4.54295
-          ],
-          [
-            129.877045,
-            -4.543292
-          ],
-          [
-            129.879212,
-            -4.545581
-          ],
-          [
-            129.880972,
-            -4.546437
-          ],
-          [
-            129.883955,
-            -4.547549
-          ],
-          [
-            129.885736,
-            -4.547399
-          ],
-          [
-            129.888418,
-            -4.545816
-          ],
-          [
-            129.891186,
-            -4.545431
-          ],
-          [
-            129.894619,
-            -4.545431
-          ],
-          [
-            129.896894,
-            -4.544939
-          ],
-          [
-            129.898953,
-            -4.54526
-          ],
-          [
-            129.900563,
-            -4.545816
-          ],
-          [
-            129.902859,
-            -4.546736
-          ],
-          [
-            129.904146,
-            -4.547827
-          ],
-          [
-            129.905927,
-            -4.548597
-          ],
-          [
-            129.907708,
-            -4.549239
-          ],
-          [
-            129.910626,
-            -4.555805
-          ],
-          [
-            129.923265,
-            -4.553645
-          ],
-          [
-            129.934616,
-            -4.543463
-          ],
-          [
-            129.940581,
-            -4.54541
-          ],
-          [
-            129.944358,
-            -4.550287
-          ],
-          [
-            129.940667,
-            -4.552511
-          ]
-        ]
-      ]
-    },
-    "properties_meta": {
-      "village_name": "Lonthoir",
-      "color": "#86efac",
-      "population": "2.620 Jiwa",
-      "main_commodity": "Pala Lonthoir Grade AAA & Minyak Fuli",
-      "area_ha": "340 Hektar",
-      "highlights": "Benteng Hollandia, Perkebunan Pala Tua, Pantai Pasir Enam",
-      "demographics": {},
-      "is_zone": true
-    },
-    "description": "Desa bersejarah pusat perkebunan pala tertua di dunia, Benteng Hollandia, sumur keramat Lonthoir, dan panorama lanskap teluk.",
-    "is_active": true
-  },
-  {
-    "name": "Batas Wilayah Nusantara",
-    "layer_type": "LAYER_DESA_ADMIN",
-    "category": "zona_wilayah",
-    "island_name": "Pulau Gunung Api",
-    "latitude": -4.521334,
-    "longitude": 129.880678,
-    "geometry_geojson": {
-      "type": "MultiPolygon",
-      "coordinates": [
-        [
-          [
-            [
-              129.882131,
-              -4.506051
-            ],
-            [
-              129.883676,
-              -4.507035
-            ],
-            [
-              129.884148,
-              -4.509131
-            ],
-            [
-              129.885821,
-              -4.509987
-            ],
-            [
-              129.887152,
-              -4.510415
-            ],
-            [
-              129.887667,
-              -4.512554
-            ],
-            [
-              129.888439,
-              -4.512404
-            ],
-            [
-              129.889448,
-              -4.513067
-            ],
-            [
-              129.890027,
-              -4.513089
-            ],
-            [
-              129.891293,
-              -4.512404
-            ],
-            [
-              129.892023,
-              -4.511677
-            ],
-            [
-              129.892859,
-              -4.511826
-            ],
-            [
-              129.893503,
-              -4.512404
-            ],
-            [
-              129.893374,
-              -4.513602
-            ],
-            [
-              129.892559,
-              -4.514757
-            ],
-            [
-              129.891765,
-              -4.514885
-            ],
-            [
-              129.8908,
-              -4.5148
-            ],
-            [
-              129.891207,
-              -4.515934
-            ],
-            [
-              129.890757,
-              -4.516404
-            ],
-            [
-              129.891036,
-              -4.516939
-            ],
-            [
-              129.890864,
-              -4.518137
-            ],
-            [
-              129.890649,
-              -4.520255
-            ],
-            [
-              129.891272,
-              -4.520853
-            ],
-            [
-              129.892581,
-              -4.521367
-            ],
-            [
-              129.893332,
-              -4.521944
-            ],
-            [
-              129.893632,
-              -4.522714
-            ],
-            [
-              129.893439,
-              -4.523378
-            ],
-            [
-              129.892087,
-              -4.525153
-            ],
-            [
-              129.89213,
-              -4.526116
-            ],
-            [
-              129.891551,
-              -4.526372
-            ],
-            [
-              129.891722,
-              -4.527271
-            ],
-            [
-              129.892881,
-              -4.528319
-            ],
-            [
-              129.893503,
-              -4.528704
-            ],
-            [
-              129.893847,
-              -4.530565
-            ],
-            [
-              129.893417,
-              -4.531806
-            ],
-            [
-              129.892559,
-              -4.532383
-            ],
-            [
-              129.892108,
-              -4.534265
-            ],
-            [
-              129.890285,
-              -4.535506
-            ],
-            [
-              129.889705,
-              -4.535592
-            ],
-            [
-              129.889061,
-              -4.535634
-            ],
-            [
-              129.888375,
-              -4.536105
-            ],
-            [
-              129.887431,
-              -4.535592
-            ],
-            [
-              129.886293,
-              -4.5351
-            ],
-            [
-              129.885499,
-              -4.535249
-            ],
-            [
-              129.884598,
-              -4.53465
-            ],
-            [
-              129.884019,
-              -4.533945
-            ],
-            [
-              129.88241,
-              -4.535784
-            ],
-            [
-              129.881358,
-              -4.53465
-            ],
-            [
-              129.880886,
-              -4.53495
-            ],
-            [
-              129.879985,
-              -4.533816
-            ],
-            [
-              129.879341,
-              -4.534864
-            ],
-            [
-              129.879363,
-              -4.535891
-            ],
-            [
-              129.877496,
-              -4.535848
-            ],
-            [
-              129.877195,
-              -4.535057
-            ],
-            [
-              129.875758,
-              -4.534137
-            ],
-            [
-              129.873998,
-              -4.533902
-            ],
-            [
-              129.874299,
-              -4.532554
-            ],
-            [
-              129.872646,
-              -4.53095
-            ],
-            [
-              129.871058,
-              -4.529089
-            ],
-            [
-              129.869857,
-              -4.529281
-            ],
-            [
-              129.869578,
-              -4.530158
-            ],
-            [
-              129.868505,
-              -4.529987
-            ],
-            [
-              129.867604,
-              -4.529217
-            ],
-            [
-              129.867904,
-              -4.528041
-            ],
-            [
-              129.868999,
-              -4.527207
-            ],
-            [
-              129.868269,
-              -4.526886
-            ],
-            [
-              129.867711,
-              -4.526479
-            ],
-            [
-              129.866617,
-              -4.526415
-            ],
-            [
-              129.866724,
-              -4.525645
-            ],
-            [
-              129.867175,
-              -4.525025
-            ],
-            [
-              129.867132,
-              -4.524276
-            ],
-            [
-              129.86578,
-              -4.523035
-            ],
-            [
-              129.866273,
-              -4.522116
-            ],
-            [
-              129.866574,
-              -4.520939
-            ],
-            [
-              129.867046,
-              -4.520212
-            ],
-            [
-              129.866145,
-              -4.51942
-            ],
-            [
-              129.866488,
-              -4.518586
-            ],
-            [
-              129.86726,
-              -4.518137
-            ],
-            [
-              129.868054,
-              -4.518308
-            ],
-            [
-              129.868612,
-              -4.515399
-            ],
-            [
-              129.870608,
-              -4.514137
-            ],
-            [
-              129.870179,
-              -4.513452
-            ],
-            [
-              129.870651,
-              -4.512468
-            ],
-            [
-              129.870136,
-              -4.512126
-            ],
-            [
-              129.870586,
-              -4.511591
-            ],
-            [
-              129.871445,
-              -4.511463
-            ],
-            [
-              129.87196,
-              -4.511506
-            ],
-            [
-              129.872625,
-              -4.512276
-            ],
-            [
-              129.873676,
-              -4.511655
-            ],
-            [
-              129.87462,
-              -4.509217
-            ],
-            [
-              129.874277,
-              -4.507912
-            ],
-            [
-              129.874878,
-              -4.507163
-            ],
-            [
-              129.876144,
-              -4.506821
-            ],
-            [
-              129.876895,
-              -4.505794
-            ],
-            [
-              129.877603,
-              -4.504981
-            ],
-            [
-              129.878333,
-              -4.504832
-            ],
-            [
-              129.879277,
-              -4.505473
-            ],
-            [
-              129.879856,
-              -4.506222
-            ],
-            [
-              129.881337,
-              -4.505623
-            ],
-            [
-              129.882131,
-              -4.506051
-            ]
-          ]
-        ],
-        [
-          [
-            [
-              129.899104,
-              -4.522244
-            ],
-            [
-              129.901121,
-              -4.52541
-            ],
-            [
-              129.899962,
-              -4.529281
-            ],
-            [
-              129.897044,
-              -4.529852
-            ],
-            [
-              129.895155,
-              -4.528469
-            ],
-            [
-              129.894683,
-              -4.527392
-            ],
-            [
-              129.897902,
-              -4.523156
-            ],
-            [
-              129.899104,
-              -4.522244
-            ]
-          ]
-        ],
-        [
-          [
-            [
-              129.887908,
-              -4.503067
-            ],
-            [
-              129.888171,
-              -4.503332
-            ],
-            [
-              129.887989,
-              -4.50345
-            ],
-            [
-              129.887398,
-              -4.503642
-            ],
-            [
-              129.886857,
-              -4.503787
-            ],
-            [
-              129.886411,
-              -4.503874
-            ],
-            [
-              129.885966,
-              -4.503696
-            ],
-            [
-              129.885875,
-              -4.503503
-            ],
-            [
-              129.885746,
-              -4.503268
-            ],
-            [
-              129.885816,
-              -4.503022
-            ],
-            [
-              129.886175,
-              -4.50284
-            ],
-            [
-              129.886808,
-              -4.502805
-            ],
-            [
-              129.88727,
-              -4.503061
-            ],
-            [
-              129.887908,
-              -4.503067
-            ]
-          ]
-        ]
-      ]
-    },
-    "properties_meta": {
-      "village_name": "Nusantara",
-      "color": "#10b981",
-      "population": "2.450 Jiwa",
-      "main_commodity": "Pariwisata Bahari & Jasa Perdagangan",
-      "area_ha": "84 Hektar",
-      "highlights": "Benteng Belgica, Mini Palace VOC, Pelabuhan Neira",
-      "demographics": {},
-      "is_zone": true
-    },
-    "description": "Pusat aktivitas dan pemerintahan desa, pelabuhan utama PELNI, dan kawasan cagar budaya Benteng Belgica & Nassau.",
-    "is_active": true
-  },
-  {
-    "name": "Batas Wilayah Dender",
-    "layer_type": "LAYER_DESA_ADMIN",
-    "category": "zona_wilayah",
-    "island_name": "Banda Besar",
-    "latitude": -4.534159,
-    "longitude": 129.947267,
-    "geometry_geojson": {
-      "type": "Polygon",
-      "coordinates": [
-        [
-          [
-            129.940023,
-            -4.536041
-          ],
-          [
-            129.948606,
-            -4.526116
-          ],
-          [
-            129.954958,
-            -4.531763
-          ],
-          [
-            129.952726,
-            -4.540832
-          ],
-          [
-            129.940023,
-            -4.536041
-          ]
-        ]
-      ]
-    },
-    "properties_meta": {
-      "village_name": "Dender",
-      "color": "#1e00ff",
-      "population": "1.120 Jiwa",
-      "main_commodity": "Cengkeh Petik & Rumput Laut",
-      "area_ha": "195 Hektar",
-      "highlights": "Dermaga Kayu Dender, Sentra Pengeringan Cengkeh",
-      "demographics": {},
-      "is_zone": true
-    },
-    "description": "Pemukiman pesisir tenang di lereng tengah Banda Besar dengan kebun cengkeh dan dermaga perahu nelayan antarpulau.",
+    "description": "Batas wilayah administratif resmi Uring Tutra, Banda Besar.",
     "is_active": true
   },
   {
     "name": "Batas Wilayah Pulau Ay",
     "layer_type": "LAYER_DESA_ADMIN",
     "category": "zona_wilayah",
-    "island_name": "Pulau Neira",
-    "latitude": -4.524045,
-    "longitude": 129.774048,
+    "island_name": "Pulau Ay",
+    "latitude": -4.52404459375,
+    "longitude": 129.77404759375,
     "geometry_geojson": {
       "type": "Polygon",
       "coordinates": [
@@ -2581,15 +643,94 @@
     },
     "properties_meta": {
       "village_name": "Pulau Ay",
-      "color": "#ff6600",
-      "population": "",
-      "main_commodity": "",
-      "area_ha": "",
-      "highlights": "",
-      "demographics": {},
-      "is_zone": true
+      "island": "Pulau Ay",
+      "color": "#ff6600"
     },
-    "description": "",
+    "description": "Batas wilayah administratif resmi Pulau Ay, Pulau Ay.",
+    "is_active": true
+  },
+  {
+    "name": "Batas Wilayah Walling Spanciby",
+    "layer_type": "LAYER_DESA_ADMIN",
+    "category": "zona_wilayah",
+    "island_name": "Banda Besar",
+    "latitude": -4.5536,
+    "longitude": 129.8712,
+    "geometry_geojson": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            129.868,
+            -4.548
+          ],
+          [
+            129.879,
+            -4.551
+          ],
+          [
+            129.876,
+            -4.563
+          ],
+          [
+            129.865,
+            -4.558
+          ],
+          [
+            129.868,
+            -4.548
+          ]
+        ]
+      ]
+    },
+    "properties_meta": {
+      "village_name": "Walling Spanciby",
+      "island": "Banda Besar",
+      "color": "#14b8a6"
+    },
+    "description": "Batas wilayah administratif resmi Walling Spanciby, Banda Besar.",
+    "is_active": true
+  },
+  {
+    "name": "Batas Wilayah Lonthoir",
+    "layer_type": "LAYER_DESA_ADMIN",
+    "category": "zona_wilayah",
+    "island_name": "Banda Besar",
+    "latitude": -4.5606,
+    "longitude": 129.8998,
+    "geometry_geojson": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            129.892,
+            -4.554
+          ],
+          [
+            129.914,
+            -4.555
+          ],
+          [
+            129.912,
+            -4.572
+          ],
+          [
+            129.889,
+            -4.568
+          ],
+          [
+            129.892,
+            -4.554
+          ]
+        ]
+      ]
+    },
+    "properties_meta": {
+      "village_name": "Lonthoir",
+      "island": "Banda Besar",
+      "color": "#86efac"
+    },
+    "description": "Batas wilayah administratif resmi Lonthoir, Banda Besar.",
     "is_active": true
   },
   {
@@ -2597,8 +738,8 @@
     "layer_type": "LAYER_DESA_ADMIN",
     "category": "zona_wilayah",
     "island_name": "Pulau Rhun",
-    "latitude": -4.553173,
-    "longitude": 129.682323,
+    "latitude": -4.548122066666666,
+    "longitude": 129.68637621333332,
     "geometry_geojson": {
       "type": "MultiPolygon",
       "coordinates": [
@@ -2914,15 +1055,1518 @@
     },
     "properties_meta": {
       "village_name": "Desa Pulau Rhun",
-      "color": "#db2424",
-      "population": "",
-      "main_commodity": "",
-      "area_ha": "",
-      "highlights": "",
-      "demographics": {},
-      "is_zone": true
+      "island": "Pulau Rhun",
+      "color": "#db2424"
     },
-    "description": "",
+    "description": "Batas wilayah administratif resmi Desa Pulau Rhun, Pulau Rhun.",
+    "is_active": true
+  },
+  {
+    "name": "Batas Wilayah Lautang",
+    "layer_type": "LAYER_DESA_ADMIN",
+    "category": "zona_wilayah",
+    "island_name": "Banda Besar",
+    "latitude": -4.559,
+    "longitude": 129.93699999999998,
+    "geometry_geojson": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            129.932,
+            -4.553
+          ],
+          [
+            129.948,
+            -4.546
+          ],
+          [
+            129.944,
+            -4.568
+          ],
+          [
+            129.929,
+            -4.575
+          ],
+          [
+            129.932,
+            -4.553
+          ]
+        ]
+      ]
+    },
+    "properties_meta": {
+      "village_name": "Lautang",
+      "island": "Banda Besar",
+      "color": "#22c55e"
+    },
+    "description": "Batas wilayah administratif resmi Lautang, Banda Besar.",
+    "is_active": true
+  },
+  {
+    "name": "Batas Wilayah Dender",
+    "layer_type": "LAYER_DESA_ADMIN",
+    "category": "zona_wilayah",
+    "island_name": "Banda Besar",
+    "latitude": -4.5508,
+    "longitude": 129.9504,
+    "geometry_geojson": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            129.948,
+            -4.546
+          ],
+          [
+            129.959,
+            -4.536
+          ],
+          [
+            129.953,
+            -4.558
+          ],
+          [
+            129.944,
+            -4.568
+          ],
+          [
+            129.948,
+            -4.546
+          ]
+        ]
+      ]
+    },
+    "properties_meta": {
+      "village_name": "Dender",
+      "island": "Banda Besar",
+      "color": "#a855f7"
+    },
+    "description": "Batas wilayah administratif resmi Dender, Banda Besar.",
+    "is_active": true
+  },
+  {
+    "name": "Batas Wilayah Boiyauw",
+    "layer_type": "LAYER_DESA_ADMIN",
+    "category": "zona_wilayah",
+    "island_name": "Banda Besar",
+    "latitude": -4.561999999999999,
+    "longitude": 129.9202,
+    "geometry_geojson": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            129.914,
+            -4.555
+          ],
+          [
+            129.932,
+            -4.553
+          ],
+          [
+            129.929,
+            -4.575
+          ],
+          [
+            129.912,
+            -4.572
+          ],
+          [
+            129.914,
+            -4.555
+          ]
+        ]
+      ]
+    },
+    "properties_meta": {
+      "village_name": "Boiyauw",
+      "island": "Banda Besar",
+      "color": "#2563eb"
+    },
+    "description": "Batas wilayah administratif resmi Boiyauw, Banda Besar.",
+    "is_active": true
+  },
+  {
+    "name": "Batas Wilayah Waer",
+    "layer_type": "LAYER_DESA_ADMIN",
+    "category": "zona_wilayah",
+    "island_name": "Banda Besar",
+    "latitude": -4.526999999999999,
+    "longitude": 129.9684,
+    "geometry_geojson": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            129.969,
+            -4.524
+          ],
+          [
+            129.974,
+            -4.512
+          ],
+          [
+            129.968,
+            -4.531
+          ],
+          [
+            129.962,
+            -4.544
+          ],
+          [
+            129.969,
+            -4.524
+          ]
+        ]
+      ]
+    },
+    "properties_meta": {
+      "village_name": "Waer",
+      "island": "Banda Besar",
+      "color": "#fb7185"
+    },
+    "description": "Batas wilayah administratif resmi Waer, Banda Besar.",
+    "is_active": true
+  },
+  {
+    "name": "Batas Wilayah Selamon",
+    "layer_type": "LAYER_DESA_ADMIN",
+    "category": "zona_wilayah",
+    "island_name": "Banda Besar",
+    "latitude": -4.5396,
+    "longitude": 129.9604,
+    "geometry_geojson": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            129.959,
+            -4.536
+          ],
+          [
+            129.969,
+            -4.524
+          ],
+          [
+            129.962,
+            -4.544
+          ],
+          [
+            129.953,
+            -4.558
+          ],
+          [
+            129.959,
+            -4.536
+          ]
+        ]
+      ]
+    },
+    "properties_meta": {
+      "village_name": "Selamon",
+      "island": "Banda Besar",
+      "color": "#9333ea"
+    },
+    "description": "Batas wilayah administratif resmi Selamon, Banda Besar.",
+    "is_active": true
+  },
+  {
+    "name": "Batas Wilayah Desa Pulau Hatta",
+    "layer_type": "LAYER_DESA_ADMIN",
+    "category": "zona_wilayah",
+    "island_name": "Pulau Hatta",
+    "latitude": -4.593501636363636,
+    "longitude": 130.0401195681818,
+    "geometry_geojson": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            130.03448,
+            -4.583826
+          ],
+          [
+            130.035424,
+            -4.57989
+          ],
+          [
+            130.039115,
+            -4.578592
+          ],
+          [
+            130.041819,
+            -4.579661
+          ],
+          [
+            130.043063,
+            -4.580731
+          ],
+          [
+            130.044823,
+            -4.582356
+          ],
+          [
+            130.04581,
+            -4.58334
+          ],
+          [
+            130.047269,
+            -4.583597
+          ],
+          [
+            130.048728,
+            -4.58411
+          ],
+          [
+            130.049329,
+            -4.584795
+          ],
+          [
+            130.047441,
+            -4.585265
+          ],
+          [
+            130.047183,
+            -4.586035
+          ],
+          [
+            130.046883,
+            -4.588816
+          ],
+          [
+            130.045896,
+            -4.591596
+          ],
+          [
+            130.045509,
+            -4.592709
+          ],
+          [
+            130.046411,
+            -4.593094
+          ],
+          [
+            130.046968,
+            -4.593949
+          ],
+          [
+            130.046797,
+            -4.595789
+          ],
+          [
+            130.044694,
+            -4.599125
+          ],
+          [
+            130.043535,
+            -4.602034
+          ],
+          [
+            130.045338,
+            -4.603959
+          ],
+          [
+            130.046368,
+            -4.606483
+          ],
+          [
+            130.047183,
+            -4.607809
+          ],
+          [
+            130.045938,
+            -4.608194
+          ],
+          [
+            130.044951,
+            -4.608493
+          ],
+          [
+            130.042934,
+            -4.606397
+          ],
+          [
+            130.04066,
+            -4.605499
+          ],
+          [
+            130.038471,
+            -4.604344
+          ],
+          [
+            130.037098,
+            -4.60413
+          ],
+          [
+            130.036025,
+            -4.60413
+          ],
+          [
+            130.034351,
+            -4.602975
+          ],
+          [
+            130.033493,
+            -4.602334
+          ],
+          [
+            130.033493,
+            -4.598669
+          ],
+          [
+            130.03315,
+            -4.597671
+          ],
+          [
+            130.031862,
+            -4.597329
+          ],
+          [
+            130.031304,
+            -4.595703
+          ],
+          [
+            130.031476,
+            -4.594206
+          ],
+          [
+            130.031476,
+            -4.592153
+          ],
+          [
+            130.030618,
+            -4.590998
+          ],
+          [
+            130.030017,
+            -4.588773
+          ],
+          [
+            130.030017,
+            -4.587789
+          ],
+          [
+            130.030618,
+            -4.586891
+          ],
+          [
+            130.032763,
+            -4.586007
+          ],
+          [
+            130.03448,
+            -4.583826
+          ]
+        ]
+      ]
+    },
+    "properties_meta": {
+      "village_name": "Desa Pulau Hatta",
+      "island": "Pulau Hatta",
+      "color": "#00ffbf"
+    },
+    "description": "Batas wilayah administratif resmi Desa Pulau Hatta, Pulau Hatta.",
+    "is_active": true
+  },
+  {
+    "name": "Batas Wilayah Combir Kasestoren",
+    "layer_type": "LAYER_DESA_ADMIN",
+    "category": "zona_wilayah",
+    "island_name": "Banda Besar",
+    "latitude": -4.511,
+    "longitude": 129.9724,
+    "geometry_geojson": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            129.974,
+            -4.512
+          ],
+          [
+            129.976,
+            -4.498
+          ],
+          [
+            129.97,
+            -4.502
+          ],
+          [
+            129.968,
+            -4.531
+          ],
+          [
+            129.974,
+            -4.512
+          ]
+        ]
+      ]
+    },
+    "properties_meta": {
+      "village_name": "Combir Kasestoren",
+      "island": "Banda Besar",
+      "color": "#eab308"
+    },
+    "description": "Batas wilayah administratif resmi Combir Kasestoren, Banda Besar.",
+    "is_active": true
+  },
+  {
+    "name": "Batas Wilayah Tanah Rata",
+    "layer_type": "LAYER_DESA_ADMIN",
+    "category": "zona_wilayah",
+    "island_name": "Pulau Neira",
+    "latitude": -4.513049416666667,
+    "longitude": 129.90116725,
+    "geometry_geojson": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            129.896121,
+            -4.512447
+          ],
+          [
+            129.90714,
+            -4.508372
+          ],
+          [
+            129.907751,
+            -4.510436
+          ],
+          [
+            129.907826,
+            -4.511474
+          ],
+          [
+            129.907891,
+            -4.512522
+          ],
+          [
+            129.899855,
+            -4.515923
+          ],
+          [
+            129.899544,
+            -4.515613
+          ],
+          [
+            129.898943,
+            -4.514875
+          ],
+          [
+            129.898417,
+            -4.514607
+          ],
+          [
+            129.897612,
+            -4.514436
+          ],
+          [
+            129.896786,
+            -4.513441
+          ],
+          [
+            129.896121,
+            -4.512447
+          ]
+        ]
+      ]
+    },
+    "properties_meta": {
+      "village_name": "Tanah Rata",
+      "island": "Pulau Neira",
+      "color": "#4338ca"
+    },
+    "description": "Batas wilayah administratif resmi Tanah Rata, Pulau Neira.",
+    "is_active": true
+  },
+  {
+    "name": "Batas Wilayah Kampung Baru",
+    "layer_type": "LAYER_DESA_ADMIN",
+    "category": "zona_wilayah",
+    "island_name": "Pulau Neira",
+    "latitude": -4.523110368421053,
+    "longitude": 129.90573310526315,
+    "geometry_geojson": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            129.899812,
+            -4.515987
+          ],
+          [
+            129.907933,
+            -4.512532
+          ],
+          [
+            129.908867,
+            -4.517324
+          ],
+          [
+            129.908556,
+            -4.518115
+          ],
+          [
+            129.908502,
+            -4.519271
+          ],
+          [
+            129.907944,
+            -4.519785
+          ],
+          [
+            129.907612,
+            -4.520565
+          ],
+          [
+            129.907687,
+            -4.52142
+          ],
+          [
+            129.908094,
+            -4.521634
+          ],
+          [
+            129.908631,
+            -4.52172
+          ],
+          [
+            129.910015,
+            -4.522255
+          ],
+          [
+            129.909629,
+            -4.523452
+          ],
+          [
+            129.908127,
+            -4.52295
+          ],
+          [
+            129.907837,
+            -4.523891
+          ],
+          [
+            129.907987,
+            -4.526191
+          ],
+          [
+            129.907815,
+            -4.527356
+          ],
+          [
+            129.907236,
+            -4.528223
+          ],
+          [
+            129.906904,
+            -4.529281
+          ],
+          [
+            129.90649,
+            -4.529666
+          ],
+          [
+            129.905643,
+            -4.530276
+          ],
+          [
+            129.905262,
+            -4.53056
+          ],
+          [
+            129.904945,
+            -4.530688
+          ],
+          [
+            129.904929,
+            -4.53087
+          ],
+          [
+            129.904768,
+            -4.530918
+          ],
+          [
+            129.90465,
+            -4.530784
+          ],
+          [
+            129.904522,
+            -4.530806
+          ],
+          [
+            129.904608,
+            -4.524372
+          ],
+          [
+            129.90567,
+            -4.524297
+          ],
+          [
+            129.905573,
+            -4.523656
+          ],
+          [
+            129.906249,
+            -4.523581
+          ],
+          [
+            129.906013,
+            -4.519292
+          ],
+          [
+            129.903932,
+            -4.519185
+          ],
+          [
+            129.902258,
+            -4.519035
+          ],
+          [
+            129.901121,
+            -4.518907
+          ],
+          [
+            129.900863,
+            -4.518821
+          ],
+          [
+            129.901078,
+            -4.517773
+          ],
+          [
+            129.900284,
+            -4.516768
+          ],
+          [
+            129.899812,
+            -4.515987
+          ]
+        ]
+      ]
+    },
+    "properties_meta": {
+      "village_name": "Kampung Baru",
+      "island": "Pulau Neira",
+      "color": "#ea580c"
+    },
+    "description": "Batas wilayah administratif resmi Kampung Baru, Pulau Neira.",
+    "is_active": true
+  },
+  {
+    "name": "Batas Wilayah Rajawali",
+    "layer_type": "LAYER_DESA_ADMIN",
+    "category": "zona_wilayah",
+    "island_name": "Pulau Neira",
+    "latitude": -4.5132143125,
+    "longitude": 129.90189875,
+    "geometry_geojson": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              129.896775,
+              -4.507131
+            ],
+            [
+              129.902902,
+              -4.504168
+            ],
+            [
+              129.904693,
+              -4.505174
+            ],
+            [
+              129.905434,
+              -4.50542
+            ],
+            [
+              129.905841,
+              -4.506201
+            ],
+            [
+              129.906399,
+              -4.506211
+            ],
+            [
+              129.906861,
+              -4.506939
+            ],
+            [
+              129.907011,
+              -4.507624
+            ],
+            [
+              129.907086,
+              -4.508084
+            ],
+            [
+              129.907172,
+              -4.508383
+            ],
+            [
+              129.896239,
+              -4.512372
+            ],
+            [
+              129.896132,
+              -4.511281
+            ],
+            [
+              129.895939,
+              -4.511142
+            ],
+            [
+              129.896121,
+              -4.510575
+            ],
+            [
+              129.89611,
+              -4.510051
+            ],
+            [
+              129.895971,
+              -4.509709
+            ],
+            [
+              129.895917,
+              -4.509249
+            ],
+            [
+              129.895917,
+              -4.5088
+            ],
+            [
+              129.896389,
+              -4.508201
+            ],
+            [
+              129.896657,
+              -4.507698
+            ],
+            [
+              129.896775,
+              -4.507131
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              129.906002,
+              -4.519324
+            ],
+            [
+              129.906249,
+              -4.523634
+            ],
+            [
+              129.905562,
+              -4.523698
+            ],
+            [
+              129.905659,
+              -4.524265
+            ],
+            [
+              129.904618,
+              -4.524362
+            ],
+            [
+              129.904618,
+              -4.524918
+            ],
+            [
+              129.904103,
+              -4.524918
+            ],
+            [
+              129.904082,
+              -4.52387
+            ],
+            [
+              129.902837,
+              -4.52388
+            ],
+            [
+              129.902687,
+              -4.519121
+            ],
+            [
+              129.906002,
+              -4.519324
+            ]
+          ]
+        ]
+      ]
+    },
+    "properties_meta": {
+      "village_name": "Rajawali",
+      "island": "Pulau Neira",
+      "color": "#d946ef"
+    },
+    "description": "Batas wilayah administratif resmi Rajawali, Pulau Neira.",
+    "is_active": true
+  },
+  {
+    "name": "Batas Wilayah Merdeka",
+    "layer_type": "LAYER_DESA_ADMIN",
+    "category": "zona_wilayah",
+    "island_name": "Pulau Neira",
+    "latitude": -4.506254785714286,
+    "longitude": 129.89702414285713,
+    "geometry_geojson": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              129.892967,
+              -4.50235
+            ],
+            [
+              129.893594,
+              -4.5025
+            ],
+            [
+              129.894125,
+              -4.502243
+            ],
+            [
+              129.894683,
+              -4.502339
+            ],
+            [
+              129.894834,
+              -4.50235
+            ],
+            [
+              129.894994,
+              -4.502457
+            ],
+            [
+              129.895209,
+              -4.502623
+            ],
+            [
+              129.895386,
+              -4.503008
+            ],
+            [
+              129.895418,
+              -4.503201
+            ],
+            [
+              129.895467,
+              -4.503457
+            ],
+            [
+              129.895595,
+              -4.5035
+            ],
+            [
+              129.895826,
+              -4.503586
+            ],
+            [
+              129.896116,
+              -4.503618
+            ],
+            [
+              129.896287,
+              -4.503655
+            ],
+            [
+              129.896432,
+              -4.503655
+            ],
+            [
+              129.89655,
+              -4.503655
+            ],
+            [
+              129.896663,
+              -4.503693
+            ],
+            [
+              129.896792,
+              -4.503826
+            ],
+            [
+              129.896834,
+              -4.503971
+            ],
+            [
+              129.896899,
+              -4.50404
+            ],
+            [
+              129.896958,
+              -4.504153
+            ],
+            [
+              129.897054,
+              -4.504238
+            ],
+            [
+              129.89728,
+              -4.504292
+            ],
+            [
+              129.897537,
+              -4.504292
+            ],
+            [
+              129.897768,
+              -4.504286
+            ],
+            [
+              129.897929,
+              -4.504227
+            ],
+            [
+              129.898181,
+              -4.504099
+            ],
+            [
+              129.89846,
+              -4.503971
+            ],
+            [
+              129.898664,
+              -4.503901
+            ],
+            [
+              129.898959,
+              -4.503816
+            ],
+            [
+              129.899061,
+              -4.503746
+            ],
+            [
+              129.899372,
+              -4.503612
+            ],
+            [
+              129.899624,
+              -4.503372
+            ],
+            [
+              129.89978,
+              -4.503217
+            ],
+            [
+              129.899967,
+              -4.503008
+            ],
+            [
+              129.900101,
+              -4.502944
+            ],
+            [
+              129.900268,
+              -4.502928
+            ],
+            [
+              129.901206,
+              -4.503313
+            ],
+            [
+              129.901872,
+              -4.503634
+            ],
+            [
+              129.902966,
+              -4.504104
+            ],
+            [
+              129.896936,
+              -4.507013
+            ],
+            [
+              129.89648,
+              -4.505703
+            ],
+            [
+              129.8964,
+              -4.505414
+            ],
+            [
+              129.896142,
+              -4.505318
+            ],
+            [
+              129.895847,
+              -4.504912
+            ],
+            [
+              129.895547,
+              -4.504687
+            ],
+            [
+              129.895273,
+              -4.50465
+            ],
+            [
+              129.895166,
+              -4.504377
+            ],
+            [
+              129.89507,
+              -4.504179
+            ],
+            [
+              129.894882,
+              -4.504013
+            ],
+            [
+              129.894233,
+              -4.504072
+            ],
+            [
+              129.893546,
+              -4.504393
+            ],
+            [
+              129.893079,
+              -4.504361
+            ],
+            [
+              129.892259,
+              -4.504136
+            ],
+            [
+              129.892049,
+              -4.503874
+            ],
+            [
+              129.892033,
+              -4.503462
+            ],
+            [
+              129.892167,
+              -4.503035
+            ],
+            [
+              129.892613,
+              -4.502692
+            ],
+            [
+              129.892774,
+              -4.502441
+            ],
+            [
+              129.892967,
+              -4.50235
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              129.90273,
+              -4.519111
+            ],
+            [
+              129.900874,
+              -4.518853
+            ],
+            [
+              129.900273,
+              -4.520009
+            ],
+            [
+              129.900123,
+              -4.52064
+            ],
+            [
+              129.900123,
+              -4.52219
+            ],
+            [
+              129.900445,
+              -4.52419
+            ],
+            [
+              129.901046,
+              -4.523517
+            ],
+            [
+              129.901421,
+              -4.523078
+            ],
+            [
+              129.902784,
+              -4.523174
+            ],
+            [
+              129.90273,
+              -4.519111
+            ]
+          ]
+        ]
+      ]
+    },
+    "properties_meta": {
+      "village_name": "Merdeka",
+      "island": "Pulau Neira",
+      "color": "#38bdf8"
+    },
+    "description": "Batas wilayah administratif resmi Merdeka, Pulau Neira.",
+    "is_active": true
+  },
+  {
+    "name": "Batas Wilayah Dwiwarna",
+    "layer_type": "LAYER_DESA_ADMIN",
+    "category": "zona_wilayah",
+    "island_name": "Pulau Neira",
+    "latitude": -4.528093772727273,
+    "longitude": 129.90208713636363,
+    "geometry_geojson": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            129.904039,
+            -4.524939
+          ],
+          [
+            129.904608,
+            -4.524971
+          ],
+          [
+            129.90449,
+            -4.530971
+          ],
+          [
+            129.904243,
+            -4.53111
+          ],
+          [
+            129.903374,
+            -4.531196
+          ],
+          [
+            129.90244,
+            -4.530843
+          ],
+          [
+            129.90155,
+            -4.530201
+          ],
+          [
+            129.90111,
+            -4.53003
+          ],
+          [
+            129.900692,
+            -4.530009
+          ],
+          [
+            129.900568,
+            -4.530084
+          ],
+          [
+            129.900627,
+            -4.530239
+          ],
+          [
+            129.900627,
+            -4.530388
+          ],
+          [
+            129.900498,
+            -4.530378
+          ],
+          [
+            129.900472,
+            -4.530228
+          ],
+          [
+            129.900531,
+            -4.529715
+          ],
+          [
+            129.900418,
+            -4.529458
+          ],
+          [
+            129.900477,
+            -4.524276
+          ],
+          [
+            129.9014,
+            -4.523078
+          ],
+          [
+            129.902794,
+            -4.523217
+          ],
+          [
+            129.902827,
+            -4.523891
+          ],
+          [
+            129.904093,
+            -4.523902
+          ],
+          [
+            129.904039,
+            -4.524939
+          ]
+        ]
+      ]
+    },
+    "properties_meta": {
+      "village_name": "Dwiwarna",
+      "island": "Pulau Neira",
+      "color": "#a3e635"
+    },
+    "description": "Batas wilayah administratif resmi Dwiwarna, Pulau Neira.",
+    "is_active": true
+  },
+  {
+    "name": "Batas Wilayah Nusantara",
+    "layer_type": "LAYER_DESA_ADMIN",
+    "category": "zona_wilayah",
+    "island_name": "Pulau Neira",
+    "latitude": -4.518178773584905,
+    "longitude": 129.89421256603774,
+    "geometry_geojson": {
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [
+              129.900155,
+              -4.520725
+            ],
+            [
+              129.900101,
+              -4.52234
+            ],
+            [
+              129.900402,
+              -4.52418
+            ],
+            [
+              129.900423,
+              -4.527142
+            ],
+            [
+              129.900434,
+              -4.528693
+            ],
+            [
+              129.90038,
+              -4.529602
+            ],
+            [
+              129.899833,
+              -4.52941
+            ],
+            [
+              129.898975,
+              -4.52942
+            ],
+            [
+              129.898471,
+              -4.529624
+            ],
+            [
+              129.897569,
+              -4.529827
+            ],
+            [
+              129.897076,
+              -4.529945
+            ],
+            [
+              129.896969,
+              -4.529827
+            ],
+            [
+              129.897167,
+              -4.529271
+            ],
+            [
+              129.89677,
+              -4.52895
+            ],
+            [
+              129.896185,
+              -4.52887
+            ],
+            [
+              129.895536,
+              -4.528618
+            ],
+            [
+              129.89507,
+              -4.528506
+            ],
+            [
+              129.894946,
+              -4.527896
+            ],
+            [
+              129.894683,
+              -4.527522
+            ],
+            [
+              129.894721,
+              -4.527201
+            ],
+            [
+              129.895155,
+              -4.526763
+            ],
+            [
+              129.895354,
+              -4.526522
+            ],
+            [
+              129.8961,
+              -4.526009
+            ],
+            [
+              129.897183,
+              -4.524442
+            ],
+            [
+              129.897253,
+              -4.523934
+            ],
+            [
+              129.897972,
+              -4.523089
+            ],
+            [
+              129.898224,
+              -4.522891
+            ],
+            [
+              129.898272,
+              -4.5228
+            ],
+            [
+              129.898417,
+              -4.522955
+            ],
+            [
+              129.898894,
+              -4.52242
+            ],
+            [
+              129.899544,
+              -4.521634
+            ],
+            [
+              129.899704,
+              -4.52119
+            ],
+            [
+              129.899978,
+              -4.520923
+            ],
+            [
+              129.900155,
+              -4.520463
+            ],
+            [
+              129.900155,
+              -4.520725
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              129.886143,
+              -4.502864
+            ],
+            [
+              129.886685,
+              -4.502815
+            ],
+            [
+              129.887044,
+              -4.502933
+            ],
+            [
+              129.887415,
+              -4.50311
+            ],
+            [
+              129.887828,
+              -4.503099
+            ],
+            [
+              129.887892,
+              -4.503078
+            ],
+            [
+              129.888101,
+              -4.503174
+            ],
+            [
+              129.888166,
+              -4.503404
+            ],
+            [
+              129.887983,
+              -4.503479
+            ],
+            [
+              129.887656,
+              -4.503548
+            ],
+            [
+              129.887238,
+              -4.503687
+            ],
+            [
+              129.886878,
+              -4.503837
+            ],
+            [
+              129.886406,
+              -4.503869
+            ],
+            [
+              129.886068,
+              -4.503703
+            ],
+            [
+              129.885789,
+              -4.503457
+            ],
+            [
+              129.885741,
+              -4.503238
+            ],
+            [
+              129.885864,
+              -4.502987
+            ],
+            [
+              129.886143,
+              -4.502864
+            ]
+          ]
+        ]
+      ]
+    },
+    "properties_meta": {
+      "village_name": "Nusantara",
+      "island": "Pulau Neira",
+      "color": "#34d399"
+    },
+    "description": "Batas wilayah administratif resmi Nusantara, Pulau Neira.",
     "is_active": true
   }
 ]
