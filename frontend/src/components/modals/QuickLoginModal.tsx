@@ -62,6 +62,20 @@ export const DEMO_ACTOR_ACCOUNTS: DemoActorAccount[] = [
     landingTitle: '⚖️ Koperasi & Bank Sampah',
   },
   {
+    role: 'Wisatawan & Pengunjung Pulau',
+    name: 'Nadia Putri',
+    u: '8171010101900003',
+    p: 'Warga123!',
+    roleKey: 'tourist',
+    icon: '🧳',
+    badge: 'Pengunjung Wisata',
+    accentColor: '#f59e0b',
+    badgeClass: 'badge-amber',
+    desc: 'Eksplorasi katalog Eco-Stay, booking WhatsApp, audio guide 177 cagar budaya, peta GIS & SAW',
+    destinationTab: 'tourism',
+    landingTitle: '🧭 Eksplorasi Wisatawan & Eco-Stay',
+  },
+  {
     role: 'Pengelola Eco-Stay & Wisata',
     name: 'Rahmat Delfika',
     u: 'operator_homestay',
@@ -195,7 +209,7 @@ export const QuickLoginModal: React.FC<QuickLoginModalProps> = ({
     : filterRole === 'economy'
     ? DEMO_ACTOR_ACCOUNTS.filter((a) => ['coop_manager', 'resident', 'farmer', 'farmer_group_admin'].includes(a.roleKey))
     : filterRole === 'tourism'
-    ? DEMO_ACTOR_ACCOUNTS.filter((a) => ['homestay_operator', 'smart_tourism_admin'].includes(a.roleKey))
+    ? DEMO_ACTOR_ACCOUNTS.filter((a) => ['tourist', 'homestay_operator', 'smart_tourism_admin'].includes(a.roleKey))
     : DEMO_ACTOR_ACCOUNTS.filter((a) => ['field_surveyor'].includes(a.roleKey))
 
   return (
@@ -274,7 +288,7 @@ export const QuickLoginModal: React.FC<QuickLoginModalProps> = ({
                     fontFamily: 'var(--font-mono)',
                   }}
                 >
-                  9 AKTOR READY
+                  {DEMO_ACTOR_ACCOUNTS.length} AKTOR READY
                 </span>
               </div>
               <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: '#cbd5e1' }}>
@@ -384,7 +398,7 @@ export const QuickLoginModal: React.FC<QuickLoginModalProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', gap: '0.3rem', background: 'rgba(15, 23, 42, 0.8)', padding: '0.25rem', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
               {[
-                { id: 'all', label: 'Semua (9)' },
+                { id: 'all', label: `Semua (${DEMO_ACTOR_ACCOUNTS.length})` },
                 { id: 'gov', label: '🏛️ Desa' },
                 { id: 'economy', label: '⚖️ Koperasi & Tani' },
                 { id: 'tourism', label: '🏖️ Wisata' },
@@ -449,7 +463,17 @@ export const QuickLoginModal: React.FC<QuickLoginModalProps> = ({
           }}
         >
           {filteredAccounts.map((acc) => {
-            const isActive = currentUser?.username === acc.u
+            const currentIsTourist = Boolean(
+              currentUser?.roles?.some(
+                (r) => r.name === 'tourist' || r.name === 'wisatawan'
+              )
+            )
+            const isActive =
+              acc.roleKey === 'tourist'
+                ? currentIsTourist
+                : acc.roleKey === 'resident'
+                ? currentUser?.username === acc.u && !currentIsTourist
+                : currentUser?.username === acc.u
             const isSwitching = switchingUser === acc.u
 
             return (

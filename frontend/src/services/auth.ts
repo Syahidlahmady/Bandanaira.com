@@ -61,11 +61,21 @@ export const DEFAULT_PROJECT_ACCOUNTS: RegisteredAccountRecord[] = [
     demoPassword: 'Homestay123!',
   },
   {
-    name: 'Nadia Putri (Wisatawan & Budaya)',
+    name: 'Nadia Putri (Wisatawan)',
     nik: '8171010101900003',
     whatsapp: '081234560003',
     pin: '1234',
     roleTitle: 'Wisatawan',
+    roleCode: 'tourist',
+    demoUsername: 'warga',
+    demoPassword: 'Warga123!',
+  },
+  {
+    name: 'Dewi Nusantara (Pemandu Wisata HPI)',
+    nik: '8171010101900010',
+    whatsapp: '081234560010',
+    pin: '1234',
+    roleTitle: 'Pemandu Wisata',
     roleCode: 'smart_tourism_admin',
     demoUsername: 'admin_wisata',
     demoPassword: 'Wisata123!',
@@ -183,14 +193,23 @@ export const authService = {
     const digitsOnly = identifier.replace(/\D/g, '')
     const accounts = loadRegisteredAccounts()
 
-    return accounts.find(
+    const exactIdentityMatch = accounts.find(
       (acc) =>
-        acc.demoUsername.toLowerCase() === clean ||
         acc.nik === clean ||
         (digitsOnly.length >= 8 && acc.nik === digitsOnly) ||
         (digitsOnly.length >= 8 && acc.whatsapp.replace(/\D/g, '') === digitsOnly) ||
-        acc.name.toLowerCase() === clean ||
-        acc.roleTitle.toLowerCase() === clean
+        acc.name.toLowerCase() === clean
+    )
+    if (exactIdentityMatch) {
+      return exactIdentityMatch
+    }
+
+    return (
+      accounts.find(
+        (acc) =>
+          acc.roleCode !== 'tourist' &&
+          acc.demoUsername.toLowerCase() === clean
+      ) || accounts.find((acc) => acc.roleTitle.toLowerCase() === clean)
     )
   },
 
@@ -230,10 +249,21 @@ export const authService = {
       }
 
       const data: TokenResponse = await res.json()
-      if (matchedAccount && matchedAccount.name) {
+      if (matchedAccount) {
         data.user = {
           ...data.user,
-          full_name: matchedAccount.name,
+          full_name: matchedAccount.name || data.user.full_name,
+          ...(matchedAccount.roleCode === 'tourist'
+            ? {
+                roles: [
+                  {
+                    id: 'role-tourist',
+                    name: 'tourist',
+                    description: 'Wisatawan & Pengunjung Kepulauan',
+                  },
+                ],
+              }
+            : {}),
         }
       }
       this.setTokens(data.access_token, data.refresh_token)
@@ -297,8 +327,17 @@ export const authService = {
       const cached = localStorage.getItem(ACTIVE_PROFILE_KEY)
       if (cached) {
         const parsed: User = JSON.parse(cached)
-        if (parsed.username === user.username && parsed.full_name) {
-          user.full_name = parsed.full_name
+        if (parsed.username === user.username) {
+          if (parsed.full_name) {
+            user.full_name = parsed.full_name
+          }
+          if (
+            parsed.roles?.some(
+              (r) => r.name === 'tourist' || r.name === 'wisatawan'
+            )
+          ) {
+            user.roles = parsed.roles
+          }
         }
       }
       try {
