@@ -12,9 +12,6 @@ import {
   Search,
   RefreshCw,
   Volume2,
-  Radio,
-  HardDriveDownload,
-  WifiOff,
   CheckCircle2,
   AlertCircle,
   Trash2,
@@ -42,7 +39,6 @@ import {
 import {
   gisService,
   GeoJSONFeature,
-  GISSummaryResponse,
   GeocodingResult,
 } from '../services/gis'
 import { authService } from '../services/auth'
@@ -138,6 +134,12 @@ export const BASEMAP_CONFIGS: Record<BasemapId, BasemapConfig> = {
   },
 }
 
+// Bounding box strictly locked to Kepulauan Banda archipelago (Rhun, Ai, Neira, Gunung Api, Banda Besar, Hatta)
+export const BANDA_ARCHIPELAGO_BOUNDS = L.latLngBounds(
+  [-4.7000, 129.6000], // Southwest (Selatan Pulau Rhun / Banda Besar)
+  [-4.3800, 130.1500]  // Northeast (Utara Pulau Neira / Timur Pulau Hatta)
+)
+
 export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = ({ currentUser }) => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
@@ -177,7 +179,6 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
   // State
   const [features, setFeatures] = useState<GeoJSONFeature[]>([])
-  const [gisMeta, setGisMeta] = useState<GISSummaryResponse | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const [selectedFeature, setSelectedFeature] = useState<GeoJSONFeature | null>(null)
   const [searchQuery, setSearchQuery] = useState<string>('')
@@ -305,17 +306,6 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   const [isDeletingFeature, setIsDeletingFeature] = useState<boolean>(false)
   const [atlasLegendOpen, setAtlasLegendOpen] = useState<boolean>(true)
 
-  // Offline Caching State
-  const [isOffline, setIsOffline] = useState<boolean>(
-    typeof window !== 'undefined' ? !window.navigator.onLine : false
-  )
-  const [isUsingCachedData, setIsUsingCachedData] = useState<boolean>(false)
-  const [cacheInfo, setCacheInfo] = useState<{
-    isCached: boolean
-    cachedAt: string | null
-    featureCount: number
-  }>({ isCached: false, cachedAt: null, featureCount: 0 })
-  const [cachingMap, setCachingMap] = useState<boolean>(false)
   const [notificationMsg, setNotificationMsg] = useState<{
     type: 'success' | 'info' | 'error'
     text: string
@@ -335,110 +325,26 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     ])
   )
 
-  // Load Metadata & Features on Mount, plus check offline cache status
+  // Load Data on Mount
   useEffect(() => {
     loadGISData()
-    refreshCacheStatus()
-
-    const handleOnline = () => {
-      setIsOffline(false)
-      loadGISData()
-    }
-    const handleOffline = () => {
-      setIsOffline(true)
-    }
-
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
-    return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
-    }
   }, [])
-
-  const refreshCacheStatus = async () => {
-    try {
-      const status = await gisService.getOfflineGISStatus()
-      setCacheInfo(status)
-    } catch (err) {
-      console.warn('Gagal membaca status cache offline:', err)
-    }
-  }
 
   const loadGISData = async () => {
     setLoading(true)
     try {
-      const [metaRes, layersRes, villagesRes] = await Promise.all([
-        gisService.getMetadata(),
+      const [layersRes, villagesRes] = await Promise.all([
         gisService.getLayers(),
         gisService.getVillages(),
       ])
-      setGisMeta(metaRes)
       setFeatures(layersRes.features)
       if (villagesRes && villagesRes.features && !localStorage.getItem('banda_village_polygons_v1')) {
         setVillageGeoJSON(villagesRes)
       }
-      const status = await gisService.getOfflineGISStatus()
-      setCacheInfo(status)
-      if (typeof window !== 'undefined' && !window.navigator.onLine) {
-        setIsUsingCachedData(true)
-      } else {
-        setIsUsingCachedData(false)
-      }
     } catch (err) {
-      console.warn('Network request gagal, memeriksa ketersediaan cache offline...', err)
-      const cachedStatus = await gisService.getOfflineGISStatus()
-      setCacheInfo(cachedStatus)
-      if (cachedStatus.isCached) {
-        setIsUsingCachedData(true)
-      } else {
-        setNotificationMsg({
-          type: 'error',
-          text: 'Peta belum tersimpan di cache lokal. Harap hubungkan internet setidaknya sekali untuk mengunduh layer.',
-        })
-      }
+      console.warn('Gagal memuat data spasial:', err)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleCacheMapForOffline = async () => {
-    setCachingMap(true)
-    try {
-      const res = await gisService.cacheAllGISOffline()
-      const status = await gisService.getOfflineGISStatus()
-      setCacheInfo(status)
-      setNotificationMsg({
-        type: 'success',
-        text: `Berhasil menyimpan seluruh 7 layer spasial (${res.totalFeatures} titik) ke memori IndexedDB perangkat! Peta ini kini dapat dibuka di kebun tanpa sinyal internet.`,
-      })
-      setTimeout(() => setNotificationMsg(null), 6000)
-    } catch (err: any) {
-      setNotificationMsg({
-        type: 'error',
-        text: `Gagal menyimpan peta offline: ${err?.message || 'Terjadi kesalahan sistem'}`,
-      })
-    } finally {
-      setCachingMap(false)
-    }
-  }
-
-  const handleClearCache = async () => {
-    if (!window.confirm('Hapus cache peta offline dari perangkat ini?')) return
-    try {
-      await gisService.clearOfflineGISCache()
-      const status = await gisService.getOfflineGISStatus()
-      setCacheInfo(status)
-      setNotificationMsg({
-        type: 'info',
-        text: 'Cache peta offline pada perangkat telah dibersihkan.',
-      })
-      setTimeout(() => setNotificationMsg(null), 4000)
-    } catch (err: any) {
-      setNotificationMsg({
-        type: 'error',
-        text: `Gagal membersihkan cache: ${err?.message || 'Terjadi kesalahan'}`,
-      })
     }
   }
 
@@ -511,12 +417,14 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     if (!mapContainerRef.current) return
 
     if (!mapInstanceRef.current) {
-      // Center coordinates of Banda Neira: -4.524, 129.904
+      // Center coordinates of Banda Neira: -4.5300, 129.9000 strictly locked to Banda Archipelago
       const map = L.map(mapContainerRef.current, {
         center: [-4.5300, 129.9000],
         zoom: 12,
-        minZoom: 10,
+        minZoom: 11,
         maxZoom: 18,
+        maxBounds: BANDA_ARCHIPELAGO_BOUNDS,
+        maxBoundsViscosity: 1.0,
       })
 
       layerGroupRef.current = L.layerGroup().addTo(map)
@@ -1727,132 +1635,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
           </p>
         </div>
 
-        {/* Action Controls */}
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          {/* Subtle Offline Cache Chip */}
-          {isUsingCachedData || isOffline ? (
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                padding: '0.4rem 0.75rem',
-                borderRadius: '8px',
-                background: '#fef3c7',
-                border: '1px solid #fde68a',
-                color: '#92400e',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-              }}
-              title="Menggunakan data cache lokal (koneksi offline)"
-            >
-              <WifiOff size={13} />
-              <span>Offline Cache</span>
-            </div>
-          ) : cacheInfo.isCached ? (
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                padding: '0.4rem 0.75rem',
-                borderRadius: '8px',
-                background: '#ecfdf5',
-                border: '1px solid #a7f3d0',
-                color: '#065f46',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-              }}
-              title={`Peta tersimpan offline (${cacheInfo.featureCount} titik)`}
-            >
-              <CheckCircle2 size={13} />
-              <span>Offline Siap</span>
-              <button
-                type="button"
-                onClick={handleClearCache}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#94a3b8',
-                  cursor: 'pointer',
-                  padding: 0,
-                  marginLeft: '4px',
-                  display: 'inline-flex',
-                }}
-                title="Hapus cache lokal"
-              >
-                <Trash2 size={11} />
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={handleCacheMapForOffline}
-              disabled={cachingMap}
-              style={{
-                fontSize: '0.78rem',
-                padding: '0.4rem 0.75rem',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                background: '#ffffff',
-                color: '#334155',
-                border: '1px solid #cbd5e1',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: 600,
-              }}
-              title="Simpan peta ke peramban agar bisa diakses saat tidak ada internet"
-            >
-              <HardDriveDownload size={13} className={cachingMap ? 'animate-spin' : ''} />
-              {cachingMap ? 'Menyimpan...' : 'Simpan Offline'}
-            </button>
-          )}
-
-          <button
-            type="button"
-            onClick={loadGISData}
-            disabled={loading}
-            style={{
-              fontSize: '0.78rem',
-              padding: '0.4rem 0.75rem',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              background: '#ffffff',
-              color: '#334155',
-              border: '1px solid #cbd5e1',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontWeight: 600,
-            }}
-          >
-            <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
-            Muat Ulang
-          </button>
-
-          <button
-            type="button"
-            onClick={handleResetMapView}
-            style={{
-              fontSize: '0.78rem',
-              padding: '0.4rem 0.85rem',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              background: '#081d35',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontWeight: 600,
-              boxShadow: '0 1px 3px rgba(8, 29, 53, 0.15)',
-            }}
-          >
-            <Compass size={13} />
-            Pusat Banda
-          </button>
-
+        {/* Action Controls (Clean Admin Actions Only) */}
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           {isOfficerOrAdmin && (
             <>
               <button
@@ -1860,7 +1644,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                 onClick={handleOpenNewRoute}
                 style={{
                   fontSize: '0.78rem',
-                  padding: '0.4rem 0.85rem',
+                  padding: '0.42rem 0.85rem',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.4rem',
@@ -1870,6 +1654,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                   borderRadius: '8px',
                   cursor: 'pointer',
                   fontWeight: 600,
+                  boxShadow: '0 1px 2px rgba(2, 132, 199, 0.08)',
                 }}
               >
                 <Route size={13} />
@@ -1886,7 +1671,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                 }}
                 style={{
                   fontSize: '0.78rem',
-                  padding: '0.4rem 0.85rem',
+                  padding: '0.42rem 0.85rem',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.4rem',
@@ -1896,6 +1681,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                   borderRadius: '8px',
                   cursor: 'pointer',
                   fontWeight: 600,
+                  boxShadow: '0 1px 2px rgba(5, 150, 105, 0.08)',
                 }}
               >
                 <Edit2 size={13} />
@@ -1968,167 +1754,85 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
         </div>
       )}
 
-      {/* Compact Google Maps Style Toolbar */}
+      {/* Streamlined Search & Island Filter Bar */}
       <div
         style={{
           display: 'flex',
-          flexDirection: 'column',
           gap: '0.65rem',
-          marginBottom: '1rem',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          marginBottom: '0.85rem',
         }}
       >
-        {/* Search & Island Chips */}
-        <div
-          style={{
-            display: 'flex',
-            gap: '0.65rem',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-          }}
-        >
-          {/* Search Box */}
-          <div style={{ position: 'relative', flex: '1 1 260px', maxWidth: '380px' }}>
+        {/* Search Box */}
+        <div style={{ position: 'relative', flex: '1 1 260px', maxWidth: '360px' }}>
+          {loading ? (
+            <RefreshCw size={13} className="animate-spin" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#0284c7' }} />
+          ) : (
             <Search size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
-            <input
-              type="text"
-              placeholder="Cari tempat, benteng, pantai, penginapan..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.45rem 2rem 0.45rem 2.2rem',
-                fontSize: '0.8rem',
-                background: '#ffffff',
-                border: '1px solid #cbd5e1',
-                borderRadius: '999px',
-                color: '#0f172a',
-                outline: 'none',
-                boxShadow: '0 2px 6px rgba(15, 44, 89, 0.05)',
-              }}
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                style={{
-                  position: 'absolute',
-                  right: '10px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  color: '#94a3b8',
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                }}
-              >
-                <X size={12} />
-              </button>
-            )}
-          </div>
-
-          {/* Island Filter Chips */}
-          <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            {['', 'Pulau Neira', 'Banda Besar', 'Pulau Hatta', 'Pulau Ay', 'Gunung Api'].map((isl) => {
-              const isSelected = islandFilter === isl
-              return (
-                <button
-                  type="button"
-                  key={isl}
-                  onClick={() => setIslandFilter(isl)}
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.3rem 0.75rem',
-                    borderRadius: '999px',
-                    border: isSelected ? '1.5px solid #081d35' : '1px solid #e2e8f0',
-                    background: isSelected ? '#081d35' : '#ffffff',
-                    color: isSelected ? '#ffffff' : '#475569',
-                    cursor: 'pointer',
-                    fontWeight: isSelected ? 700 : 500,
-                    boxShadow: isSelected ? '0 2px 4px rgba(8, 29, 53, 0.15)' : '0 1px 2px rgba(0,0,0,0.03)',
-                    transition: 'all 0.15s ease',
-                  }}
-                >
-                  {isl || 'Semua Pulau'}
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Select all / Clear layer shortcuts */}
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.45rem', alignItems: 'center' }}>
+          )}
+          <input
+            type="text"
+            placeholder="Cari tempat, benteng, pantai, penginapan..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '0.45rem 2rem 0.45rem 2.2rem',
+              fontSize: '0.8rem',
+              background: '#ffffff',
+              border: '1px solid #cbd5e1',
+              borderRadius: '999px',
+              color: '#0f172a',
+              outline: 'none',
+              boxShadow: '0 2px 6px rgba(15, 44, 89, 0.04)',
+            }}
+          />
+          {searchQuery && (
             <button
               type="button"
-              onClick={selectAllLayers}
+              onClick={() => setSearchQuery('')}
               style={{
+                position: 'absolute',
+                right: '10px',
+                top: '50%',
+                transform: 'translateY(-50%)',
                 background: 'none',
                 border: 'none',
-                color: '#081d35',
-                fontSize: '0.725rem',
-                fontWeight: 600,
+                color: '#94a3b8',
                 cursor: 'pointer',
-                textDecoration: 'underline',
+                display: 'inline-flex',
+                alignItems: 'center',
               }}
             >
-              Semua Kategori
+              <X size={12} />
             </button>
-            <span style={{ color: '#cbd5e1', fontSize: '0.7rem' }}>•</span>
-            <button
-              type="button"
-              onClick={clearAllLayers}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#dc2626',
-                fontSize: '0.725rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              Kosongkan
-            </button>
-          </div>
+          )}
         </div>
 
-        {/* Layer Filter Pills */}
-        <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          {gisMeta?.layers.map((layer) => {
-            const isActive = selectedLayers.has(layer.id)
-            const color = layer.color
-            const friendlyName = LAYER_LABELS[layer.id] || layer.name
+        {/* Island Filter Chips */}
+        <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          {['', 'Pulau Neira', 'Banda Besar', 'Pulau Hatta', 'Pulau Ay', 'Pulau Rhun', 'Gunung Api'].map((isl) => {
+            const isSelected = islandFilter === isl
             return (
               <button
-                key={layer.id}
                 type="button"
-                onClick={() => toggleLayer(layer.id)}
+                key={isl}
+                onClick={() => setIslandFilter(isl)}
                 style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  padding: '0.3rem 0.75rem',
-                  borderRadius: '999px',
-                  border: isActive ? `1.5px solid ${color}` : '1px solid #e2e8f0',
-                  background: isActive ? `${color}14` : '#ffffff',
-                  color: isActive ? '#0f172a' : '#64748b',
                   fontSize: '0.75rem',
-                  fontWeight: isActive ? 700 : 500,
+                  padding: '0.32rem 0.75rem',
+                  borderRadius: '999px',
+                  border: isSelected ? '1.5px solid #081d35' : '1px solid #e2e8f0',
+                  background: isSelected ? '#081d35' : '#ffffff',
+                  color: isSelected ? '#ffffff' : '#475569',
                   cursor: 'pointer',
-                  boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                  fontWeight: isSelected ? 700 : 500,
+                  boxShadow: isSelected ? '0 2px 4px rgba(8, 29, 53, 0.15)' : '0 1px 2px rgba(0,0,0,0.03)',
                   transition: 'all 0.15s ease',
                 }}
               >
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: color }} />
-                <span>{friendlyName}</span>
-                <span
-                  style={{
-                    fontSize: '0.7rem',
-                    color: isActive ? color : '#94a3b8',
-                    fontWeight: 700,
-                  }}
-                >
-                  {layer.feature_count}
-                </span>
+                {isl || 'Semua Pulau'}
               </button>
             )
           })}
@@ -3828,37 +3532,39 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
             background: '#ffffff',
           }}
         >
-          {/* Active Features Status Badge */}
-          <div
+          {/* Subtle In-Map Re-Center Compass Button (Positioned cleanly under zoom controls) */}
+          <button
+            type="button"
+            onClick={handleResetMapView}
             style={{
               position: 'absolute',
-              top: '12px',
-              right: '12px',
+              top: '84px',
+              left: '10px',
               zIndex: 1000,
-              background: 'rgba(255, 255, 255, 0.95)',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid #e2e8f0',
-              padding: '0.35rem 0.75rem',
-              borderRadius: '999px',
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              color: '#0f2c59',
+              width: '30px',
+              height: '30px',
+              background: '#ffffff',
+              border: '2px solid rgba(0, 0, 0, 0.2)',
+              borderRadius: '4px',
+              cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.35rem',
-              boxShadow: '0 2px 8px rgba(15, 44, 89, 0.08)',
+              justifyContent: 'center',
+              boxShadow: '0 1px 5px rgba(0, 0, 0, 0.15)',
+              color: '#334155',
+              transition: 'all 0.15s ease',
             }}
+            title="Pusatkan kembali ke Kepulauan Banda"
           >
-            <Radio size={12} className="animate-pulse" color="#059669" />
-            <span>{filteredFeatures.length} Objek Aktif</span>
-          </div>
+            <Compass size={16} />
+          </button>
 
           {/* Leaflet Map Div */}
           <div
             ref={mapContainerRef}
             style={{
               width: '100%',
-              height: '620px',
+              height: '640px',
               background: '#e0f2fe',
             }}
           />
@@ -4457,10 +4163,27 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '0.35rem',
-                  maxHeight: '270px',
+                  maxHeight: '280px',
                   overflowY: 'auto',
                 }}
               >
+                {/* Select All / Clear shortcuts inside Legend */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '0.25rem', marginBottom: '0.2rem', borderBottom: '1px solid #e2e8f0' }}>
+                  <button
+                    type="button"
+                    onClick={selectAllLayers}
+                    style={{ background: 'none', border: 'none', color: '#0369a1', fontSize: '0.675rem', fontWeight: 700, cursor: 'pointer', padding: 0 }}
+                  >
+                    Pilih Semua
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearAllLayers}
+                    style={{ background: 'none', border: 'none', color: '#dc2626', fontSize: '0.675rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                  >
+                    Kosongkan
+                  </button>
+                </div>
                 {Object.entries(LAYER_COLORS).map(([lyr, col]) => {
                   const isActive = selectedLayers.has(lyr)
                   const label = LAYER_LABELS[lyr] || lyr
