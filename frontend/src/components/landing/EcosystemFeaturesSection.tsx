@@ -83,7 +83,7 @@ export const EcosystemFeaturesSection: React.FC<EcosystemFeaturesSectionProps> =
           </p>
           <button
             type="button"
-            onClick={() => (currentUser ? onNavigate('population') : onOpenLogin())}
+            onClick={() => (currentUser ? onNavigate('dashboard') : onOpenLogin())}
             className="bg-amber-600 hover:bg-amber-500 transition-colors inline-flex h-[54px] items-center gap-4 px-6 py-0 relative rounded-lg overflow-hidden border border-solid border-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e]"
           >
             <span className="font-semibold text-white text-sm tracking-[0] relative w-fit leading-[normal]">

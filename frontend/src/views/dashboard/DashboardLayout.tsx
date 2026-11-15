@@ -89,6 +89,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const isCoopManager = roles.includes('coop_manager') || roles.includes('pengelola_koperasi')
   const isSmartTourismAdmin = roles.includes('smart_tourism_admin') || roles.includes('admin_wisata')
   const isSurveyor = roles.includes('field_surveyor') || roles.includes('surveyor')
+  const isTourist = roles.includes('tourist') || roles.includes('wisatawan')
 
   const getRoleDisplayName = () => {
     if (isSuperuser || roles.includes('admin')) return 'Administrator Sistem'
@@ -99,6 +100,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     if (isCoopManager) return 'Pengelola Koperasi Hatta'
     if (isSmartTourismAdmin) return 'Pemandu Cagar Budaya'
     if (isSurveyor) return 'Surveyor Lapangan & IoT'
+    if (isTourist) return 'Wisatawan & Pengunjung'
     return 'Warga Masyarakat Desa'
   }
 
@@ -135,7 +137,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       icon: Mail,
       badge: isOfficerOrAdmin && adminPendingLettersCount > 0 ? adminPendingLettersCount : undefined,
       badgeColor: 'bg-amber-500 text-white',
-      visible: true,
+      visible: !isTourist,
     },
     {
       id: 'population',
@@ -165,11 +167,15 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       label: 'Kasir Koperasi & Bank Sampah',
       shortLabel: 'Koperasi Hatta',
       icon: Scale,
-      visible: true,
+      visible: !isTourist,
     },
     {
       id: 'tourism',
-      label: isHomestayOperator ? 'Kelola Eco-Stay & Tamu' : 'Cagar Budaya & Eco-Stay',
+      label: isTourist
+        ? 'Eksplorasi Eco-Stay & Budaya'
+        : isHomestayOperator
+        ? 'Kelola Eco-Stay & Tamu'
+        : 'Cagar Budaya & Eco-Stay',
       shortLabel: 'Eco-Stay',
       icon: Home,
       visible: true,
@@ -193,7 +199,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       label: 'Telemetri 4 Stasiun IoT',
       shortLabel: 'Telemetri IoT',
       icon: Radio,
-      visible: true,
+      visible: !isTourist,
     },
     {
       id: 'survei',

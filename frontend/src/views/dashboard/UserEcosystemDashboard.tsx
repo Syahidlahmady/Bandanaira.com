@@ -84,7 +84,11 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
   const isCoopManager = roles.includes('coop_manager') || roles.includes('pengelola_koperasi')
   const isSmartTourismAdmin = roles.includes('smart_tourism_admin') || roles.includes('admin_wisata')
   const isSurveyor = roles.includes('field_surveyor') || roles.includes('surveyor')
-  const isResident = roles.includes('resident') || roles.includes('warga') || (!isOfficerOrAdmin && !isFarmer && !isHomestayOperator)
+  const isTourist = roles.includes('tourist') || roles.includes('wisatawan')
+  const isResident =
+    roles.includes('resident') ||
+    roles.includes('warga') ||
+    (!isOfficerOrAdmin && !isFarmer && !isHomestayOperator && !isTourist)
 
   const getRoleDisplayName = () => {
     if (isSuperuser || roles.includes('admin')) return 'Administrator Sistem'
@@ -95,7 +99,15 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
     if (isCoopManager) return 'Pengelola Koperasi Hatta'
     if (isSmartTourismAdmin) return 'Pemandu Wisata & Cagar Budaya HPI'
     if (isSurveyor) return 'Surveyor Lapangan & IoT'
+    if (isTourist) return 'Wisatawan & Pengunjung Kepulauan'
     return 'Warga Masyarakat Desa'
+  }
+
+  const getRoleWelcomeDesc = () => {
+    if (isTourist) {
+      return 'Eksplorasi katalog penginapan Eco-Stay, 177 situs cagar budaya & audio guide, peta 7-layer, dan perencana wisata SAW.'
+    }
+    return 'Portal Komando Ekosistem Digital Terpadu Kepulauan Banda Neira'
   }
 
   const getUserInitials = () => {
@@ -294,7 +306,7 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
               </span>
             </div>
             <p className="text-xs sm:text-sm text-[#475569] mt-0.5">
-              Portal Komando Ekosistem Digital Terpadu Kepulauan Banda Neira
+              {getRoleWelcomeDesc()}
             </p>
           </div>
         </div>
@@ -693,6 +705,27 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
                 </p>
                 <p className="text-xs text-slate-400 mt-0.5">
                   Timbang plastik warga, simpan pinjam, dan kuota air bersih RO.
+                </p>
+              </div>
+            </button>
+          )}
+
+          {/* Untuk Wisatawan & Pengunjung */}
+          {isTourist && (
+            <button
+              type="button"
+              onClick={() => onNavigate('tourism')}
+              className="p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#F4B75E] transition flex items-start gap-3.5 text-left group"
+            >
+              <div className="p-2.5 rounded-lg bg-[#F4B75E]/20 text-[#F4B75E] group-hover:scale-105 transition-transform">
+                <Home className="size-5" />
+              </div>
+              <div>
+                <p className="font-semibold text-sm text-white group-hover:text-[#F4B75E] transition-colors">
+                  Eksplorasi Eco-Stay &amp; Cagar Budaya
+                </p>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Cari penginapan Eco-Stay, dengarkan audio guide 177 cagar budaya, dan pesan via WhatsApp.
                 </p>
               </div>
             </button>

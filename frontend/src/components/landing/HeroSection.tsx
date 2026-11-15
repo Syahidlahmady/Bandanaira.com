@@ -109,7 +109,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             <div className="inline-flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => onNavigate('population')}
+                onClick={() => onNavigate('dashboard')}
                 className="inline-flex h-[42px] items-center px-[18px] py-0 relative flex-[0_0_auto] bg-[#d9770626] hover:bg-[#d9770640] rounded-md overflow-hidden border border-solid border-[#f4b75e] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e]"
               >
                 <span className="font-semibold text-white text-xs tracking-[0] relative w-fit leading-[normal]">

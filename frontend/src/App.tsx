@@ -132,6 +132,9 @@ export const ROUTE_TO_TAB: Record<string, TabId> = {
   '/survey': 'survei',
 }
 
+/** Zona 1: Rute Eksplorasi Publik Wisatawan tanpa wajib login */
+export const PUBLIC_EXPLORER_TABS: TabId[] = ['tourism', 'gis', 'smart_planner']
+
 export const getInitialTab = (): TabId => {
   if (typeof window === 'undefined') return 'landing'
   const path = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/'
@@ -610,7 +613,13 @@ export const App: React.FC = () => {
           localStorage.removeItem('banda_active_tab')
           setCurrentUser(null)
           const currentPath = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/'
-          if (currentPath !== '/' && currentPath !== '/landing' && currentPath !== '/register') {
+          const mappedTab = ROUTE_TO_TAB[currentPath]
+          if (
+            currentPath !== '/' &&
+            currentPath !== '/landing' &&
+            currentPath !== '/register' &&
+            !(mappedTab && PUBLIC_EXPLORER_TABS.includes(mappedTab))
+          ) {
             setActiveTab('landing', true)
           }
         })
@@ -646,6 +655,12 @@ export const App: React.FC = () => {
 
   const getRoleDefaultTab = (user: User | null): typeof activeTab => {
     if (!user) return 'landing'
+    const roleNames = (user.roles || []).map((r) =>
+      typeof r === 'string' ? r : r.name
+    )
+    if (roleNames.includes('tourist') || roleNames.includes('wisatawan')) {
+      return 'tourism'
+    }
     // Mengarahkan ke Dasbor Ekosistem Terpadu (Landing Page 2) yang menyesuaikan tampilan dengan role
     return 'dashboard'
   }
@@ -1138,8 +1153,12 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* 2. Login Portal Section for Non-authenticated Users (Sesuai desainsaatini/login-desktop) */}
-      {!currentUser && !authService.getAccessToken() && activeTab !== 'landing' && activeTab !== 'register' && (
+      {/* 2. Login Portal Section for Non-authenticated Users on Protected Operational Routes */}
+      {!currentUser &&
+        !authService.getAccessToken() &&
+        activeTab !== 'landing' &&
+        activeTab !== 'register' &&
+        !PUBLIC_EXPLORER_TABS.includes(activeTab) && (
         <LoginSection
           username={username}
           setUsername={setUsername}
@@ -1161,6 +1180,115 @@ export const App: React.FC = () => {
           loading={authLoading}
           error={authError}
         />
+      )}
+
+      {/* 3. Public Tourist Explorer (Zona 1 SRS: Eksplorasi Wisatawan Tanpa Login) */}
+      {!currentUser &&
+        !authService.getAccessToken() &&
+        PUBLIC_EXPLORER_TABS.includes(activeTab) && (
+        <div className="min-h-screen flex flex-col bg-[#F7F5F0] text-[#081D35]">
+          <header className="sticky top-0 z-40 bg-[#081D35] text-white border-b border-[#1E3A5F] shadow-md">
+            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('landing')}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[#F4B75E] text-xs font-semibold transition cursor-pointer"
+                >
+                  <span>&larr;</span>
+                  <span>Beranda Utama</span>
+                </button>
+                <span className="font-serif font-bold text-base tracking-tight text-white">
+                  bandanaira<span className="text-[#F4B75E]">.com</span>
+                </span>
+                <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#F4B75E]/20 text-[#F4B75E] border border-[#F4B75E]/40">
+                  🧭 Mode Wisatawan Publik
+                </span>
+              </div>
+
+              <nav
+                aria-label="Navigasi eksplorasi wisatawan"
+                className="flex items-center gap-2 flex-wrap"
+              >
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('tourism')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                    activeTab === 'tourism'
+                      ? 'bg-[#F4B75E] text-[#081D35] font-bold shadow-sm'
+                      : 'bg-white/10 text-slate-200 hover:bg-white/20'
+                  }`}
+                >
+                  🏡 Penginapan &amp; Cagar Budaya
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('gis')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                    activeTab === 'gis'
+                      ? 'bg-[#F4B75E] text-[#081D35] font-bold shadow-sm'
+                      : 'bg-white/10 text-slate-200 hover:bg-white/20'
+                  }`}
+                >
+                  🗺️ Peta Spasial 7-Layer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('smart_planner')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                    activeTab === 'smart_planner'
+                      ? 'bg-[#F4B75E] text-[#081D35] font-bold shadow-sm'
+                      : 'bg-white/10 text-slate-200 hover:bg-white/20'
+                  }`}
+                >
+                  🧭 Perencana Cerdas (SAW)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowMarketplaceModal(true)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/10 text-slate-200 hover:bg-white/20 transition cursor-pointer"
+                >
+                  🛍️ Etalase UMKM
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('dashboard')}
+                  className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white border border-[#F4B75E]/50 transition cursor-pointer"
+                >
+                  Masuk / Daftar Portal
+                </button>
+              </nav>
+            </div>
+          </header>
+
+          <main className="flex-1 w-full max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8">
+            <ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Eksplorasi Wisatawan">
+              <React.Suspense
+                fallback={
+                  <div className="p-8 text-center text-slate-500 font-medium">
+                    Memuat layanan eksplorasi wisata Banda Neira...
+                  </div>
+                }
+              >
+                {activeTab === 'tourism' && (
+                  <TourismEcoStayWorkspace
+                    currentUser={null}
+                    onOpenQuickLogin={() => setShowQuickLoginModal(true)}
+                  />
+                )}
+                {activeTab === 'gis' && <InteractiveMapWorkspace currentUser={null} />}
+                {activeTab === 'smart_planner' && <SmartPlannerWorkspace />}
+              </React.Suspense>
+            </ErrorBoundary>
+          </main>
+
+          <BandaUnifiedFooter
+            onNavigateTab={(tab) => setActiveTab(tab)}
+            onOpenRegister={() => setActiveTab('register')}
+            onOpenLogin={() => setActiveTab('population')}
+            onOpenQuickLogin={() => setShowQuickLoginModal(true)}
+          />
+        </div>
       )}
 
       {/* 2B. Loading State when restoring active user session with valid token */}
