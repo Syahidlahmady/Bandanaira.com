@@ -258,8 +258,25 @@ Documentation of data models, relationships, and constraints for **Banda Digital
   - `description`: TEXT
   - `is_active`: BOOLEAN (DEFAULT TRUE)
   - `created_at`, `updated_at`: TIMESTAMPTZ
-  - **Seed Dataset**: `backend/app/seeds/gis_spatial_features.json` (37 objek titik/rute) & `backend/app/seeds/banda_villages.geojson` (17 zona wilayah poligon desa).
-  - **Seeder Script**: `backend/scripts/seed_spatial_features.py` (juga diintegrasikan ke dalam `backend/scripts/demo_seed.py` tahap 8 untuk menyinkronkan 54 total entitas spasial ke PostGIS).
+  - **Seed Dataset**:
+    1. `backend/app/seeds/gis_spatial_features.json` (36 titik terkurasi autentik di 7 layer tanpa titik fiktif).
+    2. `backend/app/seeds/banda_villages.geojson` (17 zona wilayah poligon desa resmi standar RFC 7946 WGS 84).
+    3. `backend/app/seeds/banda_village_details.json` (Detail atribut, komoditas, narasi sejarah, dan data statistik demografi riil desa sensus resmi 2026).
+  - **Data Riil Kependudukan & Wilayah Desa**:
+    - **Negeri Administratif Merdeka (Data Resmi 2026)**: 834 Jiwa, 234 KK (193 KK L / 41 KK P), rasio gender 409 Laki-laki / 425 Perempuan, 417 usia produktif (19–50 tahun), struktur mata pencaharian dominan (49 Nelayan, 41 Wiraswasta, 32 Asongan, 27 Petani/Pekebun, 26 PNS), serta 9 unit UMKM binaan aktif olahan pangan & kerajinan.
+  - **Kebijakan Integritas Spasial (Anti-Arbitrary/Fake Points Policy)**:
+    - Tidak menaruh titik pin koordinat estimasi/sembarangan di atas peta laut/daratan bila koordinat GPS presisi di lapangan belum disurvei.
+    - Data pelaku usaha tingkat desa yang belum memiliki koordinat lintang/bujur presisi disimpan pada agregat atribut wilayah desa (`properties_meta.demographics`) dan dapat dipetakan kemudian via fitur Spatial Studio Map Editor di web.
+  - **Seeder Script & Panduan Eksekusi Tim**:
+    - Skrip sinkronisasi deterministik & idempoten: `backend/scripts/seed_spatial_features.py`.
+    - Perintah eksekusi seeder spasial & zona desa untuk seluruh developer/tim:
+      ```bash
+      docker compose exec backend python scripts/seed_spatial_features.py
+      ```
+    - Perintah eksekusi seeding penuh seluruh ekosistem (Auth, Residents, Farms, Traceability, Koperasi, GIS):
+      ```bash
+      docker compose exec backend python scripts/demo_seed.py
+      ```
   - **Geometry Types Supported**: Point (`latitude`, `longitude`), LineString rute maritim (`geometry_geojson`), dan Polygon / MultiPolygon zona wilayah desa (`geometry_geojson`).
 
 ### 2.10 Cryptographic NIK Hardening (Phase 22)

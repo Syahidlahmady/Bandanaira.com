@@ -118,6 +118,8 @@ async def seed_spatial_features(session: AsyncSession) -> int:
                 "population": v_detail.get("population", ""),
                 "main_commodity": v_detail.get("main_commodity", ""),
                 "area_ha": v_detail.get("area_ha", ""),
+                "highlights": v_detail.get("highlights", ""),
+                "demographics": v_detail.get("demographics", {}),
                 "is_zone": True,
             }
 

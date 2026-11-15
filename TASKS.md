@@ -602,10 +602,15 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Mengintegrasikan pembaruan kode dari Zerooo (`613ca7e`) tanpa konflik.
   - Memperbarui `docker-compose.yml` untuk memetakan dependensi `package.json` dan pustaka `lenis`.
   - Memverifikasi build frontend Vite lolos tanpa error (`✓ built in 8.01s`) dan seluruh 8 pengujian backend GIS lolos 100% (`8 passed in 18.47s`).
-- [x] 40.6 Integrasi Data Kependudukan Resmi & Sentra UMKM RT 01/02 Negeri Merdeka (Tahun 2026):
+- [x] 40.6 Integrasi Data Kependudukan Resmi Sensus 2026 Negeri Merdeka:
   - Mengintegrasikan data kependudukan resmi sensus 2026 Negeri Administratif Merdeka (834 jiwa, 234 KK, rasio gender 409 L / 425 P, 417 usia produktif, 49 nelayan, 41 wiraswasta, 27 pekebun) ke `banda_village_details.json` dan `bandaVillagesData.ts`.
-  - Mengaktifkan layer spasial `LAYER_KOPERASI_UMKM` (Sentra UMKM) dengan 2 titik kluster sentra pemukiman di Pulau Neira: RT 01 (Nurmila Selai Pala, Sumarni Pentolan, Sumiati Pentolan & Bakso, Fatma Kerupuk Ikan) dan RT 02 Jln. Adika (Saharia Manisan Pala & Abon Ikan, Aisa Manisan Pala, Swanty & Rasid Kerajinan Cendramata).
-  - Memperkaya antarmuka laci detail fitur dengan visualisasi kartu UMKM binaan per RT dan widget statistik resmi kependudukan 2026 pada kartu profil wilayah desa.
+  - Menghapus seluruh titik estimasi/fiktif agar peta hanya menampilkan titik spasial terverifikasi (Zero Arbitrary Pin Policy).
+  - Memperkaya antarmuka dengan widget statistik resmi kependudukan 2026 dan daftar 9 UMKM binaan pada profil wilayah desa.
+- [x] 40.7 Sinkronisasi Penuh Basis Data Spasial PostGIS & Dokumentasi Seeder Tim:
+  - Menyinkronkan 53 entitas spasial (36 titik terkurasi autentik + 17 zona poligon desa) ke tabel PostGIS `spatial_features` via `seed_spatial_features.py`.
+  - Memastikan data real Merdeka tersimpan utuh di PostGIS (`properties_meta.demographics`).
+  - Memperbarui `docker-compose.yml` dengan bind mount volume `./backend/scripts:/app/scripts`.
+  - Menyusun dokumentasi seeder lengkap pada `DATABASE.md` dan `backend/app/seeds/README.md` untuk panduan seluruh tim pengembang.
 
 
 
