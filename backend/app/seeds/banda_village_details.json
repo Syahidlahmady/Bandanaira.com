@@ -60,8 +60,7 @@
     "description": "Batas wilayah administratif resmi Lonthoir, Banda Besar.",
     "population": "2.620 Jiwa",
     "main_commodity": "Pala Lonthoir Grade AAA & Minyak Fuli",
-    "area_ha": "340 Hektar",
-    "highlights": "Benteng Hollandia, Perkebunan Pala Tua, Pantai Pasir Enam"
+    "area_ha": "340 Hektar"
   },
   "Boiyauw": {
     "name": "Boiyauw",
@@ -70,8 +69,7 @@
     "description": "Batas wilayah administratif resmi Boiyauw, Banda Besar.",
     "population": "1.780 Jiwa",
     "main_commodity": "Pala Organik & Biji Kenari Hutan",
-    "area_ha": "290 Hektar",
-    "highlights": "Hutan Kenari Raksasa, Sumber Mata Air Perbukitan"
+    "area_ha": "290 Hektar"
   },
   "Combir Kasestoren": {
     "name": "Combir Kasestoren",
@@ -85,12 +83,11 @@
   "Dender": {
     "name": "Dender",
     "island": "Banda Besar",
-    "color": "#a855f7",
+    "color": "#00eeff",
     "description": "Batas wilayah administratif resmi Dender, Banda Besar.",
     "population": "1.120 Jiwa",
     "main_commodity": "Cengkeh Petik & Rumput Laut",
-    "area_ha": "195 Hektar",
-    "highlights": "Dermaga Kayu Dender, Sentra Pengeringan Cengkeh"
+    "area_ha": "195 Hektar"
   },
   "Lautang": {
     "name": "Lautang",
@@ -99,8 +96,7 @@
     "description": "Batas wilayah administratif resmi Lautang, Banda Besar.",
     "population": "980 Jiwa",
     "main_commodity": "Tuna Sirip Kuning & Ikan Cakalang",
-    "area_ha": "175 Hektar",
-    "highlights": "Sentra Pemancingan Tuna, Pantai Tebing Karang"
+    "area_ha": "175 Hektar"
   },
   "Selamon": {
     "name": "Selamon",
@@ -109,8 +105,7 @@
     "description": "Batas wilayah administratif resmi Selamon, Banda Besar.",
     "population": "2.050 Jiwa",
     "main_commodity": "Pala Warisan Adat & Wisata Budaya",
-    "area_ha": "310 Hektar",
-    "highlights": "Rumah Adat Belang Selamon, Pohon Pala Keramat"
+    "area_ha": "310 Hektar"
   },
   "Uring Tutra": {
     "name": "Uring Tutra",
@@ -119,8 +114,7 @@
     "description": "Batas wilayah administratif resmi Uring Tutra, Banda Besar.",
     "population": "1.050 Jiwa",
     "main_commodity": "Pala & Tanaman Hortikultura Kebun",
-    "area_ha": "160 Hektar",
-    "highlights": "Mata Air Alami Lembah Uring, Perkebunan Buah Lokal"
+    "area_ha": "160 Hektar"
   },
   "Waer": {
     "name": "Waer",
@@ -129,8 +123,7 @@
     "description": "Batas wilayah administratif resmi Waer, Banda Besar.",
     "population": "1.380 Jiwa",
     "main_commodity": "Pala, Cengkeh, & Perikanan Pesisir",
-    "area_ha": "185 Hektar",
-    "highlights": "Mata Air Tawar Pantai Waer, Snorkeling Terumbu Tepi"
+    "area_ha": "185 Hektar"
   },
   "Walling Spanciby": {
     "name": "Walling Spanciby",
@@ -139,8 +132,7 @@
     "description": "Batas wilayah administratif resmi Walling Spanciby, Banda Besar.",
     "population": "890 Jiwa",
     "main_commodity": "Kopra, Pala, & Garam Tradisional",
-    "area_ha": "220 Hektar",
-    "highlights": "Tanjung Walling, Titik Pantau Jalur Barat Neira-Ay"
+    "area_ha": "220 Hektar"
   },
   "Desa Pulau Rhun": {
     "name": "Desa Pulau Rhun",

@@ -231,33 +231,16 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
   const sanitizeVillageGeoJSON = (data: any) => {
     if (!data || !data.features || !Array.isArray(data.features)) return data
-    const filtered = data.features
-      .filter((f: any) => {
-        const name = f?.properties?.name
-        const id = f?.id
-        return name !== 'Gunung Api' && name !== 'Pulau Keraka' && id !== 'desa-gunung-api' && id !== 'desa-pulau-keraka'
-      })
-      .map((f: any) => {
-        if (f?.properties?.name === 'Nusantara' && f?.geometry?.type === 'MultiPolygon') {
-          const coords = f.geometry.coordinates || []
-          const cleanParts = coords.filter((part: any) => {
-            const ring = Array.isArray(part[0]) && Array.isArray(part[0][0]) ? part[0] : part
-            if (!ring || ring.length === 0) return false
-            const cLat = ring.reduce((s: number, p: any) => s + p[1], 0) / ring.length
-            const cLng = ring.reduce((s: number, p: any) => s + p[0], 0) / ring.length
-            const isGunungApi = cLng > 129.865 && cLng < 129.895 && cLat < -4.505 && cLat > -4.535 && ring.length > 50
-            return !isGunungApi
-          })
-          return {
-            ...f,
-            geometry: {
-              ...f.geometry,
-              coordinates: cleanParts,
-            },
-          }
-        }
-        return f
-      })
+    const filtered = data.features.filter((f: any) => {
+      const name = f?.properties?.name
+      const id = f?.id
+      return (
+        name !== 'Gunung Api' &&
+        name !== 'Pulau Keraka' &&
+        id !== 'desa-gunung-api' &&
+        id !== 'desa-pulau-keraka'
+      )
+    })
     return { ...data, features: filtered }
   }
 
