@@ -42,6 +42,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 37: GIS Map Cartographic Location Pins & In-Map Atlas Legend Overhaul**
 - [x] **Phase 38: Client-Side URL Routing, Deep-Linking, Session Restoration & Refresh Persistence**
 - [x] **Phase 39: Spatial Features Export, 54-Item GeoJSON Seeder, Non-Technical Multi-Part Village Boundary Editor & GIS Documentation**
+- [x] **Phase 40: GIS Workspace Simplification, Bounding Box Archipelagic Lock, Redundancy Elimination & Natural Copywriting Overhaul**
 
 ---
 
@@ -583,20 +584,25 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Menghapus seluruh karakter emoji pada markup dan tooltip status peta, menggantikannya dengan ikon Lucide (`X`, `ChevronDown`, `ChevronUp`) dan tipografi deskriptif bersih.
   - Memverifikasi build frontend lolos (`✓ built in 6.73s`) dan lolos pemeriksaan `impeccable detect` (0 issues).
 
-### Phase 38: Client-Side URL Routing, Deep-Linking, Session Restoration & Refresh Persistence
-- [x] 38.1 Pemetaan Rute URL Bersih (Bidirectional URL Routing) untuk 14 Workspace:
-  - Mendefinisikan kamus rute `TAB_ROUTES` dan pencocokan balik `ROUTE_TO_TAB` di `App.tsx` yang memetakan seluruh workspace dan aliasnya (`/`, `/dashboard`, `/population`, `/letters`, `/farming`, `/traceability`, `/koperasi`, `/iot`, `/tourism`, `/gis`, `/audit`, `/smart_planner`, `/survei`, `/register`, `/login`, `/peta`, `/wisata`, `/surat`, dll.).
-- [x] 38.2 Sinkronisasi Otomatis Riwayat Peramban (History API & popstate Listener):
-  - Membungkus navigasi `setActiveTab` dengan sinkronisasi `window.history.pushState` / `replaceState` dan penyimpanan lokal `banda_active_tab`.
-  - Mengimplementasikan pendengar event `popstate` agar tombol Back/Forward peramban berfungsi mulus antar-ruang kerja.
-- [x] 38.3 Inisialisasi State Sinkron & Eliminasi "Kick to Landing Page" saat Refresh:
-  - Menginisialisasi `currentUser` secara sinkron dari profil cache lokal `authService.getCachedProfile()` saat token valid terdeteksi, mencegah *flash* unauthenticated state.
-  - Menginisialisasi `activeTab` secara langsung dari `window.location.pathname` (dan cadangan `banda_active_tab`), memastikan pengguna tetap berada di halaman yang sedang diakses saat me-refresh halaman (F5 / reload).
-- [x] 38.4 Fallback Navigasi Service Worker Offline (SPA Navigation):
-  - Memperbarui `sw.js` dengan penanganan request bernavigasi (`mode === 'navigate'`) agar fallback ke `/index.html` dari cache ketika jaringan terputus atau saat pengguna me-refresh halaman di pulau 3T.
-- [x] 38.5 Verifikasi Build dan Pengujian Regresi Penuh:
-  - Build frontend Vite + TypeScript lolos 100% tanpa galat (`✓ built in 9.56s`).
-  - Seluruh 89 tes backend pytest lolos 100% (`89 passed in 232.12s`).
+### Phase 40: GIS Workspace Simplification, Bounding Box Archipelagic Lock, Redundancy Elimination & Natural Copywriting Overhaul
+- [x] 40.1 Penguncian Batas Wilayah Geografis Gugusan Banda (Archipelagic Spatial Lock):
+  - Mengonfigurasi `BANDA_ARCHIPELAGO_BOUNDS` WGS 84 (`[-4.7000, 129.6000]` ke `[-4.3800, 130.1500]`) dengan `maxBoundsViscosity: 1.0`, `minZoom: 11`, dan `maxZoom: 18`.
+  - Mencegah pengguna tergeser (*drag/pan*) atau me-zoom out keluar ke samudra lepas atau benua lain.
+- [x] 40.2 Eliminasi Redundansi dan Polusi Visual Antarmuka:
+  - Menghapus badge teknis *"Offline Siap"*, tombol *"Muat Ulang"*, dan tombol *"Pusat Banda"* dari header atas; menggantikannya dengan tombol kompas mini berukuran 30px di bawah tombol zoom `+ / -`.
+  - Menghapus seluruh baris pill kategori duplikat di atas peta beserta pintasan *"Semua Kategori · Kosongkan"*, memusatkan pemilihan kategori secara terintegrasi ke kartu Legenda Peta.
+  - Menghapus badge *"66 Objek Aktif"* di sudut kanan atas kanvas peta.
+- [x] 40.3 Harmonisasi Tombol "Layers" & Pemilihan Gaya Peta Google Maps-Style:
+  - Mengganti tombol pemilih layer dengan tombol mengambang kubus ikon bertumpuk `<Layers />` dan label *"Layers"*.
+  - Menghapus penyedia peta dasar CartoDB (*Minimalis* dan *Mode Gelap*) yang memerlukan API key; mempertahankan 3 peta dasar beresolusi tinggi tanpa kunci: Standar (OSM), Satelit (Esri World Imagery + toggle label tempat/jalan), dan Topografi (Esri World Topo).
+  - Menaturalisasi seluruh salinan teks teknis AI: *"Batas Administrasi Desa"* -> *"Wilayah Desa"*, *"Jalur & Rute Maritim"* -> *"Jalur Laut"*, *"Tampilan & Lapisan Peta"* -> *"Gaya Peta"*, *"Tipe Peta Dasar"* -> *"Peta Dasar"*, *"Lapisan Data Spasial"* -> *"Informasi Peta"*.
+- [x] 40.4 Pembersihan Rute Uji Coba Lintas Daratan:
+  - Menghapus entri rute draf seeder maritim yang melintasi pulau dari tabel `spatial_features` PostGIS, file `gis_spatial_features.json`, dan modul `curated_layers.py`.
+- [x] 40.5 Integrasi Multi-Developer & Verifikasi Penuh:
+  - Mengintegrasikan pembaruan kode dari Zerooo (`613ca7e`) tanpa konflik.
+  - Memperbarui `docker-compose.yml` untuk memetakan dependensi `package.json` dan pustaka `lenis`.
+  - Memverifikasi build frontend Vite lolos tanpa error (`✓ built in 8.01s`) dan seluruh 8 pengujian backend GIS lolos 100% (`8 passed in 18.47s`).
+
 
 
 
