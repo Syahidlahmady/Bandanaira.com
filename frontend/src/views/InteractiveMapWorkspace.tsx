@@ -229,36 +229,34 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   const [selectedVillage, setSelectedVillage] = useState<VillageInfo | null>(null)
   const villageBoundariesLayerRef = useRef<L.GeoJSON | null>(null)
 
-  // Village Polygon Interactive Editor States
+  const sanitizeVillageGeoJSON = (data: any) => {
+    if (!data || !data.features || !Array.isArray(data.features)) return data
+    const filtered = data.features.filter((f: any) => {
+      const name = f?.properties?.name
+      const id = f?.id
+      return (
+        name !== 'Gunung Api' &&
+        name !== 'Pulau Keraka' &&
+        id !== 'desa-gunung-api' &&
+        id !== 'desa-pulau-keraka'
+      )
+    })
+    return { ...data, features: filtered }
+  }
+
+  // Village Polygon Interactive Editor States (Berbasis Langsung dari PostGIS Database)
   const [villageGeoJSON, setVillageGeoJSON] = useState<any>(() => {
     try {
-      // Prioritaskan draft lokal yang sedang dikerjakan pengguna (v1 atau v2)
-      const cachedV1 = localStorage.getItem('banda_village_polygons_v1')
-      if (cachedV1) {
-        const parsed = JSON.parse(cachedV1)
-        if (parsed?.features?.length > 0) return parsed
-      }
-      const cachedV2 = localStorage.getItem('banda_village_polygons_v2')
-      if (cachedV2) {
-        const parsed = JSON.parse(cachedV2)
-        if (parsed?.features?.length > 0) return parsed
-      }
-    } catch (e) {
-      console.warn('Gagal membaca cache poligon desa', e)
-    }
-    return BANDA_VILLAGES_GEOJSON
+      localStorage.removeItem('banda_village_polygons_v1')
+      localStorage.removeItem('banda_village_polygons_v2')
+    } catch {}
+    return sanitizeVillageGeoJSON(BANDA_VILLAGES_GEOJSON)
   })
   const [villageDetailsMap, setVillageDetailsMap] = useState<Record<string, VillageInfo>>(() => {
     try {
-      localStorage.removeItem('banda_village_details_v1') // Hapus paksa cache usang v1
-      const cached = localStorage.getItem('banda_village_details_v2')
-      if (cached) {
-        const parsed = JSON.parse(cached)
-        return { ...VILLAGE_DETAILS, ...parsed }
-      }
-    } catch (e) {
-      console.warn('Gagal membaca cache details desa', e)
-    }
+      localStorage.removeItem('banda_village_details_v1')
+      localStorage.removeItem('banda_village_details_v2')
+    } catch {}
     return VILLAGE_DETAILS
   })
 
@@ -353,30 +351,12 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
       ])
       setFeatures(layersRes.features)
       if (villagesRes && villagesRes.features && villagesRes.features.length > 0) {
-        // Cek jika pengguna punya draft lokal yang sedang dikerjakan di browser
-        const localDraft = localStorage.getItem('banda_village_polygons_v1') || localStorage.getItem('banda_village_polygons_v2')
-        if (localDraft) {
-          try {
-            const parsed = JSON.parse(localDraft)
-            if (parsed?.features?.length > 0) {
-              setVillageGeoJSON(parsed)
-            } else {
-              setVillageGeoJSON(villagesRes)
-            }
-          } catch {
-            setVillageGeoJSON(villagesRes)
-          }
-        } else {
-          setVillageGeoJSON(villagesRes)
-        }
+        const cleanServerData = sanitizeVillageGeoJSON(villagesRes)
+        setVillageGeoJSON(cleanServerData)
       }
       if (villageDetailsRes && Object.keys(villageDetailsRes).length > 0) {
         const merged = { ...VILLAGE_DETAILS, ...villageDetailsRes }
         setVillageDetailsMap(merged)
-        try {
-          localStorage.setItem('banda_village_details_v2', JSON.stringify(merged))
-          localStorage.removeItem('banda_village_details_v1')
-        } catch {}
       }
     } catch (err) {
       console.warn('Gagal memuat data spasial:', err)
@@ -1014,12 +994,6 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     }
 
     setVillageGeoJSON(newGeoJSON)
-    try {
-      localStorage.setItem('banda_village_polygons_v1', JSON.stringify(newGeoJSON))
-      localStorage.setItem('banda_village_polygons_v2', JSON.stringify(newGeoJSON))
-    } catch (e) {
-      console.error('Gagal menyimpan poligon ke penyimpanan browser', e)
-    }
 
     // Update village details
     const updatedDetails = {
@@ -1035,35 +1009,39 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
       },
     }
     setVillageDetailsMap(updatedDetails)
-    try {
-      localStorage.setItem('banda_village_details_v2', JSON.stringify(updatedDetails))
-      localStorage.removeItem('banda_village_details_v1')
-    } catch (e) {
-      console.error('Gagal menyimpan keterangan desa ke penyimpanan browser', e)
-    }
 
-    // Auto-sync ke seeder backend PostGIS jika token tersedia
-    const token = authService.getAccessToken()
-    if (token) {
-      gisService.syncVillages(newGeoJSON, updatedDetails, token).catch(() => {})
-    }
+    // Simpan langsung ke basis data PostGIS dan seeder server
+    const token = authService.getAccessToken() || undefined
+    gisService.saveVillagePolygon({
+      name: editingVillageName,
+      island: editingVillageIsland,
+      geometry,
+      color: editingVillageColor,
+      description: editingVillageDesc,
+      population: editingVillagePop,
+      main_commodity: editingVillageCommodity,
+      area_ha: editingVillageArea,
+      demographics: villageDetailsMap[editingVillageName]?.demographics || {},
+    }, token).catch((err) => {
+      console.warn('Gagal menyimpan poligon langsung ke database PostGIS:', err)
+    })
+
+    gisService.syncVillages(newGeoJSON, updatedDetails, token).catch((err) => {
+      console.warn('Gagal sync seluruh zona desa ke PostGIS:', err)
+    })
 
     setNotificationMsg({
       type: 'success',
-      text: `Batas wilayah desa ${editingVillageName} berhasil disimpan!`,
+      text: `Batas wilayah desa ${editingVillageName} berhasil disimpan ke basis data PostGIS!`,
     })
     setTimeout(() => setNotificationMsg(null), 5000)
     setAdminStudioOpen(false)
   }
 
   const handleSyncVillagesToServer = async () => {
-    const token = authService.getAccessToken()
-    if (!token) {
-      alert('Harap masuk sebagai Administrator atau Petugas Desa terlebih dahulu untuk menyinkronkan ke server!')
-      return
-    }
     setIsSyncingVillages(true)
     try {
+      const token = authService.getAccessToken() || undefined
       const res = await gisService.syncVillages(villageGeoJSON, villageDetailsMap, token)
       setNotificationMsg({
         type: 'success',
@@ -1092,12 +1070,18 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     localStorage.setItem('banda_village_polygons_v1', JSON.stringify(newGeoJSON))
     localStorage.setItem('banda_village_polygons_v2', JSON.stringify(newGeoJSON))
 
+    // Hapus juga langsung dari database PostGIS
+    const token = authService.getAccessToken() || undefined
+    gisService.syncVillages(newGeoJSON, villageDetailsMap, token).catch((err) => {
+      console.warn('Gagal sync penghapusan zona desa ke PostGIS:', err)
+    })
+
     setPolygonParts([[]])
     setActivePartIndex(0)
     setEditingVillageId(null)
     setNotificationMsg({
       type: 'info',
-      text: `Batas wilayah ${editingVillageName} telah dihapus.`,
+      text: `Batas wilayah ${editingVillageName} telah dihapus dari basis data dan peta.`,
     })
     setTimeout(() => setNotificationMsg(null), 4000)
   }
@@ -1525,7 +1509,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
     if (!showVillageBoundaries) return
 
-    const geoJsonLayer = L.geoJSON(villageGeoJSON, {
+    const sanitizedData = sanitizeVillageGeoJSON(villageGeoJSON)
+    const geoJsonLayer = L.geoJSON(sanitizedData, {
       style: (feat) => {
         const vName = feat?.properties?.name
         const isSelected = selectedVillage?.name === vName
@@ -1853,7 +1838,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
         {/* Island Filter Chips */}
         <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          {['', 'Pulau Neira', 'Banda Besar', 'Pulau Hatta', 'Pulau Ay', 'Pulau Rhun', 'Gunung Api'].map((isl) => {
+          {['', 'Pulau Neira', 'Banda Besar', 'Pulau Hatta', 'Pulau Ay', 'Pulau Rhun'].map((isl) => {
             const isSelected = islandFilter === isl
             return (
               <button
@@ -3351,8 +3336,6 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                   >
                     <option value="Banda Besar">Banda Besar (Lonthoir)</option>
                     <option value="Pulau Neira">Pulau Neira</option>
-                    <option value="Pulau Gunung Api">Pulau Gunung Api</option>
-                    <option value="Pulau Keraka">Pulau Keraka</option>
                     <option value="Pulau Ay">Pulau Ay</option>
                     <option value="Pulau Rhun">Pulau Rhun</option>
                     <option value="Pulau Hatta">Pulau Hatta</option>

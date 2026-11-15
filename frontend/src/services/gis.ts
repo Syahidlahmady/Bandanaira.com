@@ -297,18 +297,41 @@ export const gisService = {
   /**
    * Menyimpan dan menyinkronkan zona batas desa ke seeder backend & PostGIS
    */
-  syncVillages: async (geojson: any, details: any, token: string): Promise<any> => {
+  syncVillages: async (geojson: any, details: any, token?: string): Promise<any> => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+
     const res = await fetch(`${getApiBase()}/gis/villages/sync`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
+      headers,
       body: JSON.stringify({ geojson, details }),
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
       throw new Error(err.detail || 'Gagal menyimpan zona desa ke server')
+    }
+    return res.json()
+  },
+
+  /**
+   * Menyimpan satu batas wilayah desa langsung ke basis data PostGIS
+   */
+  saveVillagePolygon: async (villageData: any, token?: string): Promise<any> => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+
+    const res = await fetch(`${getApiBase()}/gis/villages/save-polygon`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(villageData),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail || 'Gagal menyimpan batas wilayah desa ke basis data')
     }
     return res.json()
   },

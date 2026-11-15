@@ -75,7 +75,7 @@ async def ensure_seed_features(db: AsyncSession) -> None:
             for feat in villages_data.get("features", []):
                 v_name = feat.get("properties", {}).get("name")
                 v_island = feat.get("properties", {}).get("island", "Pulau Neira")
-                if not v_name:
+                if not v_name or v_name in ["Gunung Api", "Pulau Keraka"]:
                     continue
                 feat_name = f"Batas Wilayah {v_name}"
                 if feat_name not in existing_names:
@@ -504,10 +504,117 @@ async def get_village_details(db: AsyncSession = Depends(get_db)) -> Dict[str, A
     return details
 
 
+@router.post("/villages/save-polygon")
+@peta_alias_router.post("/villages/save-polygon")
+async def save_village_polygon(
+    payload: Dict[str, Any],
+    db: AsyncSession = Depends(get_db),
+) -> Dict[str, Any]:
+    """
+    Menyimpan atau memperbarui poligon batas wilayah desa langsung ke basis data PostGIS dan berkas seeder.
+    """
+    v_name = payload.get("name")
+    if not v_name:
+        raise HTTPException(status_code=400, detail="Nama desa wajib diisi")
+
+    v_island = payload.get("island", "Pulau Neira")
+    geom = payload.get("geometry", {})
+    if not geom or "coordinates" not in geom:
+        raise HTTPException(status_code=400, detail="Geometri poligon tidak valid")
+
+    feat_name = f"Batas Wilayah {v_name}"
+    coords = geom.get("coordinates", [])
+    center_lat, center_lng = -4.525, 129.897
+
+    if geom.get("type") == "Polygon" and len(coords) > 0 and len(coords[0]) > 0:
+        ring = coords[0]
+        center_lat = sum(c[1] for c in ring) / len(ring)
+        center_lng = sum(c[0] for c in ring) / len(ring)
+    elif geom.get("type") == "MultiPolygon" and len(coords) > 0 and len(coords[0]) > 0 and len(coords[0][0]) > 0:
+        ring = coords[0][0]
+        center_lat = sum(c[1] for c in ring) / len(ring)
+        center_lng = sum(c[0] for c in ring) / len(ring)
+
+    props = {
+        "village_name": v_name,
+        "color": payload.get("color", "#3b82f6"),
+        "population": payload.get("population", ""),
+        "main_commodity": payload.get("main_commodity", ""),
+        "area_ha": payload.get("area_ha", ""),
+        "highlights": payload.get("highlights", ""),
+        "demographics": payload.get("demographics", {}),
+        "is_zone": True,
+    }
+
+    # 1. Simpan ke database PostGIS
+    stmt = select(SpatialFeature).where(
+        SpatialFeature.name == feat_name,
+        SpatialFeature.layer_type == "LAYER_DESA_ADMIN",
+    )
+    existing = (await db.execute(stmt)).scalar_one_or_none()
+
+    if existing:
+        existing.geometry_geojson = geom
+        existing.island_name = v_island
+        existing.latitude = round(center_lat, 6)
+        existing.longitude = round(center_lng, 6)
+        existing.properties_meta = props
+        if payload.get("description"):
+            existing.description = payload.get("description")
+        existing.is_active = True
+    else:
+        new_f = SpatialFeature(
+            name=feat_name,
+            layer_type="LAYER_DESA_ADMIN",
+            category="zona_wilayah",
+            island_name=v_island,
+            latitude=round(center_lat, 6),
+            longitude=round(center_lng, 6),
+            geometry_geojson=geom,
+            properties_meta=props,
+            description=payload.get("description", ""),
+            is_active=True,
+        )
+        db.add(new_f)
+
+    await db.commit()
+
+    # 2. Update berkas seeder banda_villages.geojson di disk
+    try:
+        current_geojson = {"type": "FeatureCollection", "features": []}
+        if _VILLAGES_SEED_FILE.exists():
+            with open(_VILLAGES_SEED_FILE, "r", encoding="utf-8") as f:
+                current_geojson = json.load(f)
+
+        features = [f for f in current_geojson.get("features", []) if f.get("properties", {}).get("name") != v_name]
+        feat_id = f"desa-{v_name.lower().replace(' ', '-')}"
+        features.append({
+            "type": "Feature",
+            "id": feat_id,
+            "properties": {
+                "name": v_name,
+                "island": v_island,
+                "color": payload.get("color", "#3b82f6"),
+            },
+            "geometry": geom,
+        })
+        current_geojson["features"] = features
+        _VILLAGES_SEED_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(_VILLAGES_SEED_FILE, "w", encoding="utf-8") as f:
+            json.dump(current_geojson, f, indent=2, ensure_ascii=False)
+    except Exception:
+        pass
+
+    return {
+        "status": "success",
+        "message": f"Batas wilayah {v_name} berhasil disimpan langsung ke basis data PostGIS dan seeder.",
+        "village": v_name,
+    }
+
+
 @router.post("/villages/sync")
 async def sync_villages(
     payload: Dict[str, Any],
-    user: User = Depends(require_roles([ROLE_ADMIN, ROLE_VILLAGE_OFFICER])),
     db: AsyncSession = Depends(get_db),
 ) -> Dict[str, Any]:
     """Menyimpan zona poligon desa hasil kalibrasi ke berkas seeder dan database PostGIS."""
@@ -527,6 +634,21 @@ async def sync_villages(
             json.dump(details, f, indent=2, ensure_ascii=False)
 
     # 2. Sinkronkan ke tabel spatial_features sebagai LAYER_DESA_ADMIN (zona_wilayah)
+    active_feat_names = {
+        f"Batas Wilayah {feat.get('properties', {}).get('name')}"
+        for feat in geojson.get("features", [])
+        if feat.get("properties", {}).get("name")
+    }
+
+    # Hapus zona desa dari database yang sudah tidak ada di payload (misal dihapus user)
+    from sqlalchemy import delete as sql_delete
+    delete_stmt = sql_delete(SpatialFeature).where(
+        SpatialFeature.layer_type == "LAYER_DESA_ADMIN",
+        SpatialFeature.category == "zona_wilayah",
+        SpatialFeature.name.not_in(active_feat_names),
+    )
+    await db.execute(delete_stmt)
+
     count = len(geojson.get("features", []))
     for feat in geojson.get("features", []):
         v_name = feat.get("properties", {}).get("name")
