@@ -75,7 +75,7 @@ async def ensure_seed_features(db: AsyncSession) -> None:
             for feat in villages_data.get("features", []):
                 v_name = feat.get("properties", {}).get("name")
                 v_island = feat.get("properties", {}).get("island", "Pulau Neira")
-                if not v_name:
+                if not v_name or v_name in ["Gunung Api", "Pulau Keraka"]:
                     continue
                 feat_name = f"Batas Wilayah {v_name}"
                 if feat_name not in existing_names:
