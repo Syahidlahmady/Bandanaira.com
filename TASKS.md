@@ -44,6 +44,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 39: Spatial Features Export, 54-Item GeoJSON Seeder, Non-Technical Multi-Part Village Boundary Editor & GIS Documentation**
 - [x] **Phase 40: GIS Workspace Simplification, Bounding Box Archipelagic Lock, Redundancy Elimination & Natural Copywriting Overhaul**
 - [x] **Phase 41: Transformasi Kartu Detail POI ke Google Maps Desktop Drawer & Penampil Panorama 360° Interaktif (Anti-Slop Modern UI)**
+- [x] **Phase 42: Kurasi & Scraping Foto Autentik Cagar Budaya/Landmark Banda Neira (Zero External Hotlinking & Full Offline Asset Resilience)**
 
 ---
 
@@ -630,14 +631,13 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Memetakan 20 objek penting baru (Bandara Perintis Kuabang/WAPC, 4 Dermaga Antar-Pulau Hatta/Rhun/Waer/Selamon, Pasar Tradisional & Ikan, Klenteng Sun Hok Bio, Makam Perigi Rante 1621, Benteng Kora-kora, Benteng Swanenburg Pulau Rhun, Kebun Pala Tertua Lonthoir, 5 Penginapan/Resor Populer, serta 4 Destinasi Bahari Baru).
   - Memastikan tidak ada duplikasi (*Zero Duplication*) terhadap 36 titik spasial eksisting dengan mencocokkan identitas dan koordinat.
   - Menyinkronkan dataset ke `gis_spatial_features.json` dan database PostGIS `spatial_features` via seeder `seed_spatial_features.py` (total kini menjadi 74 fitur dan 89 entitas API).
-- [x] 40.12 Transformasi Kartu Detail POI ke Google Maps Desktop Drawer & Penampil Panorama 360° Interaktif:
-  - Merombak total kartu inspeksi objek spasial yang sebelumnya berada di kolom kanan (mempersempit peta) menjadi *Left-Docked Google Maps Desktop Drawer* mengambang di atas peta 100% penuh.
-  - Mengintegrasikan cover gambar hero autentik untuk seluruh landmark dan cagar budaya Banda Neira dengan tombol floating "Panorama 360°" langsung di atas foto.
-  - Mengembangkan modal penampil WebGL 360° Panorama Viewer (`Panorama360Modal.tsx`) dengan proyeksi equirectangular bola, rotasi drag mouse/sentuhan bebas (yaw & pitch), zoom FOV, orientasi kompas, dan auto-rotate tanpa dependensi eksternal.
-  - Mengimplementasikan Action Pill Bar bergaya Google Maps (*Fokuskan Peta*, *Panorama 360°*, *Salin Koordinat*, *Kontak WA*, dan *Audio Guide*).
-  - Menyusun baris metadata modular berikon rapi (Alamat/Pulau, Koordinat presisi WGS 84, Jam operasional/Era cagar budaya, Spesifikasi layer, dan Narasi deskripsi lengkap).
-  - Menambahkan tombol ciutkan/bentangkan (*collapse/expand*) `<` / `>` di sisi kanan laci serta tombol terapung pemulihan cepat saat laci tersembunyi.
-  - Mengintegrasikan toolbar manajemen admin (*Edit Titik Ini* & *Hapus*) di bagian bawah laci khusus akun admin/petugas, berlaku seragam pada portal beranda pengguna maupun dashboard admin.
+- [x] 40.13 Kurasi & Scraping Foto Autentik Cagar Budaya/Landmark Banda Neira (Zero External Hotlinking):
+  - Mengembangkan skrip otomatis scraping & kurasi berkas autentik Wikimedia Commons (`scripts/download_authentic_banda_images.py`) dengan penanganan rate-limiting dan resolusi tinggi.
+  - Mengunduh dan menstandarkan 26 foto riil cagar budaya dan lanskap Banda Neira ke repositori lokal statis `frontend/public/images/landmarks/` (`belgica.jpg`, `nassau.jpg`, `istana-mini.jpg`, `bung-hatta.jpg`, `sutan-sjahrir.jpg`, `gunung-api.jpg`, `lava-flow.jpg`, `pohon-talang.jpg`, `hollandia.jpg`, `concordia.jpg`, `benteng-revenge.jpg`, `rumah-budaya.jpg`, `gereja-tua.jpg`, `klenteng.jpg`, `sumur-lonthoir.jpg`, `pulau-rhun.jpg`, `pulau-nailaka.jpg`, `pulau-ay.jpg`, `pulau-pisang.jpg`, `bandara.jpg`, `pelabuhan.jpg`, `kebun-pala.jpg`, `hotel-maulana.jpg`, dll.).
+  - Memetakan dan memperluas referensi foto lokal untuk seluruh 56 titik fitur spasial point di `backend/app/seeds/gis_spatial_features.json` dengan menambahkan properti `image_url: "/images/landmarks/<file>.jpg"`.
+  - Menjalankan migrasi seeder database PostGIS `seed_spatial_features.py` (71 fitur diperbarui dan 3 fitur disinkronkan).
+  - Menghapus ketergantungan Unsplash eksternal pada `InteractiveMapWorkspace.tsx`, `Panorama360Modal.tsx`, dan `JelajahPetaDesktopView.tsx`, menggantinya secara penuh dengan aset statis lokal yang kebal terhadap HTTP 429, pemblokiran CORS, dan siap operasi offline PWA.
+  - Memverifikasi build frontend (`npm run build`) dan rangkaian pengujian otomatis PostGIS backend (`pytest tests/test_gis.py`) dengan hasil 100% lulus.
 
 
 

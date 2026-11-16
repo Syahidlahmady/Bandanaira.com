@@ -8,7 +8,8 @@
     "longitude": 129.897618,
     "geometry_geojson": null,
     "properties_meta": {
-      "era": "VOC Awal Abad 17"
+      "era": "VOC Awal Abad 17",
+      "image_url": "/images/landmarks/nassau.jpg"
     },
     "description": "Benteng pertama Belanda yang dibangun di atas reruntuhan loji Portugis pada tahun 1609 oleh Laksamana Verhoeff."
   },
@@ -21,7 +22,8 @@
     "longitude": 129.900531,
     "geometry_geojson": null,
     "properties_meta": {
-      "era": "VOC Pemerintahan Kolonial"
+      "era": "VOC Pemerintahan Kolonial",
+      "image_url": "/images/landmarks/istana-mini.jpg"
     },
     "description": "Gedung kantor dan kediaman resmi Gubernur VOC di Banda, arsitektur megah neoklasik yang menjadi prototipe Istana Merdeka Jakarta."
   },
@@ -34,7 +36,8 @@
     "longitude": 129.89978,
     "geometry_geojson": null,
     "properties_meta": {
-      "era": "Pergerakan Nasional Indonesia"
+      "era": "Pergerakan Nasional Indonesia",
+      "image_url": "/images/landmarks/bung-hatta.jpg"
     },
     "description": "Tempat pengasingan Mohammad Hatta oleh kolonial Belanda (1936-1942). Dilengkapi ruang kelas belajar anak-anak Banda dan koleksi buku asli."
   },
@@ -47,7 +50,8 @@
     "longitude": 129.897333,
     "geometry_geojson": null,
     "properties_meta": {
-      "era": "Pergerakan Nasional Indonesia"
+      "era": "Pergerakan Nasional Indonesia",
+      "image_url": "/images/landmarks/sutan-sjahrir.jpg"
     },
     "description": "Tempat tinggal Sutan Sjahrir selama dibuang ke Banda Neira. Menampilkan gramofon kuno, meja kerja diplomasi, dan surat korespondensi."
   },
@@ -61,7 +65,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "price_per_night_rp": 350000,
-      "contact_whatsapp": "6281299887711"
+      "contact_whatsapp": "6281299887711",
+      "image_url": "/images/landmarks/delfika-homestay.jpg"
     },
     "description": "Penginapan bersejarah di pusat kota Neira dengan kebun asri, air minum RO gratis dari tandon komunal, dan sistem solar backup."
   },
@@ -75,7 +80,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "sub_type": "alam",
-      "guide_available": false
+      "guide_available": false,
+      "image_url": "/images/landmarks/gunung-api.jpg"
     },
     "description": "Puncak kawah vulkanik aktif berketinggian 640 mdpl dengan pemandangan 360 derajat seluruh gugusan kepulauan Banda."
   },
@@ -89,7 +95,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "price_per_night_rp": 650000,
-      "contact_whatsapp": "6281299887733"
+      "contact_whatsapp": "6281299887733",
+      "image_url": "/images/landmarks/hotel-maulana.jpg"
     },
     "description": "Hotel tepi pantai legendaris Banda didirikan oleh tokoh budaya Des Alwi, pemandangan langsung ke Gunung Api."
   },
@@ -102,7 +109,8 @@
     "longitude": 129.773319,
     "geometry_geojson": null,
     "properties_meta": {
-      "era": "Konflik VOC vs EIC"
+      "era": "Konflik VOC vs EIC",
+      "image_url": "/images/landmarks/benteng-revenge.jpg"
     },
     "description": "Benteng pertahanan perebutan monopoli rempah antara armada VOC Belanda dan kongsi dagang Inggris EIC tahun 1616."
   },
@@ -120,7 +128,8 @@
       "boat_access": "5 menit dari pelabuhan Neira",
       "entry_fee_rp": 25000,
       "best_time": "08:00 - 15:00 WIT",
-      "guide_available": false
+      "guide_available": false,
+      "image_url": "/images/landmarks/lava-flow.jpg"
     },
     "description": "Terumbu karang alami yang tumbuh subur di atas batuan lava erupsi Gunung Api 1988. Salah satu spot snorkeling terkaya di dunia."
   },
@@ -132,7 +141,9 @@
     "latitude": -4.524928,
     "longitude": 129.896722,
     "geometry_geojson": null,
-    "properties_meta": {},
+    "properties_meta": {
+      "image_url": "/images/landmarks/pelabuhan.jpg"
+    },
     "description": "Dermaga sandar kapal penumpang PELNI (KM Nggapulu, KM Pangrango, KM Sangiang) dan logistik utama antar-pulau."
   },
   {
@@ -143,7 +154,9 @@
     "latitude": -4.527039,
     "longitude": 129.894823,
     "geometry_geojson": null,
-    "properties_meta": {},
+    "properties_meta": {
+      "image_url": "/images/landmarks/dermaga-lonthoir.jpg"
+    },
     "description": "Hub mobilitas warga dan wisatawan menyeberangi selat Neira menuju pulau Banda Besar menggunakan perahu ketinting dan speedboat."
   },
   {
@@ -154,7 +167,9 @@
     "latitude": -4.528092,
     "longitude": 129.906077,
     "geometry_geojson": null,
-    "properties_meta": {},
+    "properties_meta": {
+      "image_url": "/images/landmarks/pltd-neira.jpg"
+    },
     "description": "Pembangkit diesel PLN penyedia daya listrik jaringan utama kota Neira dengan konsumsi solar ~1200 liter per hari."
   },
   {
@@ -166,7 +181,8 @@
     "longitude": 129.898835,
     "geometry_geojson": null,
     "properties_meta": {
-      "era": "VOC Kolonial Belanda"
+      "era": "VOC Kolonial Belanda",
+      "image_url": "/images/landmarks/belgica.jpg"
     },
     "description": "Benteng segi lima bertingkat dibangun Pieter Both tahun 1611 di atas bukit Tabaleku untuk mengawasi seluruh teluk Neira."
   },
@@ -178,7 +194,9 @@
     "latitude": -4.528733,
     "longitude": 129.90087,
     "geometry_geojson": null,
-    "properties_meta": {},
+    "properties_meta": {
+      "image_url": "/images/landmarks/ex-deputi.jpg"
+    },
     "description": ""
   },
   {
@@ -191,7 +209,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "era": "Benteng Lonthoir",
-      "entry_fee_rp": 10000
+      "entry_fee_rp": 10000,
+      "image_url": "/images/landmarks/hollandia.jpg"
     },
     "description": ""
   },
@@ -204,7 +223,8 @@
     "longitude": 129.9481,
     "geometry_geojson": null,
     "properties_meta": {
-      "era": "Benteng Peninggalan Masa Kolonialisme"
+      "era": "Benteng Peninggalan Masa Kolonialisme",
+      "image_url": "/images/landmarks/concordia.jpg"
     },
     "description": ""
   },
@@ -216,7 +236,9 @@
     "latitude": -4.547939,
     "longitude": 129.878333,
     "geometry_geojson": null,
-    "properties_meta": {},
+    "properties_meta": {
+      "image_url": "/images/landmarks/sumur-lonthoir.jpg"
+    },
     "description": ""
   },
   {
@@ -228,7 +250,8 @@
     "longitude": 129.901124,
     "geometry_geojson": null,
     "properties_meta": {
-      "era": "Rumah Pengasingan Tokoh Bersejarah Indonesia"
+      "era": "Rumah Pengasingan Tokoh Bersejarah Indonesia",
+      "image_url": "/images/landmarks/iwa-kusuma.jpg"
     },
     "description": ""
   },
@@ -241,7 +264,8 @@
     "longitude": 129.902875,
     "geometry_geojson": null,
     "properties_meta": {
-      "era": "Rumah Pengasingan Tokoh Sejarah"
+      "era": "Rumah Pengasingan Tokoh Sejarah",
+      "image_url": "/images/landmarks/cipto-mangunkusumo.jpg"
     },
     "description": ""
   },
@@ -255,7 +279,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "era": "Rumah Budaya ",
-      "entry_fee_rp": 20000
+      "entry_fee_rp": 20000,
+      "image_url": "/images/landmarks/rumah-budaya.jpg"
     },
     "description": ""
   },
@@ -267,7 +292,9 @@
     "latitude": -4.526933,
     "longitude": 129.896776,
     "geometry_geojson": null,
-    "properties_meta": {},
+    "properties_meta": {
+      "image_url": "/images/landmarks/gereja-tua.jpg"
+    },
     "description": ""
   },
   {
@@ -278,7 +305,9 @@
     "latitude": -4.520132,
     "longitude": 129.773592,
     "geometry_geojson": null,
-    "properties_meta": {},
+    "properties_meta": {
+      "image_url": "/images/landmarks/gereja-betlehem.jpg"
+    },
     "description": ""
   },
   {
@@ -289,7 +318,9 @@
     "latitude": -4.518642,
     "longitude": 129.772654,
     "geometry_geojson": null,
-    "properties_meta": {},
+    "properties_meta": {
+      "image_url": "/images/landmarks/welvaren.jpg"
+    },
     "description": ""
   },
   {
@@ -305,7 +336,8 @@
       "station_id": "WS-NEIRA-02",
       "tank_level_pct": 45.0,
       "water_quality_status": "PERLU FILTRASI RO (AIR PAYAU)",
-      "water_source": "Sumur Galian Dangkal Warga"
+      "water_source": "Sumur Galian Dangkal Warga",
+      "image_url": "/images/landmarks/sumur-lonthoir.jpg"
     },
     "description": "Sumur galian komunal warga rentan intrusi air laut saat pasang purnama. Memerlukan pemantauan salinitas dan filtrasi kontinu."
   },
@@ -317,7 +349,9 @@
     "latitude": -4.528897,
     "longitude": 129.89846,
     "geometry_geojson": null,
-    "properties_meta": {},
+    "properties_meta": {
+      "image_url": "/images/landmarks/puskesmas-banda.jpg"
+    },
     "description": "Fasilitas gawat darurat medis pulau 24 jam dengan ruang rawat inap dan ambulans laut penyeberangan darurat ke RSUD Ambon."
   },
   {
@@ -328,7 +362,9 @@
     "latitude": -4.517628,
     "longitude": 129.775153,
     "geometry_geojson": null,
-    "properties_meta": {},
+    "properties_meta": {
+      "image_url": "/images/landmarks/dermaga-ay.jpg"
+    },
     "description": "Dermaga utama tambatan perahu dan speedboat penyeberangan warga serta wisatawan di pesisir Pulau Ay."
   },
   {
@@ -339,7 +375,9 @@
     "latitude": -4.517805,
     "longitude": 129.77511,
     "geometry_geojson": null,
-    "properties_meta": {},
+    "properties_meta": {
+      "image_url": "/images/landmarks/dermaga-ay.jpg"
+    },
     "description": ""
   },
   {
@@ -352,7 +390,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "sub_type": "Wisata Alam",
-      "guide_available": true
+      "guide_available": true,
+      "image_url": "/images/landmarks/pulau-ay.jpg"
     },
     "description": ""
   },
@@ -364,7 +403,9 @@
     "latitude": -4.519317,
     "longitude": 129.777669,
     "geometry_geojson": null,
-    "properties_meta": {},
+    "properties_meta": {
+      "image_url": "/images/landmarks/colonial-house.jpg"
+    },
     "description": ""
   },
   {
@@ -375,7 +416,9 @@
     "latitude": -4.521746,
     "longitude": 129.774837,
     "geometry_geojson": null,
-    "properties_meta": {},
+    "properties_meta": {
+      "image_url": "/images/landmarks/sumur-lonthoir.jpg"
+    },
     "description": ""
   },
   {
@@ -388,7 +431,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "sub_type": "Wisata Alam",
-      "guide_available": true
+      "guide_available": true,
+      "image_url": "/images/landmarks/pulau-ay.jpg"
     },
     "description": ""
   },
@@ -403,7 +447,8 @@
     "properties_meta": {
       "sub_type": "Wisata Alam",
       "highlights": "Pantai Bagian Barat di Pulau Ay",
-      "guide_available": true
+      "guide_available": true,
+      "image_url": "/images/landmarks/pulau-ay.jpg"
     },
     "description": ""
   },
@@ -417,7 +462,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "sub_type": "Pantai",
-      "guide_available": true
+      "guide_available": true,
+      "image_url": "/images/landmarks/pulau-ay.jpg"
     },
     "description": ""
   },
@@ -429,7 +475,9 @@
     "latitude": -4.515762,
     "longitude": 129.901764,
     "geometry_geojson": null,
-    "properties_meta": {},
+    "properties_meta": {
+      "image_url": "/images/landmarks/rsud-banda.jpg"
+    },
     "description": ""
   },
   {
@@ -440,7 +488,9 @@
     "latitude": -4.549417,
     "longitude": 129.877222,
     "geometry_geojson": null,
-    "properties_meta": {},
+    "properties_meta": {
+      "image_url": "/images/landmarks/concordia.jpg"
+    },
     "description": ""
   },
   {
@@ -453,7 +503,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "sub_type": "Wisata Bahari",
-      "guide_available": true
+      "guide_available": true,
+      "image_url": "/images/landmarks/kebun-pala.jpg"
     },
     "description": ""
   },
@@ -3472,7 +3523,8 @@
       "facility_type": "Bandara Perintis",
       "runway_length": "900m",
       "code_icao": "WAPC",
-      "code_iata": "NDA"
+      "code_iata": "NDA",
+      "image_url": "/images/landmarks/bandara.jpg"
     },
     "description": "Bandar udara perintis di Pulau Neira yang melayani penerbangan pesawat perintis dari dan ke Ambon."
   },
@@ -3486,7 +3538,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "facility_type": "Dermaga Penyeberangan",
-      "island": "Pulau Hatta"
+      "island": "Pulau Hatta",
+      "image_url": "/images/landmarks/dermaga-hatta.jpg"
     },
     "description": "Dermaga utama sandar perahu motor nelayan dan penyeberangan reguler dari Pulau Neira ke Pulau Hatta."
   },
@@ -3500,7 +3553,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "facility_type": "Dermaga Penyeberangan",
-      "island": "Pulau Rhun"
+      "island": "Pulau Rhun",
+      "image_url": "/images/landmarks/dermaga-rhun.jpg"
     },
     "description": "Dermaga utama pendaratan speedboat dan kapal motor nelayan di sisi timur Pulau Rhun."
   },
@@ -3514,7 +3568,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "facility_type": "Dermaga Penyeberangan",
-      "island": "Banda Besar"
+      "island": "Banda Besar",
+      "image_url": "/images/landmarks/dermaga-waer.jpg"
     },
     "description": "Dermaga penyeberangan pesisir tenggara Pulau Banda Besar (Desa Waer) menuju Pulau Neira dan Hatta."
   },
@@ -3528,7 +3583,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "facility_type": "Dermaga Tradisional",
-      "island": "Banda Besar"
+      "island": "Banda Besar",
+      "image_url": "/images/landmarks/dermaga-selamon.jpg"
     },
     "description": "Dermaga pesisir timur laut Banda Besar, sentra pendaratan perahu nelayan tradisional Desa Selamon."
   },
@@ -3542,7 +3598,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "market_type": "Pasar Tradisional",
-      "komoditas": "Ikan Segar, Rempah & Hasil Bumi"
+      "komoditas": "Ikan Segar, Rempah & Hasil Bumi",
+      "image_url": "/images/landmarks/pasar-banda.jpg"
     },
     "description": "Pusat perdagangan rakyat pesisir, pelelangan ikan cakalang/tuna segar, dan belanja rempah pala warga Neira."
   },
@@ -3556,7 +3613,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "era": "1689 M",
-      "status": "Cagar Budaya"
+      "status": "Cagar Budaya",
+      "image_url": "/images/landmarks/klenteng.jpg"
     },
     "description": "Klenteng tertua di Kepulauan Banda yang dibangun pedagang Tionghoa abad ke-17, simbol kerukunan multikultural jalur rempah."
   },
@@ -3570,7 +3628,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "era": "1621 M",
-      "status": "Monumen Sejarah"
+      "status": "Monumen Sejarah",
+      "image_url": "/images/landmarks/perigi-rante.jpg"
     },
     "description": "Monumen peringatan pembantaian 44 Orang Kaya Banda oleh VOC di bawah Jan Pieterszoon Coen pada 8 Mei 1621 demi monopoli pala."
   },
@@ -3584,7 +3643,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "era": "Abad ke-17",
-      "status": "Situs Cagar Budaya"
+      "status": "Situs Cagar Budaya",
+      "image_url": "/images/landmarks/benteng-kora-kora.jpg"
     },
     "description": "Pos pertahanan maritim VOC peninggalan era perang laut perahu kora-kora di pesisir utara Neira."
   },
@@ -3598,7 +3658,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "era": "1616 M (EIC Inggris)",
-      "status": "Situs Cagar Budaya"
+      "status": "Situs Cagar Budaya",
+      "image_url": "/images/landmarks/benteng-swanenburg.jpg"
     },
     "description": "Puing benteng pertahanan garnisun Inggris (East India Company) abad ke-17 sebelum Pulau Rhun ditukar dengan Pulau Manhattan New York dalam Traktat Breda 1667."
   },
@@ -3612,7 +3673,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "komoditas": "Pala Banda (Myristica fragrans)",
-      "usia_pohon": "> 100 Tahun"
+      "usia_pohon": "> 100 Tahun",
+      "image_url": "/images/landmarks/kebun-pala.jpg"
     },
     "description": "Perkebunan pala tertua di dunia yang dibudidayakan secara turun-temurun di bawah naungan pohon kenari raksasa Lonthoir."
   },
@@ -3627,7 +3689,8 @@
     "properties_meta": {
       "price_range": "Rp 450.000 - Rp 750.000",
       "has_dive_center": true,
-      "has_restaurant": true
+      "has_restaurant": true,
+      "image_url": "/images/landmarks/nutmeg-tree-resort.jpg"
     },
     "description": "Resor dan restoran tepi laut di pesisir barat Neira dengan fasilitas dive shop dan pemandangan Gunung Api."
   },
@@ -3641,7 +3704,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "price_range": "Rp 250.000 - Rp 400.000",
-      "has_wifi": true
+      "has_wifi": true,
+      "image_url": "/images/landmarks/mutiara-guesthouse.jpg"
     },
     "description": "Penginapan legendaris nyaman di pusat kota Neira dengan kebun pala mini di halaman belakang."
   },
@@ -3655,7 +3719,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "price_range": "Rp 350.000 - Rp 500.000",
-      "waterfront": true
+      "waterfront": true,
+      "image_url": "/images/landmarks/baba-lagoon.jpg"
     },
     "description": "Homestay tepi dermaga dengan akses langsung melihat kapal tradisional dan terbenamnya matahari di balik Gunung Api."
   },
@@ -3668,7 +3733,8 @@
     "longitude": 129.8982,
     "geometry_geojson": null,
     "properties_meta": {
-      "price_range": "Rp 200.000 - Rp 350.000"
+      "price_range": "Rp 200.000 - Rp 350.000",
+      "image_url": "/images/landmarks/vita-guesthouse.jpg"
     },
     "description": "Penginapan ramah anggaran di jalan utama Neira dekat dengan situs rumah pengasingan Bung Hatta."
   },
@@ -3682,7 +3748,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "price_range": "Rp 250.000 - Rp 400.000",
-      "has_breakfast": true
+      "has_breakfast": true,
+      "image_url": "/images/landmarks/abba-homestay.jpg"
     },
     "description": "Homestay nyaman dengan nuansa kekeluargaan khas Banda Neira dan sajian kuliner sarapan selai pala."
   },
@@ -3696,7 +3763,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "attraction_type": "Snorkeling & Diving",
-      "coral_quality": "Sangat Baik"
+      "coral_quality": "Sangat Baik",
+      "image_url": "/images/landmarks/pulau-pisang.jpg"
     },
     "description": "Terumbu karang alami yang masih sangat perawan di sisi barat Pulau Sjahrir (Pulau Pisang) dengan visibilitas air jernih."
   },
@@ -3710,7 +3778,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "attraction_type": "Wisata Pantai & Drop-Off",
-      "sand_type": "Pasir Putih Halus"
+      "sand_type": "Pasir Putih Halus",
+      "image_url": "/images/landmarks/pulau-hatta.jpg"
     },
     "description": "Bentangan pantai pasir putih alami menghadap palung laut dalam dengan dinding karang vertikal spektakuler."
   },
@@ -3724,7 +3793,8 @@
     "geometry_geojson": null,
     "properties_meta": {
       "conservation_area": true,
-      "legal_basis": "KemenKP RI"
+      "legal_basis": "KemenKP RI",
+      "image_url": "/images/landmarks/taman-wisata-perairan.jpg"
     },
     "description": "Kawasan konservasi perairan nasional Laut Banda seluas 2500 hektar untuk perlindungan biota pelagis dan kima raksasa."
   },
@@ -3739,7 +3809,8 @@
     "properties_meta": {
       "activity": "Trekking & Hiking",
       "elevation_mdpl": 640,
-      "duration": "2 - 3 Jam"
+      "duration": "2 - 3 Jam",
+      "image_url": "/images/landmarks/trekking-gunung-api.jpg"
     },
     "description": "Rute pendakian dari pesisir timur Gunung Api melewati batuan vulkanik menuju kawah aktif di ketinggian 640 mdpl."
   }

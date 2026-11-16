@@ -212,188 +212,276 @@ export const BANDA_LANDMARK_MEDIA: Record<
   }
 > = {
   'Benteng Belgica': {
-    image: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/belgica.jpg',
+    panorama: '/images/landmarks/belgica.jpg',
     rating: 4.9,
     reviews: 142,
     hours: '08:00 - 18:00 WIT',
     tag: 'Benteng Bersejarah VOC & Cagar Budaya',
   },
   'Benteng Nassau': {
-    image: 'https://images.unsplash.com/photo-1548625361-195982855132?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/nassau.jpg',
+    panorama: '/images/landmarks/nassau.jpg',
     rating: 4.7,
     reviews: 68,
     hours: 'Buka 24 Jam',
     tag: 'Situs Cagar Budaya Abad ke-17',
   },
   'Benteng Hollandia': {
-    image: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/hollandia.jpg',
+    panorama: '/images/landmarks/hollandia.jpg',
     rating: 4.8,
     reviews: 54,
     hours: '07:00 - 18:00 WIT',
     tag: 'Panorama Selat Banda & Perkebunan Pala',
   },
   'Benteng Concordia': {
-    image: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/concordia.jpg',
+    panorama: '/images/landmarks/concordia.jpg',
     rating: 4.6,
     reviews: 32,
     hours: 'Buka 24 Jam',
     tag: 'Benteng Pesisir Banda Besar',
   },
   'Benteng Revengie': {
-    image: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/benteng-revenge.jpg',
+    panorama: '/images/landmarks/benteng-revenge.jpg',
     rating: 4.7,
     reviews: 29,
     hours: 'Buka 24 Jam',
     tag: 'Benteng Bersejarah Pulau Ay',
   },
   'Benteng Swanenburg': {
-    image: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/benteng-swanenburg.jpg',
+    panorama: '/images/landmarks/benteng-swanenburg.jpg',
     rating: 4.6,
     reviews: 21,
     hours: 'Buka 24 Jam',
     tag: 'Cagar Budaya Pulau Rhun',
   },
+  'Benteng Kora-Kora': {
+    image: '/images/landmarks/benteng-kora-kora.jpg',
+    panorama: '/images/landmarks/benteng-kora-kora.jpg',
+    rating: 4.6,
+    reviews: 18,
+    hours: 'Buka 24 Jam',
+    tag: 'Situs Pos Pengintai Bersejarah',
+  },
   'Istana Mini': {
-    image: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/istana-mini.jpg',
+    panorama: '/images/landmarks/istana-mini.jpg',
     rating: 4.8,
     reviews: 86,
     hours: '08:00 - 17:00 WIT',
     tag: 'Kediaman Gubernur Jenderal VOC',
   },
   'Rumah Pengasingan Bung Hatta': {
-    image: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/bung-hatta.jpg',
+    panorama: '/images/landmarks/bung-hatta.jpg',
     rating: 4.9,
     reviews: 110,
     hours: '08:00 - 16:30 WIT',
     tag: 'Museum Sejarah Kemerdekaan RI',
   },
   'Rumah Pengasingan Sutan Sjahrir': {
-    image: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/sutan-sjahrir.jpg',
+    panorama: '/images/landmarks/sutan-sjahrir.jpg',
     rating: 4.9,
     reviews: 95,
     hours: '08:00 - 16:30 WIT',
     tag: 'Museum Sejarah Negosiator Bangsa',
   },
   'Rumah Budaya Banda Neira': {
-    image: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/rumah-budaya.jpg',
+    panorama: '/images/landmarks/rumah-budaya.jpg',
     rating: 4.8,
     reviews: 88,
     hours: '09:00 - 17:00 WIT',
     tag: 'Museum Koleksi Artefak Jalur Rempah',
   },
   'Gunung Api Banda': {
-    image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/gunung-api.jpg',
+    panorama: '/images/landmarks/gunung-api.jpg',
     rating: 4.9,
     reviews: 120,
     hours: '05:00 - 18:00 WIT (Pendakian)',
     tag: 'Gunung Berapi Aktif & Trekking',
   },
   'Lava Flow': {
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/lava-flow.jpg',
+    panorama: '/images/landmarks/lava-flow.jpg',
     rating: 5.0,
     reviews: 135,
     hours: '07:00 - 17:00 WIT',
     tag: 'Spot Snorkeling & Coral Garden Ternama',
   },
   'Pohon Sejuta Umat (Pohon Talang)': {
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/pohon-talang.jpg',
+    panorama: '/images/landmarks/pohon-talang.jpg',
     rating: 4.9,
     reviews: 79,
     hours: 'Buka 24 Jam',
     tag: 'Spot Foto Ikonik Berlatar Gunung Api',
   },
   'Pulau Nailaka': {
-    image: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/pulau-nailaka.jpg',
+    panorama: '/images/landmarks/pulau-nailaka.jpg',
     rating: 4.9,
     reviews: 64,
     hours: 'Buka 24 Jam',
     tag: 'Gosong Pasir Putih & Terumbu Karang',
   },
   'Pulau Rhun': {
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/pulau-rhun.jpg',
+    panorama: '/images/landmarks/pulau-rhun.jpg',
     rating: 4.8,
     reviews: 58,
     hours: 'Buka 24 Jam',
     tag: 'Pulau Bersejarah Traktat Breda 1667',
   },
   'Pulau Hatta': {
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/pulau-hatta.jpg',
+    panorama: '/images/landmarks/pulau-hatta.jpg',
     rating: 5.0,
     reviews: 98,
     hours: 'Buka 24 Jam',
     tag: 'Surga Diving Drop-Off Wall Terbaik',
   },
   'Pulau Ay': {
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/pulau-ay.jpg',
+    panorama: '/images/landmarks/pulau-ay.jpg',
     rating: 4.8,
     reviews: 52,
     hours: 'Buka 24 Jam',
     tag: 'Pusat Perkebunan Pala Tua & Manta Point',
   },
+  'Pulau Pisang': {
+    image: '/images/landmarks/pulau-pisang.jpg',
+    panorama: '/images/landmarks/pulau-pisang.jpg',
+    rating: 4.8,
+    reviews: 44,
+    hours: 'Buka 24 Jam',
+    tag: 'Spot Snorkeling Pulau Sjahrir',
+  },
   'Bandara Banda Neira': {
-    image: 'https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/bandara.jpg',
+    panorama: '/images/landmarks/bandara.jpg',
     rating: 4.7,
     reviews: 43,
     hours: '08:00 - 15:00 WIT',
     tag: 'Bandara Udara Perintis (NDA)',
   },
   'Pelabuhan Banda Neira': {
-    image: 'https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/pelabuhan.jpg',
+    panorama: '/images/landmarks/pelabuhan.jpg',
     rating: 4.6,
     reviews: 82,
     hours: 'Buka 24 Jam',
     tag: 'Pelabuhan Kapal PELNI & Ferry Cepat',
   },
   'The Maulana Hotel': {
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/hotel-maulana.jpg',
+    panorama: '/images/landmarks/hotel-maulana.jpg',
     rating: 4.9,
     reviews: 77,
     hours: 'Check-in 14:00 · Check-out 12:00',
     tag: 'Hotel Ikonik Tepi Laut Bersejarah',
   },
   'Hotel Maulana': {
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/hotel-maulana.jpg',
+    panorama: '/images/landmarks/hotel-maulana.jpg',
     rating: 4.9,
     reviews: 77,
     hours: 'Check-in 14:00 · Check-out 12:00',
     tag: 'Hotel Ikonik Tepi Laut Bersejarah',
   },
   'Mutiara Guesthouse': {
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/mutiara-guesthouse.jpg',
+    panorama: '/images/landmarks/mutiara-guesthouse.jpg',
     rating: 4.8,
     reviews: 56,
     hours: 'Check-in 13:00 · Check-out 11:30',
     tag: 'Penginapan Wisatawan & Diver',
   },
   'Baba Lagoon': {
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80',
-    panorama: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2000&q=80',
+    image: '/images/landmarks/baba-lagoon.jpg',
+    panorama: '/images/landmarks/baba-lagoon.jpg',
     rating: 4.8,
     reviews: 49,
     hours: 'Check-in 14:00 · Check-out 12:00',
     tag: 'Resort & Dive Center Tepi Laut',
+  },
+  'Abba Homestay': {
+    image: '/images/landmarks/abba-homestay.jpg',
+    panorama: '/images/landmarks/abba-homestay.jpg',
+    rating: 4.7,
+    reviews: 38,
+    hours: 'Check-in 14:00 · Check-out 12:00',
+    tag: 'Homestay Nyaman di Pusat Kota Neira',
+  },
+  'Delfika Homestay': {
+    image: '/images/landmarks/delfika-homestay.jpg',
+    panorama: '/images/landmarks/delfika-homestay.jpg',
+    rating: 4.7,
+    reviews: 41,
+    hours: 'Check-in 14:00 · Check-out 12:00',
+    tag: 'Penginapan Bernuansa Rumah Kolonial',
+  },
+  'Nutmeg Tree Hotel': {
+    image: '/images/landmarks/nutmeg-tree-resort.jpg',
+    panorama: '/images/landmarks/nutmeg-tree-resort.jpg',
+    rating: 4.8,
+    reviews: 52,
+    hours: 'Check-in 14:00 · Check-out 12:00',
+    tag: 'Resort Tropis & Kebun Rempah',
+  },
+  'Klenteng Sun Hok Bio': {
+    image: '/images/landmarks/klenteng.jpg',
+    panorama: '/images/landmarks/klenteng.jpg',
+    rating: 4.8,
+    reviews: 65,
+    hours: '08:00 - 18:00 WIT',
+    tag: 'Klenteng Tertua di Maluku (1686)',
+  },
+  'Gereja Tua Banda': {
+    image: '/images/landmarks/gereja-tua.jpg',
+    panorama: '/images/landmarks/gereja-tua.jpg',
+    rating: 4.8,
+    reviews: 58,
+    hours: '08:00 - 17:00 WIT',
+    tag: 'Gereja Protestan Bersejarah 1873',
+  },
+  'Gereja Betlehem Pulau Ay': {
+    image: '/images/landmarks/gereja-betlehem.jpg',
+    panorama: '/images/landmarks/gereja-betlehem.jpg',
+    rating: 4.7,
+    reviews: 26,
+    hours: '08:00 - 17:00 WIT',
+    tag: 'Gereja Cagar Budaya Pulau Ay',
+  },
+  'Sumur Pusaka Lonthoir': {
+    image: '/images/landmarks/sumur-lonthoir.jpg',
+    panorama: '/images/landmarks/sumur-lonthoir.jpg',
+    rating: 4.8,
+    reviews: 47,
+    hours: '08:00 - 17:00 WIT',
+    tag: 'Sumur Adat Keramat Banda Besar',
+  },
+  'Perkebunan Pala Lonthoir': {
+    image: '/images/landmarks/kebun-pala.jpg',
+    panorama: '/images/landmarks/kebun-pala.jpg',
+    rating: 4.9,
+    reviews: 83,
+    hours: '08:00 - 17:00 WIT',
+    tag: 'Kebun Pala Bersejarah Abad VOC',
+  },
+  'Perk Welvaren Pulau Ay': {
+    image: '/images/landmarks/welvaren.jpg',
+    panorama: '/images/landmarks/welvaren.jpg',
+    rating: 4.7,
+    reviews: 31,
+    hours: '08:00 - 17:00 WIT',
+    tag: 'Situs Perkebunan Pala VOC Pulau Ay',
   },
 }
 
@@ -401,13 +489,16 @@ export const getFeatureMedia = (feat: GeoJSONFeature): LandmarkMediaInfo => {
   const name = feat.properties.name || ''
   const layer = feat.properties.layer_type || ''
   const island = feat.properties.island_name || 'Kepulauan Banda'
+  const propsMeta = (feat.properties.properties_meta as any) || {}
+  const explicitImage = feat.properties.image_url || propsMeta.image_url
+  const explicitPanorama = feat.properties.panorama_url || propsMeta.panorama_url
 
   // 1. Direct exact or partial match in curated registry
   for (const [key, val] of Object.entries(BANDA_LANDMARK_MEDIA)) {
     if (name.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(name.toLowerCase())) {
       return {
-        imageUrl: feat.properties.image_url || val.image,
-        panoramaUrl: feat.properties.panorama_url || val.panorama,
+        imageUrl: explicitImage || val.image,
+        panoramaUrl: explicitPanorama || val.panorama,
         rating: val.rating,
         reviewsCount: val.reviews,
         operatingHours: val.hours,
@@ -417,12 +508,25 @@ export const getFeatureMedia = (feat: GeoJSONFeature): LandmarkMediaInfo => {
     }
   }
 
-  // 2. Keyword matching
+  // 2. If explicit image was provided via GeoJSON / PostGIS properties
+  if (explicitImage) {
+    return {
+      imageUrl: explicitImage,
+      panoramaUrl: explicitPanorama || explicitImage,
+      rating: 4.8,
+      reviewsCount: 35,
+      operatingHours: 'Buka Setiap Hari',
+      tag: 'Titik Spasial Banda Digital Ecosystem',
+      address: `${island}, Kepulauan Banda, Maluku Tengah`,
+    }
+  }
+
+  // 3. Keyword matching with authentic local imagery
   const lowerName = name.toLowerCase()
   if (lowerName.includes('benteng') || lowerName.includes('fort')) {
     return {
-      imageUrl: feat.properties.image_url || 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=1000&q=80',
-      panoramaUrl: feat.properties.panorama_url || 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=2000&q=80',
+      imageUrl: '/images/landmarks/belgica.jpg',
+      panoramaUrl: '/images/landmarks/belgica.jpg',
       rating: 4.8,
       reviewsCount: 42,
       operatingHours: '08:00 - 18:00 WIT',
@@ -432,8 +536,8 @@ export const getFeatureMedia = (feat: GeoJSONFeature): LandmarkMediaInfo => {
   }
   if (lowerName.includes('pulau') || lowerName.includes('pantai') || lowerName.includes('tanjung') || lowerName.includes('batu') || lowerName.includes('pante')) {
     return {
-      imageUrl: feat.properties.image_url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80',
-      panoramaUrl: feat.properties.panorama_url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80',
+      imageUrl: '/images/landmarks/pulau-nailaka.jpg',
+      panoramaUrl: '/images/landmarks/pulau-nailaka.jpg',
       rating: 4.9,
       reviewsCount: 56,
       operatingHours: 'Buka 24 Jam',
@@ -443,8 +547,8 @@ export const getFeatureMedia = (feat: GeoJSONFeature): LandmarkMediaInfo => {
   }
   if (lowerName.includes('hotel') || lowerName.includes('guesthouse') || lowerName.includes('homestay') || lowerName.includes('resort') || lowerName.includes('villa')) {
     return {
-      imageUrl: feat.properties.image_url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80',
-      panoramaUrl: feat.properties.panorama_url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2000&q=80',
+      imageUrl: '/images/landmarks/hotel-maulana.jpg',
+      panoramaUrl: '/images/landmarks/hotel-maulana.jpg',
       rating: 4.8,
       reviewsCount: 48,
       operatingHours: 'Check-in 14:00 · Check-out 12:00',
@@ -454,8 +558,8 @@ export const getFeatureMedia = (feat: GeoJSONFeature): LandmarkMediaInfo => {
   }
   if (lowerName.includes('pelabuhan') || lowerName.includes('dermaga') || lowerName.includes('bandara')) {
     return {
-      imageUrl: feat.properties.image_url || 'https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=1000&q=80',
-      panoramaUrl: feat.properties.panorama_url || 'https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=2000&q=80',
+      imageUrl: '/images/landmarks/pelabuhan.jpg',
+      panoramaUrl: '/images/landmarks/pelabuhan.jpg',
       rating: 4.7,
       reviewsCount: 65,
       operatingHours: 'Buka 24 Jam',
@@ -464,12 +568,12 @@ export const getFeatureMedia = (feat: GeoJSONFeature): LandmarkMediaInfo => {
     }
   }
 
-  // 3. Fallback based on Layer Type
+  // 4. Fallback based on Layer Type
   switch (layer) {
     case 'LAYER_HERITAGE':
       return {
-        imageUrl: feat.properties.image_url || 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=1000&q=80',
-        panoramaUrl: feat.properties.panorama_url || 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=2000&q=80',
+        imageUrl: '/images/landmarks/belgica.jpg',
+        panoramaUrl: '/images/landmarks/belgica.jpg',
         rating: 4.8,
         reviewsCount: 38,
         operatingHours: '08:00 - 17:00 WIT',
@@ -478,8 +582,8 @@ export const getFeatureMedia = (feat: GeoJSONFeature): LandmarkMediaInfo => {
       }
     case 'LAYER_ACCOMMODATION':
       return {
-        imageUrl: feat.properties.image_url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80',
-        panoramaUrl: feat.properties.panorama_url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2000&q=80',
+        imageUrl: '/images/landmarks/hotel-maulana.jpg',
+        panoramaUrl: '/images/landmarks/hotel-maulana.jpg',
         rating: 4.8,
         reviewsCount: 52,
         operatingHours: 'Check-in 14:00 · Check-out 12:00',
@@ -488,8 +592,8 @@ export const getFeatureMedia = (feat: GeoJSONFeature): LandmarkMediaInfo => {
       }
     case 'LAYER_WATER_INFRA':
       return {
-        imageUrl: feat.properties.image_url || 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1000&q=80',
-        panoramaUrl: feat.properties.panorama_url || 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=2000&q=80',
+        imageUrl: '/images/landmarks/sumur-lonthoir.jpg',
+        panoramaUrl: '/images/landmarks/sumur-lonthoir.jpg',
         rating: 4.9,
         reviewsCount: 24,
         operatingHours: 'Operasional 24 Jam',
@@ -498,8 +602,8 @@ export const getFeatureMedia = (feat: GeoJSONFeature): LandmarkMediaInfo => {
       }
     case 'LAYER_ENERGY_WASTE':
       return {
-        imageUrl: feat.properties.image_url || 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1000&q=80',
-        panoramaUrl: feat.properties.panorama_url || 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2000&q=80',
+        imageUrl: '/images/landmarks/pltd-neira.jpg',
+        panoramaUrl: '/images/landmarks/pltd-neira.jpg',
         rating: 4.8,
         reviewsCount: 19,
         operatingHours: '08:00 - 17:00 WIT',
@@ -508,8 +612,8 @@ export const getFeatureMedia = (feat: GeoJSONFeature): LandmarkMediaInfo => {
       }
     case 'LAYER_KOPERASI_UMKM':
       return {
-        imageUrl: feat.properties.image_url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80',
-        panoramaUrl: feat.properties.panorama_url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80',
+        imageUrl: '/images/landmarks/kebun-pala.jpg',
+        panoramaUrl: '/images/landmarks/kebun-pala.jpg',
         rating: 4.8,
         reviewsCount: 35,
         operatingHours: '08:00 - 21:00 WIT',
@@ -518,8 +622,8 @@ export const getFeatureMedia = (feat: GeoJSONFeature): LandmarkMediaInfo => {
       }
     default:
       return {
-        imageUrl: feat.properties.image_url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80',
-        panoramaUrl: feat.properties.panorama_url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80',
+        imageUrl: '/images/landmarks/belgica.jpg',
+        panoramaUrl: '/images/landmarks/belgica.jpg',
         rating: 4.9,
         reviewsCount: 60,
         operatingHours: 'Buka 24 Jam',
@@ -5475,7 +5579,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                         objectFit: 'cover',
                       }}
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80'
+                        (e.target as HTMLImageElement).src = '/images/landmarks/belgica.jpg'
                       }}
                     />
 

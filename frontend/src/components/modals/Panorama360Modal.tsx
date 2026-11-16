@@ -11,11 +11,11 @@ export interface Panorama360ModalProps {
 
 // Curated authentic 360 Equirectangular Panoramas for Banda Neira landmarks
 export const DEFAULT_360_PANORAMAS: Record<string, string> = {
-  default: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=2000&q=80',
-  heritage: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=2000&q=80',
-  diving: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=2000&q=80',
-  coastal: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80',
-  mountain: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2000&q=80',
+  default: '/images/landmarks/belgica.jpg',
+  heritage: '/images/landmarks/belgica.jpg',
+  diving: '/images/landmarks/lava-flow.jpg',
+  coastal: '/images/landmarks/pulau-nailaka.jpg',
+  mountain: '/images/landmarks/gunung-api.jpg',
 }
 
 export const Panorama360Modal: React.FC<Panorama360ModalProps> = ({
