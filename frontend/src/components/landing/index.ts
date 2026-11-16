@@ -1,4 +1,5 @@
 export { HeroSection } from './HeroSection';
+export { Banda3DPhotoGallery } from './Banda3DPhotoGallery';
 export { PanoramaIslandSection } from './PanoramaIslandSection';
 export { PetaInteractiveSection } from './PetaInteractiveSection';
 export { HeritageSpiceSection } from './HeritageSpiceSection';

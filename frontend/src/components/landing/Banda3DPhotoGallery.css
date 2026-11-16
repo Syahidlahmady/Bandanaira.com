@@ -1,0 +1,12 @@
+.banda-3d-card {
+  user-select: none;
+  -webkit-user-drag: none;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+
+.banda-3d-card img {
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
