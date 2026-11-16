@@ -52,7 +52,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     <section
       id="beranda"
       aria-labelledby="banda-hero-title"
-      className="relative w-full bg-[#081d35] text-white selection:bg-[#f4b75e] selection:text-[#081d35]"
+      className="relative w-full bg-[#0b1118] text-white selection:bg-[#f4b75e] selection:text-[#081d35]"
     >
       {/* 1. FIXED TOP NAVBAR (Always accessible across resting, expansion, and full-bleed states) */}
       <div className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 lg:px-12 pt-3 sm:pt-5 pointer-events-none">
@@ -221,20 +221,19 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         src={bandaCinematicVideoBackdrop}
         alt="Pemandangan Banda Neira dari udara dengan laut dan pulau-pulau di sekitarnya"
         useWindowScroll
-        startWidth={isMobile ? 88 : 46}
-        startHeight={isMobile ? 54 : 60}
-        startRadius={isMobile ? 20 : 28}
+        startWidth={isMobile ? 86 : 46}
+        startHeight={isMobile ? 54 : 58}
+        startRadius={isMobile ? 18 : 24}
         endRadius={0}
-        mediaZoom={1.3}
-        scrollDistance={1.1}
-        holdDistance={0.35}
-        smoothing={0.12}
-        overlayScrim={0.52}
+        mediaZoom={1.22}
+        scrollDistance={0.75}
+        holdDistance={1.6}
+        smoothing={0.1}
+        overlayScrim={0.28}
         title={
           <div className="flex flex-col items-center justify-center text-center gap-2.5 sm:gap-3.5 px-4 max-w-4xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-950/70 border border-white/20 backdrop-blur-md shadow-lg">
-              <span className="w-2 h-2 rounded-full bg-[#f4b75e] animate-pulse" />
-              <span className="font-mono text-[10px] sm:text-xs tracking-[0.2em] text-[#f4b75e] uppercase">
+            <div className="inline-flex items-center px-3.5 py-1 rounded-full bg-black/60 border border-white/20 backdrop-blur-md shadow-sm">
+              <span className="font-mono text-[10px] sm:text-xs tracking-[0.22em] text-[#f4b75e] uppercase">
                 Kepulauan Banda · Maluku
               </span>
             </div>
@@ -247,9 +246,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </div>
         }
         scrollHint={
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white/90 text-[11px] font-mono tracking-wider shadow-lg">
-            <span>Gulir untuk membuka pulau</span>
-            <ArrowDownIcon className="w-3.5 h-3.5 animate-bounce text-amber-400" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-slate-200 text-[11px] font-mono tracking-wider shadow-lg">
+            <span>Scroll to explore</span>
+            <ArrowDownIcon className="w-3.5 h-3.5 text-amber-300" />
           </div>
         }
       >

@@ -1111,7 +1111,7 @@ export const App: React.FC = () => {
         maxWidth: '100%',
         margin: '0 auto',
         padding: '0',
-        overflowX: 'hidden',
+        overflowX: 'clip',
       }}
     >
       {/* 0. RESTORING SESSION PLACEHOLDER */}
