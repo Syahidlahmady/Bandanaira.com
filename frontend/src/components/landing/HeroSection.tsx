@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import bandaCinematicVideoBackdrop from '../../assets/image.webp'
-import { NutmegLogoIcon, ArrowUpRightIcon, ArrowDownIcon } from './LandingIcons'
+import { NutmegLogoIcon, ArrowUpRightIcon } from './LandingIcons'
 import { ScrollExpand } from '../ui/ScrollExpand'
 
 export const defaultNavigationItems = [
@@ -52,7 +52,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     <section
       id="beranda"
       aria-labelledby="banda-hero-title"
-      className="relative w-full bg-[#0b1118] text-white selection:bg-[#f4b75e] selection:text-[#081d35]"
+      className="relative w-full bg-[#081d35] text-white selection:bg-[#f4b75e] selection:text-[#081d35]"
     >
       {/* 1. FIXED TOP NAVBAR (Always accessible across resting, expansion, and full-bleed states) */}
       <div className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 lg:px-12 pt-3 sm:pt-5 pointer-events-none">
@@ -245,18 +245,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </h2>
           </div>
         }
-        scrollHint={
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-slate-200 text-[11px] font-mono tracking-wider shadow-lg">
-            <span>Scroll to explore</span>
-            <ArrowDownIcon className="w-3.5 h-3.5 text-amber-300" />
-          </div>
-        }
       >
         {/* OVERLAY CONTENT (Fades in once frame expands to full bleed) */}
-        <div className="w-full max-w-7xl mx-auto flex flex-col justify-between h-full pt-20 sm:pt-24 pb-4 sm:pb-6 pointer-events-auto">
-          {/* Spacer Top for Navbar clearance */}
-          <div className="h-4 sm:h-8" />
-
+        <div className="w-full max-w-7xl mx-auto flex flex-col justify-center h-full pt-20 sm:pt-24 pb-6 sm:pb-8 pointer-events-auto">
           {/* MAIN EDITORIAL HERO NARRATIVE (Asymmetric Left-Aligned Layout) */}
           <main className="flex flex-col items-start gap-4 sm:gap-6 max-w-[850px] my-auto">
             {/* Display Headline */}
@@ -300,39 +291,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               </button>
             </div>
           </main>
-
-          {/* HERO FOOTER STATUS BAR */}
-          <footer className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-white/10 text-xs text-slate-300 font-sans">
-            <div className="inline-flex items-center gap-3">
-              <div className="flex w-7 h-7 items-center justify-center rounded-full bg-white/10 border border-white/20">
-                <svg
-                  className="w-3 h-3 text-white fill-current ml-0.5"
-                  viewBox="0 0 16 16"
-                  aria-hidden="true"
-                >
-                  <path d="M4 2.5v11l9-5.5-9-5.5z" />
-                </svg>
-              </div>
-              <span className="font-mono text-[11px] tracking-wider uppercase text-white/90">
-                Sekilas Banda · Lanskap Kepulauan
-              </span>
-            </div>
-
-            <a
-              href="#sejarah"
-              onClick={() => setActiveNav('#sejarah')}
-              className="inline-flex items-center gap-2 text-white/90 hover:text-[#f4b75e] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e]"
-            >
-              <span className="font-normal text-[11px] sm:text-xs">
-                Ada cerita di setiap pulau
-              </span>
-              <ArrowDownIcon className="w-3.5 h-3.5 text-amber-400" />
-            </a>
-
-            <span className="font-mono text-[11px] text-slate-400">
-              Gunung Api · Banda Besar · Pulau Hatta · Rhun · Ay
-            </span>
-          </footer>
         </div>
       </ScrollExpand>
     </section>

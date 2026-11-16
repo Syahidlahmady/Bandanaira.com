@@ -5,8 +5,6 @@ export interface PhotoItem {
   id: string
   src: string
   alt: string
-  title: string
-  badge: string
   positions: {
     xxs: { left: string; top: string; z: number }
     xs: { left: string; top: string; z: number }
@@ -16,13 +14,25 @@ export interface PhotoItem {
   }
 }
 
+export interface OrnamentItem {
+  id: string
+  src: string
+  alt: string
+  positions: {
+    xxs: { left: string; top: string; z: number }
+    xs: { left: string; top: string; z: number }
+    sm: { left: string; top: string; z: number }
+    md: { left: string; top: string; z: number }
+    lg: { left: string; top: string; z: number }
+  }
+  rotation?: string
+}
+
 export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'belgica',
     src: '/images/landmarks/belgica.jpg',
     alt: 'Benteng Belgica',
-    title: 'Benteng Belgica (1611)',
-    badge: 'Cagar Budaya Utama',
     positions: {
       xxs: { left: '-5%', top: '18%', z: -80 },
       xs: { left: '2%', top: '18%', z: -80 },
@@ -35,8 +45,6 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
     id: 'gunung-api',
     src: '/images/landmarks/gunung-api.jpg',
     alt: 'Gunung Api Banda',
-    title: 'Puncak Gunung Api (640 mdpl)',
-    badge: 'Ikon Alam Bahari',
     positions: {
       xxs: { left: '66%', top: '22%', z: -160 },
       xs: { left: '68%', top: '22%', z: -160 },
@@ -49,8 +57,6 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
     id: 'istana-mini',
     src: '/images/landmarks/istana-mini.jpg',
     alt: 'Istana Mini VOC',
-    title: 'Istana Mini VOC Neira',
-    badge: 'Arsitektur Kolonial',
     positions: {
       xxs: { left: '68%', top: '65%', z: -360 },
       xs: { left: '70%', top: '65%', z: -360 },
@@ -63,8 +69,6 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
     id: 'lava-flow',
     src: '/images/landmarks/lava-flow.jpg',
     alt: 'Lava Flow Coral Reef',
-    title: 'Terumbu Karang Lava Flow',
-    badge: 'Spot Snorkeling & Selam',
     positions: {
       xxs: { left: '-8%', top: '62%', z: -480 },
       xs: { left: '4%', top: '62%', z: -480 },
@@ -77,8 +81,6 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
     id: 'pulau-rhun',
     src: '/images/landmarks/pulau-rhun.jpg',
     alt: 'Pulau Rhun',
-    title: 'Pulau Rhun (Traktat Breda 1667)',
-    badge: 'Jejak Rempah Bersejarah',
     positions: {
       xxs: { left: '-10%', top: '30%', z: -680 },
       xs: { left: '2%', top: '30%', z: -680 },
@@ -91,8 +93,6 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
     id: 'pulau-hatta',
     src: '/images/landmarks/pulau-hatta.jpg',
     alt: 'Pulau Hatta',
-    title: 'Tembok Karang Pulau Hatta',
-    badge: 'Palung Laut Dalam',
     positions: {
       xxs: { left: '76%', top: '38%', z: -840 },
       xs: { left: '76%', top: '38%', z: -840 },
@@ -105,8 +105,6 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
     id: 'kebun-pala',
     src: '/images/landmarks/kebun-pala.jpg',
     alt: 'Perkebunan Pala Kuno',
-    title: 'Perkebunan Pala & Pohon Kenari',
-    badge: 'Warisan Agraria Banda',
     positions: {
       xxs: { left: '60%', top: '74%', z: -980 },
       xs: { left: '62%', top: '74%', z: -980 },
@@ -119,8 +117,6 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
     id: 'nassau',
     src: '/images/landmarks/nassau.jpg',
     alt: 'Benteng Nassau',
-    title: 'Benteng Nassau (1609)',
-    badge: 'Benteng Tertua di Banda',
     positions: {
       xxs: { left: '-2%', top: '20%', z: -1150 },
       xs: { left: '8%', top: '20%', z: -1150 },
@@ -133,8 +129,6 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
     id: 'bung-hatta',
     src: '/images/landmarks/bung-hatta.jpg',
     alt: 'Rumah Pengasingan Bung Hatta',
-    title: 'Rumah Pengasingan Mohammad Hatta',
-    badge: 'Memori Kebangsaan',
     positions: {
       xxs: { left: '72%', top: '24%', z: -1380 },
       xs: { left: '72%', top: '24%', z: -1380 },
@@ -147,8 +141,6 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
     id: 'pulau-ay',
     src: '/images/landmarks/pulau-ay.jpg',
     alt: 'Pulau Ay',
-    title: 'Pulau Ay & Benteng Revenge',
-    badge: 'Kebun Rempah Asri',
     positions: {
       xxs: { left: '-10%', top: '34%', z: -1550 },
       xs: { left: '4%', top: '34%', z: -1550 },
@@ -161,8 +153,6 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
     id: 'pelabuhan',
     src: '/images/landmarks/pelabuhan.jpg',
     alt: 'Pelabuhan Banda Neira',
-    title: 'Dermaga & Teluk Banda Neira',
-    badge: 'Jalur Masuk Kepulauan',
     positions: {
       xxs: { left: '55%', top: '58%', z: -1800 },
       xs: { left: '56%', top: '58%', z: -1800 },
@@ -170,6 +160,61 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
       md: { left: '60%', top: '56%', z: -1950 },
       lg: { left: '62%', top: '54%', z: -2050 },
     },
+  },
+]
+
+export const BANDA_3D_ORNAMENTS: OrnamentItem[] = [
+  {
+    id: 'orn-pala-1',
+    src: '/images/ornaments/motif-pala.png',
+    alt: 'Motif Buah Pala Banda',
+    positions: {
+      xxs: { left: '3%', top: '78%', z: -320 },
+      xs: { left: '5%', top: '78%', z: -320 },
+      sm: { left: '8%', top: '78%', z: -350 },
+      md: { left: '8%', top: '76%', z: -380 },
+      lg: { left: '10%', top: '75%', z: -400 },
+    },
+    rotation: '-rotate-12',
+  },
+  {
+    id: 'orn-ikan-1',
+    src: '/images/ornaments/motif-ikan.png',
+    alt: 'Motif Ikan Laut Banda',
+    positions: {
+      xxs: { left: '76%', top: '20%', z: -520 },
+      xs: { left: '78%', top: '20%', z: -520 },
+      sm: { left: '80%', top: '20%', z: -560 },
+      md: { left: '82%', top: '18%', z: -620 },
+      lg: { left: '84%', top: '18%', z: -660 },
+    },
+    rotation: 'rotate-6',
+  },
+  {
+    id: 'orn-pala-2',
+    src: '/images/ornaments/motif-pala.png',
+    alt: 'Motif Buah Pala Banda',
+    positions: {
+      xxs: { left: '80%', top: '64%', z: -1150 },
+      xs: { left: '82%', top: '64%', z: -1150 },
+      sm: { left: '84%', top: '64%', z: -1250 },
+      md: { left: '86%', top: '62%', z: -1350 },
+      lg: { left: '88%', top: '60%', z: -1450 },
+    },
+    rotation: 'rotate-12',
+  },
+  {
+    id: 'orn-ikan-2',
+    src: '/images/ornaments/motif-ikan.png',
+    alt: 'Motif Ikan Laut Banda',
+    positions: {
+      xxs: { left: '2%', top: '24%', z: -1600 },
+      xs: { left: '4%', top: '24%', z: -1600 },
+      sm: { left: '8%', top: '24%', z: -1700 },
+      md: { left: '10%', top: '22%', z: -1800 },
+      lg: { left: '12%', top: '20%', z: -1900 },
+    },
+    rotation: '-rotate-6',
   },
 ]
 
@@ -197,28 +242,53 @@ const PhotoCard = memo(({ item, breakpoint, registerElement }: PhotoCardProps) =
       }}
       data-zinit={pos.z}
     >
-      <div className="relative w-full h-full overflow-hidden shadow-2xl rounded-2xl border border-white/20 bg-slate-900/60 backdrop-blur-sm group">
+      <div className="relative w-full h-full overflow-hidden shadow-[0_20px_45px_rgba(0,0,0,0.65)] rounded-2xl border border-white/25 bg-slate-900/40 group">
         <img
           src={item.src}
           alt={item.alt}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           loading="lazy"
         />
-        {/* Caption Overlay */}
-        <div className="absolute inset-0 flex flex-col justify-end p-3.5 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-90 group-hover:opacity-100 transition-opacity">
-          <span className="font-mono text-[9px] sm:text-[10px] uppercase tracking-wider text-amber-300 font-semibold">
-            {item.badge}
-          </span>
-          <p className="font-sans text-xs sm:text-sm font-medium text-white drop-shadow truncate">
-            {item.title}
-          </p>
-        </div>
       </div>
     </div>
   )
 })
 
 PhotoCard.displayName = 'PhotoCard'
+
+interface OrnamentCardProps {
+  item: OrnamentItem
+  breakpoint: BreakpointKey
+  registerElement: (el: HTMLDivElement | null) => void
+}
+
+const OrnamentCard = memo(({ item, breakpoint, registerElement }: OrnamentCardProps) => {
+  const pos = item.positions[breakpoint] || item.positions.lg
+
+  return (
+    <div
+      ref={registerElement}
+      className={`absolute grid w-[80px] h-[80px] sm:w-[105px] sm:h-[105px] md:w-[135px] md:h-[135px] place-items-center pointer-events-none transition-all duration-300 ease-out opacity-80 ${item.rotation || ''}`}
+      style={{
+        left: pos.left,
+        top: pos.top,
+        transform: `translate3d(0, 0, ${pos.z}px)`,
+        willChange: 'transform, filter',
+        zIndex: Math.round((pos.z + 3000) / 10),
+      }}
+      data-zinit={pos.z}
+    >
+      <img
+        src={item.src}
+        alt={item.alt}
+        className="w-full h-full object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.6)]"
+        loading="lazy"
+      />
+    </div>
+  )
+})
+
+OrnamentCard.displayName = 'OrnamentCard'
 
 export const Banda3DPhotoGallery: React.FC = () => {
   const sectionRef = useRef<HTMLElement>(null)
@@ -228,8 +298,8 @@ export const Banda3DPhotoGallery: React.FC = () => {
   const lastScrollYRef = useRef<number>(0)
   const [breakpoint, setBreakpoint] = useState<BreakpointKey>('lg')
 
-  // Register card elements for 3D coordinate manipulation
-  const registerCard = useCallback((el: HTMLDivElement | null) => {
+  // Register card and ornament elements for 3D coordinate manipulation
+  const registerElement = useCallback((el: HTMLDivElement | null) => {
     if (el && !elementsRef.current.includes(el)) {
       elementsRef.current.push(el)
     }
@@ -279,7 +349,7 @@ export const Banda3DPhotoGallery: React.FC = () => {
         const progressDist = Math.max(0, scrollY - activeStart)
         const speedMultiplier = isMobile ? 1.6 : 1.2
 
-        // Animate photo cards
+        // Animate photo cards & floating ornaments
         for (const el of elementsRef.current) {
           if (!el) continue
           const initialZ = Number(el.dataset.zinit || 0)
@@ -299,7 +369,7 @@ export const Banda3DPhotoGallery: React.FC = () => {
           // Dynamic depth-of-field blur & opacity
           if (currentZ < -400) {
             el.style.filter = 'blur(8px)'
-            el.style.opacity = '0.5'
+            el.style.opacity = '0.45'
           } else if (currentZ < -200) {
             const b = Math.min((Math.abs(currentZ) / 400) * 4, 4)
             el.style.filter = `blur(${b.toFixed(1)}px)`
@@ -355,7 +425,7 @@ export const Banda3DPhotoGallery: React.FC = () => {
       ref={sectionRef}
       id="galeri-neira"
       aria-label="Kompilasi Galeri Foto Banda Neira"
-      className="relative z-10 w-full bg-[#0b1118]"
+      className="relative z-10 w-full bg-[#081d35]"
     >
       {/* Scroll track with generous height for smooth 3D perspective flythrough */}
       <div className="relative z-10 h-[2600px] w-full lg:h-[3500px]">
@@ -364,60 +434,70 @@ export const Banda3DPhotoGallery: React.FC = () => {
           className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center"
           style={{ perspective: 600 }}
         >
-          {/* Subtle atmosphere background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0b1118] via-[#0d1622] to-[#121c29] pointer-events-none" />
+          {/* Luminous oceanic navy radial glow (Biru Dongker Laut Banda) */}
+          <div className="absolute inset-0 bg-[#081d35] bg-[radial-gradient(circle_at_50%_40%,#113a68_0%,#0c2b4e_50%,#081d35_90%)] pointer-events-none" />
 
-          {/* Render all 3D floating photo cards */}
+          {/* Render all 3D floating photo cards (Clean, pure images) */}
           {BANDA_3D_PHOTOS.map((item) => (
             <PhotoCard
               key={item.id}
               item={item}
               breakpoint={breakpoint}
-              registerElement={registerCard}
+              registerElement={registerElement}
             />
           ))}
 
-          {/* Central Hero Plate (Disolves gracefully as user scrolls) */}
+          {/* Render floating cultural motifs in 3D perspective space */}
+          {BANDA_3D_ORNAMENTS.map((item) => (
+            <OrnamentCard
+              key={item.id}
+              item={item}
+              breakpoint={breakpoint}
+              registerElement={registerElement}
+            />
+          ))}
+
+          {/* Central Hero Plate with Corner Ornaments */}
           <div
             ref={titleRef}
             data-zinit="50"
             data-no-blur="true"
-            className="absolute left-1/2 top-1/2 z-30 flex flex-col items-center justify-center text-center -translate-x-1/2 -translate-y-1/2 w-full max-w-[92vw] sm:max-w-lg px-4 pointer-events-auto transition-opacity duration-300"
+            className="absolute left-1/2 top-1/2 z-30 flex flex-col items-center justify-center text-center -translate-x-1/2 -translate-y-1/2 w-full max-w-[92vw] sm:max-w-md px-4 pointer-events-auto transition-opacity duration-300"
             style={{
               transform: 'translate(-50%, -50%) translate3d(0, 0, 50px)',
               willChange: 'transform, opacity',
             }}
           >
-            {/* Elegant Glassmorphic Card Frame */}
-            <div className="relative flex flex-col items-center gap-3 px-6 sm:px-10 py-7 sm:py-9 rounded-3xl bg-slate-950/80 border-2 border-amber-400/30 backdrop-blur-md shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+            {/* Elegant Cultural Card with Corner Ornaments */}
+            <div className="relative flex flex-col items-center gap-3 px-8 sm:px-12 py-8 sm:py-10 rounded-3xl bg-[#081d35]/92 border-2 border-amber-400/35 backdrop-blur-md shadow-[0_25px_60px_rgba(0,0,0,0.7)]">
+              {/* Corner Nutmeg Ornament Top-Left */}
+              <img
+                src="/images/ornaments/motif-pala.png"
+                alt="Motif Buah Pala"
+                className="absolute -top-10 -left-8 sm:-top-12 sm:-left-10 w-20 h-20 sm:w-24 sm:h-24 object-contain -rotate-12 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] pointer-events-none"
+              />
+
+              {/* Corner Fish Ornament Bottom-Right */}
+              <img
+                src="/images/ornaments/motif-ikan.png"
+                alt="Motif Ikan Banda"
+                className="absolute -bottom-8 -right-10 sm:-bottom-10 sm:-right-12 w-24 h-16 sm:w-28 sm:h-20 object-contain rotate-6 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] pointer-events-none"
+              />
+
               {/* Top Subtitle */}
               <span className="font-mono text-xs sm:text-sm tracking-[0.24em] text-amber-300 uppercase">
-                Jelajahi Pesona
+                Jelajahi Keindahan
               </span>
 
               {/* Main Script Headline */}
-              <h2 className="text-3xl sm:text-5xl font-serif italic text-white tracking-tight leading-tight">
+              <h2 className="text-3xl sm:text-5xl font-serif italic text-white tracking-tight leading-tight drop-shadow-md">
                 Banda Neira
               </h2>
 
               {/* Narrative Caption */}
-              <p className="text-xs sm:text-sm text-slate-300 font-sans max-w-sm mt-1 leading-relaxed">
-                Kompilasi benteng rempah abad ke-17, terumbu karang palung laut, dan memori kemanusiaan Kepulauan Banda.
+              <p className="text-xs sm:text-sm text-slate-200 font-sans max-w-xs mt-1 leading-relaxed drop-shadow-sm">
+                Kompilasi benteng rempah abad ke-17, palung laut karang purba, dan jejak kemanusiaan di Kepulauan Banda.
               </p>
-
-              {/* Scroll down prompt */}
-              <div className="mt-4 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-slate-300 text-[11px] font-mono tracking-widest uppercase">
-                <span>Scroll to explore</span>
-                <svg
-                  className="w-3.5 h-3.5 text-amber-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                </svg>
-              </div>
             </div>
           </div>
         </div>
