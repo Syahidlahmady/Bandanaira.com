@@ -35,6 +35,8 @@ import {
   Mountain,
   Map as MapIcon,
   Eye,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react'
 import {
   gisService,
@@ -141,10 +143,12 @@ export const BANDA_ARCHIPELAGO_BOUNDS = L.latLngBounds(
 )
 
 export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = ({ currentUser }) => {
+  const workspaceContainerRef = useRef<HTMLDivElement | null>(null)
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
   const layerGroupRef = useRef<L.LayerGroup | null>(null)
   const draftMarkerRef = useRef<L.Marker | null>(null)
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false)
 
   // Basemap Tile Layers Management (Google Maps Style Layer Switcher)
   const baseTileLayerRef = useRef<L.TileLayer | null>(null)
@@ -1652,6 +1656,80 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     }
   }
 
+  // Fullscreen Toggle Handler (Native HTML5 API with CSS fallback)
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        if (workspaceContainerRef.current?.requestFullscreen) {
+          await workspaceContainerRef.current.requestFullscreen()
+        } else if ((workspaceContainerRef.current as any)?.webkitRequestFullscreen) {
+          await (workspaceContainerRef.current as any).webkitRequestFullscreen()
+        } else {
+          setIsFullscreen(true)
+        }
+      } else {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen()
+        } else if ((document as any)?.webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen()
+        }
+        setIsFullscreen(false)
+      }
+    } catch {
+      // In case native fullscreen permission is restricted in environment, fallback to CSS overlay fullscreen
+      setIsFullscreen((prev) => !prev)
+    }
+  }
+
+  // Synchronize Leaflet map sizing and Esc key with fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isFs = Boolean(document.fullscreenElement)
+      setIsFullscreen(isFs)
+      setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize()
+        }
+      }, 150)
+      setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize()
+        }
+      }, 350)
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen && !document.fullscreenElement) {
+        setIsFullscreen(false)
+        setTimeout(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize()
+          }
+        }, 200)
+      }
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange)
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isFullscreen])
+
+  // Invalidate map size when adminStudioOpen or isFullscreen changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize()
+      }
+    }, 200)
+    return () => clearTimeout(timer)
+  }, [isFullscreen, adminStudioOpen])
+
   // Reset Map View to default Banda center
   const handleResetMapView = () => {
     if (mapInstanceRef.current) {
@@ -1660,19 +1738,79 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   }
 
   return (
-    <div className="workspace-container animate-fade-in">
+    <div
+      ref={workspaceContainerRef}
+      className={`workspace-container animate-fade-in ${isFullscreen ? 'workspace-fullscreen' : ''}`}
+      style={
+        isFullscreen
+          ? {
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100vw',
+              height: '100vh',
+              zIndex: 9999,
+              background: '#f8fafc',
+              overflowY: 'auto',
+              padding: '0.85rem 1.25rem',
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+            }
+          : undefined
+      }
+    >
       {/* Workspace Header */}
-      <div className="workspace-header" style={{ marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+      <div
+        className="workspace-header"
+        style={{
+          marginBottom: isFullscreen ? '0.65rem' : '1.25rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '0.75rem',
+        }}
+      >
         <div>
-          <h2 style={{ margin: 0, fontSize: '1.45rem', fontWeight: 800, color: '#0f2c59', letterSpacing: '-0.02em' }}>
+          <h2
+            style={{
+              margin: 0,
+              fontSize: isFullscreen ? '1.25rem' : '1.45rem',
+              fontWeight: 800,
+              color: '#0f2c59',
+              letterSpacing: '-0.02em',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+            }}
+          >
             Peta Kepulauan Banda Neira
+            {isFullscreen && (
+              <span
+                style={{
+                  fontSize: '0.68rem',
+                  fontWeight: 600,
+                  padding: '0.15rem 0.5rem',
+                  borderRadius: '4px',
+                  background: '#e0f2fe',
+                  color: '#0369a1',
+                }}
+              >
+                Layar Penuh
+              </span>
+            )}
           </h2>
-          <p style={{ margin: '0.2rem 0 0', color: '#64748b', fontSize: '0.825rem' }}>
-            Eksplorasi destinasi wisata bahari, cagar budaya, penginapan, dan fasilitas umum di seluruh pulau.
-          </p>
+          {!isFullscreen && (
+            <p style={{ margin: '0.2rem 0 0', color: '#64748b', fontSize: '0.825rem' }}>
+              Eksplorasi destinasi wisata bahari, cagar budaya, penginapan, dan fasilitas umum di seluruh pulau.
+            </p>
+          )}
         </div>
 
-        {/* Action Controls (Clean Admin Actions Only) */}
+        {/* Action Controls (Clean Admin Actions & Fullscreen Toggle) */}
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           {isOfficerOrAdmin && (
             <>
@@ -1726,6 +1864,30 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               </button>
             </>
           )}
+
+          {/* Fullscreen Toggle Icon Button (Accessible for both regular users and admins) */}
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            style={{
+              width: '34px',
+              height: '34px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: isFullscreen ? '#0f172a' : '#ffffff',
+              color: isFullscreen ? '#ffffff' : '#334155',
+              border: isFullscreen ? '1.5px solid #0f172a' : '1.5px solid #cbd5e1',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+              transition: 'all 0.15s ease',
+            }}
+            title={isFullscreen ? 'Keluar dari Layar Penuh (Esc)' : 'Layar Penuh Peta (Fullscreen)'}
+            aria-label="Toggle Fullscreen"
+          >
+            {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+          </button>
         </div>
       </div>
 
@@ -3618,13 +3780,45 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
             <Compass size={16} />
           </button>
 
+          {/* Subtle In-Map Fullscreen Toggle Button (Positioned cleanly under compass) */}
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            style={{
+              position: 'absolute',
+              top: '118px',
+              left: '10px',
+              zIndex: 1000,
+              width: '30px',
+              height: '30px',
+              background: isFullscreen ? '#0f172a' : '#ffffff',
+              border: '2px solid rgba(0, 0, 0, 0.2)',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 1px 5px rgba(0, 0, 0, 0.15)',
+              color: isFullscreen ? '#ffffff' : '#334155',
+              transition: 'all 0.15s ease',
+            }}
+            title={isFullscreen ? 'Keluar dari Layar Penuh (Esc)' : 'Layar Penuh Peta (Fullscreen)'}
+            aria-label="Toggle Fullscreen"
+          >
+            {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+          </button>
+
           {/* Leaflet Map Div */}
           <div
             ref={mapContainerRef}
             style={{
               width: '100%',
-              height: '640px',
+              height: isFullscreen
+                ? (adminStudioOpen ? 'calc(100vh - 380px)' : 'calc(100vh - 145px)')
+                : '640px',
+              minHeight: isFullscreen ? '480px' : '640px',
               background: '#e0f2fe',
+              transition: 'height 0.2s ease',
             }}
           />
 

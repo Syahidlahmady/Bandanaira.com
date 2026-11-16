@@ -616,6 +616,10 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Mengisolasi dan mempertahankan data sensus spesifik Desa Merdeka (834 Jiwa, 234 KK, rasio gender, profesi utama, UMKM) sambil menambahkan `area_km2: 2.95` dan `density: 289`.
   - Memperbarui antarmuka `InteractiveMapWorkspace.tsx` agar memunculkan Luas Wilayah dan Kepadatan Penduduk saat poligon desa diklik (pada kartu inspeksi) serta pada tooltip hover Leaflet.
   - Memverifikasi endpoint API `GET /api/v1/gis/villages/details` dan `POST /api/v1/gis/villages/save-polygon` mendukung atribut Luas dan Kepadatan secara konsisten.
+- [x] 40.9 Fitur Mode Layar Penuh (Fullscreen) Peta Interaktif & Adaptasi Kontrol Admin:
+  - Menambahkan tombol ikon layar penuh (`Maximize2` / `Minimize2`) pada kontrol in-map (di bawah tombol kompas) dan pada header aksi antarmuka (dapat diakses oleh publik maupun admin).
+  - Mengimplementasikan HTML5 Fullscreen API dengan fallback CSS overlay (`fixed inset-0 z-9999`) dan penanganan tombol `Escape`.
+  - Mengintegrasikan adaptasi ketinggian peta dinamis (`calc(100vh - ...)`), sinkronisasi rendering tile Leaflet via `invalidateSize()`, serta memastikan seluruh tombol kontrol admin, filter pencarian, dan studio editor tetap utuh dan terpusat saat mode layar penuh aktif.
 
 
 
