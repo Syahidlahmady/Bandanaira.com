@@ -33,6 +33,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 }) => {
   const [internalActiveNav, setInternalActiveNav] = useState<string>('#beranda')
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false)
+  const [scrollProgress, setScrollProgress] = useState<number>(0)
   const [isMobile, setIsMobile] = useState<boolean>(() =>
     typeof window !== 'undefined' ? window.innerWidth < 768 : false
   )
@@ -52,10 +53,16 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     <section
       id="beranda"
       aria-labelledby="banda-hero-title"
-      className="relative w-full bg-[#081d35] text-white selection:bg-[#f4b75e] selection:text-[#081d35]"
+      className="relative w-full bg-black text-white selection:bg-[#f4b75e] selection:text-black"
     >
-      {/* 1. FIXED TOP NAVBAR (Always accessible across resting, expansion, and full-bleed states) */}
-      <div className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 lg:px-12 pt-3 sm:pt-5 pointer-events-none">
+      {/* 1. FIXED TOP NAVBAR (Hides during resting/expansion, smoothly emerges once fully expanded) */}
+      <div
+        className={`fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 lg:px-12 pt-3 sm:pt-5 transition-all duration-500 ease-out ${
+          scrollProgress >= 0.85
+            ? 'opacity-100 translate-y-0 pointer-events-auto'
+            : 'opacity-0 -translate-y-8 pointer-events-none'
+        }`}
+      >
         <header className="flex h-16 sm:h-20 items-center justify-between px-4 sm:px-6 py-0 w-full max-w-7xl mx-auto bg-[#081d35cc] rounded-2xl overflow-hidden border border-solid border-white/20 backdrop-blur-md shadow-2xl pointer-events-auto">
           {/* Brand Logo */}
           <a
@@ -230,18 +237,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         holdDistance={1.6}
         smoothing={0.1}
         overlayScrim={0.4}
+        onProgressChange={setScrollProgress}
         title={
-          <div className="flex flex-col items-center justify-center text-center gap-2.5 sm:gap-3.5 px-4 max-w-4xl">
-            <div className="inline-flex items-center px-3.5 py-1 rounded-full bg-black/60 border border-white/20 backdrop-blur-md shadow-sm">
-              <span className="font-mono text-[10px] sm:text-xs tracking-[0.22em] text-[#f4b75e] uppercase">
-                Kepulauan Banda · Maluku
-              </span>
-            </div>
-            <h2 className="font-sans font-bold tracking-tight text-white text-2xl sm:text-4xl lg:text-5xl leading-[1.15] drop-shadow-lg">
-              Di jantung rempah dunia,{' '}
-              <span className="font-serif italic font-normal text-amber-200">
-                temukan Banda.
-              </span>
+          <div className="w-screen max-w-none flex items-center justify-center px-4 text-center pointer-events-none select-none">
+            <h2 className="font-sans font-black tracking-tight text-white text-4xl sm:text-6xl md:text-7xl lg:text-8xl leading-none drop-shadow-[0_12px_32px_rgba(0,0,0,0.9)] whitespace-nowrap">
+              Di jantung rempah dunia
             </h2>
           </div>
         }

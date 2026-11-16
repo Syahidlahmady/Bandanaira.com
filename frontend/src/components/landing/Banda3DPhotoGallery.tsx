@@ -232,7 +232,7 @@ const PhotoCard = memo(({ item, breakpoint, registerElement }: PhotoCardProps) =
   return (
     <div
       ref={registerElement}
-      className="banda-3d-card absolute grid h-[140px] w-[210px] sm:h-[160px] sm:w-[250px] md:h-[200px] md:w-[310px] lg:h-[220px] lg:w-[350px] place-items-center transition-all duration-300 ease-out"
+      className="banda-3d-card absolute grid h-[140px] w-[210px] sm:h-[160px] sm:w-[250px] md:h-[200px] md:w-[310px] lg:h-[220px] lg:w-[350px] place-items-center"
       style={{
         left: pos.left,
         top: pos.top,
@@ -268,7 +268,7 @@ const OrnamentCard = memo(({ item, breakpoint, registerElement }: OrnamentCardPr
   return (
     <div
       ref={registerElement}
-      className={`absolute grid w-[80px] h-[80px] sm:w-[105px] sm:h-[105px] md:w-[135px] md:h-[135px] place-items-center pointer-events-none transition-all duration-300 ease-out opacity-80 ${item.rotation || ''}`}
+      className={`absolute grid w-[80px] h-[80px] sm:w-[105px] sm:h-[105px] md:w-[135px] md:h-[135px] place-items-center pointer-events-none opacity-80 ${item.rotation || ''}`}
       style={{
         left: pos.left,
         top: pos.top,
@@ -494,10 +494,6 @@ export const Banda3DPhotoGallery: React.FC = () => {
                 Banda Neira
               </h2>
 
-              {/* Narrative Caption */}
-              <p className="text-xs sm:text-sm text-slate-200 font-sans max-w-xs mt-1 leading-relaxed drop-shadow-sm">
-                Kompilasi benteng rempah abad ke-17, palung laut karang purba, dan jejak kemanusiaan di Kepulauan Banda.
-              </p>
             </div>
           </div>
         </div>

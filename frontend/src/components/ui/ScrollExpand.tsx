@@ -26,6 +26,7 @@ export interface ScrollExpandProps extends Omit<React.HTMLAttributes<HTMLDivElem
   overlayScrim?: number
   useWindowScroll?: boolean
   enabled?: boolean
+  onProgressChange?: (progress: number) => void
   children?: React.ReactNode
   className?: string
   style?: React.CSSProperties
@@ -49,6 +50,7 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
   overlayScrim = 0.45,
   useWindowScroll = false,
   enabled = true,
+  onProgressChange,
   children,
   className = '',
   style,
@@ -76,6 +78,7 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     overlayScrim,
     useWindowScroll,
     enabled,
+    onProgressChange,
   })
 
   propsRef.current = {
@@ -90,6 +93,7 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     overlayScrim,
     useWindowScroll,
     enabled,
+    onProgressChange,
   }
 
   const applyProgress = useCallback((p: number) => {
@@ -97,6 +101,8 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     const media = mediaRef.current
     if (!frame || !media) return
     const c = propsRef.current
+
+    c.onProgressChange?.(p)
 
     const e = smoothstep(0, 1, p)
 
@@ -210,14 +216,11 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     const scroller = useWindowScroll ? window : root
     scroller.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onResize)
-    const ro = new ResizeObserver(onResize)
-    ro.observe(root)
 
     return () => {
       if (raf) cancelAnimationFrame(raf)
       scroller.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onResize)
-      ro.disconnect()
     }
   }, [applyProgress, useWindowScroll])
 
