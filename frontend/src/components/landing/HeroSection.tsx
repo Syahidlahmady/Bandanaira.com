@@ -228,8 +228,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         src={bandaCinematicVideoBackdrop}
         alt="Pemandangan Banda Neira dari udara dengan laut dan pulau-pulau di sekitarnya"
         useWindowScroll
-        startWidth={isMobile ? 86 : 46}
-        startHeight={isMobile ? 54 : 58}
+        startWidth={isMobile ? 70 : 44}
+        startHeight={isMobile ? 52 : 58}
         startRadius={isMobile ? 18 : 24}
         endRadius={0}
         mediaZoom={1.22}
@@ -239,8 +239,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         overlayScrim={0.4}
         onProgressChange={setScrollProgress}
         title={
-          <div className="w-screen max-w-none flex items-center justify-center px-4 text-center pointer-events-none select-none">
-            <h2 className="font-sans font-black tracking-tight text-white text-4xl sm:text-6xl md:text-7xl lg:text-8xl leading-none drop-shadow-[0_12px_32px_rgba(0,0,0,0.9)] whitespace-nowrap">
+          <div className="w-full flex items-center justify-center text-center pointer-events-none select-none">
+            <h2 className="font-sans font-black tracking-[-0.035em] text-white text-[clamp(1.75rem,5.6vw,7.5rem)] leading-none drop-shadow-[0_16px_36px_rgba(0,0,0,0.95)] whitespace-nowrap">
               Di jantung rempah dunia
             </h2>
           </div>
