@@ -625,6 +625,10 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Menambahkan toggle "Heatmap Kepadatan" pada menu mengambang *Layers* di bawah grup Informasi Peta.
   - Mengintegrasikan widget legenda dinamis *Population Density Heatmap Legend* di sisi kiri bawah peta lengkap dengan gradien spektrum, label rentang angka, dan tombol tutup cepat.
   - Memperkaya tooltip hover poligon desa saat mode heatmap aktif dengan badge status kepadatan, angka riil jiwa/km², jumlah penduduk, dan luas wilayah.
+- [x] 40.11 Integrasi 20 Titik Spasial Autentik Google Maps (Zero-Duplicate Policy):
+  - Memetakan 20 objek penting baru (Bandara Perintis Kuabang/WAPC, 4 Dermaga Antar-Pulau Hatta/Rhun/Waer/Selamon, Pasar Tradisional & Ikan, Klenteng Sun Hok Bio, Makam Perigi Rante 1621, Benteng Kora-kora, Benteng Swanenburg Pulau Rhun, Kebun Pala Tertua Lonthoir, 5 Penginapan/Resor Populer, serta 4 Destinasi Bahari Baru).
+  - Memastikan tidak ada duplikasi (*Zero Duplication*) terhadap 36 titik spasial eksisting dengan mencocokkan identitas dan koordinat.
+  - Menyinkronkan dataset ke `gis_spatial_features.json` dan database PostGIS `spatial_features` via seeder `seed_spatial_features.py` (total kini menjadi 74 fitur dan 89 entitas API).
 
 
 

@@ -3459,5 +3459,288 @@
     },
     "description": "Batas wilayah administratif resmi Nusantara, Pulau Neira.",
     "is_active": true
+  },
+  {
+    "name": "Bandara Banda Neira",
+    "layer_type": "LAYER_PUBLIC_SAFETY",
+    "category": "publik",
+    "island_name": "Pulau Neira",
+    "latitude": -4.5261,
+    "longitude": 129.9045,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "facility_type": "Bandara Perintis",
+      "runway_length": "900m",
+      "code_icao": "WAPC",
+      "code_iata": "NDA"
+    },
+    "description": "Bandar udara perintis di Pulau Neira yang melayani penerbangan pesawat perintis dari dan ke Ambon."
+  },
+  {
+    "name": "Dermaga Utama Pulau Hatta",
+    "layer_type": "LAYER_PUBLIC_SAFETY",
+    "category": "publik",
+    "island_name": "Pulau Hatta",
+    "latitude": -4.593,
+    "longitude": 130.0385,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "facility_type": "Dermaga Penyeberangan",
+      "island": "Pulau Hatta"
+    },
+    "description": "Dermaga utama sandar perahu motor nelayan dan penyeberangan reguler dari Pulau Neira ke Pulau Hatta."
+  },
+  {
+    "name": "Dermaga Pulau Rhun",
+    "layer_type": "LAYER_PUBLIC_SAFETY",
+    "category": "publik",
+    "island_name": "Pulau Rhun",
+    "latitude": -4.5435,
+    "longitude": 129.687,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "facility_type": "Dermaga Penyeberangan",
+      "island": "Pulau Rhun"
+    },
+    "description": "Dermaga utama pendaratan speedboat dan kapal motor nelayan di sisi timur Pulau Rhun."
+  },
+  {
+    "name": "Dermaga Waer Banda Besar",
+    "layer_type": "LAYER_PUBLIC_SAFETY",
+    "category": "publik",
+    "island_name": "Banda Besar",
+    "latitude": -4.5285,
+    "longitude": 129.969,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "facility_type": "Dermaga Penyeberangan",
+      "island": "Banda Besar"
+    },
+    "description": "Dermaga penyeberangan pesisir tenggara Pulau Banda Besar (Desa Waer) menuju Pulau Neira dan Hatta."
+  },
+  {
+    "name": "Dermaga Selamon Banda Besar",
+    "layer_type": "LAYER_PUBLIC_SAFETY",
+    "category": "publik",
+    "island_name": "Banda Besar",
+    "latitude": -4.538,
+    "longitude": 129.961,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "facility_type": "Dermaga Tradisional",
+      "island": "Banda Besar"
+    },
+    "description": "Dermaga pesisir timur laut Banda Besar, sentra pendaratan perahu nelayan tradisional Desa Selamon."
+  },
+  {
+    "name": "Pasar Tradisional & Ikan Banda Neira",
+    "layer_type": "LAYER_KOPERASI_UMKM",
+    "category": "publik",
+    "island_name": "Pulau Neira",
+    "latitude": -4.5265,
+    "longitude": 129.896,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "market_type": "Pasar Tradisional",
+      "komoditas": "Ikan Segar, Rempah & Hasil Bumi"
+    },
+    "description": "Pusat perdagangan rakyat pesisir, pelelangan ikan cakalang/tuna segar, dan belanja rempah pala warga Neira."
+  },
+  {
+    "name": "Klenteng Sun Hok Bio",
+    "layer_type": "LAYER_HERITAGE",
+    "category": "publik",
+    "island_name": "Pulau Neira",
+    "latitude": -4.5273,
+    "longitude": 129.8969,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "era": "1689 M",
+      "status": "Cagar Budaya"
+    },
+    "description": "Klenteng tertua di Kepulauan Banda yang dibangun pedagang Tionghoa abad ke-17, simbol kerukunan multikultural jalur rempah."
+  },
+  {
+    "name": "Makam Perigi Rante (Situs Tragedi 1621)",
+    "layer_type": "LAYER_HERITAGE",
+    "category": "publik",
+    "island_name": "Pulau Neira",
+    "latitude": -4.5249,
+    "longitude": 129.8995,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "era": "1621 M",
+      "status": "Monumen Sejarah"
+    },
+    "description": "Monumen peringatan pembantaian 44 Orang Kaya Banda oleh VOC di bawah Jan Pieterszoon Coen pada 8 Mei 1621 demi monopoli pala."
+  },
+  {
+    "name": "Benteng Kora-Kora",
+    "layer_type": "LAYER_HERITAGE",
+    "category": "publik",
+    "island_name": "Pulau Neira",
+    "latitude": -4.5222,
+    "longitude": 129.9015,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "era": "Abad ke-17",
+      "status": "Situs Cagar Budaya"
+    },
+    "description": "Pos pertahanan maritim VOC peninggalan era perang laut perahu kora-kora di pesisir utara Neira."
+  },
+  {
+    "name": "Benteng Swanenburg Pulau Rhun",
+    "layer_type": "LAYER_HERITAGE",
+    "category": "publik",
+    "island_name": "Pulau Rhun",
+    "latitude": -4.545,
+    "longitude": 129.685,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "era": "1616 M (EIC Inggris)",
+      "status": "Situs Cagar Budaya"
+    },
+    "description": "Puing benteng pertahanan garnisun Inggris (East India Company) abad ke-17 sebelum Pulau Rhun ditukar dengan Pulau Manhattan New York dalam Traktat Breda 1667."
+  },
+  {
+    "name": "Perkebunan Pala Tertua Lonthoir",
+    "layer_type": "LAYER_KOPERASI_UMKM",
+    "category": "publik",
+    "island_name": "Banda Besar",
+    "latitude": -4.549,
+    "longitude": 129.883,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "komoditas": "Pala Banda (Myristica fragrans)",
+      "usia_pohon": "> 100 Tahun"
+    },
+    "description": "Perkebunan pala tertua di dunia yang dibudidayakan secara turun-temurun di bawah naungan pohon kenari raksasa Lonthoir."
+  },
+  {
+    "name": "The Nutmeg Tree Dive Resort & Resto",
+    "layer_type": "LAYER_ACCOMMODATION",
+    "category": "publik",
+    "island_name": "Pulau Neira",
+    "latitude": -4.5238,
+    "longitude": 129.8968,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "price_range": "Rp 450.000 - Rp 750.000",
+      "has_dive_center": true,
+      "has_restaurant": true
+    },
+    "description": "Resor dan restoran tepi laut di pesisir barat Neira dengan fasilitas dive shop dan pemandangan Gunung Api."
+  },
+  {
+    "name": "Pondok Wisata Mutiara Guest House",
+    "layer_type": "LAYER_ACCOMMODATION",
+    "category": "publik",
+    "island_name": "Pulau Neira",
+    "latitude": -4.5255,
+    "longitude": 129.898,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "price_range": "Rp 250.000 - Rp 400.000",
+      "has_wifi": true
+    },
+    "description": "Penginapan legendaris nyaman di pusat kota Neira dengan kebun pala mini di halaman belakang."
+  },
+  {
+    "name": "Baba Lagoon Homestay",
+    "layer_type": "LAYER_ACCOMMODATION",
+    "category": "publik",
+    "island_name": "Pulau Neira",
+    "latitude": -4.5245,
+    "longitude": 129.897,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "price_range": "Rp 350.000 - Rp 500.000",
+      "waterfront": true
+    },
+    "description": "Homestay tepi dermaga dengan akses langsung melihat kapal tradisional dan terbenamnya matahari di balik Gunung Api."
+  },
+  {
+    "name": "Vita Guest House Banda",
+    "layer_type": "LAYER_ACCOMMODATION",
+    "category": "publik",
+    "island_name": "Pulau Neira",
+    "latitude": -4.526,
+    "longitude": 129.8982,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "price_range": "Rp 200.000 - Rp 350.000"
+    },
+    "description": "Penginapan ramah anggaran di jalan utama Neira dekat dengan situs rumah pengasingan Bung Hatta."
+  },
+  {
+    "name": "Abba Homestay",
+    "layer_type": "LAYER_ACCOMMODATION",
+    "category": "publik",
+    "island_name": "Pulau Neira",
+    "latitude": -4.5258,
+    "longitude": 129.8978,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "price_range": "Rp 250.000 - Rp 400.000",
+      "has_breakfast": true
+    },
+    "description": "Homestay nyaman dengan nuansa kekeluargaan khas Banda Neira dan sajian kuliner sarapan selai pala."
+  },
+  {
+    "name": "Spot Snorkeling Pulau Sjahrir (Pulau Pisang)",
+    "layer_type": "LAYER_TOURISM_4A",
+    "category": "publik",
+    "island_name": "Pulau Sjahrir",
+    "latitude": -4.498,
+    "longitude": 129.932,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "attraction_type": "Snorkeling & Diving",
+      "coral_quality": "Sangat Baik"
+    },
+    "description": "Terumbu karang alami yang masih sangat perawan di sisi barat Pulau Sjahrir (Pulau Pisang) dengan visibilitas air jernih."
+  },
+  {
+    "name": "Pantai Pasir Putih Pulau Hatta",
+    "layer_type": "LAYER_TOURISM_4A",
+    "category": "publik",
+    "island_name": "Pulau Hatta",
+    "latitude": -4.588,
+    "longitude": 130.045,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "attraction_type": "Wisata Pantai & Drop-Off",
+      "sand_type": "Pasir Putih Halus"
+    },
+    "description": "Bentangan pantai pasir putih alami menghadap palung laut dalam dengan dinding karang vertikal spektakuler."
+  },
+  {
+    "name": "Taman Wisata Perairan Laut Banda",
+    "layer_type": "LAYER_TOURISM_4A",
+    "category": "publik",
+    "island_name": "Pulau Neira",
+    "latitude": -4.512,
+    "longitude": 129.92,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "conservation_area": true,
+      "legal_basis": "KemenKP RI"
+    },
+    "description": "Kawasan konservasi perairan nasional Laut Banda seluas 2500 hektar untuk perlindungan biota pelagis dan kima raksasa."
+  },
+  {
+    "name": "Jalur Trekking Kawah Gunung Api",
+    "layer_type": "LAYER_TOURISM_4A",
+    "category": "publik",
+    "island_name": "Pulau Gunung Api",
+    "latitude": -4.519,
+    "longitude": 129.875,
+    "geometry_geojson": null,
+    "properties_meta": {
+      "activity": "Trekking & Hiking",
+      "elevation_mdpl": 640,
+      "duration": "2 - 3 Jam"
+    },
+    "description": "Rute pendakian dari pesisir timur Gunung Api melewati batuan vulkanik menuju kawah aktif di ketinggian 640 mdpl."
   }
 ]
