@@ -612,6 +612,17 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Memperbarui `docker-compose.yml` dengan bind mount volume `./backend/scripts:/app/scripts`.
   - Menyusun dokumentasi seeder lengkap pada `DATABASE.md` dan `backend/app/seeds/README.md` untuk panduan seluruh tim pengembang.
 
+### Phase 41: Penyederhanaan Seksi Landing Page Bergaya `PanoramaIslandSection`, Penyelarasan Sub-Tab Navigasi Pariwisata, dan Kalkulator Chatbot DSS SAW (`4b3e5a5`)
+- [x] 41.1 Penyederhanaan Seksi Landing Page Mengikuti Tata Letak `PanoramaIslandSection.tsx`:
+  - Menyederhanakan `TourismSawSection.tsx`, `EcoStayCatalogSection.tsx`, `EcosystemFeaturesSection.tsx`, dan `TraceabilityMarketplaceSection.tsx` ke struktur 2 kolom bersih tanpa gambar berat (kiri `<header>` kicker + judul + CTA ringkas; kanan grid `<ul>` 3 poin ikon, judul, dan deskripsi singkat) dengan tetap menjaga ekspor publik (`PUBLIC_SAW_DESTINATIONS`, `FALLBACK_ACCOMMODATIONS`, `defaultResidentServices`) dan seluruh anchor ID (`#wisata`, `#eco-stay`, `#penduduk-fasilitas`, `#layanan-umkm`).
+- [x] 41.2 Penyelarasan Sub-Tab Navigasi Pariwisata & Penambahan Tab Destinasi Wisata:
+  - Menambahkan tipe `TourismSubTab` serta helper `setPreferredTourismSubTab` dan `getPreferredTourismSubTab` pada `frontend/src/services/tourism.ts` (persistensi `banda_tourism_subtab` di `localStorage` dan broadcast event `banda:tourism-subtab`).
+  - Menambahkan tab **`🏝️ Tempat Wisata & Destinasi`** (`activeTab === 'destinations'`) di `TourismEcoStayWorkspace.tsx` untuk menampilkan destinasi dari `PUBLIC_SAW_DESTINATIONS` dengan filter wilayah pulau dan kategori, estimasi biaya, skor fasilitas/daya tarik, serta tautan WhatsApp pemandu.
+  - Menyelaraskan tombol navigasi landing page: `Telusuri sejarah Banda` (`HeritageSpiceSection.tsx`) & `Lihat cagar budaya` (`TourismSawSection.tsx`) membuka sub-tab `'heritage'` (**177 Cagar Budaya & Audio Guide**); `Jelajahi Destinasi` (`TourismSawSection.tsx`) & `Jelajahi Banda sekarang` (`PlanYourVisitSection.tsx`) membuka `'destinations'` (**Tempat Wisata & Destinasi**); serta `Lihat Eco-Stay & Vila` (`EcoStayCatalogSection.tsx`) dan tautan footer bertarget `'tourism'` (`LandingFooterSection.tsx`) membuka `'accommodations'` (**Eco-Stay & Vila**).
+- [x] 41.3 Asisten Kalkulator Chatbot DSS Dwi-Mode di `SmartPlannerWorkspace.tsx`:
+  - Mengimplementasikan panel interaktif **Asisten Kalkulator Chatbot DSS** dengan parser preferensi alami (`parseWorkspaceTourismPrompt`, `parseWorkspaceCrisisPrompt`) dan `normalizeWeightMap` yang menyinkronkan bobot slider Mode 1 (Wisata & Penginapan) maupun Mode 2 (Ketahanan Desa) secara otomatis dan memanggil `dssService.calculateTourismRecommendation` / `calculateCrisisPriority`.
+  - Memverifikasi kompilasi TypeScript dan produksi Vite (`docker exec banda_frontend npm run build`: `tsc && vite build`, 2.033 modul, exit code `0`).
+
 
 
 

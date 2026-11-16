@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Penyederhanaan Landing Page Bergaya `PanoramaIslandSection`, Penyelarasan Sub-Tab Pariwisata & Kalkulator Chatbot DSS (Phase 41 — commit `4b3e5a5`)**:
+  - Menyederhanakan `TourismSawSection.tsx`, `EcoStayCatalogSection.tsx`, `EcosystemFeaturesSection.tsx`, dan `TraceabilityMarketplaceSection.tsx` mengikuti tata letak 2 kolom bersih `PanoramaIslandSection.tsx` tanpa foto/kartu berat, seraya menjaga seluruh anchor navigasi (`#wisata`, `#eco-stay`, `#penduduk-fasilitas`, `#layanan-umkm`) dan ekspor kompatibilitas.
+  - Menambahkan helper `TourismSubTab`, `setPreferredTourismSubTab`, dan `getPreferredTourismSubTab` di `frontend/src/services/tourism.ts` serta tab **`🏝️ Tempat Wisata & Destinasi`** (`PUBLIC_SAW_DESTINATIONS` dengan filter pulau & kategori) di `TourismEcoStayWorkspace.tsx`.
+  - Menyelaraskan tombol CTA landing page: `Telusuri sejarah Banda` (`HeritageSpiceSection.tsx`) dan `Lihat cagar budaya` (`TourismSawSection.tsx`) menuju `'heritage'`; `Jelajahi Destinasi` (`TourismSawSection.tsx`) dan `Jelajahi Banda sekarang` (`PlanYourVisitSection.tsx`) menuju `'destinations'`; `Lihat Eco-Stay & Vila` (`EcoStayCatalogSection.tsx`) dan tautan footer bertarget `'tourism'` (`LandingFooterSection.tsx`) menuju `'accommodations'`.
+  - Mengimplementasikan panel interaktif **Asisten Kalkulator Chatbot DSS** dwi-mode (`tourism` dan `crisis`) pada `SmartPlannerWorkspace.tsx` (`parseWorkspaceTourismPrompt`, `parseWorkspaceCrisisPrompt`, `normalizeWeightMap`) yang terhubung ke `dssService`.
 - **Penyimpanan Dataset Spasial Autentik, Seeder Geospasial 54 Objek & Dokumentasi Peta Interaktif (Phase 39)**:
   - Menyimpan dan mengekspor seluruh 37 objek spasial autentik PostGIS yang baru dibuat (termasuk rute maritim *Jalur Penyeberangan Speedboat Neira - Pulau Ay* dengan 26 waypoint LineString, RSUD Banda, Hutan Kelle, Blood Stone, pantai barat Pulau Ay, embung komunal, dll.) ke berkas seeder permanen `backend/app/seeds/gis_spatial_features.json`.
   - Menggabungkan dataset dengan 17 objek infrastruktur pulau lainnya (termasuk spot selam Pulau Hatta, stasiun desalinasi SWRO tenaga surya, microgrid PLTS 50 kWp, dan sentra koperasi) sehingga total mencapai 54 objek spasial terverifikasi di seluruh 6 gugus pulau.
