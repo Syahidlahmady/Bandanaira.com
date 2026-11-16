@@ -2,11 +2,13 @@ from typing import List, Optional
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.app.core.permissions import (
     ROLE_ADMIN,
     ROLE_FARMER_GROUP_ADMIN,
     ROLE_VILLAGE_OFFICER,
+    get_current_active_user,
     require_roles,
 )
 from backend.app.database.session import get_db
@@ -21,18 +23,124 @@ from backend.app.modules.farmers.schemas import (
     FarmerResponse,
     FarmerUpdate,
 )
+from backend.app.modules.population.models import Resident
 
 router = APIRouter(prefix="/farmers", tags=["Farmers Management"])
 
 FARMER_MANAGERS = require_roles(ROLE_ADMIN, ROLE_VILLAGE_OFFICER, ROLE_FARMER_GROUP_ADMIN)
+
+_DEFAULT_GROUPS = [
+    ("Kelompok Tani Pala Lonthoir Subur", "Daud Walalayo", "Lonthoir", "081234000001"),
+    ("Kelompok Tani Rempah Banda Neira Makmur", "Ibrahim Baadilla", "Banda Neira", "081234000002"),
+    ("Kelompok Tani Selamon Bersatu", "Hasan Latarissa", "Selamon", "081234000003"),
+]
+
+_DEFAULT_FARMERS = [
+    ("BN-PKT-001", "Usman Alkatiri", "081240111222", "Kelompok Tani Pala Lonthoir Subur"),
+    ("BN-PKT-002", "Daud Walalayo", "081240111333", "Kelompok Tani Pala Lonthoir Subur"),
+    ("BN-PKT-003", "Fatimah Patty", "081240111444", "Kelompok Tani Rempah Banda Neira Makmur"),
+    ("BN-PKT-004", "Ali Renuat", "081240111555", "Kelompok Tani Selamon Bersatu"),
+]
+
+
+async def ensure_default_farmers_seeded(db: AsyncSession) -> None:
+    """Pastikan kelompok tani & daftar petani awal tersedia serta tersinkron dengan data warga petani."""
+    changed = False
+
+    # 1. Seed kelompok tani bawaan jika belum ada
+    existing_groups = {
+        g.name: g for g in (await db.execute(select(FarmerGroup))).scalars().all()
+    }
+    if not existing_groups:
+        for gname, leader, village, contact in _DEFAULT_GROUPS:
+            if gname not in existing_groups:
+                grp = FarmerGroup(
+                    name=gname,
+                    leader_name=leader,
+                    village=village,
+                    contact_number=contact,
+                )
+                db.add(grp)
+                existing_groups[gname] = grp
+                changed = True
+        if changed:
+            await db.flush()
+
+    default_group = next(iter(existing_groups.values()), None)
+
+    # 2. Seed petani bawaan jika tabel petani masih kosong
+    total_farmers = (await db.execute(select(func.count(Farmer.id)))).scalar_one()
+    if total_farmers == 0:
+        for fcode, fname, phone, gname in _DEFAULT_FARMERS:
+            target_group = existing_groups.get(gname) or default_group
+            db.add(
+                Farmer(
+                    farmer_code=fcode,
+                    name=fname,
+                    phone=phone,
+                    status="active",
+                    farmer_group_id=target_group.id if target_group else None,
+                )
+            )
+            changed = True
+
+    # 3. Sinkronkan warga berprofesi Petani / Pekebun yang belum masuk tabel farmers
+    farmer_residents = (
+        await db.execute(
+            select(Resident).where(
+                or_(
+                    Resident.occupation.ilike("%petani%"),
+                    Resident.occupation.ilike("%pekebun%"),
+                )
+            )
+        )
+    ).scalars().all()
+
+    if farmer_residents:
+        existing_resident_ids = set(
+            (await db.execute(select(Farmer.resident_id).where(Farmer.resident_id.is_not(None)))).scalars().all()
+        )
+        existing_codes = set((await db.execute(select(Farmer.farmer_code))).scalars().all())
+        for res in farmer_residents:
+            if res.id in existing_resident_ids:
+                continue
+            code = f"BN-WGA-{str(res.id).replace('-', '')[:6].upper()}"
+            if code in existing_codes:
+                continue
+            village_lower = (res.village or "").lower()
+            matched_group = default_group
+            for grp in existing_groups.values():
+                if grp.village.lower() in village_lower or village_lower in grp.village.lower():
+                    matched_group = grp
+                    break
+            db.add(
+                Farmer(
+                    farmer_code=code,
+                    name=res.full_name,
+                    phone=res.phone_number,
+                    status="active",
+                    resident_id=res.id,
+                    farmer_group_id=matched_group.id if matched_group else None,
+                )
+            )
+            existing_codes.add(code)
+            existing_resident_ids.add(res.id)
+            changed = True
+
+    if changed:
+        try:
+            await db.commit()
+        except IntegrityError:
+            await db.rollback()
 
 
 # --- Farmer Groups ---
 @router.get("/groups", response_model=List[FarmerGroupResponse])
 async def list_farmer_groups(
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(FARMER_MANAGERS),
+    _: User = Depends(get_current_active_user),
 ):
+    await ensure_default_farmers_seeded(db)
     stmt = select(FarmerGroup).order_by(FarmerGroup.name)
     result = await db.execute(stmt)
     return result.scalars().all()
@@ -78,8 +186,9 @@ async def list_farmers(
     search: Optional[str] = None,
     group_id: Optional[uuid.UUID] = None,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(FARMER_MANAGERS),
+    _: User = Depends(get_current_active_user),
 ):
+    await ensure_default_farmers_seeded(db)
     query = select(Farmer)
     if search:
         search_fmt = f"%{search}%"
