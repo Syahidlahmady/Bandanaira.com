@@ -136,6 +136,45 @@ export const BASEMAP_CONFIGS: Record<BasemapId, BasemapConfig> = {
   },
 }
 
+// Cartographic density classification tiers for Choropleth Population Heatmap
+export const getDensityTier = (density?: number | string | null) => {
+  const d = typeof density === 'string' ? parseFloat(density) : (density || 0)
+  if (d >= 300) {
+    return {
+      tier: 'Sangat Padat',
+      color: '#e11d48', // Crimson / Rose 600
+      borderColor: '#be123c',
+      fillOpacity: 0.72,
+      label: '≥ 300 jiwa/km²',
+    }
+  }
+  if (d >= 200) {
+    return {
+      tier: 'Cukup Padat',
+      color: '#f59e0b', // Amber 500
+      borderColor: '#d97706',
+      fillOpacity: 0.62,
+      label: '200 - 299 jiwa/km²',
+    }
+  }
+  if (d >= 100) {
+    return {
+      tier: 'Kepadatan Sedang',
+      color: '#0d9488', // Teal 600
+      borderColor: '#0f766e',
+      fillOpacity: 0.50,
+      label: '100 - 199 jiwa/km²',
+    }
+  }
+  return {
+    tier: 'Renggang',
+    color: '#10b981', // Emerald 500
+    borderColor: '#059669',
+    fillOpacity: 0.40,
+    label: '< 100 jiwa/km²',
+  }
+}
+
 // Bounding box strictly locked to Kepulauan Banda archipelago (Rhun, Ai, Neira, Gunung Api, Banda Besar, Hatta)
 export const BANDA_ARCHIPELAGO_BOUNDS = L.latLngBounds(
   [-4.7000, 129.6000], // Southwest (Selatan Pulau Rhun / Banda Besar)
@@ -230,6 +269,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
   // Village Boundary (Choropleth Polygons) States
   const [showVillageBoundaries, setShowVillageBoundaries] = useState<boolean>(true)
+  const [showDensityHeatmap, setShowDensityHeatmap] = useState<boolean>(false)
   const [selectedVillage, setSelectedVillage] = useState<VillageInfo | null>(null)
   const villageBoundariesLayerRef = useRef<L.GeoJSON | null>(null)
 
@@ -1533,6 +1573,20 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
           // Hide polygon while in active edit mode so draft polygon with handles is shown
           return { fillOpacity: 0, opacity: 0 }
         }
+
+        const details = villageDetailsMap[vName] || VILLAGE_DETAILS[vName]
+
+        if (showDensityHeatmap) {
+          const tier = getDensityTier(details?.density)
+          return {
+            fillColor: tier.color,
+            fillOpacity: isSelected ? 0.85 : tier.fillOpacity,
+            color: isSelected ? '#0f172a' : tier.borderColor,
+            weight: isSelected ? 2.5 : 1.4,
+            dashArray: isSelected ? undefined : '2, 2',
+          }
+        }
+
         const baseColor = feat?.properties?.color || '#3b82f6'
         return {
           fillColor: baseColor,
@@ -1545,22 +1599,38 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
       onEachFeature: (feat, layer) => {
         const { name, island, color } = feat.properties
         const details = villageDetailsMap[name] || VILLAGE_DETAILS[name]
-        layer.bindTooltip(
-          `<div style="font-family: inherit; font-size: 11px; font-weight: 700; color: #0f172a;">
-            <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: ${color}; margin-right: 4px;"></span>
-            <b>${name}</b><br/>
-            <span style="font-size: 9px; color: #64748b; font-weight: 500;">${island}</span>
-            ${details?.area_km2 ? `<br/><span style="font-size: 9px; color: #0f766e; font-weight: 600;">Luas: ${details.area_km2} km² | Kepadatan: ${details.density} jiwa/km²</span>` : ''}
-          </div>`,
-          { sticky: true, opacity: 0.95 }
-        )
+        const tier = getDensityTier(details?.density)
+
+        const tooltipHtml = showDensityHeatmap
+          ? `<div style="font-family: inherit; font-size: 11px; font-weight: 700; color: #0f172a; padding: 1px 0;">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 2px;">
+                <b>${name}</b>
+                <span style="font-size: 8.5px; padding: 1px 5px; border-radius: 4px; background: ${tier.color}; color: #ffffff; font-weight: 700;">
+                  ${tier.tier}
+                </span>
+              </div>
+              <div style="font-size: 9px; color: #64748b; font-weight: 500;">${island}</div>
+              <div style="margin-top: 4px; padding-top: 3px; border-top: 1px dashed #cbd5e1; font-size: 9px; color: #0f172a;">
+                <b>Kepadatan:</b> <span style="color: ${tier.color}; font-weight: 800;">${details?.density || '-'} jiwa/km²</span>
+                ${details?.population ? `<br/><span style="color: #64748b;">Penduduk: ${details.population}</span>` : ''}
+                ${details?.area_km2 ? `<br/><span style="color: #64748b;">Luas: ${details.area_km2} km²</span>` : ''}
+              </div>
+            </div>`
+          : `<div style="font-family: inherit; font-size: 11px; font-weight: 700; color: #0f172a;">
+              <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: ${color}; margin-right: 4px;"></span>
+              <b>${name}</b><br/>
+              <span style="font-size: 9px; color: #64748b; font-weight: 500;">${island}</span>
+              ${details?.area_km2 ? `<br/><span style="font-size: 9px; color: #0f766e; font-weight: 600;">Luas: ${details.area_km2} km² | Kepadatan: ${details.density} jiwa/km²</span>` : ''}
+            </div>`
+
+        layer.bindTooltip(tooltipHtml, { sticky: true, opacity: 0.98 })
 
         layer.on({
           mouseover: (e: any) => {
             const l = e.target
             if (selectedVillage?.name !== name) {
               l.setStyle({
-                fillOpacity: 0.52,
+                fillOpacity: showDensityHeatmap ? 0.88 : 0.52,
                 weight: 2,
               })
             }
@@ -1568,9 +1638,10 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
           mouseout: (e: any) => {
             const l = e.target
             if (selectedVillage?.name !== name) {
+              const defaultOpacity = showDensityHeatmap ? tier.fillOpacity : 0.28
               l.setStyle({
-                fillOpacity: 0.28,
-                weight: 1.2,
+                fillOpacity: defaultOpacity,
+                weight: showDensityHeatmap ? 1.4 : 1.2,
               })
             }
           },
@@ -1594,7 +1665,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     geoJsonLayer.addTo(mapInstanceRef.current)
     geoJsonLayer.bringToBack()
     villageBoundariesLayerRef.current = geoJsonLayer
-  }, [showVillageBoundaries, selectedVillage, villageGeoJSON, villageDetailsMap, adminStudioOpen, adminTab, editingVillageName])
+  }, [showVillageBoundaries, showDensityHeatmap, selectedVillage, villageGeoJSON, villageDetailsMap, adminStudioOpen, adminTab, editingVillageName])
 
   const handleFocusVillage = (vName: string) => {
     const details = villageDetailsMap[vName] || VILLAGE_DETAILS[vName]
@@ -4040,6 +4111,93 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
             </div>
           )}
 
+          {/* Population Density Heatmap Legend (Active when Heatmap Layer is Toggled) */}
+          {showDensityHeatmap && showVillageBoundaries && (
+            <div
+              className="animate-fade-in"
+              style={{
+                position: 'absolute',
+                bottom: '16px',
+                left: '92px',
+                zIndex: 1010,
+                background: 'rgba(255, 255, 255, 0.96)',
+                backdropFilter: 'blur(10px)',
+                border: '1.5px solid #cbd5e1',
+                borderRadius: '10px',
+                padding: '0.55rem 0.75rem',
+                boxShadow: '0 4px 18px rgba(15, 44, 89, 0.12)',
+                maxWidth: '280px',
+                fontSize: '0.72rem',
+                pointerEvents: 'auto',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px', gap: '8px' }}>
+                <span style={{ fontWeight: 800, color: '#0f2c59', fontSize: '0.66rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Kepadatan Penduduk (jiwa/km²)
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowDensityHeatmap(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#94a3b8',
+                    cursor: 'pointer',
+                    padding: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                  title="Tutup layer heatmap"
+                  aria-label="Close heatmap"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+
+              {/* Sequential Color Ramp Bar */}
+              <div
+                style={{
+                  height: '5px',
+                  borderRadius: '3px',
+                  background: 'linear-gradient(90deg, #10b981 0%, #0d9488 33%, #f59e0b 66%, #e11d48 100%)',
+                  marginBottom: '6px',
+                }}
+              />
+
+              {/* 4 Tiers Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', textAlign: 'center' }}>
+                <div>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#10b981', margin: '0 auto 2px' }} />
+                  <span style={{ fontSize: '0.62rem', color: '#475569', fontWeight: 600, display: 'block', lineHeight: 1.1 }}>
+                    &lt; 100
+                  </span>
+                  <span style={{ fontSize: '0.58rem', color: '#94a3b8' }}>Renggang</span>
+                </div>
+                <div>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#0d9488', margin: '0 auto 2px' }} />
+                  <span style={{ fontSize: '0.62rem', color: '#475569', fontWeight: 600, display: 'block', lineHeight: 1.1 }}>
+                    100-199
+                  </span>
+                  <span style={{ fontSize: '0.58rem', color: '#94a3b8' }}>Sedang</span>
+                </div>
+                <div>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#f59e0b', margin: '0 auto 2px' }} />
+                  <span style={{ fontSize: '0.62rem', color: '#475569', fontWeight: 600, display: 'block', lineHeight: 1.1 }}>
+                    200-299
+                  </span>
+                  <span style={{ fontSize: '0.58rem', color: '#94a3b8' }}>Padat</span>
+                </div>
+                <div>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#e11d48', margin: '0 auto 2px' }} />
+                  <span style={{ fontSize: '0.62rem', color: '#475569', fontWeight: 600, display: 'block', lineHeight: 1.1 }}>
+                    ≥ 300
+                  </span>
+                  <span style={{ fontSize: '0.58rem', color: '#94a3b8' }}>Tinggi</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Google Maps Style "Layers" Floating Control Button & Panel */}
           <div
             style={{
@@ -4354,6 +4512,53 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                         }}
                       >
                         17 Desa
+                      </span>
+                    </div>
+
+                    {/* Toggle Population Density Heatmap */}
+                    <div
+                      onClick={() => {
+                        setShowDensityHeatmap((prev) => {
+                          const next = !prev
+                          if (next && !showVillageBoundaries) {
+                            setShowVillageBoundaries(true)
+                          }
+                          return next
+                        })
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '6px 8px',
+                        borderRadius: '6px',
+                        background: showDensityHeatmap ? '#fff1f2' : '#f8fafc',
+                        border: '1px solid',
+                        borderColor: showDensityHeatmap ? '#fecdd3' : '#e2e8f0',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div
+                          style={{
+                            width: '12px',
+                            height: '10px',
+                            background: 'linear-gradient(90deg, #10b981 0%, #0d9488 33%, #f59e0b 66%, #e11d48 100%)',
+                            borderRadius: '2px',
+                          }}
+                        />
+                        <span style={{ fontSize: '0.73rem', fontWeight: 600, color: '#0f2c59' }}>
+                          Heatmap Kepadatan
+                        </span>
+                      </div>
+                      <span
+                        style={{
+                          fontSize: '0.68rem',
+                          fontWeight: 700,
+                          color: showDensityHeatmap ? '#e11d48' : '#94a3b8',
+                        }}
+                      >
+                        {showDensityHeatmap ? 'Aktif' : 'Mati'}
                       </span>
                     </div>
 

@@ -620,6 +620,11 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Menambahkan tombol ikon layar penuh (`Maximize2` / `Minimize2`) pada kontrol in-map (di bawah tombol kompas) dan pada header aksi antarmuka (dapat diakses oleh publik maupun admin).
   - Mengimplementasikan HTML5 Fullscreen API dengan fallback CSS overlay (`fixed inset-0 z-9999`) dan penanganan tombol `Escape`.
   - Mengintegrasikan adaptasi ketinggian peta dinamis (`calc(100vh - ...)`), sinkronisasi rendering tile Leaflet via `invalidateSize()`, serta memastikan seluruh tombol kontrol admin, filter pencarian, dan studio editor tetap utuh dan terpusat saat mode layar penuh aktif.
+- [x] 40.10 Layer Heatmap Kepadatan Penduduk Tematik (Choropleth Density Classification):
+  - Mengimplementasikan skala klasifikasi kepadatan 4-tingkat berbasis data resmi (`< 100`, `100-199`, `200-299`, `≥ 300` jiwa/km²) dengan palet warna kartografis berurutan (*Emerald -> Teal -> Amber -> Crimson*).
+  - Menambahkan toggle "Heatmap Kepadatan" pada menu mengambang *Layers* di bawah grup Informasi Peta.
+  - Mengintegrasikan widget legenda dinamis *Population Density Heatmap Legend* di sisi kiri bawah peta lengkap dengan gradien spektrum, label rentang angka, dan tombol tutup cepat.
+  - Memperkaya tooltip hover poligon desa saat mode heatmap aktif dengan badge status kepadatan, angka riil jiwa/km², jumlah penduduk, dan luas wilayah.
 
 
 
