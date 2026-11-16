@@ -38,6 +38,21 @@ export interface RegisteredAccountRecord {
 
 const REGISTERED_ACCOUNTS_KEY = 'banda_registered_accounts'
 const ACTIVE_PROFILE_KEY = 'banda_active_user_profile'
+let inflightTokenPromise: Promise<string | null> | null = null
+
+function isJwtExpired(token: string, skewSeconds = 30): boolean {
+  if (!token || token.startsWith('offline-jwt-')) return true
+  const parts = token.split('.')
+  if (parts.length !== 3) return true
+  try {
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+    const payload = JSON.parse(atob(base64))
+    if (typeof payload.exp !== 'number') return false
+    return Date.now() / 1000 >= payload.exp - skewSeconds
+  } catch {
+    return true
+  }
+}
 
 export const DEFAULT_PROJECT_ACCOUNTS: RegisteredAccountRecord[] = [
   {
@@ -303,23 +318,113 @@ export const authService = {
     }
   },
 
+  async refreshAccessToken(): Promise<string | null> {
+    const refreshToken = this.getRefreshToken()
+    if (!refreshToken || refreshToken.startsWith('offline-jwt-')) {
+      return null
+    }
+    try {
+      const res = await fetch(`${API_BASE}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      })
+      if (!res.ok) return null
+      const data: TokenResponse = await res.json()
+      this.setTokens(data.access_token, data.refresh_token)
+      return data.access_token
+    } catch {
+      return null
+    }
+  },
+
+  async ensureValidToken(forceRefresh = false): Promise<string | null> {
+    const current = this.getAccessToken()
+    if (!forceRefresh && current && !isJwtExpired(current)) {
+      return current
+    }
+    if (inflightTokenPromise) {
+      return inflightTokenPromise
+    }
+
+    inflightTokenPromise = (async () => {
+      const refreshed = await this.refreshAccessToken()
+      if (refreshed && !isJwtExpired(refreshed)) {
+        return refreshed
+      }
+
+      // Upgrade offline-jwt or expired demo session seamlessly using active profile credentials
+      const cached = this.getCachedProfile()
+      const roleNames = (cached?.roles || []).map((r) => (typeof r === 'string' ? r : r.name))
+      const matched = loadRegisteredAccounts().find(
+        (acc) =>
+          (cached?.username && acc.demoUsername === cached.username) ||
+          roleNames.includes(acc.roleCode)
+      )
+      if (matched) {
+        try {
+          const res = await fetch(`${API_BASE}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username_or_email: matched.demoUsername,
+              password: matched.demoPassword,
+            }),
+          })
+          if (res.ok) {
+            const data: TokenResponse = await res.json()
+            this.setTokens(data.access_token, data.refresh_token)
+            localStorage.setItem(
+              ACTIVE_PROFILE_KEY,
+              JSON.stringify({
+                ...data.user,
+                full_name: cached?.full_name || data.user.full_name,
+              })
+            )
+            return data.access_token
+          }
+        } catch {
+          // ignore network error
+        }
+      }
+      return this.getAccessToken()
+    })()
+
+    try {
+      return await inflightTokenPromise
+    } finally {
+      inflightTokenPromise = null
+    }
+  },
+
   async getMe(): Promise<User> {
     const token = this.getAccessToken()
     if (!token) {
       throw new Error('No access token')
     }
-    if (token.startsWith('offline-jwt-')) {
+    const activeToken = (await this.ensureValidToken(token.startsWith('offline-jwt-'))) || token
+    if (activeToken.startsWith('offline-jwt-')) {
       const cached = localStorage.getItem(ACTIVE_PROFILE_KEY)
       if (cached) {
         return JSON.parse(cached)
       }
     }
     try {
-      const res = await fetch(`${API_BASE}/auth/me`, {
+      let res = await fetch(`${API_BASE}/auth/me`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${activeToken}`,
         },
       })
+      if (res.status === 401) {
+        const refreshed = await this.ensureValidToken(true)
+        if (refreshed && !refreshed.startsWith('offline-jwt-')) {
+          res = await fetch(`${API_BASE}/auth/me`, {
+            headers: {
+              Authorization: `Bearer ${refreshed}`,
+            },
+          })
+        }
+      }
       if (!res.ok) {
         throw new Error(`Gagal mengambil data user (${res.status})`)
       }

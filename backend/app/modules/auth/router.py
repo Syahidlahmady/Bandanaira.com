@@ -15,6 +15,7 @@ from backend.app.core.security import (
 )
 from backend.app.database.session import get_db
 from backend.app.modules.auth.models import Role, User
+from backend.app.modules.auth.seed import seed_roles_and_admin
 from backend.app.modules.auth.schemas import (
     LoginRequest,
     RefreshTokenRequest,
@@ -40,6 +41,10 @@ async def login(credentials: LoginRequest, db: AsyncSession = Depends(get_db)):
     )
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
+
+    if not user:
+        await seed_roles_and_admin(db)
+        user = (await db.execute(stmt)).scalar_one_or_none()
 
     if not user or not verify_password(credentials.password, user.password_hash):
         raise HTTPException(

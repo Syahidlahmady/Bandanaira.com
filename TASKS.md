@@ -640,6 +640,30 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Memverifikasi build frontend (`npm run build`) dan rangkaian pengujian otomatis PostGIS backend (`pytest tests/test_gis.py`) dengan hasil 100% lulus.
 
 
+### Phase 41: Penyederhanaan Seksi Landing Page Bergaya `PanoramaIslandSection`, Penyelarasan Sub-Tab Navigasi Pariwisata, dan Kalkulator Chatbot DSS SAW (`4b3e5a5`)
+- [x] 41.1 Penyederhanaan Seksi Landing Page Mengikuti Tata Letak `PanoramaIslandSection.tsx`:
+  - Menyederhanakan `TourismSawSection.tsx`, `EcoStayCatalogSection.tsx`, `EcosystemFeaturesSection.tsx`, dan `TraceabilityMarketplaceSection.tsx` ke struktur 2 kolom bersih tanpa gambar berat (kiri `<header>` kicker + judul + CTA ringkas; kanan grid `<ul>` 3 poin ikon, judul, dan deskripsi singkat) dengan tetap menjaga ekspor publik (`PUBLIC_SAW_DESTINATIONS`, `FALLBACK_ACCOMMODATIONS`, `defaultResidentServices`) dan seluruh anchor ID (`#wisata`, `#eco-stay`, `#penduduk-fasilitas`, `#layanan-umkm`).
+- [x] 41.2 Penyelarasan Sub-Tab Navigasi Pariwisata & Penambahan Tab Destinasi Wisata:
+  - Menambahkan tipe `TourismSubTab` serta helper `setPreferredTourismSubTab` dan `getPreferredTourismSubTab` pada `frontend/src/services/tourism.ts` (persistensi `banda_tourism_subtab` di `localStorage` dan broadcast event `banda:tourism-subtab`).
+  - Menambahkan tab **`🏝️ Tempat Wisata & Destinasi`** (`activeTab === 'destinations'`) di `TourismEcoStayWorkspace.tsx` untuk menampilkan destinasi dari `PUBLIC_SAW_DESTINATIONS` dengan filter wilayah pulau dan kategori, estimasi biaya, skor fasilitas/daya tarik, serta tautan WhatsApp pemandu.
+  - Menyelaraskan tombol navigasi landing page: `Telusuri sejarah Banda` (`HeritageSpiceSection.tsx`) & `Lihat cagar budaya` (`TourismSawSection.tsx`) membuka sub-tab `'heritage'` (**177 Cagar Budaya & Audio Guide**); `Jelajahi Destinasi` (`TourismSawSection.tsx`) & `Jelajahi Banda sekarang` (`PlanYourVisitSection.tsx`) membuka `'destinations'` (**Tempat Wisata & Destinasi**); serta `Lihat Eco-Stay & Vila` (`EcoStayCatalogSection.tsx`) dan tautan footer bertarget `'tourism'` (`LandingFooterSection.tsx`) membuka `'accommodations'` (**Eco-Stay & Vila**).
+- [x] 41.3 Asisten Kalkulator Chatbot DSS Dwi-Mode di `SmartPlannerWorkspace.tsx`:
+  - Mengimplementasikan panel interaktif **Asisten Kalkulator Chatbot DSS** dengan parser preferensi alami (`parseWorkspaceTourismPrompt`, `parseWorkspaceCrisisPrompt`) dan `normalizeWeightMap` yang menyinkronkan bobot slider Mode 1 (Wisata & Penginapan) maupun Mode 2 (Ketahanan Desa) secara otomatis dan memanggil `dssService.calculateTourismRecommendation` / `calculateCrisisPriority`.
+  - Memverifikasi kompilasi TypeScript dan produksi Vite (`docker exec banda_frontend npm run build`: `tsc && vite build`, 2.033 modul, exit code `0`).
+
+### Phase 42: Pemetaan Lahan Satelit Interaktif Non-Teknis Kelompok Tani (Poktan), Auto-Seed & Sinkronisasi Petani, serta Perbaikan Sesi JWT `401` (`96f2056`)
+- [x] 42.1 Peta Satelit Interaktif Pemetaan Lahan Non-Teknis (`frontend/src/components/FarmMap.tsx`):
+  - Mengunci viewport peta ke gugusan Kepulauan Banda (`BANDA_ARCHIPELAGO_BOUNDS`, `minZoom: 11`, `maxZoom: 19`, `maxBoundsViscosity: 1.0`) serta menambahkan toolbar lompat pulau cepat (`Pulau Neira`, `Lonthoir / Banda Besar`, `Pulau Ai`, `Pulau Hatta`, `Pulau Rhun`) dan tombol `Pusat Banda`.
+  - Menambahkan basemap switcher gaya Google Maps (`Satelit` dengan toggle `Label Lokasi`, `Standar`, `Topografi`) dan mode layar penuh (`toggleFullscreen`).
+  - Menambahkan mode pemetaan lahan (`+ Klik Peta Tambah Sudut Lahan` vs `Hanya Geser Titik Batas`), tombol preset `Kotak Cepat` (`2.500 m²`, `5.000 m²`, `10.000 m² (1 Ha)` via `generateSquarePolygonVertices`), `Urungkan Titik`, `Bersihkan`, pin tengah merah & titik sudut bernomor (`1..N`) yang dapat digeser atau dihapus via klik kanan, kalkulasi luas geodesik WGS84 (`computeSphericalAreaSqm`), serta fokus kebun dari tabel (`focusFarmId`).
+- [x] 42.2 Alur Formulir Pemetaan 3-Langkah & Tambah Petani Anggota Poktan (`frontend/src/views/FarmsGisWorkspace.tsx`):
+  - Menghubungkan draf pin/poligon peta satelit secara langsung ke `farmForm` (`polygon_boundary_geojson`, `latitude`, `longitude`, `area_sqm`), menyertakan tombol `📍 Gunakan GPS Perangkat` (`handleUseDeviceGps`) dan `📐 Uji Tumpang Tindih Batas (PostGIS)` (`handleValidateBoundary`), serta memindahkan input koordinat manual ke panel `<details>` opsional.
+  - Menambahkan form inline **`+ Tambah Petani Baru`** (`handleCreateFarmerMember`) di samping dropdown `Petani Pemilik Lahan` (menampilkan nama Kelompok Tani tiap anggota) serta tombol **`Lihat di Peta`** (`handleFocusFarmOnMap`) dan indikator `📐 Batas Poligon` / `📍 Titik Saja` pada tabel plot kebun.
+- [x] 42.3 Perbaikan Error `401 Unauthorized` & Auto-Seed/Sinkronisasi Petani (`auth.ts`, `farmers.ts`, `backend/app/modules/auth/router.py`, `backend/app/modules/farmers/router.py`):
+  - Menambahkan `ensureValidToken` & `refreshAccessToken` di `frontend/src/services/auth.ts` serta wrapper `requestWithAuth` di `frontend/src/services/farmers.ts` untuk memperbarui token kadaluarsa/`offline-jwt-` otomatis dan me-retry request saat terjadi `401`.
+  - Menambahkan auto-seed `seed_roles_and_admin` saat login pada `backend/app/modules/auth/router.py`, membuka akses baca `GET /api/v1/farmers/groups` & `GET /api/v1/farmers` bagi `get_current_active_user`, serta menambahkan `ensure_default_farmers_seeded(db)` di `backend/app/modules/farmers/router.py` (3 Kelompok Tani, 4 petani bawaan `BN-PKT-001`..`004`, dan sinkronisasi otomatis warga berprofesi `Petani`/`Pekebun`).
+  - Memverifikasi 20 pytest backend (`test_farmers_and_farms.py` & `test_auth.py`: `20 passed`) serta build frontend (`tsc && vite build`, 2.033 modul, exit code `0`).
+
 
 
 

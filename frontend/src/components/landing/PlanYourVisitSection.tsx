@@ -1,6 +1,7 @@
 import React from 'react'
 import bandaCinematicVideoBackdrop from '../../assets/image.webp'
 import { ArrowUpRightIcon } from './LandingIcons'
+import { setPreferredTourismSubTab } from '../../services/tourism'
 
 export interface PlanYourVisitSectionProps {
   onNavigate: (tab: any) => void
@@ -46,7 +47,10 @@ export const PlanYourVisitSection: React.FC<PlanYourVisitSectionProps> = ({ onNa
       <div className="inline-flex flex-wrap justify-center items-start gap-3 pt-2 pb-0 px-0 relative z-10 flex-[0_0_auto]">
         <button
           type="button"
-          onClick={() => onNavigate('tourism')}
+          onClick={() => {
+            setPreferredTourismSubTab('destinations')
+            onNavigate('tourism')
+          }}
           className="inline-flex h-[54px] items-center gap-4 px-6 py-0 relative flex-[0_0_auto] bg-amber-600 hover:bg-amber-500 transition-colors rounded-lg overflow-hidden border border-solid border-amber-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e]"
           aria-label="Jelajahi Banda sekarang"
         >

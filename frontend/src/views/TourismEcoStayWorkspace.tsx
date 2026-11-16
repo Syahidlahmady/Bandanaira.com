@@ -34,7 +34,11 @@ import {
   TourGuideItem,
   AccommodationCreatePayload,
   TourGuideCreatePayload,
+  TourismSubTab,
+  getPreferredTourismSubTab,
+  setPreferredTourismSubTab,
 } from '../services/tourism'
+import { PUBLIC_SAW_DESTINATIONS } from '../components/landing/TourismSawSection'
 
 export interface TourismEcoStayWorkspaceProps {
   currentUser?: any
@@ -42,7 +46,9 @@ export interface TourismEcoStayWorkspaceProps {
 }
 
 export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = ({ currentUser, onOpenQuickLogin }) => {
-  const [activeTab, setActiveTab] = useState<'accommodations' | 'guides' | 'heritage' | 'lookup' | 'bookings' | 'cms'>('accommodations')
+  const [activeTab, setActiveTab] = useState<TourismSubTab>(() => getPreferredTourismSubTab())
+  const [destIslandFilter, setDestIslandFilter] = useState<string>('')
+  const [destCategoryFilter, setDestCategoryFilter] = useState<string>('')
 
   // Role permissions
   const userRoleNames: string[] = currentUser
@@ -137,6 +143,24 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
   // Host/Operator Bookings Management State
   const [bookings, setBookings] = useState<BookingItem[]>([])
   const [loadingBookings, setLoadingBookings] = useState<boolean>(false)
+
+  const handleSelectSubTab = (tab: TourismSubTab) => {
+    setActiveTab(tab)
+    setPreferredTourismSubTab(tab)
+    if (tab === 'guides') loadGuides()
+    if (tab === 'bookings') loadBookings()
+  }
+
+  useEffect(() => {
+    const handleSubTabChange = (evt: Event) => {
+      const nextTab = (evt as CustomEvent<TourismSubTab>).detail
+      if (nextTab) {
+        setActiveTab(nextTab)
+      }
+    }
+    window.addEventListener('banda:tourism-subtab', handleSubTabChange)
+    return () => window.removeEventListener('banda:tourism-subtab', handleSubTabChange)
+  }, [])
 
   useEffect(() => {
     loadAccommodations()
@@ -492,7 +516,28 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
         <div style={{ display: 'flex', gap: '0.4rem', background: '#FFFFFF', padding: '0.4rem', borderRadius: '14px', border: '1px solid #E2E8F0', boxShadow: '0 2px 10px rgba(8, 29, 53, 0.05)', flexWrap: 'wrap' }}>
           <button
             type="button"
-            onClick={() => setActiveTab('accommodations')}
+            onClick={() => handleSelectSubTab('destinations')}
+            style={{
+              padding: '0.5rem 0.95rem',
+              borderRadius: '10px',
+              border: 'none',
+              fontSize: '0.8rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              transition: 'all 0.2s',
+              background: activeTab === 'destinations' ? '#081D35' : 'transparent',
+              color: activeTab === 'destinations' ? '#F4B75E' : '#64748B',
+              boxShadow: activeTab === 'destinations' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
+            }}
+          >
+            <MapPin size={14} /> 🏝️ Tempat Wisata &amp; Destinasi ({PUBLIC_SAW_DESTINATIONS.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSelectSubTab('accommodations')}
             style={{
               padding: '0.5rem 0.95rem',
               borderRadius: '10px',
@@ -513,10 +558,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
           </button>
           <button
             type="button"
-            onClick={() => {
-              setActiveTab('guides')
-              loadGuides()
-            }}
+            onClick={() => handleSelectSubTab('guides')}
             style={{
               padding: '0.5rem 0.95rem',
               borderRadius: '10px',
@@ -537,7 +579,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab('heritage')}
+            onClick={() => handleSelectSubTab('heritage')}
             style={{
               padding: '0.5rem 0.95rem',
               borderRadius: '10px',
@@ -558,7 +600,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab('lookup')}
+            onClick={() => handleSelectSubTab('lookup')}
             style={{
               padding: '0.5rem 0.95rem',
               borderRadius: '10px',
@@ -580,10 +622,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
           {canAccessBookings && (
             <button
               type="button"
-              onClick={() => {
-                setActiveTab('bookings')
-                loadBookings()
-              }}
+              onClick={() => handleSelectSubTab('bookings')}
               style={{
                 padding: '0.5rem 0.95rem',
                 borderRadius: '10px',
@@ -606,7 +645,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
           {canAccessCMS ? (
             <button
               type="button"
-              onClick={() => setActiveTab('cms')}
+              onClick={() => handleSelectSubTab('cms')}
               style={{
                 padding: '0.5rem 0.95rem',
                 borderRadius: '10px',
@@ -630,7 +669,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
           ) : (
             <button
               type="button"
-              onClick={() => setActiveTab('cms')}
+              onClick={() => handleSelectSubTab('cms')}
               style={{
                 padding: '0.5rem 0.95rem',
                 borderRadius: '10px',
@@ -652,6 +691,188 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
           )}
         </div>
       </div>
+
+      {/* TAB 0: TEMPAT WISATA & DESTINASI UNGGULAN */}
+      {activeTab === 'destinations' && (() => {
+        const filteredDestinations = PUBLIC_SAW_DESTINATIONS.filter((d) => {
+          if (destIslandFilter && d.island !== destIslandFilter) return false
+          if (destCategoryFilter && d.category !== destCategoryFilter) return false
+          return true
+        })
+
+        return (
+          <div>
+            {/* Filter Bar */}
+            <div className="card" style={{ padding: '1rem 1.25rem', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '14px', marginBottom: '1.25rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', boxShadow: '0 2px 8px rgba(8, 29, 53, 0.04)' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#081D35', textTransform: 'uppercase' }}>
+                Pulau:
+              </span>
+              {['', 'Pulau Neira', 'Banda Api', 'Banda Besar', 'Pulau Hatta', 'Pulau Ai', 'Pulau Rhun'].map((isl) => (
+                <button
+                  type="button"
+                  key={isl || 'semua-pulau'}
+                  onClick={() => setDestIslandFilter(isl)}
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.35rem 0.75rem',
+                    borderRadius: '20px',
+                    border: destIslandFilter === isl ? '1px solid #081D35' : '1px solid #E2E8F0',
+                    background: destIslandFilter === isl ? '#081D35' : '#F8FAFC',
+                    color: destIslandFilter === isl ? '#F4B75E' : '#64748B',
+                    cursor: 'pointer',
+                    fontWeight: 700,
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {isl || 'Semua Pulau'}
+                </button>
+              ))}
+
+              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#081D35', textTransform: 'uppercase', marginLeft: '0.5rem' }}>
+                Kategori:
+              </span>
+              {['', 'Bahari & Selam', 'Sejarah & Benteng', 'Alam & Rempah'].map((cat) => (
+                <button
+                  type="button"
+                  key={cat || 'semua-kategori'}
+                  onClick={() => setDestCategoryFilter(cat)}
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.35rem 0.75rem',
+                    borderRadius: '20px',
+                    border: destCategoryFilter === cat ? '1px solid #081D35' : '1px solid #E2E8F0',
+                    background: destCategoryFilter === cat ? '#081D35' : '#F8FAFC',
+                    color: destCategoryFilter === cat ? '#F4B75E' : '#64748B',
+                    cursor: 'pointer',
+                    fontWeight: 700,
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {cat || 'Semua Kategori'}
+                </button>
+              ))}
+            </div>
+
+            {filteredDestinations.length === 0 ? (
+              <div className="card" style={{ textAlign: 'center', padding: '2.5rem 1rem', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px' }}>
+                <MapPin size={36} color="#64748B" style={{ margin: '0 auto 0.6rem' }} />
+                <h3 style={{ margin: 0, color: '#081D35', fontSize: '1.05rem' }}>Tidak Ada Destinasi untuk Filter Ini</h3>
+                <p style={{ margin: '0.35rem 0 1rem', color: '#64748B', fontSize: '0.82rem' }}>
+                  Silakan pilih kombinasi pulau atau kategori wisata lainnya.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDestIslandFilter('')
+                    setDestCategoryFilter('')
+                  }}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '10px',
+                    border: 'none',
+                    background: '#081D35',
+                    color: '#F4B75E',
+                    fontSize: '0.78rem',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Tampilkan Semua Destinasi
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
+                {filteredDestinations.map((dest) => (
+                  <div
+                    key={dest.id}
+                    className="card"
+                    style={{
+                      padding: 0,
+                      overflow: 'hidden',
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '16px',
+                      boxShadow: '0 4px 16px rgba(8, 29, 53, 0.05)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    <div style={{ height: '170px', position: 'relative', overflow: 'hidden', background: '#F1F5F9' }}>
+                      <img
+                        src={dest.image}
+                        alt={dest.name}
+                        loading="lazy"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                      <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                        <span className="badge badge-emerald" style={{ fontSize: '0.68rem', padding: '0.2rem 0.5rem' }}>
+                          {dest.category}
+                        </span>
+                        <span className="badge badge-blue" style={{ fontSize: '0.68rem', padding: '0.2rem 0.5rem' }}>
+                          {dest.island}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div style={{ padding: '1.15rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.72rem', color: '#0369A1', fontWeight: 700, marginBottom: '0.25rem' }}>
+                        <MapPin size={12} /> {dest.island} &bull; ±{dest.travelMinutes} menit akses
+                      </div>
+
+                      <h3 style={{ margin: '0 0 0.45rem', fontSize: '1.05rem', fontWeight: 800, color: '#081D35' }}>
+                        {dest.name}
+                      </h3>
+
+                      <p style={{ margin: '0 0 0.85rem', color: '#475569', fontSize: '0.78rem', lineHeight: 1.45, flex: 1 }}>
+                        {dest.description}
+                      </p>
+
+                      {/* Highlights */}
+                      <div style={{ display: 'flex', gap: '0.35rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+                        {dest.highlights.map((hl) => (
+                          <span key={hl} style={{ fontSize: '0.68rem', color: '#081D35', background: '#F1F5F9', padding: '0.2rem 0.5rem', borderRadius: '6px', fontWeight: 600 }}>
+                            {hl}
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* Scores */}
+                      <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.7rem', color: '#0369A1', background: '#E0F2FE', padding: '0.2rem 0.45rem', borderRadius: '6px', border: '1px solid #BAE6FD', fontWeight: 600 }}>
+                          Fasilitas {dest.facilityScore}/100
+                        </span>
+                        <span style={{ fontSize: '0.7rem', color: '#B45309', background: '#FEF3C7', padding: '0.2rem 0.45rem', borderRadius: '6px', border: '1px solid #FDE68A', fontWeight: 600 }}>
+                          Daya Tarik {dest.attractionScore}/100
+                        </span>
+                      </div>
+
+                      {/* Cost & Guide Link */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #F1F5F9', paddingTop: '0.85rem' }}>
+                        <div>
+                          <div style={{ fontSize: '0.68rem', color: '#64748B' }}>Estimasi biaya / retribusi:</div>
+                          <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#081D35' }}>
+                            Rp {dest.costRp.toLocaleString('id-ID')}
+                          </div>
+                        </div>
+
+                        <a
+                          href={`https://wa.me/${dest.guideWhatsapp}?text=${encodeURIComponent(`Halo Pemandu Banda Neira, saya ingin informasi kunjungan ke destinasi ${dest.name}.`)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="btn btn-primary"
+                          style={{ padding: '0.5rem 0.95rem', fontSize: '0.78rem', fontWeight: 800, background: 'linear-gradient(135deg, #F4B75E 0%, #E0A24A 100%)', color: '#081D35', border: 'none', boxShadow: '0 4px 12px rgba(244, 183, 94, 0.3)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                        >
+                          <MessageCircle size={14} /> Hubungi Pemandu
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )
+      })()}
 
       {/* TAB 1: ACCOMMODATIONS (ECO-STAYS) */}
       {activeTab === 'accommodations' && (

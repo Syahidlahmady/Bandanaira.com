@@ -6,6 +6,8 @@ import {
   AlertTriangle,
   CheckCircle2,
   RefreshCw,
+  Bot,
+  Send,
 } from 'lucide-react'
 import {
   dssService,
@@ -13,6 +15,155 @@ import {
   TourismPreferences,
   CrisisPriorityWeights,
 } from '../services/dss'
+
+interface DssChatMessage {
+  id: string
+  role: 'user' | 'assistant'
+  text: string
+  topName?: string
+  topScorePercent?: string
+  weightsSummary?: string
+}
+
+const TOURISM_QUICK_PROMPTS = [
+  'Cari penginapan hemat biaya dengan air RO di Pulau Neira',
+  'Prioritaskan fasilitas air bersih RO dan listrik surya lengkap',
+  'Suasana alam, snorkeling, dan cagar budaya di Pulau Hatta',
+  'Penginapan paling dekat dermaga utama di Pulau Banda Besar',
+]
+
+const CRISIS_QUICK_PROMPTS = [
+  'Prioritaskan desa dengan kualitas air paling kritis (TDS tinggi)',
+  'Fokus bantuan pada desa berpenduduk padat yang butuh air segera',
+  'Desa terpencil yang jauh dari sumber air dan sering padam listrik',
+  'Kalkulasi seimbang antara krisis TDS, populasi, jarak air, dan listrik',
+]
+
+const normalizeWeightMap = <T extends Record<string, number>>(raw: T): T => {
+  const keys = Object.keys(raw) as (keyof T)[]
+  const total = keys.reduce((sum, key) => sum + (raw[key] || 0), 0) || 1
+  const out = {} as T
+  for (const key of keys) {
+    out[key] = (Math.round(((raw[key] || 0) / total) * 20) / 20) as T[keyof T]
+  }
+  return out
+}
+
+const parseWorkspaceTourismPrompt = (
+  prompt: string
+): { prefs: TourismPreferences; explanation: string } => {
+  const q = prompt.toLowerCase()
+  let weightHarga = 0.25
+  let weightJarak = 0.2
+  let weightFasilitas = 0.3
+  let weightDayaTarik = 0.25
+  let maxBudget: number | undefined
+  let islandFilter = ''
+  const reasons: string[] = []
+
+  if (/(hemat|murah|budget|terjangkau|ekonomis|ransel|backpacker)/.test(q)) {
+    weightHarga = 0.45
+    reasons.push('bobot biaya tarif hemat dinaikkan')
+  }
+  const ribuMatch = q.match(/\b(\d{3})\s*(rb|ribu)\b/)
+  const jutaMatch = q.match(/\b(\d+(?:[.,]\d+)?)\s*(jt|juta)\b/)
+  if (ribuMatch) {
+    maxBudget = Number(ribuMatch[1]) * 1000
+    reasons.push(`batas tarif Rp ${maxBudget.toLocaleString('id-ID')}`)
+  } else if (jutaMatch) {
+    maxBudget = Math.round(Number(jutaMatch[1].replace(',', '.')) * 1_000_000)
+    reasons.push(`batas tarif Rp ${maxBudget.toLocaleString('id-ID')}`)
+  }
+
+  if (/(dekat|dermaga|pelabuhan|pusat|kota|cepat|jalan kaki)/.test(q)) {
+    weightJarak = 0.4
+    reasons.push('kedekatan ke dermaga utama diutamakan')
+  }
+  if (/(air|ro|surya|plts|listrik|fasilitas|nyaman|keluarga|genset)/.test(q)) {
+    weightFasilitas = 0.45
+    reasons.push('fasilitas air RO & daya surya diprioritaskan')
+  }
+  if (/(alam|snorkeling|selam|karang|sejarah|benteng|budaya|pala|pemandangan)/.test(q)) {
+    weightDayaTarik = 0.45
+    reasons.push('daya tarik cagar budaya & alam ditingkatkan')
+  }
+
+  if (/(neira|kota|belgica|nassau)/.test(q)) {
+    islandFilter = 'Pulau Neira'
+    reasons.push('filter wilayah Pulau Neira')
+  } else if (/(banda besar|lonthoir|lontor|benteng hollandia)/.test(q)) {
+    islandFilter = 'Pulau Banda Besar'
+    reasons.push('filter wilayah Pulau Banda Besar')
+  } else if (/(hatta|rozengain)/.test(q)) {
+    islandFilter = 'Pulau Hatta'
+    reasons.push('filter wilayah Pulau Hatta')
+  } else if (/(\bai\b|pulau ai|pulau run|\brun\b)/.test(q)) {
+    islandFilter = 'Pulau Ai'
+    reasons.push('filter wilayah Pulau Ai')
+  }
+
+  const normalized = normalizeWeightMap({
+    weight_harga: weightHarga,
+    weight_jarak: weightJarak,
+    weight_fasilitas: weightFasilitas,
+    weight_daya_tarik: weightDayaTarik,
+  })
+
+  return {
+    prefs: {
+      ...normalized,
+      max_budget_rp: maxBudget,
+      island_filter: islandFilter,
+    },
+    explanation:
+      reasons.length > 0
+        ? `Preferensi dihitung ulang dengan ${reasons.join(', ')}.`
+        : 'Menggunakan kalkulasi SAW berimbang untuk penginapan dan destinasi kepulauan Banda.',
+  }
+}
+
+const parseWorkspaceCrisisPrompt = (
+  prompt: string
+): { weights: CrisisPriorityWeights; explanation: string } => {
+  const q = prompt.toLowerCase()
+  let weightTds = 0.35
+  let weightPopulasi = 0.25
+  let weightJarakAir = 0.2
+  let weightPadamListrik = 0.2
+  const reasons: string[] = []
+
+  if (/(tds|asin|garam|payau|kualitas air|kritis|tercemar|sensor)/.test(q)) {
+    weightTds = 0.55
+    reasons.push('tingkat salinitas/TDS air diprioritaskan tinggi')
+  }
+  if (/(penduduk|populasi|warga|padat|jiwa|kk)/.test(q)) {
+    weightPopulasi = 0.45
+    reasons.push('jumlah penduduk terdampak menjadi bobot utama')
+  }
+  if (/(jauh|jarak|terpencil|akses air|angkut|dermaga)/.test(q)) {
+    weightJarakAir = 0.4
+    reasons.push('jarak angkut sumber air tawar diberi urgensi lebih')
+  }
+  if (/(listrik|padam|pln|genset|mati|energi|plts)/.test(q)) {
+    weightPadamListrik = 0.4
+    reasons.push('durasi pemadaman listrik diperberat')
+  }
+
+  const normalized = normalizeWeightMap({
+    weight_tds: weightTds,
+    weight_populasi: weightPopulasi,
+    weight_jarak_air: weightJarakAir,
+    weight_padam_listrik: weightPadamListrik,
+  })
+
+  return {
+    weights: normalized,
+    explanation:
+      reasons.length > 0
+        ? `Matriks urgensi desa diperbarui: ${reasons.join(', ')}.`
+        : 'Menjalankan kalkulasi SAW prioritas krisis air & energi secara berimbang.',
+  }
+}
 
 export const SmartPlannerWorkspace: React.FC = () => {
   const [activeDssMode, setActiveDssMode] = useState<'tourism' | 'crisis'>('tourism')
@@ -63,6 +214,107 @@ export const SmartPlannerWorkspace: React.FC = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const [chatInput, setChatInput] = useState<string>('')
+  const [chatHistory, setChatHistory] = useState<Record<'tourism' | 'crisis', DssChatMessage[]>>({
+    tourism: [
+      {
+        id: 'init-tourism',
+        role: 'assistant',
+        text: 'Halo! Saya Asisten Kalkulator DSS SAW Wisata Banda. Ceritakan budget, kebutuhan fasilitas air RO/listrik surya, atau pulau tujuan Anda—saya akan menyusun bobot SAW secara otomatis dan memperbarui peringkat di bawah.',
+      },
+    ],
+    crisis: [
+      {
+        id: 'init-crisis',
+        role: 'assistant',
+        text: 'Halo! Saya Asisten Kalkulator DSS Ketahanan Desa. Sebutkan fokus penanggulangan (misalnya kadar TDS kritis, kepadatan warga, jarak angkut air, atau pemadaman listrik) untuk mengkalkulasi peringkat urgensi desa.',
+      },
+    ],
+  })
+
+  const appendChatMessage = (mode: 'tourism' | 'crisis', msg: DssChatMessage) => {
+    setChatHistory((prev) => ({
+      ...prev,
+      [mode]: [...prev[mode], msg],
+    }))
+  }
+
+  const handleWorkspaceChatPrompt = async (rawPrompt: string) => {
+    const prompt = rawPrompt.trim()
+    if (!prompt || loading) return
+
+    const mode = activeDssMode
+    setChatInput('')
+    setLoading(true)
+    setErrorMsg(null)
+    appendChatMessage(mode, {
+      id: `user-${Date.now()}`,
+      role: 'user',
+      text: prompt,
+    })
+
+    try {
+      if (mode === 'tourism') {
+        const { prefs, explanation } = parseWorkspaceTourismPrompt(prompt)
+        setTourismPrefs(prefs)
+        const res = await dssService.calculateTourismRecommendation(prefs)
+        setTourismResults(res)
+        const nw = res.normalized_weights || {}
+        const wHarga = nw.harga ?? nw.weight_harga ?? prefs.weight_harga ?? 0.25
+        const wJarak = nw.jarak ?? nw.weight_jarak ?? prefs.weight_jarak ?? 0.2
+        const wFasilitas = nw.fasilitas ?? nw.weight_fasilitas ?? prefs.weight_fasilitas ?? 0.3
+        const wDayaTarik = nw.daya_tarik ?? nw.weight_daya_tarik ?? prefs.weight_daya_tarik ?? 0.25
+        const weightsSummary = `Biaya ${Math.round(wHarga * 100)}% · Jarak ${Math.round(wJarak * 100)}% · Fasilitas RO ${Math.round(wFasilitas * 100)}% · Daya Tarik ${Math.round(wDayaTarik * 100)}%`
+        appendChatMessage('tourism', {
+          id: `bot-${Date.now()}`,
+          role: 'assistant',
+          text: explanation,
+          topName: res.top_recommendation?.name,
+          topScorePercent: res.top_recommendation
+            ? (res.top_recommendation.preference_score * 100).toFixed(1)
+            : undefined,
+          weightsSummary,
+        })
+      } else {
+        const { weights, explanation } = parseWorkspaceCrisisPrompt(prompt)
+        setCrisisWeights(weights)
+        const res = await dssService.calculateCrisisPriority(weights)
+        setCrisisResults(res)
+        const nw = res.normalized_weights || {}
+        const wTds = nw.tds ?? nw.weight_tds ?? weights.weight_tds ?? 0.35
+        const wPop = nw.populasi ?? nw.weight_populasi ?? weights.weight_populasi ?? 0.25
+        const wJarakAir = nw.jarak_air ?? nw.weight_jarak_air ?? weights.weight_jarak_air ?? 0.2
+        const wListrik = nw.padam_listrik ?? nw.weight_padam_listrik ?? weights.weight_padam_listrik ?? 0.2
+        const weightsSummary = `TDS ${Math.round(wTds * 100)}% · Populasi ${Math.round(wPop * 100)}% · Jarak Air ${Math.round(wJarakAir * 100)}% · Listrik ${Math.round(wListrik * 100)}%`
+        appendChatMessage('crisis', {
+          id: `bot-${Date.now()}`,
+          role: 'assistant',
+          text: explanation,
+          topName: res.top_recommendation?.name,
+          topScorePercent: res.top_recommendation
+            ? (res.top_recommendation.preference_score * 100).toFixed(1)
+            : undefined,
+          weightsSummary,
+        })
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Gagal menghitung matriks DSS SAW.'
+      setErrorMsg(msg)
+      appendChatMessage(mode, {
+        id: `bot-err-${Date.now()}`,
+        role: 'assistant',
+        text: `Maaf, kalkulasi API sedang terkendala (${msg}). Anda tetap dapat menyesuaikan bobot slider di bawah.`,
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleWorkspaceChatSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    void handleWorkspaceChatPrompt(chatInput)
   }
 
   useEffect(() => {
@@ -149,6 +401,218 @@ export const SmartPlannerWorkspace: React.FC = () => {
           {errorMsg}
         </div>
       )}
+
+      {/* Interactive Chatbot DSS Calculator */}
+      <section
+        aria-label="Asisten Kalkulator Chatbot DSS"
+        style={{
+          background: '#FFFFFF',
+          color: '#081D35',
+          border: '1px solid #E2E8F0',
+          borderRadius: '18px',
+          padding: '1.35rem',
+          marginBottom: '1.5rem',
+          boxShadow: '0 8px 24px rgba(8, 29, 53, 0.06)',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '0.75rem',
+            marginBottom: '1rem',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '12px',
+                background: '#0f2c59',
+                color: '#FFFFFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <Bot size={20} />
+            </div>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#081D35' }}>
+                Asisten Kalkulator Chatbot DSS
+              </h3>
+              <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: '#475569' }}>
+                {activeDssMode === 'tourism'
+                  ? 'Ketik preferensi budget, pulau, atau fasilitas — bobot SAW & peringkat terupdate otomatis.'
+                  : 'Ketik prioritas krisis desa (TDS, penduduk, jarak air, pemadaman) — matriks urgensi terupdate otomatis.'}
+              </p>
+            </div>
+          </div>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              padding: '0.3rem 0.75rem',
+              borderRadius: '999px',
+              background: activeDssMode === 'tourism' ? '#ECFDF5' : '#FEF3C7',
+              color: activeDssMode === 'tourism' ? '#065F46' : '#92400E',
+              fontSize: '0.72rem',
+              fontWeight: 800,
+              border: `1px solid ${activeDssMode === 'tourism' ? '#A7F3D0' : '#FDE68A'}`,
+            }}
+          >
+            <Sparkles size={12} />
+            {activeDssMode === 'tourism' ? 'Mode Wisata & Penginapan' : 'Mode Ketahanan Desa'}
+          </span>
+        </div>
+
+        {/* Quick Prompt Scenarios */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.9rem' }}>
+          {(activeDssMode === 'tourism' ? TOURISM_QUICK_PROMPTS : CRISIS_QUICK_PROMPTS).map((qPrompt) => (
+            <button
+              key={qPrompt}
+              type="button"
+              disabled={loading}
+              onClick={() => void handleWorkspaceChatPrompt(qPrompt)}
+              style={{
+                background: '#F8FAFC',
+                color: '#0f2c59',
+                border: '1px solid #CBD5E1',
+                borderRadius: '999px',
+                padding: '0.35rem 0.85rem',
+                fontSize: '0.74rem',
+                fontWeight: 600,
+                cursor: loading ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {qPrompt}
+            </button>
+          ))}
+        </div>
+
+        {/* Conversational Log */}
+        <div
+          style={{
+            background: '#F7F5F0',
+            border: '1px solid #E2E8F0',
+            borderRadius: '14px',
+            padding: '0.9rem',
+            maxHeight: '260px',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.7rem',
+            marginBottom: '0.9rem',
+          }}
+        >
+          {chatHistory[activeDssMode].map((msg) => (
+            <div
+              key={msg.id}
+              style={{
+                display: 'flex',
+                justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
+              }}
+            >
+              <div
+                style={{
+                  maxWidth: '85%',
+                  padding: '0.7rem 0.95rem',
+                  borderRadius: '14px',
+                  fontSize: '0.82rem',
+                  lineHeight: 1.5,
+                  background: msg.role === 'user' ? '#0f2c59' : '#FFFFFF',
+                  color: msg.role === 'user' ? '#FFFFFF' : '#1E293B',
+                  border: msg.role === 'user' ? 'none' : '1px solid #E2E8F0',
+                  boxShadow: '0 1px 3px rgba(8, 29, 53, 0.05)',
+                }}
+              >
+                <p style={{ margin: 0 }}>{msg.text}</p>
+                {msg.topName && (
+                  <div
+                    style={{
+                      marginTop: '0.5rem',
+                      paddingTop: '0.45rem',
+                      borderTop: '1px solid #E2E8F0',
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '0.45rem',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <span
+                      style={{
+                        background: '#ECFDF5',
+                        color: '#065F46',
+                        padding: '0.2rem 0.55rem',
+                        borderRadius: '999px',
+                        fontSize: '0.72rem',
+                        fontWeight: 800,
+                      }}
+                    >
+                      Peringkat #1: {msg.topName} ({msg.topScorePercent}%)
+                    </span>
+                    {msg.weightsSummary && (
+                      <span style={{ fontSize: '0.72rem', color: '#475569', fontWeight: 600 }}>
+                        {msg.weightsSummary}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Prompt Input Form */}
+        <form onSubmit={handleWorkspaceChatSubmit} style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+          <input
+            type="text"
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            disabled={loading}
+            placeholder={
+              activeDssMode === 'tourism'
+                ? 'Contoh: Cari homestay hemat air RO bersih di Pulau Neira budget 450rb...'
+                : 'Contoh: Prioritaskan desa dengan TDS tinggi dan pemadaman listrik lama...'
+            }
+            style={{
+              flex: '1 1 260px',
+              padding: '0.65rem 0.95rem',
+              borderRadius: '12px',
+              border: '1px solid #CBD5E1',
+              background: '#FFFFFF',
+              color: '#081D35',
+              fontSize: '0.84rem',
+              outline: 'none',
+            }}
+          />
+          <button
+            type="submit"
+            disabled={loading || !chatInput.trim()}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              padding: '0.65rem 1.2rem',
+              borderRadius: '12px',
+              border: 'none',
+              background: loading || !chatInput.trim() ? '#94A3B8' : '#0f2c59',
+              color: '#FFFFFF',
+              fontSize: '0.83rem',
+              fontWeight: 700,
+              cursor: loading || !chatInput.trim() ? 'not-allowed' : 'pointer',
+            }}
+          >
+            <Send size={15} />
+            {loading ? 'Menghitung...' : 'Hitung SAW'}
+          </button>
+        </form>
+      </section>
 
       {/* ========================================================================= */}
       {/* MODE 1: SMART TOURISM & ACCOMMODATION RECOMMENDATION */}

@@ -30,6 +30,7 @@ export interface Farm {
   location_description?: string
   latitude: number
   longitude: number
+  polygon_boundary_geojson?: Record<string, unknown> | null
   area_sqm: number
   primary_commodity: string
   verification_status: string
@@ -95,16 +96,40 @@ export const farmerService = {
     }
   },
 
+  async requestWithAuth(path: string, options: RequestInit = {}): Promise<Response> {
+    const token = await authService.ensureValidToken()
+    const buildHeaders = (tk: string | null): HeadersInit => ({
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+      ...(tk ? { Authorization: `Bearer ${tk}` } : {}),
+    })
+
+    let res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers: buildHeaders(token),
+    })
+
+    if (res.status === 401) {
+      const refreshed = await authService.ensureValidToken(true)
+      if (refreshed) {
+        res = await fetch(`${API_BASE}${path}`, {
+          ...options,
+          headers: buildHeaders(refreshed),
+        })
+      }
+    }
+    return res
+  },
+
   async listGroups(): Promise<FarmerGroup[]> {
-    const res = await fetch(`${API_BASE}/farmers/groups`, { headers: this.getAuthHeaders() })
+    const res = await this.requestWithAuth('/farmers/groups')
     if (!res.ok) throw new Error(`Gagal memuat kelompok tani (${res.status})`)
     return res.json()
   },
 
   async createGroup(data: { name: string; leader_name?: string }): Promise<FarmerGroup> {
-    const res = await fetch(`${API_BASE}/farmers/groups`, {
+    const res = await this.requestWithAuth('/farmers/groups', {
       method: 'POST',
-      headers: this.getAuthHeaders(),
       body: JSON.stringify({ ...data, village: 'Banda Neira' }),
     })
     if (!res.ok) {
@@ -115,15 +140,14 @@ export const farmerService = {
   },
 
   async listFarmers(): Promise<{ items: Farmer[]; total: number }> {
-    const res = await fetch(`${API_BASE}/farmers?limit=100`, { headers: this.getAuthHeaders() })
+    const res = await this.requestWithAuth('/farmers?limit=100')
     if (!res.ok) throw new Error(`Gagal memuat daftar petani (${res.status})`)
     return res.json()
   },
 
   async createFarmer(data: { farmer_code: string; name: string; phone?: string; farmer_group_id?: string }): Promise<Farmer> {
-    const res = await fetch(`${API_BASE}/farmers`, {
+    const res = await this.requestWithAuth('/farmers', {
       method: 'POST',
-      headers: this.getAuthHeaders(),
       body: JSON.stringify({ ...data, status: 'active' }),
     })
     if (!res.ok) {
@@ -134,7 +158,7 @@ export const farmerService = {
   },
 
   async listFarms(): Promise<{ items: Farm[]; total: number }> {
-    const res = await fetch(`${API_BASE}/farms?limit=100`, { headers: this.getAuthHeaders() })
+    const res = await this.requestWithAuth('/farms?limit=100')
     if (!res.ok) throw new Error(`Gagal memuat data kebun (${res.status})`)
     return res.json()
   },
@@ -148,10 +172,10 @@ export const farmerService = {
     area_sqm: number
     primary_commodity: string
     location_description?: string
+    polygon_boundary_geojson?: Record<string, unknown>
   }): Promise<Farm> {
-    const res = await fetch(`${API_BASE}/farms`, {
+    const res = await this.requestWithAuth('/farms', {
       method: 'POST',
-      headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
     })
     if (!res.ok) {
@@ -162,21 +186,20 @@ export const farmerService = {
   },
 
   async getFarmsGeoJSON(): Promise<FarmGeoJSONFeatureCollection> {
-    const res = await fetch(`${API_BASE}/farms/geojson/all`, { headers: this.getAuthHeaders() })
+    const res = await this.requestWithAuth('/farms/geojson/all')
     if (!res.ok) throw new Error(`Gagal memuat GeoJSON kebun (${res.status})`)
     return res.json()
   },
 
   async getStatistics(): Promise<FarmStatistics> {
-    const res = await fetch(`${API_BASE}/farms/statistics/summary`, { headers: this.getAuthHeaders() })
+    const res = await this.requestWithAuth('/farms/statistics/summary')
     if (!res.ok) throw new Error(`Gagal memuat statistik pertanian (${res.status})`)
     return res.json()
   },
 
   async verifyFarm(farmId: string, status: 'verified' | 'rejected', notes?: string): Promise<Farm> {
-    const res = await fetch(`${API_BASE}/farms/${farmId}/verification`, {
+    const res = await this.requestWithAuth(`/farms/${farmId}/verification`, {
       method: 'PATCH',
-      headers: this.getAuthHeaders(),
       body: JSON.stringify({ verification_status: status, notes }),
     })
     if (!res.ok) {
@@ -187,9 +210,8 @@ export const farmerService = {
   },
 
   async validateBoundary(data: FarmBoundaryValidationRequest): Promise<FarmBoundaryValidationResponse> {
-    const res = await fetch(`${API_BASE}/farms/validate-boundary`, {
+    const res = await this.requestWithAuth('/farms/validate-boundary', {
       method: 'POST',
-      headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
     })
     if (!res.ok) {
