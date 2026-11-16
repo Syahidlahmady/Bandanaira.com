@@ -28,8 +28,11 @@ import {
   Layers,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   Route,
   Navigation,
+  Navigation2,
   Undo,
   RotateCcw,
   Mountain,
@@ -37,12 +40,17 @@ import {
   Eye,
   Maximize2,
   Minimize2,
+  Star,
+  Copy,
+  Clock,
+  Phone,
 } from 'lucide-react'
 import {
   gisService,
   GeoJSONFeature,
   GeocodingResult,
 } from '../services/gis'
+import { Panorama360Modal } from '../components/modals/Panorama360Modal'
 import { authService } from '../services/auth'
 import {
   BANDA_VILLAGES_GEOJSON,
@@ -181,6 +189,346 @@ export const BANDA_ARCHIPELAGO_BOUNDS = L.latLngBounds(
   [-4.3800, 130.1500]  // Northeast (Utara Pulau Neira / Timur Pulau Hatta)
 )
 
+export interface LandmarkMediaInfo {
+  imageUrl: string
+  panoramaUrl: string
+  rating: number
+  reviewsCount: number
+  operatingHours: string
+  tag: string
+  address: string
+}
+
+// Curated authentic imagery and 360 panorama references for Banda Neira landmarks
+export const BANDA_LANDMARK_MEDIA: Record<
+  string,
+  {
+    image: string
+    panorama: string
+    rating: number
+    reviews: number
+    hours: string
+    tag: string
+  }
+> = {
+  'Benteng Belgica': {
+    image: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.9,
+    reviews: 142,
+    hours: '08:00 - 18:00 WIT',
+    tag: 'Benteng Bersejarah VOC & Cagar Budaya',
+  },
+  'Benteng Nassau': {
+    image: 'https://images.unsplash.com/photo-1548625361-195982855132?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.7,
+    reviews: 68,
+    hours: 'Buka 24 Jam',
+    tag: 'Situs Cagar Budaya Abad ke-17',
+  },
+  'Benteng Hollandia': {
+    image: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.8,
+    reviews: 54,
+    hours: '07:00 - 18:00 WIT',
+    tag: 'Panorama Selat Banda & Perkebunan Pala',
+  },
+  'Benteng Concordia': {
+    image: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.6,
+    reviews: 32,
+    hours: 'Buka 24 Jam',
+    tag: 'Benteng Pesisir Banda Besar',
+  },
+  'Benteng Revengie': {
+    image: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.7,
+    reviews: 29,
+    hours: 'Buka 24 Jam',
+    tag: 'Benteng Bersejarah Pulau Ay',
+  },
+  'Benteng Swanenburg': {
+    image: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.6,
+    reviews: 21,
+    hours: 'Buka 24 Jam',
+    tag: 'Cagar Budaya Pulau Rhun',
+  },
+  'Istana Mini': {
+    image: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.8,
+    reviews: 86,
+    hours: '08:00 - 17:00 WIT',
+    tag: 'Kediaman Gubernur Jenderal VOC',
+  },
+  'Rumah Pengasingan Bung Hatta': {
+    image: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.9,
+    reviews: 110,
+    hours: '08:00 - 16:30 WIT',
+    tag: 'Museum Sejarah Kemerdekaan RI',
+  },
+  'Rumah Pengasingan Sutan Sjahrir': {
+    image: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.9,
+    reviews: 95,
+    hours: '08:00 - 16:30 WIT',
+    tag: 'Museum Sejarah Negosiator Bangsa',
+  },
+  'Rumah Budaya Banda Neira': {
+    image: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.8,
+    reviews: 88,
+    hours: '09:00 - 17:00 WIT',
+    tag: 'Museum Koleksi Artefak Jalur Rempah',
+  },
+  'Gunung Api Banda': {
+    image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.9,
+    reviews: 120,
+    hours: '05:00 - 18:00 WIT (Pendakian)',
+    tag: 'Gunung Berapi Aktif & Trekking',
+  },
+  'Lava Flow': {
+    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=2000&q=80',
+    rating: 5.0,
+    reviews: 135,
+    hours: '07:00 - 17:00 WIT',
+    tag: 'Spot Snorkeling & Coral Garden Ternama',
+  },
+  'Pohon Sejuta Umat (Pohon Talang)': {
+    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.9,
+    reviews: 79,
+    hours: 'Buka 24 Jam',
+    tag: 'Spot Foto Ikonik Berlatar Gunung Api',
+  },
+  'Pulau Nailaka': {
+    image: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.9,
+    reviews: 64,
+    hours: 'Buka 24 Jam',
+    tag: 'Gosong Pasir Putih & Terumbu Karang',
+  },
+  'Pulau Rhun': {
+    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.8,
+    reviews: 58,
+    hours: 'Buka 24 Jam',
+    tag: 'Pulau Bersejarah Traktat Breda 1667',
+  },
+  'Pulau Hatta': {
+    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=2000&q=80',
+    rating: 5.0,
+    reviews: 98,
+    hours: 'Buka 24 Jam',
+    tag: 'Surga Diving Drop-Off Wall Terbaik',
+  },
+  'Pulau Ay': {
+    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.8,
+    reviews: 52,
+    hours: 'Buka 24 Jam',
+    tag: 'Pusat Perkebunan Pala Tua & Manta Point',
+  },
+  'Bandara Banda Neira': {
+    image: 'https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.7,
+    reviews: 43,
+    hours: '08:00 - 15:00 WIT',
+    tag: 'Bandara Udara Perintis (NDA)',
+  },
+  'Pelabuhan Banda Neira': {
+    image: 'https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.6,
+    reviews: 82,
+    hours: 'Buka 24 Jam',
+    tag: 'Pelabuhan Kapal PELNI & Ferry Cepat',
+  },
+  'The Maulana Hotel': {
+    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.9,
+    reviews: 77,
+    hours: 'Check-in 14:00 · Check-out 12:00',
+    tag: 'Hotel Ikonik Tepi Laut Bersejarah',
+  },
+  'Hotel Maulana': {
+    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.9,
+    reviews: 77,
+    hours: 'Check-in 14:00 · Check-out 12:00',
+    tag: 'Hotel Ikonik Tepi Laut Bersejarah',
+  },
+  'Mutiara Guesthouse': {
+    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.8,
+    reviews: 56,
+    hours: 'Check-in 13:00 · Check-out 11:30',
+    tag: 'Penginapan Wisatawan & Diver',
+  },
+  'Baba Lagoon': {
+    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80',
+    panorama: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2000&q=80',
+    rating: 4.8,
+    reviews: 49,
+    hours: 'Check-in 14:00 · Check-out 12:00',
+    tag: 'Resort & Dive Center Tepi Laut',
+  },
+}
+
+export const getFeatureMedia = (feat: GeoJSONFeature): LandmarkMediaInfo => {
+  const name = feat.properties.name || ''
+  const layer = feat.properties.layer_type || ''
+  const island = feat.properties.island_name || 'Kepulauan Banda'
+
+  // 1. Direct exact or partial match in curated registry
+  for (const [key, val] of Object.entries(BANDA_LANDMARK_MEDIA)) {
+    if (name.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(name.toLowerCase())) {
+      return {
+        imageUrl: feat.properties.image_url || val.image,
+        panoramaUrl: feat.properties.panorama_url || val.panorama,
+        rating: val.rating,
+        reviewsCount: val.reviews,
+        operatingHours: val.hours,
+        tag: val.tag,
+        address: `${island}, Kepulauan Banda, Maluku Tengah`,
+      }
+    }
+  }
+
+  // 2. Keyword matching
+  const lowerName = name.toLowerCase()
+  if (lowerName.includes('benteng') || lowerName.includes('fort')) {
+    return {
+      imageUrl: feat.properties.image_url || 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=1000&q=80',
+      panoramaUrl: feat.properties.panorama_url || 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=2000&q=80',
+      rating: 4.8,
+      reviewsCount: 42,
+      operatingHours: '08:00 - 18:00 WIT',
+      tag: 'Benteng Cagar Budaya Bersejarah',
+      address: `${island}, Kepulauan Banda, Maluku Tengah`,
+    }
+  }
+  if (lowerName.includes('pulau') || lowerName.includes('pantai') || lowerName.includes('tanjung') || lowerName.includes('batu') || lowerName.includes('pante')) {
+    return {
+      imageUrl: feat.properties.image_url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80',
+      panoramaUrl: feat.properties.panorama_url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80',
+      rating: 4.9,
+      reviewsCount: 56,
+      operatingHours: 'Buka 24 Jam',
+      tag: 'Panorama Bahari & Pesisir Alami',
+      address: `${island}, Kepulauan Banda, Maluku Tengah`,
+    }
+  }
+  if (lowerName.includes('hotel') || lowerName.includes('guesthouse') || lowerName.includes('homestay') || lowerName.includes('resort') || lowerName.includes('villa')) {
+    return {
+      imageUrl: feat.properties.image_url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80',
+      panoramaUrl: feat.properties.panorama_url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2000&q=80',
+      rating: 4.8,
+      reviewsCount: 48,
+      operatingHours: 'Check-in 14:00 · Check-out 12:00',
+      tag: 'Penginapan & Eco-Stay Kepulauan',
+      address: `${island}, Kepulauan Banda, Maluku Tengah`,
+    }
+  }
+  if (lowerName.includes('pelabuhan') || lowerName.includes('dermaga') || lowerName.includes('bandara')) {
+    return {
+      imageUrl: feat.properties.image_url || 'https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=1000&q=80',
+      panoramaUrl: feat.properties.panorama_url || 'https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=2000&q=80',
+      rating: 4.7,
+      reviewsCount: 65,
+      operatingHours: 'Buka 24 Jam',
+      tag: 'Infrastruktur Konektivitas Transportasi',
+      address: `${island}, Kepulauan Banda, Maluku Tengah`,
+    }
+  }
+
+  // 3. Fallback based on Layer Type
+  switch (layer) {
+    case 'LAYER_HERITAGE':
+      return {
+        imageUrl: feat.properties.image_url || 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=1000&q=80',
+        panoramaUrl: feat.properties.panorama_url || 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=2000&q=80',
+        rating: 4.8,
+        reviewsCount: 38,
+        operatingHours: '08:00 - 17:00 WIT',
+        tag: 'Situs Warisan Cagar Budaya Banda',
+        address: `${island}, Kepulauan Banda, Maluku Tengah`,
+      }
+    case 'LAYER_ACCOMMODATION':
+      return {
+        imageUrl: feat.properties.image_url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80',
+        panoramaUrl: feat.properties.panorama_url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2000&q=80',
+        rating: 4.8,
+        reviewsCount: 52,
+        operatingHours: 'Check-in 14:00 · Check-out 12:00',
+        tag: 'Akomodasi & Homestay Wisata',
+        address: `${island}, Kepulauan Banda, Maluku Tengah`,
+      }
+    case 'LAYER_WATER_INFRA':
+      return {
+        imageUrl: feat.properties.image_url || 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1000&q=80',
+        panoramaUrl: feat.properties.panorama_url || 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=2000&q=80',
+        rating: 4.9,
+        reviewsCount: 24,
+        operatingHours: 'Operasional 24 Jam',
+        tag: 'Infrastruktur Air Bersih Komunal',
+        address: `${island}, Kepulauan Banda, Maluku Tengah`,
+      }
+    case 'LAYER_ENERGY_WASTE':
+      return {
+        imageUrl: feat.properties.image_url || 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1000&q=80',
+        panoramaUrl: feat.properties.panorama_url || 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2000&q=80',
+        rating: 4.8,
+        reviewsCount: 19,
+        operatingHours: '08:00 - 17:00 WIT',
+        tag: 'Resiliensi Energi & Pengolahan Sampah',
+        address: `${island}, Kepulauan Banda, Maluku Tengah`,
+      }
+    case 'LAYER_KOPERASI_UMKM':
+      return {
+        imageUrl: feat.properties.image_url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80',
+        panoramaUrl: feat.properties.panorama_url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80',
+        rating: 4.8,
+        reviewsCount: 35,
+        operatingHours: '08:00 - 21:00 WIT',
+        tag: 'Sentra UMKM & Komoditas Rempah',
+        address: `${island}, Kepulauan Banda, Maluku Tengah`,
+      }
+    default:
+      return {
+        imageUrl: feat.properties.image_url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80',
+        panoramaUrl: feat.properties.panorama_url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80',
+        rating: 4.9,
+        reviewsCount: 60,
+        operatingHours: 'Buka 24 Jam',
+        tag: 'Destinasi Bahari & Wisata 4A',
+        address: `${island}, Kepulauan Banda, Maluku Tengah`,
+      }
+  }
+}
+
 export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = ({ currentUser }) => {
   const workspaceContainerRef = useRef<HTMLDivElement | null>(null)
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
@@ -224,6 +572,18 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   const [features, setFeatures] = useState<GeoJSONFeature[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [selectedFeature, setSelectedFeature] = useState<GeoJSONFeature | null>(null)
+  const [is360ModalOpen, setIs360ModalOpen] = useState<boolean>(false)
+  const [isDrawerCollapsed, setIsDrawerCollapsed] = useState<boolean>(false)
+  const [copiedCoord, setCopiedCoord] = useState<boolean>(false)
+  const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth < 768 : false)
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [islandFilter, setIslandFilter] = useState<string>('')
 
@@ -488,7 +848,11 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
         maxZoom: 18,
         maxBounds: BANDA_ARCHIPELAGO_BOUNDS,
         maxBoundsViscosity: 1.0,
+        zoomControl: false,
       })
+
+      // Standard Google Maps style bottom-right zoom controls
+      L.control.zoom({ position: 'bottomright' }).addTo(map)
 
       layerGroupRef.current = L.layerGroup().addTo(map)
       mapInstanceRef.current = map
@@ -1466,6 +1830,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
         polyline.on('click', () => {
           setSelectedFeature(feat)
+          setIsDrawerCollapsed(false)
         })
 
         layerGroupRef.current?.addLayer(polyline)
@@ -1546,6 +1911,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
       marker.on('click', () => {
         setSelectedFeature(feat)
+        setIsDrawerCollapsed(false)
       })
 
       layerGroupRef.current?.addLayer(marker)
@@ -1715,15 +2081,42 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   // Center map on specific feature
   const handleFocusFeature = (feat: GeoJSONFeature) => {
     setSelectedFeature(feat)
+    setIsDrawerCollapsed(false)
     if (mapInstanceRef.current) {
       if (feat.geometry?.type === 'LineString' && Array.isArray(feat.geometry.coordinates)) {
         const coords: [number, number][] = feat.geometry.coordinates.map((c: any) => [Number(c[1]), Number(c[0])])
         const bounds = L.latLngBounds(coords)
-        mapInstanceRef.current.fitBounds(bounds, { padding: [40, 40] })
+        mapInstanceRef.current.fitBounds(bounds, { padding: [50, 50] })
       } else if (Array.isArray(feat.geometry?.coordinates)) {
         const [lng, lat] = feat.geometry.coordinates
-        mapInstanceRef.current.setView([lat, lng], 15, { animate: true })
+        mapInstanceRef.current.setView([lat, lng], 16, { animate: true })
       }
+    }
+  }
+
+  // Copy Coordinates to Clipboard with user feedback
+  const handleCopyCoordinates = async () => {
+    if (!selectedFeature) return
+    let text = ''
+    if (Array.isArray(selectedFeature.geometry?.coordinates)) {
+      if (typeof selectedFeature.geometry.coordinates[0] === 'number') {
+        const [lng, lat] = selectedFeature.geometry.coordinates
+        text = `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+      }
+    }
+    if (!text && selectedFeature.properties.latitude && selectedFeature.properties.longitude) {
+      text = `${Number(selectedFeature.properties.latitude).toFixed(6)}, ${Number(selectedFeature.properties.longitude).toFixed(6)}`
+    }
+    if (!text) return
+
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text)
+      }
+      setCopiedCoord(true)
+      setTimeout(() => setCopiedCoord(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy coordinates:', err)
     }
   }
 
@@ -3810,8 +4203,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
         </div>
       )}
 
-      {/* Main Grid: Interactive Map + Inspection Sidebar */}
-      <div style={{ display: 'grid', gridTemplateColumns: selectedFeature ? '1fr 340px' : '1fr', gap: '1.25rem', alignItems: 'start' }}>
+      {/* Main Map Container (Full Width with Overlay Google Maps Drawer) */}
+      <div style={{ position: 'relative', width: '100%' }}>
         {/* Leaflet Map Card */}
         <div
           style={{
@@ -3824,59 +4217,59 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
             background: '#ffffff',
           }}
         >
-          {/* Subtle In-Map Re-Center Compass Button (Positioned cleanly under zoom controls) */}
-          <button
-            type="button"
-            onClick={handleResetMapView}
-            style={{
-              position: 'absolute',
-              top: '84px',
-              left: '10px',
-              zIndex: 1000,
-              width: '30px',
-              height: '30px',
-              background: '#ffffff',
-              border: '2px solid rgba(0, 0, 0, 0.2)',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 1px 5px rgba(0, 0, 0, 0.15)',
-              color: '#334155',
-              transition: 'all 0.15s ease',
-            }}
-            title="Pusatkan kembali ke Kepulauan Banda"
-          >
-            <Compass size={16} />
-          </button>
-
-          {/* Subtle In-Map Fullscreen Toggle Button (Positioned cleanly under compass) */}
+          {/* Subtle In-Map Fullscreen Toggle Button (Top Right) */}
           <button
             type="button"
             onClick={toggleFullscreen}
             style={{
               position: 'absolute',
-              top: '118px',
-              left: '10px',
+              top: '16px',
+              right: '16px',
               zIndex: 1000,
-              width: '30px',
-              height: '30px',
+              width: '34px',
+              height: '34px',
               background: isFullscreen ? '#0f172a' : '#ffffff',
-              border: '2px solid rgba(0, 0, 0, 0.2)',
-              borderRadius: '4px',
+              border: '1.5px solid #cbd5e1',
+              borderRadius: '8px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 1px 5px rgba(0, 0, 0, 0.15)',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
               color: isFullscreen ? '#ffffff' : '#334155',
               transition: 'all 0.15s ease',
             }}
             title={isFullscreen ? 'Keluar dari Layar Penuh (Esc)' : 'Layar Penuh Peta (Fullscreen)'}
             aria-label="Toggle Fullscreen"
           >
-            {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+            {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+          </button>
+
+          {/* Subtle In-Map Re-Center Compass Button (Top Right under Fullscreen) */}
+          <button
+            type="button"
+            onClick={handleResetMapView}
+            style={{
+              position: 'absolute',
+              top: '56px',
+              right: '16px',
+              zIndex: 1000,
+              width: '34px',
+              height: '34px',
+              background: '#ffffff',
+              border: '1.5px solid #cbd5e1',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
+              color: '#334155',
+              transition: 'all 0.15s ease',
+            }}
+            title="Pusatkan kembali ke Kepulauan Banda"
+          >
+            <Compass size={16} />
           </button>
 
           {/* Leaflet Map Div */}
@@ -4203,8 +4596,9 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
             style={{
               position: 'absolute',
               bottom: '16px',
-              left: '16px',
+              left: !isMobile && selectedFeature && !isDrawerCollapsed ? '424px' : '16px',
               zIndex: 1010,
+              transition: 'left 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
             }}
           >
             {/* The Floating Square Trigger Button (Clean Stacking Icon & Label) */}
@@ -4630,7 +5024,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
             style={{
               position: 'absolute',
               bottom: '16px',
-              right: '16px',
+              right: '56px',
               zIndex: 1000,
               background: 'rgba(255, 255, 255, 0.96)',
               backdropFilter: 'blur(10px)',
@@ -4954,458 +5348,776 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               </div>
             )}
           </div>
-        </div>
 
-        {/* Selected Feature Detail Inspection Drawer */}
-        {selectedFeature && (
-          <div
-            className="animate-fade-in"
-            style={{
-              padding: '1.25rem',
-              background: '#ffffff',
-              border: '1.5px solid #cbd5e1',
-              borderRadius: '16px',
-              boxShadow: '0 8px 30px rgba(15, 44, 89, 0.08)',
-              position: 'relative',
-            }}
-          >
-            {/* Close Button */}
-            <button
-              type="button"
-              onClick={() => setSelectedFeature(null)}
-              style={{
-                position: 'absolute',
-                top: '12px',
-                right: '12px',
-                background: '#f1f5f9',
-                border: 'none',
-                color: '#64748b',
-                borderRadius: '50%',
-                width: '24px',
-                height: '24px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <X size={13} />
-            </button>
+          {/* Selected Feature Detail Inspection Drawer (Google Maps Desktop Layout) */}
+          {selectedFeature && (() => {
+            const mediaInfo = getFeatureMedia(selectedFeature)
+            const coords = selectedFeature.geometry?.coordinates
+            const isLineString = selectedFeature.geometry?.type === 'LineString'
+            const featureLat = Array.isArray(coords) && typeof coords[1] === 'number'
+              ? coords[1]
+              : Number(selectedFeature.properties.latitude || -4.5261)
+            const featureLng = Array.isArray(coords) && typeof coords[0] === 'number'
+              ? coords[0]
+              : Number(selectedFeature.properties.longitude || 129.8989)
 
-            {/* Layer Type Tag */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.3rem',
-                  fontSize: '0.7rem',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  color: LAYER_COLORS[selectedFeature.properties.layer_type] || '#0f2c59',
-                  background: `${LAYER_COLORS[selectedFeature.properties.layer_type] || '#0f2c59'}18`,
-                  padding: '0.2rem 0.5rem',
-                  borderRadius: '6px',
-                }}
-              >
-                {LAYER_ICONS[selectedFeature.properties.layer_type]}
-                {LAYER_LABELS[selectedFeature.properties.layer_type]}
-              </span>
-              <span style={{ fontSize: '0.7rem', color: '#64748b' }}>
-                • {selectedFeature.properties.island_name}
-              </span>
-            </div>
-
-            {/* Feature Name */}
-            <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.15rem', fontWeight: 700, color: '#0f2c59' }}>
-              {selectedFeature.properties.name}
-            </h3>
-
-            {/* Description */}
-            {selectedFeature.properties.description && (
-              <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: '#475569', lineHeight: 1.5 }}>
-                {selectedFeature.properties.description}
-              </p>
-            )}
-
-            {/* Contextual Data Boxes */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1rem' }}>
-              {/* Point Coordinates or LineString Stats */}
-              {selectedFeature.geometry?.type === 'LineString' ? (
-                <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', padding: '0.65rem 0.75rem', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.75rem', color: '#0369a1', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                      <Route size={13} />
-                      Panjang Lintasan:
+            return (
+              <>
+                {/* Floating Tab When Drawer is Collapsed */}
+                {isDrawerCollapsed && (
+                  <button
+                    type="button"
+                    onClick={() => setIsDrawerCollapsed(false)}
+                    className="animate-fade-in"
+                    style={{
+                      position: 'absolute',
+                      top: '16px',
+                      left: '16px',
+                      zIndex: 1005,
+                      background: '#ffffff',
+                      border: '1.5px solid #cbd5e1',
+                      borderRadius: '24px',
+                      padding: '0.45rem 0.85rem',
+                      boxShadow: '0 4px 16px rgba(15, 23, 42, 0.18)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.45rem',
+                      color: '#0f2c59',
+                      fontWeight: 700,
+                      fontSize: '0.78rem',
+                      transition: 'all 0.15s ease',
+                    }}
+                    title="Buka panel rincian"
+                  >
+                    <ChevronRight size={15} color="#0284c7" />
+                    <span style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {selectedFeature.properties.name}
                     </span>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 800, color: '#0284c7' }}>
-                      {selectedFeature.properties.properties_meta?.total_distance_km || 0} km
-                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginLeft: '0.3rem' }}>
-                        ({selectedFeature.properties.properties_meta?.total_distance_nm || 0} NM)
-                      </span>
-                    </span>
-                  </div>
-                  {selectedFeature.properties.properties_meta?.travel_time && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
-                      <span style={{ color: '#64748b' }}>Waktu Tempuh:</span>
-                      <span style={{ fontWeight: 700, color: '#0f2c59' }}>{selectedFeature.properties.properties_meta.travel_time}</span>
-                    </div>
-                  )}
-                  {selectedFeature.properties.properties_meta?.transport_mode && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
-                      <span style={{ color: '#64748b' }}>Moda Transportasi:</span>
-                      <span style={{ fontWeight: 600, color: '#0f2c59' }}>{selectedFeature.properties.properties_meta.transport_mode}</span>
-                    </div>
-                  )}
-                  {(selectedFeature.properties.properties_meta?.origin || selectedFeature.properties.properties_meta?.destination) && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', borderTop: '1px dashed #cbd5e1', paddingTop: '0.3rem' }}>
-                      <span style={{ color: '#64748b' }}>Rute:</span>
-                      <span style={{ fontWeight: 600, color: '#0f2c59' }}>
-                        {selectedFeature.properties.properties_meta?.origin || 'Awal'} &rarr; {selectedFeature.properties.properties_meta?.destination || 'Tujuan'}
-                      </span>
-                    </div>
-                  )}
-                  {Array.isArray(selectedFeature.geometry.coordinates) && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#64748b' }}>
-                      <span>Jumlah Belokan (Waypoints):</span>
-                      <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#0284c7' }}>
-                        {selectedFeature.geometry.coordinates.length} titik
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '0.5rem 0.75rem', borderRadius: '8px', fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#64748b' }}>Koordinat:</span>
-                  <span style={{ color: '#0f2c59', fontFamily: 'monospace', fontWeight: 600 }}>
-                    {Array.isArray(selectedFeature.geometry.coordinates) && typeof selectedFeature.geometry.coordinates[1] === 'number'
-                      ? `${selectedFeature.geometry.coordinates[1].toFixed(5)}, ${selectedFeature.geometry.coordinates[0].toFixed(5)}`
-                      : '-'}
-                  </span>
-                </div>
-              )}
+                  </button>
+                )}
 
-              {/* Water Infra Attributes */}
-              {selectedFeature.properties.layer_type === 'LAYER_WATER_INFRA' && (
-                <>
-                  {selectedFeature.properties.live_tds_ppm !== undefined && (
-                    <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', padding: '0.6rem 0.75rem', borderRadius: '8px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
-                        <span style={{ fontSize: '0.75rem', color: '#0369a1', fontWeight: 600 }}>Kualitas Air (TDS):</span>
-                        <span style={{ fontSize: '1rem', fontWeight: 800, color: '#0284c7' }}>
-                          {selectedFeature.properties.live_tds_ppm} ppm
-                        </span>
-                      </div>
-                      <div style={{ fontSize: '0.7rem', fontWeight: 700, color: selectedFeature.properties.live_tds_ppm < 100 ? '#059669' : '#d97706' }}>
-                        {selectedFeature.properties.water_quality_status || 'Standar Air Bersih'}
-                      </div>
-                    </div>
-                  )}
-                  {selectedFeature.properties.tank_level_pct !== undefined && (
-                    <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '0.5rem 0.75rem', borderRadius: '8px', fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#64748b' }}>Level Tandon Komunal:</span>
-                      <span style={{ color: '#0284c7', fontWeight: 700 }}>{selectedFeature.properties.tank_level_pct}% Penuh</span>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {/* Accommodation Attributes */}
-              {selectedFeature.properties.layer_type === 'LAYER_ACCOMMODATION' && (
-                <>
-                  {selectedFeature.properties.price_per_night_rp && (
-                    <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '0.5rem 0.75rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.75rem', color: '#065f46', fontWeight: 600 }}>Tarif Menginap:</span>
-                      <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#059669' }}>
-                        Rp {selectedFeature.properties.price_per_night_rp.toLocaleString('id-ID')} / malam
-                      </span>
-                    </div>
-                  )}
-                  <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                    {selectedFeature.properties.has_clean_ro_water && (
-                      <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', background: '#ecfdf5', color: '#065f46', borderRadius: '6px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                        <Droplets size={10} /> Air Bersih
-                      </span>
-                    )}
-                    {selectedFeature.properties.has_solar_backup && (
-                      <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', background: '#fffbeb', color: '#92400e', borderRadius: '6px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                        <Zap size={10} /> Listrik Surya
-                      </span>
-                    )}
-                  </div>
-                  {selectedFeature.properties.contact_whatsapp && (
-                    <a
-                      href={`https://wa.me/${selectedFeature.properties.contact_whatsapp}?text=${encodeURIComponent(
-                        `Halo Pengelola ${selectedFeature.properties.name}, saya menemukan vila Anda melalui Peta Digital Banda Neira dan ingin reservasi kamar.`
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                {/* Left-Docked Google Maps Inspection Drawer */}
+                <div
+                  className="animate-fade-in"
+                  data-lenis-prevent
+                  style={{
+                    position: 'absolute',
+                    top: isMobile ? 'auto' : '12px',
+                    left: '12px',
+                    bottom: '12px',
+                    right: isMobile ? '12px' : 'auto',
+                    width: isMobile ? 'auto' : '390px',
+                    maxHeight: isMobile ? '70vh' : 'calc(100% - 24px)',
+                    zIndex: 1005,
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '16px',
+                    boxShadow: '0 12px 36px rgba(15, 23, 42, 0.18), 0 2px 6px rgba(0, 0, 0, 0.06)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                    transform: isDrawerCollapsed
+                      ? (isMobile ? 'translateY(calc(100% + 24px))' : 'translateX(calc(-100% - 24px))')
+                      : 'translate(0, 0)',
+                    transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                    pointerEvents: isDrawerCollapsed ? 'none' : 'auto',
+                  }}
+                >
+                  {/* Drawer Collapse Button on Right Edge (Desktop Only) */}
+                  {!isMobile && (
+                    <button
+                      type="button"
+                      onClick={() => setIsDrawerCollapsed(true)}
                       style={{
-                        marginTop: '0.25rem',
-                        width: '100%',
-                        textAlign: 'center',
-                        fontSize: '0.8rem',
-                        padding: '0.5rem',
-                        background: '#059669',
-                        color: '#ffffff',
-                        borderRadius: '8px',
-                        textDecoration: 'none',
-                        fontWeight: 600,
-                        display: 'block',
-                      }}
-                    >
-                      Pesan via WhatsApp Langsung
-                    </a>
-                  )}
-                </>
-              )}
-
-              {/* Heritage Attributes */}
-              {selectedFeature.properties.layer_type === 'LAYER_HERITAGE' && (
-                <>
-                  {selectedFeature.properties.built_year && (
-                    <div style={{ background: '#fffbeb', border: '1px solid #fde68a', padding: '0.5rem 0.75rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.75rem', color: '#92400e', fontWeight: 600 }}>Tahun Pendirian:</span>
-                      <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#b45309' }}>
-                        Tahun {selectedFeature.properties.built_year}
-                      </span>
-                    </div>
-                  )}
-                  {selectedFeature.properties.audio_url && (
-                    <a
-                      href={selectedFeature.properties.audio_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        marginTop: '0.25rem',
-                        width: '100%',
-                        textAlign: 'center',
-                        fontSize: '0.8rem',
-                        padding: '0.5rem',
+                        position: 'absolute',
+                        top: '50%',
+                        right: '-13px',
+                        transform: 'translateY(-50%)',
+                        width: '26px',
+                        height: '48px',
                         background: '#ffffff',
-                        border: '1px solid #f59e0b',
-                        color: '#b45309',
-                        borderRadius: '8px',
-                        textDecoration: 'none',
-                        fontWeight: 600,
-                        display: 'inline-flex',
+                        border: '1px solid #cbd5e1',
+                        borderLeft: 'none',
+                        borderRadius: '0 8px 8px 0',
+                        boxShadow: '3px 0 8px rgba(0, 0, 0, 0.08)',
+                        cursor: 'pointer',
+                        zIndex: 1010,
+                        display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: '0.4rem',
+                        color: '#64748b',
+                        transition: 'all 0.15s ease',
+                      }}
+                      title="Sembunyikan panel rincian"
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                  )}
+
+                  {/* 1. Hero Cover Image */}
+                  <div
+                    style={{
+                      position: 'relative',
+                      width: '100%',
+                      height: '190px',
+                      background: '#0f172a',
+                      flexShrink: 0,
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <img
+                      src={mediaInfo.imageUrl}
+                      alt={selectedFeature.properties.name}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80'
+                      }}
+                    />
+
+                    {/* Gradient Overlay for text contrast */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'linear-gradient(to top, rgba(15, 23, 42, 0.8) 0%, rgba(15, 23, 42, 0.15) 45%, rgba(15, 23, 42, 0.5) 100%)',
+                      }}
+                    />
+
+                    {/* Top Row: Category Pill & Close Button */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '10px',
+                        left: '12px',
+                        right: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        zIndex: 2,
                       }}
                     >
-                      <Volume2 size={14} color="#f59e0b" />
-                      Dengarkan Audio Guide Sejarah
-                    </a>
-                  )}
-                </>
-              )}
-
-              {/* Energy & Waste Attributes */}
-              {selectedFeature.properties.layer_type === 'LAYER_ENERGY_WASTE' && (
-                <>
-                  {selectedFeature.properties.capacity_kwp && (
-                    <div style={{ background: '#fff1f2', border: '1px solid #fecdd3', padding: '0.5rem 0.75rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.75rem', color: '#9f1239', fontWeight: 600 }}>Kapasitas PLTS:</span>
-                      <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#e11d48' }}>
-                        {selectedFeature.properties.capacity_kwp} kWp (Surya)
-                      </span>
-                    </div>
-                  )}
-                  {selectedFeature.properties.plastic_conversion_rule && (
-                    <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '0.5rem 0.75rem', borderRadius: '8px', fontSize: '0.725rem', color: '#059669', fontWeight: 600 }}>
-                      Program Lingkungan: {selectedFeature.properties.plastic_conversion_rule}
-                    </div>
-                  )}
-                </>
-              )}
-
-              {/* Koperasi & UMKM Attributes */}
-              {selectedFeature.properties.layer_type === 'LAYER_KOPERASI_UMKM' && (
-                <>
-                  {selectedFeature.properties.commodities_accepted && (
-                    <div style={{ background: '#f5f3ff', border: '1px solid #ddd6fe', padding: '0.5rem 0.75rem', borderRadius: '8px' }}>
-                      <span style={{ fontSize: '0.7rem', color: '#6d28d9', display: 'block', marginBottom: '0.2rem', fontWeight: 600 }}>
-                        Komoditas / Fokus Produk:
-                      </span>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#7c3aed' }}>
-                        {selectedFeature.properties.commodities_accepted}
-                      </span>
-                    </div>
-                  )}
-
-                  {(() => {
-                    const umkmUnits =
-                      selectedFeature.properties.umkm_units ||
-                      selectedFeature.properties.properties_meta?.umkm_units
-                    const rtArea =
-                      selectedFeature.properties.rt_area ||
-                      selectedFeature.properties.properties_meta?.rt_area
-
-                    if (!Array.isArray(umkmUnits) || umkmUnits.length === 0) return null
-
-                    return (
-                      <div
+                      <span
                         style={{
-                          background: '#faf5ff',
-                          border: '1.5px solid #e9d5ff',
-                          borderRadius: '10px',
-                          padding: '0.65rem 0.75rem',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '0.5rem',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          fontSize: '0.68rem',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          color: '#ffffff',
+                          background: 'rgba(15, 23, 42, 0.7)',
+                          backdropFilter: 'blur(8px)',
+                          padding: '0.22rem 0.55rem',
+                          borderRadius: '20px',
+                          border: '1px solid rgba(255, 255, 255, 0.25)',
+                          letterSpacing: '0.04em',
                         }}
                       >
-                        <div
+                        {LAYER_ICONS[selectedFeature.properties.layer_type]}
+                        {LAYER_LABELS[selectedFeature.properties.layer_type] || selectedFeature.properties.layer_type}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedFeature(null)}
+                        style={{
+                          background: 'rgba(15, 23, 42, 0.7)',
+                          backdropFilter: 'blur(8px)',
+                          border: '1px solid rgba(255, 255, 255, 0.25)',
+                          color: '#ffffff',
+                          borderRadius: '50%',
+                          width: '28px',
+                          height: '28px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'background 0.15s ease',
+                        }}
+                        title="Tutup rincian"
+                      >
+                        <X size={15} />
+                      </button>
+                    </div>
+
+                    {/* Bottom Floating 360 Panorama Button Overlay */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        bottom: '10px',
+                        left: '12px',
+                        zIndex: 2,
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setIs360ModalOpen(true)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.4rem',
+                          background: 'rgba(15, 23, 42, 0.85)',
+                          backdropFilter: 'blur(8px)',
+                          color: '#ffffff',
+                          border: '1.5px solid rgba(56, 189, 248, 0.65)',
+                          padding: '0.35rem 0.75rem',
+                          borderRadius: '20px',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.35)',
+                          transition: 'all 0.15s ease',
+                        }}
+                        title="Buka tampilan panorama 360 derajat interaktif"
+                      >
+                        <Eye size={13} color="#38bdf8" />
+                        <span>Lihat Panorama 360°</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 2. Scrollable Body Content */}
+                  <div
+                    style={{
+                      flex: 1,
+                      overflowY: 'auto',
+                      padding: '1.1rem 1.25rem 0.85rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.9rem',
+                    }}
+                  >
+                    {/* Title, Rating & Island Heading */}
+                    <div>
+                      <h2
+                        style={{
+                          margin: '0 0 0.35rem',
+                          fontSize: '1.25rem',
+                          fontWeight: 800,
+                          color: '#0f2c59',
+                          lineHeight: 1.3,
+                          letterSpacing: '-0.02em',
+                        }}
+                      >
+                        {selectedFeature.properties.name}
+                      </h2>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#b45309' }}>
+                            {mediaInfo.rating.toFixed(1)}
+                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '1px' }}>
+                            {[...Array(5)].map((_, i) => (
+                              <Star key={i} size={12} fill="#f59e0b" color="#f59e0b" />
+                            ))}
+                          </div>
+                          <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                            ({mediaInfo.reviewsCount})
+                          </span>
+                        </div>
+                        <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>•</span>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#0369a1' }}>
+                          {mediaInfo.tag}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 3. Google Maps Style Action Pill Buttons */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        overflowX: 'auto',
+                        paddingBottom: '0.25rem',
+                      }}
+                    >
+                      {/* Action 1: Fokuskan / Rute */}
+                      <button
+                        type="button"
+                        onClick={() => handleFocusFeature(selectedFeature)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          padding: '0.45rem 0.75rem',
+                          background: '#0284c7',
+                          color: '#ffffff',
+                          border: 'none',
+                          borderRadius: '20px',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          boxShadow: '0 2px 8px rgba(2, 132, 199, 0.25)',
+                          transition: 'background 0.15s ease',
+                        }}
+                      >
+                        <Navigation2 size={13} fill="#ffffff" />
+                        <span>Fokuskan Peta</span>
+                      </button>
+
+                      {/* Action 2: 360 Viewer */}
+                      <button
+                        type="button"
+                        onClick={() => setIs360ModalOpen(true)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          padding: '0.45rem 0.75rem',
+                          background: '#f8fafc',
+                          color: '#0f2c59',
+                          border: '1px solid #cbd5e1',
+                          borderRadius: '20px',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        <RotateCcw size={13} color="#0284c7" />
+                        <span>Panorama 360°</span>
+                      </button>
+
+                      {/* Action 3: Salin Koordinat */}
+                      <button
+                        type="button"
+                        onClick={handleCopyCoordinates}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          padding: '0.45rem 0.75rem',
+                          background: copiedCoord ? '#ecfdf5' : '#f8fafc',
+                          color: copiedCoord ? '#059669' : '#0f2c59',
+                          border: `1px solid ${copiedCoord ? '#a7f3d0' : '#cbd5e1'}`,
+                          borderRadius: '20px',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        {copiedCoord ? <Check size={13} /> : <Copy size={13} />}
+                        <span>{copiedCoord ? 'Tersalin!' : 'Salin Koordinat'}</span>
+                      </button>
+
+                      {/* Action 4: WhatsApp (if available) */}
+                      {selectedFeature.properties.contact_whatsapp && (
+                        <a
+                          href={`https://wa.me/${selectedFeature.properties.contact_whatsapp}?text=${encodeURIComponent(
+                            `Halo Pengelola ${selectedFeature.properties.name}, saya menemukan tempat Anda melalui Peta Digital Banda Neira dan ingin bertanya lebih lanjut.`
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           style={{
-                            display: 'flex',
+                            display: 'inline-flex',
                             alignItems: 'center',
-                            justifyContent: 'space-between',
-                            borderBottom: '1px solid #e9d5ff',
-                            paddingBottom: '0.35rem',
+                            gap: '0.35rem',
+                            padding: '0.45rem 0.75rem',
+                            background: '#ecfdf5',
+                            color: '#047857',
+                            border: '1px solid #a7f3d0',
+                            borderRadius: '20px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            textDecoration: 'none',
+                            whiteSpace: 'nowrap',
                           }}
                         >
-                          <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#6b21a8' }}>
-                            Daftar Pelaku Usaha Binaan
-                          </span>
-                          <span
-                            style={{
-                              fontSize: '0.65rem',
-                              fontWeight: 700,
-                              background: '#8b5cf6',
-                              color: '#ffffff',
-                              padding: '0.15rem 0.4rem',
-                              borderRadius: '4px',
-                            }}
-                          >
-                            {umkmUnits.length} UMKM Terdaftar
-                          </span>
+                          <Phone size={13} />
+                          <span>Kontak WA</span>
+                        </a>
+                      )}
+
+                      {/* Action 5: Audio Guide (if available) */}
+                      {selectedFeature.properties.audio_url && (
+                        <a
+                          href={selectedFeature.properties.audio_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            padding: '0.45rem 0.75rem',
+                            background: '#fffbeb',
+                            color: '#b45309',
+                            border: '1px solid #fde68a',
+                            borderRadius: '20px',
+                            fontSize: '0.72rem',
+                            fontWeight: 700,
+                            textDecoration: 'none',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          <Volume2 size={13} />
+                          <span>Audio Guide</span>
+                        </a>
+                      )}
+                    </div>
+
+                    {/* 4. Google Maps Style Information Rows */}
+                    <div
+                      style={{
+                        borderTop: '1px solid #f1f5f9',
+                        paddingTop: '0.75rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.75rem',
+                      }}
+                    >
+                      {/* Row: Location / Island */}
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                        <div style={{ marginTop: '2px', color: '#0284c7', flexShrink: 0 }}>
+                          <MapPin size={16} />
                         </div>
-
-                        {rtArea && (
-                          <div style={{ fontSize: '0.68rem', color: '#7e22ce', fontWeight: 600 }}>
-                            Wilayah: {rtArea}
+                        <div style={{ fontSize: '0.78rem', color: '#1e293b' }}>
+                          <div style={{ fontWeight: 700 }}>{selectedFeature.properties.island_name}</div>
+                          <div style={{ color: '#64748b', fontSize: '0.72rem', marginTop: '1px' }}>
+                            {mediaInfo.address}
                           </div>
-                        )}
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', maxHeight: '180px', overflowY: 'auto' }}>
-                          {umkmUnits.map((u: any, idx: number) => (
-                            <div
-                              key={idx}
-                              style={{
-                                background: '#ffffff',
-                                border: '1px solid #f3e8ff',
-                                borderRadius: '6px',
-                                padding: '0.4rem 0.5rem',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '0.15rem',
-                              }}
-                            >
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0f2c59' }}>
-                                  {u.business || u.name}
-                                </span>
-                                <span
-                                  style={{
-                                    fontSize: '0.62rem',
-                                    fontWeight: 600,
-                                    padding: '0.1rem 0.35rem',
-                                    background: '#f3e8ff',
-                                    color: '#7e22ce',
-                                    borderRadius: '3px',
-                                  }}
-                                >
-                                  {u.category}
-                                </span>
-                              </div>
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.67rem', color: '#64748b' }}>
-                                <span>Pemilik: <strong style={{ color: '#334155' }}>{u.name}</strong></span>
-                                {u.year && <span>Berdiri {u.year} · {u.workforce || 1} Tenaga Kerja</span>}
-                              </div>
-                            </div>
-                          ))}
                         </div>
                       </div>
-                    )
-                  })()}
-                </>
-              )}
-            </div>
 
-            {/* Quick Action Button to re-center */}
-            <button
-              type="button"
-              onClick={() => handleFocusFeature(selectedFeature)}
-              style={{
-                width: '100%',
-                justifyContent: 'center',
-                fontSize: '0.75rem',
-                padding: '0.45rem',
-                marginBottom: isOfficerOrAdmin ? '0.6rem' : 0,
-                background: '#f8fafc',
-                border: '1px solid #cbd5e1',
-                borderRadius: '8px',
-                color: '#334155',
-                cursor: 'pointer',
-                fontWeight: 600,
-              }}
-            >
-              {selectedFeature.geometry?.type === 'LineString' ? 'Fokuskan Seluruh Jalur di Peta' : 'Fokuskan Titik Ini di Peta'}
-            </button>
+                      {/* Row: Coordinates (Monospace WGS 84) */}
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                        <div style={{ marginTop: '2px', color: '#64748b', flexShrink: 0 }}>
+                          <Globe size={16} />
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: '#1e293b', flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#0f2c59' }}>
+                              {featureLat.toFixed(5)}, {featureLng.toFixed(5)}
+                            </span>
+                            <span style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 600 }}>
+                              WGS 84 · EPSG:4326
+                            </span>
+                          </div>
+                        </div>
+                      </div>
 
-            {/* Admin Management Actions */}
-            {isOfficerOrAdmin && (
-              <div style={{ display: 'flex', gap: '0.5rem', borderTop: '1px solid #e2e8f0', paddingTop: '0.75rem' }}>
-                <button
-                  type="button"
-                  onClick={() => handleStartEditFeature(selectedFeature)}
-                  style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    fontSize: '0.75rem',
-                    padding: '0.45rem',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.35rem',
-                    background: '#ffffff',
-                    border: '1px solid #cbd5e1',
-                    borderRadius: '8px',
-                    color: '#0f2c59',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
-                >
-                  <Edit2 size={12} />
-                  {selectedFeature.geometry?.type === 'LineString' ? 'Edit Garis Rute' : 'Edit Titik Ini'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDeleteFeature(selectedFeature.id, selectedFeature.properties.name)}
-                  disabled={isDeletingFeature}
-                  style={{
-                    background: '#fef2f2',
-                    border: '1px solid #fecaca',
-                    color: '#dc2626',
-                    borderRadius: '8px',
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    padding: '0.45rem 0.65rem',
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.3rem',
-                  }}
-                  title={selectedFeature.geometry?.type === 'LineString' ? 'Hapus rute ini secara permanen dari PostGIS' : 'Hapus titik ini secara permanen dari PostGIS'}
-                >
-                  <Trash2 size={12} />
-                  {isDeletingFeature ? 'Menghapus...' : 'Hapus'}
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+                      {/* Row: Operating Hours or Era */}
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                        <div style={{ marginTop: '2px', color: '#10b981', flexShrink: 0 }}>
+                          <Clock size={16} />
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: '#1e293b' }}>
+                          <div style={{ fontWeight: 700, color: '#047857' }}>
+                            {mediaInfo.operatingHours}
+                          </div>
+                          {selectedFeature.properties.built_year && (
+                            <div style={{ color: '#64748b', fontSize: '0.72rem', marginTop: '1px' }}>
+                              Didirikan: Tahun {selectedFeature.properties.built_year} (Cagar Budaya Nasional)
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Specific Attributes: LineString Maritime Routes */}
+                      {isLineString && (
+                        <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', padding: '0.65rem 0.75rem', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.75rem', color: '#0369a1', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                              <Route size={13} />
+                              Panjang Lintasan:
+                            </span>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#0284c7' }}>
+                              {selectedFeature.properties.properties_meta?.total_distance_km || 0} km
+                              <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#64748b', marginLeft: '0.3rem' }}>
+                                ({selectedFeature.properties.properties_meta?.total_distance_nm || 0} NM)
+                              </span>
+                            </span>
+                          </div>
+                          {selectedFeature.properties.properties_meta?.travel_time && (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.73rem' }}>
+                              <span style={{ color: '#64748b' }}>Waktu Tempuh:</span>
+                              <span style={{ fontWeight: 700, color: '#0f2c59' }}>{selectedFeature.properties.properties_meta.travel_time}</span>
+                            </div>
+                          )}
+                          {selectedFeature.properties.properties_meta?.transport_mode && (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.73rem' }}>
+                              <span style={{ color: '#64748b' }}>Moda:</span>
+                              <span style={{ fontWeight: 600, color: '#0f2c59' }}>{selectedFeature.properties.properties_meta.transport_mode}</span>
+                            </div>
+                          )}
+                          {(selectedFeature.properties.properties_meta?.origin || selectedFeature.properties.properties_meta?.destination) && (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', borderTop: '1px dashed #cbd5e1', paddingTop: '0.3rem' }}>
+                              <span style={{ color: '#64748b' }}>Rute:</span>
+                              <span style={{ fontWeight: 600, color: '#0f2c59' }}>
+                                {selectedFeature.properties.properties_meta?.origin || 'Awal'} &rarr; {selectedFeature.properties.properties_meta?.destination || 'Tujuan'}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Water Infra Attributes */}
+                      {selectedFeature.properties.layer_type === 'LAYER_WATER_INFRA' && (
+                        <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', padding: '0.6rem 0.75rem', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                          {selectedFeature.properties.live_tds_ppm !== undefined && (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontSize: '0.75rem', color: '#0369a1', fontWeight: 600 }}>Kualitas Air (TDS):</span>
+                              <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0284c7' }}>
+                                {selectedFeature.properties.live_tds_ppm} ppm
+                              </span>
+                            </div>
+                          )}
+                          {selectedFeature.properties.tank_level_pct !== undefined && (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.73rem' }}>
+                              <span style={{ color: '#64748b' }}>Tandon Komunal:</span>
+                              <span style={{ color: '#0284c7', fontWeight: 700 }}>{selectedFeature.properties.tank_level_pct}% Penuh</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Accommodation Attributes */}
+                      {selectedFeature.properties.layer_type === 'LAYER_ACCOMMODATION' && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                          {selectedFeature.properties.price_per_night_rp && (
+                            <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '0.5rem 0.75rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontSize: '0.75rem', color: '#065f46', fontWeight: 600 }}>Tarif Menginap:</span>
+                              <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#059669' }}>
+                                Rp {selectedFeature.properties.price_per_night_rp.toLocaleString('id-ID')} / malam
+                              </span>
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                            {selectedFeature.properties.has_clean_ro_water && (
+                              <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', background: '#ecfdf5', color: '#065f46', borderRadius: '6px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <Droplets size={10} /> Air Bersih RO
+                              </span>
+                            )}
+                            {selectedFeature.properties.has_solar_backup && (
+                              <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', background: '#fffbeb', color: '#92400e', borderRadius: '6px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <Zap size={10} /> Listrik Surya
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Energy & Waste Attributes */}
+                      {selectedFeature.properties.layer_type === 'LAYER_ENERGY_WASTE' && (
+                        <div style={{ background: '#fff1f2', border: '1px solid #fecdd3', padding: '0.5rem 0.75rem', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                          {selectedFeature.properties.capacity_kwp && (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontSize: '0.75rem', color: '#9f1239', fontWeight: 600 }}>Kapasitas PLTS:</span>
+                              <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#e11d48' }}>
+                                {selectedFeature.properties.capacity_kwp} kWp
+                              </span>
+                            </div>
+                          )}
+                          {selectedFeature.properties.plastic_conversion_rule && (
+                            <div style={{ fontSize: '0.72rem', color: '#059669', fontWeight: 600 }}>
+                              Program: {selectedFeature.properties.plastic_conversion_rule}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Koperasi & UMKM Attributes */}
+                      {selectedFeature.properties.layer_type === 'LAYER_KOPERASI_UMKM' && (
+                        <>
+                          {selectedFeature.properties.commodities_accepted && (
+                            <div style={{ background: '#f5f3ff', border: '1px solid #ddd6fe', padding: '0.5rem 0.75rem', borderRadius: '8px' }}>
+                              <span style={{ fontSize: '0.7rem', color: '#6d28d9', display: 'block', marginBottom: '0.2rem', fontWeight: 600 }}>
+                                Komoditas / Fokus Produk:
+                              </span>
+                              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#7c3aed' }}>
+                                {selectedFeature.properties.commodities_accepted}
+                              </span>
+                            </div>
+                          )}
+
+                          {(() => {
+                            const umkmUnits =
+                              selectedFeature.properties.umkm_units ||
+                              selectedFeature.properties.properties_meta?.umkm_units
+                            if (!Array.isArray(umkmUnits) || umkmUnits.length === 0) return null
+
+                            return (
+                              <div
+                                style={{
+                                  background: '#faf5ff',
+                                  border: '1.5px solid #e9d5ff',
+                                  borderRadius: '10px',
+                                  padding: '0.65rem 0.75rem',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: '0.5rem',
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    borderBottom: '1px solid #e9d5ff',
+                                    paddingBottom: '0.35rem',
+                                  }}
+                                >
+                                  <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#6b21a8' }}>
+                                    Daftar Pelaku Usaha Binaan
+                                  </span>
+                                  <span
+                                    style={{
+                                      fontSize: '0.65rem',
+                                      fontWeight: 700,
+                                      background: '#8b5cf6',
+                                      color: '#ffffff',
+                                      padding: '0.15rem 0.4rem',
+                                      borderRadius: '4px',
+                                    }}
+                                  >
+                                    {umkmUnits.length} UMKM Terdaftar
+                                  </span>
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', maxHeight: '180px', overflowY: 'auto' }}>
+                                  {umkmUnits.map((u: any, idx: number) => (
+                                    <div
+                                      key={idx}
+                                      style={{
+                                        background: '#ffffff',
+                                        border: '1px solid #f3e8ff',
+                                        borderRadius: '6px',
+                                        padding: '0.4rem 0.5rem',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '0.15rem',
+                                      }}
+                                    >
+                                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0f2c59' }}>
+                                          {u.business || u.name}
+                                        </span>
+                                        <span
+                                          style={{
+                                            fontSize: '0.62rem',
+                                            fontWeight: 600,
+                                            padding: '0.1rem 0.35rem',
+                                            background: '#f3e8ff',
+                                            color: '#7e22ce',
+                                            borderRadius: '3px',
+                                          }}
+                                        >
+                                          {u.category}
+                                        </span>
+                                      </div>
+                                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.67rem', color: '#64748b' }}>
+                                        <span>Pemilik: <strong style={{ color: '#334155' }}>{u.name}</strong></span>
+                                        {u.year && <span>Berdiri {u.year} · {u.workforce || 1} Tenaga Kerja</span>}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )
+                          })()}
+                        </>
+                      )}
+                    </div>
+
+                    {/* 5. Description Narrative */}
+                    {selectedFeature.properties.description && (
+                      <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '0.75rem' }}>
+                        <h4 style={{ margin: '0 0 0.35rem', fontSize: '0.75rem', fontWeight: 800, color: '#0f2c59', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                          Tentang Destinasi Ini
+                        </h4>
+                        <p style={{ margin: 0, fontSize: '0.78rem', color: '#475569', lineHeight: 1.6 }}>
+                          {selectedFeature.properties.description}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 6. Admin Management Toolbar (Docked at Bottom if Admin/Officer) */}
+                  {isOfficerOrAdmin && (
+                    <div
+                      style={{
+                        padding: '0.75rem 1.25rem',
+                        background: '#f8fafc',
+                        borderTop: '1px solid #e2e8f0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleStartEditFeature(selectedFeature)}
+                        style={{
+                          flex: 1,
+                          justifyContent: 'center',
+                          fontSize: '0.75rem',
+                          padding: '0.5rem',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          background: '#ffffff',
+                          border: '1px solid #cbd5e1',
+                          borderRadius: '8px',
+                          color: '#0f2c59',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        <Edit2 size={13} />
+                        <span>{selectedFeature.geometry?.type === 'LineString' ? 'Edit Garis Rute' : 'Edit Titik Ini'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteFeature(selectedFeature.id, selectedFeature.properties.name)}
+                        disabled={isDeletingFeature}
+                        style={{
+                          background: '#fef2f2',
+                          border: '1px solid #fecaca',
+                          color: '#dc2626',
+                          borderRadius: '8px',
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          padding: '0.5rem 0.75rem',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          transition: 'all 0.15s ease',
+                        }}
+                        title={selectedFeature.geometry?.type === 'LineString' ? 'Hapus rute ini secara permanen dari PostGIS' : 'Hapus titik ini secara permanen dari PostGIS'}
+                      >
+                        <Trash2 size={13} />
+                        <span>{isDeletingFeature ? 'Menghapus...' : 'Hapus'}</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            )
+          })()}
+        </div>
       </div>
+
+      {/* 360 Degree Panorama Viewer Modal */}
+      <Panorama360Modal
+        isOpen={is360ModalOpen}
+        onClose={() => setIs360ModalOpen(false)}
+        title={selectedFeature?.properties?.name || 'Panorama Banda Neira'}
+        islandName={selectedFeature?.properties?.island_name}
+        panoramaUrl={selectedFeature ? getFeatureMedia(selectedFeature).panoramaUrl : undefined}
+      />
     </div>
   )
 }

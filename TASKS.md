@@ -43,6 +43,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 38: Client-Side URL Routing, Deep-Linking, Session Restoration & Refresh Persistence**
 - [x] **Phase 39: Spatial Features Export, 54-Item GeoJSON Seeder, Non-Technical Multi-Part Village Boundary Editor & GIS Documentation**
 - [x] **Phase 40: GIS Workspace Simplification, Bounding Box Archipelagic Lock, Redundancy Elimination & Natural Copywriting Overhaul**
+- [x] **Phase 41: Transformasi Kartu Detail POI ke Google Maps Desktop Drawer & Penampil Panorama 360° Interaktif (Anti-Slop Modern UI)**
 
 ---
 
@@ -629,6 +630,14 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Memetakan 20 objek penting baru (Bandara Perintis Kuabang/WAPC, 4 Dermaga Antar-Pulau Hatta/Rhun/Waer/Selamon, Pasar Tradisional & Ikan, Klenteng Sun Hok Bio, Makam Perigi Rante 1621, Benteng Kora-kora, Benteng Swanenburg Pulau Rhun, Kebun Pala Tertua Lonthoir, 5 Penginapan/Resor Populer, serta 4 Destinasi Bahari Baru).
   - Memastikan tidak ada duplikasi (*Zero Duplication*) terhadap 36 titik spasial eksisting dengan mencocokkan identitas dan koordinat.
   - Menyinkronkan dataset ke `gis_spatial_features.json` dan database PostGIS `spatial_features` via seeder `seed_spatial_features.py` (total kini menjadi 74 fitur dan 89 entitas API).
+- [x] 40.12 Transformasi Kartu Detail POI ke Google Maps Desktop Drawer & Penampil Panorama 360° Interaktif:
+  - Merombak total kartu inspeksi objek spasial yang sebelumnya berada di kolom kanan (mempersempit peta) menjadi *Left-Docked Google Maps Desktop Drawer* mengambang di atas peta 100% penuh.
+  - Mengintegrasikan cover gambar hero autentik untuk seluruh landmark dan cagar budaya Banda Neira dengan tombol floating "Panorama 360°" langsung di atas foto.
+  - Mengembangkan modal penampil WebGL 360° Panorama Viewer (`Panorama360Modal.tsx`) dengan proyeksi equirectangular bola, rotasi drag mouse/sentuhan bebas (yaw & pitch), zoom FOV, orientasi kompas, dan auto-rotate tanpa dependensi eksternal.
+  - Mengimplementasikan Action Pill Bar bergaya Google Maps (*Fokuskan Peta*, *Panorama 360°*, *Salin Koordinat*, *Kontak WA*, dan *Audio Guide*).
+  - Menyusun baris metadata modular berikon rapi (Alamat/Pulau, Koordinat presisi WGS 84, Jam operasional/Era cagar budaya, Spesifikasi layer, dan Narasi deskripsi lengkap).
+  - Menambahkan tombol ciutkan/bentangkan (*collapse/expand*) `<` / `>` di sisi kanan laci serta tombol terapung pemulihan cepat saat laci tersembunyi.
+  - Mengintegrasikan toolbar manajemen admin (*Edit Titik Ini* & *Hapus*) di bagian bawah laci khusus akun admin/petugas, berlaku seragam pada portal beranda pengguna maupun dashboard admin.
 
 
 
