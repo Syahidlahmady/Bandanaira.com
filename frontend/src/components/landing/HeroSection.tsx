@@ -229,7 +229,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         scrollDistance={0.75}
         holdDistance={1.6}
         smoothing={0.1}
-        overlayScrim={0.28}
+        overlayScrim={0.4}
         title={
           <div className="flex flex-col items-center justify-center text-center gap-2.5 sm:gap-3.5 px-4 max-w-4xl">
             <div className="inline-flex items-center px-3.5 py-1 rounded-full bg-black/60 border border-white/20 backdrop-blur-md shadow-sm">
@@ -258,32 +258,26 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <div className="h-4 sm:h-8" />
 
           {/* MAIN EDITORIAL HERO NARRATIVE (Asymmetric Left-Aligned Layout) */}
-          <main className="flex flex-col items-start gap-3 sm:gap-5 max-w-[850px] my-auto">
-            {/* Geographic Coordinates & Epoch Badge */}
-            <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-black/40 border border-white/15 backdrop-blur-md">
-              <div aria-hidden="true" className="w-4 h-0.5 bg-[#f4b75e]" />
-              <p className="font-mono text-[10px] sm:text-xs tracking-[0.18em] text-amber-300 uppercase">
-                4°31′24″ LS · 129°54′18″ BT · TITIK NOL JALUR REMPAH
-              </p>
-            </div>
-
+          <main className="flex flex-col items-start gap-4 sm:gap-6 max-w-[850px] my-auto">
             {/* Display Headline */}
             <h1
               id="banda-hero-title"
-              className="text-white text-3xl sm:text-5xl lg:text-7xl font-sans font-bold tracking-tight leading-[1.08]"
+              className="text-white text-3xl sm:text-5xl lg:text-7xl font-sans font-bold tracking-tight leading-[1.08] drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)]"
             >
               <span>Di jantung rempah dunia,</span>
               <br />
-              <span className="font-serif italic font-normal text-amber-300 text-4xl sm:text-6xl lg:text-8xl leading-[1.05]">
+              <span className="font-serif italic font-normal text-amber-200 text-4xl sm:text-6xl lg:text-8xl leading-[1.05] drop-shadow-[0_4px_28px_rgba(0,0,0,0.9)]">
                 temukan Banda.
               </span>
             </h1>
 
-            {/* Narrative Paragraph */}
-            <p className="max-w-[560px] text-slate-200 text-sm sm:text-base lg:text-lg leading-relaxed font-sans">
-              Laut yang menyimpan keajaiban karang purba. Jejak benteng kolonial yang hidup.
-              Satu pintu digital untuk menjelajah ekosistem pulau, pemetaan cagar budaya, dan kearifan masyarakat Banda.
-            </p>
+            {/* Narrative Paragraph with Frosted Glass Plate for Crisp Readability */}
+            <div className="max-w-[580px] p-4 sm:p-5 rounded-2xl bg-black/55 backdrop-blur-md border border-white/15 shadow-2xl">
+              <p className="text-white/95 text-sm sm:text-base lg:text-[17px] leading-relaxed font-sans font-normal antialiased">
+                Laut yang menyimpan keajaiban karang purba. Jejak benteng kolonial yang hidup.
+                Satu pintu digital untuk menjelajah ekosistem pulau, pemetaan cagar budaya, dan kearifan masyarakat Banda.
+              </p>
+            </div>
 
             {/* Dual Action CTAs */}
             <div className="inline-flex flex-wrap items-center gap-3 pt-2">
