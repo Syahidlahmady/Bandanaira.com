@@ -45,6 +45,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 40: GIS Workspace Simplification, Bounding Box Archipelagic Lock, Redundancy Elimination & Natural Copywriting Overhaul**
 - [x] **Phase 41: Transformasi Kartu Detail POI ke Google Maps Desktop Drawer & Penampil Panorama 360° Interaktif (Anti-Slop Modern UI)**
 - [x] **Phase 42: Kurasi & Scraping Foto Autentik Cagar Budaya/Landmark Banda Neira (Zero External Hotlinking & Full Offline Asset Resilience)**
+- [x] **Phase 43: Integrasi Komponen Sinematik <ScrollExpand /> React Bits pada Hero Section Beranda Banda Neira**
 
 ---
 
@@ -663,6 +664,16 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Menambahkan `ensureValidToken` & `refreshAccessToken` di `frontend/src/services/auth.ts` serta wrapper `requestWithAuth` di `frontend/src/services/farmers.ts` untuk memperbarui token kadaluarsa/`offline-jwt-` otomatis dan me-retry request saat terjadi `401`.
   - Menambahkan auto-seed `seed_roles_and_admin` saat login pada `backend/app/modules/auth/router.py`, membuka akses baca `GET /api/v1/farmers/groups` & `GET /api/v1/farmers` bagi `get_current_active_user`, serta menambahkan `ensure_default_farmers_seeded(db)` di `backend/app/modules/farmers/router.py` (3 Kelompok Tani, 4 petani bawaan `BN-PKT-001`..`004`, dan sinkronisasi otomatis warga berprofesi `Petani`/`Pekebun`).
   - Memverifikasi 20 pytest backend (`test_farmers_and_farms.py` & `test_auth.py`: `20 passed`) serta build frontend (`tsc && vite build`, 2.033 modul, exit code `0`).
+
+### Phase 44: Integrasi Komponen Sinematik <ScrollExpand /> React Bits pada Hero Section Beranda Banda Neira
+- [x] 44.1 Pembuatan Modul Komponen `ScrollExpand.tsx` dan `ScrollExpand.css`:
+  - Mengembangkan `ScrollExpand.tsx` berbasis TypeScript murni dengan dukungan interpolasi matematis `smoothstep`, peredaman inersia `smoothing: 0.12`, transformasi `clipPath` inset melingkar dinamis, serta kalkulasi ukuran berbasis `useWindowScroll`.
+  - Mengimplementasikan `ScrollExpand.css` dengan tata letak panggung sticky, media scaling presisi tanpa distorsi, scrim peredam kontras bergaya maritim Banda (`rgba(8, 29, 53, ...)`), serta penanganan `pointerEvents` selektif agar elemen anak (*children*) interaktif secara penuh saat ekspansi mencapai bleed 100%.
+- [x] 44.2 Transformasi Hero Section Beranda (`HeroSection.tsx`):
+  - Menempatkan bilah navigasi kaca melayang (*fixed frosted glass header*) di layer teratas (`z-50`) dengan akses tautan menu, tombol login/daftar, dan identitas logo Pala (*NutmegLogoIcon*).
+  - Mengonfigurasi `<ScrollExpand />` dengan bingkai awal sinematik (`startWidth: 46%` desktop / `88%` mobile, `startHeight: 60%`, `startRadius: 28px`), efek zoom media halus `1.3x -> 1.0x`, serta judul pra-scroll mengambang berbalut badge titik koordinat rempah Banda.
+  - Membangun tata letak editorial asimetris di sisi kiri pada fase ekspansi penuh: judul ganda kombinasi sans-serif `Plus Jakarta Sans` dan serif miring `Cormorant Garamond italic`, paragraf narasi terarah, dual CTA button (Jelajahi Banda & Peta GIS), dan status bar sekilas pulau.
+  - Memverifikasi build produksi `npm run build` (2.036 modul tertransformasi, exit code `0`) dan uji backend PostGIS GIS (`8 passed in 21.08s`).
 
 
 
