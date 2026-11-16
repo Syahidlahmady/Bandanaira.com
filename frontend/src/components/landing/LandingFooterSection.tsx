@@ -1,5 +1,6 @@
 import React from 'react'
 import { NutmegLogoIcon } from './LandingIcons'
+import { setPreferredTourismSubTab } from '../../services/tourism'
 
 export interface FooterLinkItem {
   label: string
@@ -120,7 +121,12 @@ export const LandingFooterSection: React.FC<LandingFooterSectionProps> = ({
                     <button
                       key={link.label}
                       type="button"
-                      onClick={() => onNavigate(targetTab)}
+                      onClick={() => {
+                        if (targetTab === 'tourism') {
+                          setPreferredTourismSubTab('accommodations')
+                        }
+                        onNavigate(targetTab)
+                      }}
                       className="relative w-fit font-normal text-[#c1ced8] hover:text-[#f4b75e] transition-colors text-xs tracking-[0] leading-[normal] text-left"
                     >
                       {link.label}

@@ -307,3 +307,49 @@ export const tourismService = {
   },
 }
 
+export type TourismSubTab =
+  | 'destinations'
+  | 'accommodations'
+  | 'heritage'
+  | 'guides'
+  | 'lookup'
+  | 'bookings'
+  | 'cms'
+
+const TOURISM_SUBTAB_STORAGE_KEY = 'banda_tourism_subtab'
+const VALID_TOURISM_SUBTABS: ReadonlySet<TourismSubTab> = new Set<TourismSubTab>([
+  'destinations',
+  'accommodations',
+  'heritage',
+  'guides',
+  'lookup',
+  'bookings',
+  'cms',
+])
+
+/** Simpan sub-tab aktif ruang kerja pariwisata dan kabarkan perubahan ke komponen terpasang. */
+export const setPreferredTourismSubTab = (subTab: TourismSubTab): void => {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(TOURISM_SUBTAB_STORAGE_KEY, subTab)
+    window.dispatchEvent(new CustomEvent<TourismSubTab>('banda:tourism-subtab', { detail: subTab }))
+  } catch {
+    // ignore storage/event errors
+  }
+}
+
+/** Ambil sub-tab tujuan yang terakhir dipilih, default ke 'accommodations'. */
+export const getPreferredTourismSubTab = (): TourismSubTab => {
+  if (typeof window === 'undefined') return 'accommodations'
+  try {
+    const raw = window.localStorage.getItem(TOURISM_SUBTAB_STORAGE_KEY) as TourismSubTab | null
+    if (raw && VALID_TOURISM_SUBTABS.has(raw)) {
+      return raw
+    }
+  } catch {
+    // ignore storage errors
+  }
+  return 'accommodations'
+}
+
+

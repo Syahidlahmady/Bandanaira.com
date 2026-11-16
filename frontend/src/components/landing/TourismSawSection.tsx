@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react'
+import React from 'react'
 import { ArrowUpRightIcon } from './LandingIcons'
+import { setPreferredTourismSubTab, TourismSubTab } from '../../services/tourism'
 
 export interface PublicSawDestination {
   id: string
@@ -147,358 +148,130 @@ export const PUBLIC_SAW_DESTINATIONS: PublicSawDestination[] = [
   },
 ]
 
+interface TourismHighlightItem {
+  title: string
+  description: string
+  iconType: 'marine' | 'heritage' | 'volcano'
+  actionLabel: string
+  targetSubTab: TourismSubTab
+}
+
+const TOURISM_HIGHLIGHTS: TourismHighlightItem[] = [
+  {
+    title: 'Taman laut & karang',
+    description: 'Karang meja Lava Flow Banda Api, wall diving Pulau Hatta, dan laguna Pulau Ai.',
+    iconType: 'marine',
+    actionLabel: 'Lihat tempat wisata',
+    targetSubTab: 'destinations',
+  },
+  {
+    title: 'Benteng & jejak sejarah',
+    description: 'Benteng Belgica, Nassau, Rumah Pengasingan Hatta-Sjahrir, hingga Pulau Rhun.',
+    iconType: 'heritage',
+    actionLabel: 'Lihat cagar budaya',
+    targetSubTab: 'heritage',
+  },
+  {
+    title: 'Kaldera & kebun pala',
+    description: 'Pendakian sunrise Gunung Banda Api dan agrowisata pala pusaka Lonthoir.',
+    iconType: 'volcano',
+    actionLabel: 'Lihat tempat wisata',
+    targetSubTab: 'destinations',
+  },
+]
+
 export interface TourismSawSectionProps {
   onNavigate: (tab: any) => void
 }
 
 export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate }) => {
-  const [sawIslandFilter, setSawIslandFilter] = useState<string>('SEMUA')
-  const [sawCategoryFilter, setSawCategoryFilter] = useState<string>('SEMUA')
-  const [wCost, setWCost] = useState<number>(0.25)
-  const [wDistance, setWDistance] = useState<number>(0.20)
-  const [wFacility, setWFacility] = useState<number>(0.30)
-  const [wAttraction, setWAttraction] = useState<number>(0.25)
-
-  const sawRankedDestinations = useMemo(() => {
-    const filtered = PUBLIC_SAW_DESTINATIONS.filter((d) => {
-      const matchIsland = sawIslandFilter === 'SEMUA' || d.island === sawIslandFilter
-      const matchCat = sawCategoryFilter === 'SEMUA' || d.category === sawCategoryFilter
-      return matchIsland && matchCat
-    })
-
-    if (filtered.length === 0) return []
-
-    const sumW = (wCost + wDistance + wFacility + wAttraction) || 1.0
-    const normW1 = wCost / sumW
-    const normW2 = wDistance / sumW
-    const normW3 = wFacility / sumW
-    const normW4 = wAttraction / sumW
-
-    const minCost = Math.min(...filtered.map((d) => d.costRp))
-    const minDistance = Math.min(...filtered.map((d) => d.travelMinutes))
-    const maxFacility = Math.max(...filtered.map((d) => d.facilityScore))
-    const maxAttraction = Math.max(...filtered.map((d) => d.attractionScore))
-
-    const scored = filtered.map((d) => {
-      const rCost = minCost / d.costRp
-      const rDist = minDistance / d.travelMinutes
-      const rFac = d.facilityScore / (maxFacility || 1)
-      const rAttr = d.attractionScore / (maxAttraction || 1)
-
-      const v = (normW1 * rCost) + (normW2 * rDist) + (normW3 * rFac) + (normW4 * rAttr)
-      return {
-        ...d,
-        sawScore: Math.round(v * 100),
-      }
-    })
-
-    return scored.sort((a, b) => b.sawScore - a.sawScore)
-  }, [sawIslandFilter, sawCategoryFilter, wCost, wDistance, wFacility, wAttraction])
+  const openTourismSubTab = (subTab: TourismSubTab) => {
+    setPreferredTourismSubTab(subTab)
+    onNavigate('tourism')
+  }
 
   return (
     <section
       id="wisata"
-      aria-labelledby="marine-experiences-title"
-      className="relative flex w-full flex-col items-start gap-10 self-stretch bg-[#f7f5f0] px-6 py-16 sm:px-12 lg:px-20 lg:py-24"
+      aria-labelledby="tourism-routes-heading"
+      className="flex flex-col lg:flex-row items-start lg:items-center gap-12 lg:gap-20 px-6 sm:px-12 lg:px-20 py-16 relative self-stretch w-full flex-[0_0_auto] bg-[#f7f5f0]"
     >
-      <header className="flex w-full flex-col items-start gap-8 md:flex-row md:items-end md:justify-between">
-        <div className="relative flex w-full flex-col items-start gap-[18px] md:max-w-[760px]">
-          <div className="relative inline-flex items-center gap-2.5">
-            <span
-              aria-hidden="true"
-              className="relative h-px w-6 bg-amber-600"
-            />
-            <span className="relative w-fit whitespace-nowrap text-[11px] font-semibold leading-[normal] tracking-[1.80px] text-amber-600">
-              DESTINASI &amp; SISTEM PENDUKUNG KEPUTUSAN WISATA (SAW)
-            </span>
-          </div>
-          <h2
-            id="marine-experiences-title"
-            className="relative self-stretch text-[36px] font-medium leading-[42px] tracking-[-2.00px] text-[#0f2c59] md:text-[50px] md:leading-[56px]"
-          >
-            Destinasi Pilihan &amp;
-            <br />
-            Rekomendasi Cerdas Wisata
-          </h2>
-          <p className="text-[#63717d] text-base leading-relaxed">
-            Temukan spot bahari, sejarah, dan alam terbaik di Kepulauan Banda. Sesuaikan preferensi bobot Anda
-            untuk mendapatkan peringkat rekomendasi berbasis algoritma <b>Simple Additive Weighting (SAW)</b>.
+      <header className="flex flex-col max-w-[430px] items-start gap-[18px] relative">
+        <div className="inline-flex items-center gap-2.5 relative flex-[0_0_auto]">
+          <div aria-hidden="true" className="relative w-6 h-px bg-amber-600" />
+          <p className="mt-[-1.00px] font-semibold text-amber-600 text-[11px] tracking-[1.80px] whitespace-nowrap relative w-fit leading-[normal]">
+            DESTINASI WISATA &amp; PERENCANA CERDAS
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <h2
+          id="tourism-routes-heading"
+          className="relative self-stretch font-medium text-[#0f2c59] text-[28px] sm:text-[31px] tracking-[-1.00px] leading-[38.8px]"
+        >
+          Bahari jernih, benteng tua, dan puncak api.
+        </h2>
+
+        <div className="flex flex-wrap items-center gap-2.5 pt-1">
+          <button
+            type="button"
+            onClick={() => openTourismSubTab('destinations')}
+            className="inline-flex h-[42px] items-center gap-2 bg-[#0f2c59] hover:bg-[#173d7a] text-white rounded-lg px-5 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0f2c59]"
+          >
+            <span>Jelajahi Destinasi</span>
+            <ArrowUpRightIcon className="w-4 h-4" />
+          </button>
           <button
             type="button"
             onClick={() => onNavigate('smart_planner')}
-            className="inline-flex h-[46px] shrink-0 items-center gap-3 overflow-hidden rounded-lg bg-amber-600 hover:bg-amber-500 text-white px-5 py-0 text-xs font-semibold transition-colors"
+            className="inline-flex h-[42px] items-center gap-2 border border-[#dce1df] bg-white hover:bg-amber-50 text-[#0f2c59] rounded-lg px-4 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600"
           >
-            <span>Buka Smart Planner Penuh</span>
-            <ArrowUpRightIcon className="w-4 h-4" />
+            <span>Kalkulator Wisata SAW</span>
           </button>
         </div>
       </header>
 
-      {/* SAW Controls & Preferences Panel */}
-      <div className="w-full bg-white rounded-2xl p-6 sm:p-8 border border-[#dce1df] shadow-sm flex flex-col gap-6">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#dce1df]">
-          <div>
-            <h3 className="text-base font-bold text-[#0f2c59]">
-              Kalkulator Rekomendasi Cerdas SAW
-            </h3>
-            <p className="text-xs text-[#63717d] mt-0.5">
-              Atur bobot kriteria sesuai gaya perjalanan Anda untuk mengurutkan destinasi secara objektif.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="text-[#63717d] font-medium mr-1">Preset Cepat:</span>
-            <button
-              type="button"
-              onClick={() => {
-                setWCost(0.40)
-                setWDistance(0.25)
-                setWFacility(0.20)
-                setWAttraction(0.15)
-              }}
-              className="px-3 py-1.5 rounded-md bg-[#f7f5f0] hover:bg-amber-100 hover:text-amber-900 text-[#0f2c59] font-medium transition-colors"
-            >
-             Hemat Budget
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setWCost(0.15)
-                setWDistance(0.45)
-                setWFacility(0.25)
-                setWAttraction(0.15)
-              }}
-              className="px-3 py-1.5 rounded-md bg-[#f7f5f0] hover:bg-amber-100 hover:text-amber-900 text-[#0f2c59] font-medium transition-colors"
-            >
-              Dekat &amp; Akses Cepat
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setWCost(0.15)
-                setWDistance(0.15)
-                setWFacility(0.25)
-                setWAttraction(0.45)
-              }}
-              className="px-3 py-1.5 rounded-md bg-[#f7f5f0] hover:bg-amber-100 hover:text-amber-900 text-[#0f2c59] font-medium transition-colors"
-            >
-              Daya Tarik Maksimal
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setWCost(0.25)
-                setWDistance(0.20)
-                setWFacility(0.30)
-                setWAttraction(0.25)
-              }}
-              className="px-3 py-1.5 rounded-md bg-amber-600 text-white font-medium transition-colors"
-            >
-              Seimbang (Default)
-            </button>
-          </div>
-        </div>
-
-        {/* Sliders Bobot SAW */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="flex flex-col gap-2 p-3.5 rounded-xl bg-[#f7f5f0]">
-            <div className="flex justify-between items-center text-xs">
-              <span className="font-semibold text-[#0f2c59]">C1: Biaya / Tiket (Cost)</span>
-              <span className="font-mono font-bold text-amber-700">{Math.round(wCost * 100)}%</span>
-            </div>
-            <input
-              type="range"
-              min="0.05"
-              max="0.60"
-              step="0.05"
-              value={wCost}
-              onChange={(e) => setWCost(parseFloat(e.target.value))}
-              className="w-full accent-amber-600 cursor-pointer"
-            />
-            <span className="text-[10px] text-[#63717d]">Semakin murah semakin diprioritaskan</span>
-          </div>
-
-          <div className="flex flex-col gap-2 p-3.5 rounded-xl bg-[#f7f5f0]">
-            <div className="flex justify-between items-center text-xs">
-              <span className="font-semibold text-[#0f2c59]">C2: Waktu Tempuh (Cost)</span>
-              <span className="font-mono font-bold text-amber-700">{Math.round(wDistance * 100)}%</span>
-            </div>
-            <input
-              type="range"
-              min="0.05"
-              max="0.60"
-              step="0.05"
-              value={wDistance}
-              onChange={(e) => setWDistance(parseFloat(e.target.value))}
-              className="w-full accent-amber-600 cursor-pointer"
-            />
-            <span className="text-[10px] text-[#63717d]">Semakin cepat akses semakin disukai</span>
-          </div>
-
-          <div className="flex flex-col gap-2 p-3.5 rounded-xl bg-[#f7f5f0]">
-            <div className="flex justify-between items-center text-xs">
-              <span className="font-semibold text-[#0f2c59]">C3: Kelengkapan Fasilitas</span>
-              <span className="font-mono font-bold text-amber-700">{Math.round(wFacility * 100)}%</span>
-            </div>
-            <input
-              type="range"
-              min="0.05"
-              max="0.60"
-              step="0.05"
-              value={wFacility}
-              onChange={(e) => setWFacility(parseFloat(e.target.value))}
-              className="w-full accent-amber-600 cursor-pointer"
-            />
-            <span className="text-[10px] text-[#63717d]">Kesiapan amenitas 4A &amp; toilet/dermaga</span>
-          </div>
-
-          <div className="flex flex-col gap-2 p-3.5 rounded-xl bg-[#f7f5f0]">
-            <div className="flex justify-between items-center text-xs">
-              <span className="font-semibold text-[#0f2c59]">C4: Daya Tarik &amp; Rating</span>
-              <span className="font-mono font-bold text-amber-700">{Math.round(wAttraction * 100)}%</span>
-            </div>
-            <input
-              type="range"
-              min="0.05"
-              max="0.60"
-              step="0.05"
-              value={wAttraction}
-              onChange={(e) => setWAttraction(parseFloat(e.target.value))}
-              className="w-full accent-amber-600 cursor-pointer"
-            />
-            <span className="text-[10px] text-[#63717d]">Keunikan pemandangan &amp; reputasi dunia</span>
-          </div>
-        </div>
-
-        {/* Filter Pills */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-[#dce1df]">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-xs font-semibold text-[#0f2c59] mr-2">Pulau:</span>
-            {['SEMUA', 'Pulau Neira', 'Banda Api', 'Banda Besar', 'Pulau Hatta', 'Pulau Ai', 'Pulau Rhun'].map((isl) => (
-              <button
-                key={isl}
-                type="button"
-                onClick={() => setSawIslandFilter(isl)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                  sawIslandFilter === isl
-                    ? 'bg-[#0f2c59] text-white'
-                    : 'bg-[#f7f5f0] text-[#63717d] hover:text-[#0f2c59]'
-                }`}
-              >
-                {isl}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-xs font-semibold text-[#0f2c59] mr-2">Kategori:</span>
-            {['SEMUA', 'Bahari & Selam', 'Sejarah & Benteng', 'Alam & Rempah'].map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setSawCategoryFilter(cat)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                  sawCategoryFilter === cat
-                    ? 'bg-amber-600 text-white'
-                    : 'bg-[#f7f5f0] text-[#63717d] hover:text-[#0f2c59]'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* SAW Ranked Destinations Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
-        {sawRankedDestinations.map((dest, idx) => (
-          <article
-            key={dest.id}
-            className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-[#dce1df] shadow-sm hover:shadow-md transition-all relative"
+      <ul className="grid grid-cols-1 sm:grid-cols-3 gap-[30px] relative flex-1 w-full">
+        {TOURISM_HIGHLIGHTS.map((item) => (
+          <li
+            key={item.title}
+            className="flex flex-col items-start gap-3.5 relative flex-1 grow"
           >
-            {/* Gambar & Badges */}
-            <div className="h-48 w-full relative overflow-hidden bg-slate-200">
-              <img
-                src={dest.image}
-                alt={dest.name}
-                loading="lazy"
-                decoding="async"
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#081d35cc] via-transparent to-transparent" />
-              
-              {/* Ranking Badge SAW */}
-              <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/90 backdrop-blur-sm text-white text-[11px] font-bold shadow">
-                <span>#{idx + 1}</span>
-                <span>Skor {dest.sawScore}</span>
-              </div>
-
-              <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-[#081d35]/80 backdrop-blur-sm text-white text-[10px] font-medium">
-                {dest.island}
-              </div>
-
-              <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs">
-                <span className="font-semibold text-amber-300">
-                  Rp {dest.costRp.toLocaleString('id-ID')}
-                </span>
-                <span className="text-[11px] opacity-90">
-                  ~{dest.travelMinutes} Menit
-                </span>
-              </div>
+            <div className="flex w-10 h-10 items-center justify-center rounded-lg bg-amber-600/10 text-amber-600">
+              {item.iconType === 'marine' && (
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M2 15c2.5-2 5-2 7.5 0s5 2 7.5 0 5-2 5-2" />
+                  <path d="M2 19c2.5-2 5-2 7.5 0s5 2 7.5 0 5-2 5-2" />
+                  <circle cx="12" cy="7" r="3" />
+                </svg>
+              )}
+              {item.iconType === 'heritage' && (
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6" />
+                </svg>
+              )}
+              {item.iconType === 'volcano' && (
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M3 20h18L14 7l-3 5-2-3-6 11z" />
+                </svg>
+              )}
             </div>
-
-            {/* Konten Destinasi */}
-            <div className="p-5 flex flex-col flex-1 justify-between gap-4">
-              <div className="flex flex-col gap-2">
-                <span className="text-[10px] font-bold tracking-wider text-amber-600 uppercase">
-                  {dest.category}
-                </span>
-                <h3 className="text-base font-bold text-[#0f2c59] leading-snug group-hover:text-amber-700 transition-colors">
-                  {dest.name}
-                </h3>
-                <p className="text-xs text-[#63717d] line-clamp-3 leading-relaxed">
-                  {dest.description}
-                </p>
-
-                {/* Highlights */}
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {dest.highlights.map((h) => (
-                    <span
-                      key={h}
-                      className="text-[10px] px-2 py-0.5 rounded bg-[#f7f5f0] text-[#0f2c59] font-medium"
-                    >
-                      ✓ {h}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Score Breakdown & Action */}
-              <div className="pt-3 border-t border-[#dce1df] flex flex-col gap-2.5">
-                <div className="grid grid-cols-2 gap-2 text-[10px] text-[#63717d] bg-[#f7f5f0] p-2 rounded-lg">
-                  <div>Fasilitas 4A: <b className="text-[#0f2c59]">{dest.facilityScore}/100</b></div>
-                  <div>Daya Tarik: <b className="text-[#0f2c59]">{dest.attractionScore}/100</b></div>
-                </div>
-
-                <a
-                  href={`https://wa.me/${dest.guideWhatsapp}?text=${encodeURIComponent(
-                    `Halo Pemandu Banda, saya melihat destinasi ${dest.name} di bandanaira.com (Skor SAW #${idx + 1}). Mohon informasi paket tur dan jadwal keberangkatan.`
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full inline-flex items-center justify-center gap-2 py-2 px-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-semibold transition-colors"
-                >
-                  <span>Tanya Pemandu via WA</span>
-                </a>
-              </div>
-            </div>
-          </article>
+            <h3 className="relative self-stretch font-semibold text-[#0f2c59] text-[15px] tracking-[0] leading-[normal]">
+              {item.title}
+            </h3>
+            <p className="relative self-stretch font-normal text-[#63717d] text-[13px] tracking-[0] leading-[21.4px]">
+              {item.description}
+            </p>
+            <button
+              type="button"
+              onClick={() => openTourismSubTab(item.targetSubTab)}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-600 hover:text-[#0f2c59] transition-colors"
+            >
+              <span>{item.actionLabel}</span>
+              <ArrowUpRightIcon className="w-3.5 h-3.5" />
+            </button>
+          </li>
         ))}
-      </div>
+      </ul>
     </section>
   )
 }
