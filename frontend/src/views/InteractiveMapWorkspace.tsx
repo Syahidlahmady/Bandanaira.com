@@ -251,14 +251,6 @@ export const BANDA_LANDMARK_MEDIA: Record<
     hours: 'Buka 24 Jam',
     tag: 'Benteng Bersejarah Pulau Ay',
   },
-  'Benteng Swanenburg': {
-    image: '/images/landmarks/benteng-swanenburg.jpg',
-    panorama: '/images/landmarks/benteng-swanenburg.jpg',
-    rating: 4.6,
-    reviews: 21,
-    hours: 'Buka 24 Jam',
-    tag: 'Cagar Budaya Pulau Rhun',
-  },
   'Benteng Kora-Kora': {
     image: '/images/landmarks/benteng-kora-kora.jpg',
     panorama: '/images/landmarks/benteng-kora-kora.jpg',

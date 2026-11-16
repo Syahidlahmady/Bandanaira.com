@@ -86,14 +86,22 @@ async def seed_spatial_features(session: AsyncSession) -> int:
             existing = (await session.execute(stmt)).scalar_one_or_none()
 
             if existing:
-                existing.category = item.get("category", "publik")
-                existing.island_name = item.get("island_name", "Pulau Neira")
-                existing.latitude = item["latitude"]
-                existing.longitude = item["longitude"]
-                existing.geometry_geojson = item.get("geometry_geojson")
-                existing.properties_meta = item.get("properties_meta", {})
-                existing.description = item.get("description", "")
-                existing.is_active = True
+                # INTEGRITY GUARD: JANGAN menimpa koordinat (latitude & longitude) yang sudah disesuaikan user!
+                existing.category = item.get("category", existing.category or "publik")
+                existing.island_name = item.get("island_name", existing.island_name or "Pulau Neira")
+                if existing.latitude is None:
+                    existing.latitude = item["latitude"]
+                if existing.longitude is None:
+                    existing.longitude = item["longitude"]
+
+                # Merge properties_meta tanpa menimpa data yang telah disesuaikan
+                merged_meta = dict(existing.properties_meta or {})
+                for k, v in (item.get("properties_meta") or {}).items():
+                    if k not in merged_meta or not merged_meta[k]:
+                        merged_meta[k] = v
+                existing.properties_meta = merged_meta
+                if not existing.description and item.get("description"):
+                    existing.description = item.get("description")
                 updated_count += 1
             else:
                 new_feat = SpatialFeature(
