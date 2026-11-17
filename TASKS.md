@@ -665,6 +665,17 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Menambahkan auto-seed `seed_roles_and_admin` saat login pada `backend/app/modules/auth/router.py`, membuka akses baca `GET /api/v1/farmers/groups` & `GET /api/v1/farmers` bagi `get_current_active_user`, serta menambahkan `ensure_default_farmers_seeded(db)` di `backend/app/modules/farmers/router.py` (3 Kelompok Tani, 4 petani bawaan `BN-PKT-001`..`004`, dan sinkronisasi otomatis warga berprofesi `Petani`/`Pekebun`).
   - Memverifikasi 20 pytest backend (`test_farmers_and_farms.py` & `test_auth.py`: `20 passed`) serta build frontend (`tsc && vite build`, 2.033 modul, exit code `0`).
 
+### Phase 43: Perbaikan Sinkronisasi & Upload Mode Offline (PWA IndexedDB Sync Queue)
+- [x] 43.1 Penguatan Mesin Sinkronisasi Offline (`frontend/src/offline/syncManager.ts`):
+  - Menyertakan item berstatus `pending`, `failed`, dan `syncing` ke dalam `getUnsyncedItems()` / `getPendingCount()` dan `processSync()` agar item gagal dapat diunggah ulang saat klik **"Kirim Sekarang ke Server"**.
+  - Mengambil token valid sebelum unggah dan me-retry otomatis via `authService.ensureValidToken(true)` saat server mengembalikan `401 Unauthorized`.
+  - Menormalisasi endpoint antrean lama (`normalizeEndpoint`: `/farmers/farms` -> `/farms`), menyembuhkan payload kosong/non-UUID (`healQueuedPayload`: `farmer_id`, `farm_id`, `village`), menangani konflik `409 Conflict` (`resident_create` dihapus sebagai tersinkron; kode ganda `farm_code`/`harvest_code` ditambahkan sufiks unik dan diunggah ulang), serta memformat error array FastAPI 422 via `serializeErrorMessage`.
+- [x] 43.2 Perbaikan Pembuatan Antrean, Modal Antrean & Service Worker (`App.tsx`, `OfflineQueueModal.tsx`, `auth.ts`, `population.ts`, `traceability.ts`, `sw.js`):
+  - Memperbaiki URL antrean offline `farm_create` di `frontend/src/App.tsx` (`/farmers/farms` -> `/farms`), menyertakan `village: 'Banda Neira'` pada antrean `resident_create`, dan menyegarkan `queueList` di `handleManualSync()` setelah `processSync()`.
+  - Mengamankan render pesan error objek di `OfflineQueueModal.tsx` dan mengaktifkan tombol **"Kirim Sekarang ke Server"** kapan pun antrean tidak kosong dan tidak sedang sinkronisasi.
+  - Menambahkan `authService.fetchWithAuth` pada `auth.ts` serta `requestWithAuth` pada `population.ts` dan `traceability.ts`.
+  - Memperbarui `frontend/public/sw.js` (`banda-digital-v5`) agar kegagalan GET `/api/` tanpa cache mengembalikan status HTTP `503` (bukan `200`) supaya mekanisme fallback cache IndexedDB bekerja semestinya.
+
 ### Phase 44: Integrasi Komponen Sinematik <ScrollExpand /> React Bits pada Hero Section Beranda Banda Neira
 - [x] 44.1 Pembuatan Modul Komponen `ScrollExpand.tsx` dan `ScrollExpand.css`:
   - Mengembangkan `ScrollExpand.tsx` berbasis TypeScript murni dengan dukungan interpolasi matematis `smoothstep`, peredaman inersia `smoothing: 0.12`, transformasi `clipPath` inset melingkar dinamis, serta kalkulasi ukuran berbasis `useWindowScroll`.
@@ -674,6 +685,19 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Mengonfigurasi `<ScrollExpand />` dengan bingkai awal sinematik (`startWidth: 46%` desktop / `88%` mobile, `startHeight: 60%`, `startRadius: 28px`), efek zoom media halus `1.3x -> 1.0x`, serta judul pra-scroll mengambang berbalut badge titik koordinat rempah Banda.
   - Membangun tata letak editorial asimetris di sisi kiri pada fase ekspansi penuh: judul ganda kombinasi sans-serif `Plus Jakarta Sans` dan serif miring `Cormorant Garamond italic`, paragraf narasi terarah, dual CTA button (Jelajahi Banda & Peta GIS), dan status bar sekilas pulau.
   - Memverifikasi build produksi `npm run build` (2.036 modul tertransformasi, exit code `0`) dan uji backend PostGIS GIS (`8 passed in 21.08s`).
+
+### Phase 45: Redesain Beranda Visual Ala Wonderful Indonesia, Tipografi Nexa Pro/Intro Script & Chatbot Cerdas
+- [x] 45.1 YouTube Cinematic Hero Backdrop & Konfigurasi Tipografi Nexa Pro / Intro Script:
+  - Menyematkan video YouTube tanpa batas dengan rasio sinematik dan kontrol tersembunyi sebagai latar belakang aperture.
+  - Mengonfigurasi `@font-face` untuk Nexa Pro (`font-sans font-bold`) dan Intro Script (`font-script`).
+- [x] 45.2 Redesain Katalog Destinasi, Penginapan, dan Marketplace UMKM Bergaya `indonesia.travel`:
+  - Mengubah `TourismSawSection` menjadi Spotlight Hero Slider interaktif dengan indikator numerik dan kartu vertikal.
+  - Mengubah `EcoStayCatalogSection` dan `TraceabilityMarketplaceSection` menjadi kartu showcase bersih tanpa badge mengambang yang menutupi gambar.
+  - Mengubah CTA kunjungan dengan kutipan legendaris Sutan Sjahrir *"Jangan mati sebelum ke Banda!"*.
+- [x] 45.3 Pembersihan Kanvas Peta & Floating Chatbot Rekomendasi Wisata (SAW):
+  - Mengadopsi header ikonik `Visit Banda Neira` dengan garis belah horizontal.
+  - Memindahkan filter pulau dan kotak pencarian melayang langsung di dalam kanvas peta.
+  - Membersihkan istilah teknis internal (GIS, SAW) pada antarmuka publik dan mengintegrasikan perhitungan rekomendasi SAW ke dalam Chat Bubble mengambang di pojok kanan bawah.
 
 
 

@@ -1,5 +1,5 @@
 // Banda Digital Ecosystem - Service Worker
-const CACHE_NAME = 'banda-digital-v4'
+const CACHE_NAME = 'banda-digital-v5'
 const MAP_TILES_CACHE = 'banda-map-tiles-v1'
 const STATIC_ASSETS = [
   '/',
@@ -106,9 +106,14 @@ self.addEventListener('fetch', (event) => {
         .catch(() => {
           return caches.match(event.request).then((cached) => {
             if (cached) return cached
-            return new Response(JSON.stringify({ error: 'Offline mode active. Data retrieved from local cache.' }), {
-              headers: { 'Content-Type': 'application/json' },
-            })
+            return new Response(
+              JSON.stringify({ detail: 'Mode offline aktif dan cache API lokal belum tersedia.' }),
+              {
+                status: 503,
+                statusText: 'Service Unavailable',
+                headers: { 'Content-Type': 'application/json' },
+              }
+            )
           })
         })
     )

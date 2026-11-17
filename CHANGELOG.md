@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Perbaikan Sinkronisasi & Upload Mode Offline PWA IndexedDB Sync Queue (Phase 43)**:
+  - Memperkuat `frontend/src/offline/syncManager.ts` agar me-retry item `failed`/`syncing`, otomatis menyegarkan JWT via `authService.ensureValidToken` saat `401`, menormalisasi endpoint `/farmers/farms` -> `/farms`, melengkapi UUID `farmer_id`/`farm_id` yang hilang (`healQueuedPayload`), menangani konflik `409 Conflict` secara otomatis, serta menserialisasikan detail error 422 FastAPI ke string yang aman dirender (`serializeErrorMessage`).
+  - Memperbaiki endpoint `farm_create` offline dan penyegaran daftar antrean pada `handleManualSync()` di `frontend/src/App.tsx`, serta pengamanan tampilan pesan error & aktivasi tombol kirim di `frontend/src/components/modals/OfflineQueueModal.tsx`.
+  - Menambahkan `authService.fetchWithAuth` (`frontend/src/services/auth.ts`) serta `requestWithAuth` di `frontend/src/services/population.ts` dan `frontend/src/services/traceability.ts`, serta memperbarui fallback offline `/api/` pada `frontend/public/sw.js` (`banda-digital-v5`) agar mengembalikan status `503`.
 - **Pemetaan Lahan Satelit Interaktif Poktan, Auto-Seed Petani & Perbaikan Sesi `401` (Phase 42 — commit `96f2056`)**:
   - Memperbarui `frontend/src/components/FarmMap.tsx` dengan viewport terkunci `BANDA_ARCHIPELAGO_BOUNDS`, tombol lompat pulau, switcher basemap (`Satelit` + toggle `Label Lokasi`, `Standar`, `Topografi`), mode layar penuh (`toggleFullscreen`), alat gambar poligon non-teknis (`+ Klik Peta Tambah Sudut Lahan`, `Hanya Geser Titik Batas`, preset `Kotak Cepat` `2.500 m²`/`5.000 m²`/`10.000 m²`, titik sudut geser/hapus klik kanan, kalkulasi luas geodesik `computeSphericalAreaSqm`), serta fokus dari tabel (`focusFarmId`).
   - Menyederhanakan formulir pemetaan 3-langkah di `frontend/src/views/FarmsGisWorkspace.tsx` (`polygon_boundary_geojson`, GPS perangkat, validasi tumpang tindih PostGIS, aksi `Lihat di Peta`) dan menambahkan form inline **`+ Tambah Petani Baru`** (`handleCreateFarmerMember`) langsung di pilihan `Petani Pemilik Lahan`.

@@ -40,7 +40,7 @@ export const PlanYourVisitSection: React.FC<PlanYourVisitSectionProps> = ({ onNa
         id="plan-your-visit-heading"
         className="relative z-10 max-w-4xl font-script font-normal text-amber-200 text-5xl sm:text-7xl lg:text-8xl leading-[1.18] tracking-wide drop-shadow-[0_4px_30px_rgba(0,0,0,0.85)] px-4"
       >
-        &ldquo;Jangan mati sebelum ke Banda!&rdquo;
+        &ldquo;Jangan mati sebelum ke Banda Neira!&rdquo;
       </h2>
 
 
