@@ -59,15 +59,37 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
 }) => {
   const [activeNav, setActiveNav] = useState<string>('#beranda')
 
-  // Smooth scrolling initialization via Lenis
+  // Smooth scrolling initialization via Lenis (Desktop only; native momentum scrolling for mobile)
   useEffect(() => {
+    const isMobileDevice = typeof window !== 'undefined' && (
+      window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches
+    )
+
+    // On mobile devices, bypass Lenis to utilize native 60/120Hz GPU-accelerated momentum scrolling
+    if (isMobileDevice) {
+      const handleAnchorClick = (e: MouseEvent) => {
+        const target = (e.target as HTMLElement).closest('a[href^="#"]') as HTMLAnchorElement | null
+        if (target && target.hash) {
+          const targetElement = document.querySelector(target.hash)
+          if (targetElement) {
+            e.preventDefault()
+            targetElement.scrollIntoView({ behavior: 'smooth' })
+          }
+        }
+      }
+      document.addEventListener('click', handleAnchorClick)
+      return () => {
+        document.removeEventListener('click', handleAnchorClick)
+      }
+    }
+
     const lenis = new Lenis({
       autoRaf: false,
       duration: 1.1,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       wheelMultiplier: 1.0,
-      touchMultiplier: 1.2,
+      touchMultiplier: 1.0,
     })
 
     let rafId: number

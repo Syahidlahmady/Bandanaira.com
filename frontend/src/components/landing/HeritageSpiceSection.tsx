@@ -104,22 +104,41 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
         {/* Background Radial Glow */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,#113a68_0%,#081d35_70%)] pointer-events-none" />
 
-        {/* FULL SECTION FLYING POSTERS */}
+        {/* HERO MEDIA: Desktop uses WebGL 3D FlyingPosters; Mobile uses lightweight GPU-accelerated CSS crossfade */}
         <div className="absolute inset-0 z-0">
-          <FlyingPosters
-            items={ITEMS}
-            planeWidth={isMobile ? 260 : 380}
-            planeHeight={isMobile ? 195 : 285}
-            radius={18}
-            distortion={1.5}
-            scrollEase={0.06}
-            cameraFov={45}
-            cameraZ={20}
-            progress={scrollProgress}
-            onActiveIndexChange={(idx) => setActiveIndex(idx)}
-            onItemClick={(_, idx) => scrollToStory(idx)}
-            className="w-full h-full"
-          />
+          {!isMobile ? (
+            <FlyingPosters
+              items={ITEMS}
+              planeWidth={380}
+              planeHeight={285}
+              radius={18}
+              distortion={1.5}
+              scrollEase={0.06}
+              cameraFov={45}
+              cameraZ={20}
+              progress={scrollProgress}
+              onActiveIndexChange={(idx) => setActiveIndex(idx)}
+              onItemClick={(_, idx) => scrollToStory(idx)}
+              className="w-full h-full"
+            />
+          ) : (
+            <div className="relative w-full h-full flex items-center justify-center p-6">
+              <div className="relative w-full max-w-[320px] aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+                {ITEMS.map((itemSrc, idx) => (
+                  <img
+                    key={itemSrc}
+                    src={itemSrc}
+                    alt={STORIES[idx]?.title || 'Sejarah Banda Neira'}
+                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-out ${
+                      activeIndex === idx ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
+                    }`}
+                    loading="lazy"
+                  />
+                ))}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#081d35]/80 via-transparent to-transparent pointer-events-none" />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* SECTION HEADER: Placed safely below the fixed navbar */}

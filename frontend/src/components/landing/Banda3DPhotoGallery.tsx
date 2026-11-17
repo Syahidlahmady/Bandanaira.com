@@ -324,7 +324,7 @@ export const Banda3DPhotoGallery: React.FC = () => {
   }, [])
 
   // Scroll effect driving 3D Z-flythrough and Depth-of-Field Blur (Reflow-free)
-  const cachedBoundsRef = useRef({ activeStart: 0, activeEnd: 0, speedMultiplier: 1.2 })
+  const cachedBoundsRef = useRef({ activeStart: 0, activeEnd: 0, speedMultiplier: 1.2, isMobileDevice: false })
 
   useEffect(() => {
     const measureBounds = () => {
@@ -333,12 +333,13 @@ export const Banda3DPhotoGallery: React.FC = () => {
       const scrollY = window.scrollY
       const sectionTop = rect.top + scrollY
       const isMobile = window.innerWidth < 1024
+      const isMobileDevice = window.innerWidth < 768
       const travelPadding = isMobile ? 250 : 200
       const activeStart = sectionTop - travelPadding
       const totalHeight = sectionRef.current.offsetHeight
       const activeEnd = sectionTop + totalHeight - (isMobile ? 1000 : 900)
       const speedMultiplier = isMobile ? 1.6 : 1.2
-      cachedBoundsRef.current = { activeStart, activeEnd, speedMultiplier }
+      cachedBoundsRef.current = { activeStart, activeEnd, speedMultiplier, isMobileDevice }
     }
 
     measureBounds()
@@ -359,7 +360,7 @@ export const Banda3DPhotoGallery: React.FC = () => {
         if (Math.abs(scrollY - lastScrollYRef.current) < 0.5) return
         lastScrollYRef.current = scrollY
 
-        const { activeStart, activeEnd, speedMultiplier } = cachedBoundsRef.current
+        const { activeStart, activeEnd, speedMultiplier, isMobileDevice } = cachedBoundsRef.current
         const isActive = scrollY >= activeStart && scrollY <= activeEnd
         const progressDist = Math.max(0, scrollY - activeStart)
 
@@ -377,29 +378,37 @@ export const Banda3DPhotoGallery: React.FC = () => {
 
           currentZ = Math.round(currentZ * 100) / 100
 
-          // Apply 3D translate
+          // Apply 3D translate (GPU composite property)
           el.style.transform = `translate3d(0, 0, ${currentZ}px)`
 
-          // Dynamic depth-of-field blur & opacity
+          // Opacity calculations (GPU composite property)
           if (currentZ < -400) {
-            el.style.filter = 'blur(8px)'
             el.style.opacity = '0.45'
           } else if (currentZ < -200) {
-            const b = Math.min((Math.abs(currentZ) / 400) * 4, 4)
-            el.style.filter = `blur(${b.toFixed(1)}px)`
             el.style.opacity = '0.75'
           } else if (currentZ < 0) {
-            const b = Math.min((Math.abs(currentZ) / 200) * 2, 2)
-            el.style.filter = `blur(${b.toFixed(1)}px)`
             el.style.opacity = '0.95'
           } else {
-            el.style.filter = 'blur(0px)'
-            // Fade out gracefully as it flies past camera
             if (currentZ > 420) {
               const fade = Math.max(0, 1 - (currentZ - 420) / 160)
               el.style.opacity = `${fade.toFixed(2)}`
             } else {
               el.style.opacity = '1'
+            }
+          }
+
+          // Dynamic depth-of-field blur only on desktop (bypassed on mobile to eliminate GPU repaint lag)
+          if (!isMobileDevice) {
+            if (currentZ < -400) {
+              el.style.filter = 'blur(8px)'
+            } else if (currentZ < -200) {
+              const b = Math.min((Math.abs(currentZ) / 400) * 4, 4)
+              el.style.filter = `blur(${b.toFixed(1)}px)`
+            } else if (currentZ < 0) {
+              const b = Math.min((Math.abs(currentZ) / 200) * 2, 2)
+              el.style.filter = `blur(${b.toFixed(1)}px)`
+            } else {
+              el.style.filter = 'blur(0px)'
             }
           }
         }

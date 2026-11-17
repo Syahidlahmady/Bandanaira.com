@@ -229,10 +229,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         )}
       </div>
 
-      {/* 2. SCROLL EXPAND COMPONENT INTEGRATION WITH SEAMLESS AUTOPLAY YOUTUBE BACKDROP */}
+      {/* 2. SCROLL EXPAND COMPONENT INTEGRATION (YouTube for Desktop, Static Poster for Ultra-Fast Mobile) */}
       <ScrollExpand
-        mediaType="youtube"
-        youtubeId="bVvv6oNiFnw"
+        mediaType={isMobile ? 'image' : 'youtube'}
+        youtubeId={isMobile ? undefined : 'bVvv6oNiFnw'}
         poster={bandaCinematicVideoBackdrop}
         src={bandaCinematicVideoBackdrop}
         alt="Pemandangan Banda Neira dari udara dengan laut dan pulau-pulau di sekitarnya"

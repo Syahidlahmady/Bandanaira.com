@@ -18,6 +18,16 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const [shouldLoadMap, setShouldLoadMap] = useState<boolean>(false)
+  const [mapUnlockedOnMobile, setMapUnlockedOnMobile] = useState<boolean>(false)
+  const [isMobile, setIsMobile] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  )
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', handleResize, { passive: true })
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     if (!('IntersectionObserver' in window)) {
@@ -72,6 +82,21 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
           data-lenis-prevent
           className="w-full relative rounded-2xl overflow-hidden shadow-sm"
         >
+          {/* Mobile Gesture Isolation Overlay (mencegah scroll layar ponsel macet terjebak di dalam kanvas peta) */}
+          {isMobile && !mapUnlockedOnMobile && shouldLoadMap && (
+            <div
+              onClick={() => setMapUnlockedOnMobile(true)}
+              className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-900/40 backdrop-blur-[2px] text-white p-4 cursor-pointer select-none"
+            >
+              <div className="px-5 py-2.5 rounded-full bg-[#0f2c59] text-white text-xs font-semibold shadow-lg border border-white/20 flex items-center gap-2">
+                <span>Sentuh untuk Menggerakkan Peta</span>
+              </div>
+              <p className="text-[11px] text-slate-200 mt-2 font-sans">
+                Gulir layar untuk melanjutkan membaca
+              </p>
+            </div>
+          )}
+
           {shouldLoadMap ? (
             <Suspense
               fallback={
