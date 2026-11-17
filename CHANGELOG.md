@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **CMS Bank Konten Wisata, 6-Point Quality Checklist SOP, & Pusat Literasi Digital Komunitas (Phase 46 — Mandat Reyhan Albar Fahryan)**:
+  - Menambahkan migrasi Alembic `013_community_contents_table.py`, model SQLAlchemy `CommunityContent`, skema Pydantic `CommunityContentItemResponse` & `LiteracyGovernanceResponse`, serta data seeder autentik `literacy_content_data.py` menggunakan aset gambar lokal `/images/landmarks/*.jpg`.
+  - Mengimplementasikan 5 endpoint REST API di `backend/app/modules/tourism/router.py` (`GET/POST/PUT/DELETE /api/v1/tourism/community-contents` & `GET /api/v1/tourism/literacy-modules`), memperkaya `heritage_data.py` (Klenteng Sun Tian Kong 1673 & Sumur Pusaka Parigi Rante), serta menambahkan 2 survei lapangan `SRV-202611-007` & `SRV-202611-008` di `survei/seed_data.py`.
+  - Membangun komponen modular plug-and-play `frontend/src/views/CommunityLiteracyHub.tsx` (`public_hub`, `cms_manager`, `standalone_full`) yang terintegrasi ke `TourismEcoStayWorkspace.tsx` dan `tourismService` (`frontend/src/services/tourism.ts`).
 - **Perbaikan Sinkronisasi & Upload Mode Offline PWA IndexedDB Sync Queue (Phase 43)**:
   - Memperkuat `frontend/src/offline/syncManager.ts` agar me-retry item `failed`/`syncing`, otomatis menyegarkan JWT via `authService.ensureValidToken` saat `401`, menormalisasi endpoint `/farmers/farms` -> `/farms`, melengkapi UUID `farmer_id`/`farm_id` yang hilang (`healQueuedPayload`), menangani konflik `409 Conflict` secara otomatis, serta menserialisasikan detail error 422 FastAPI ke string yang aman dirender (`serializeErrorMessage`).
   - Memperbaiki endpoint `farm_create` offline dan penyegaran daftar antrean pada `handleManualSync()` di `frontend/src/App.tsx`, serta pengamanan tampilan pesan error & aktivasi tombol kirim di `frontend/src/components/modals/OfflineQueueModal.tsx`.

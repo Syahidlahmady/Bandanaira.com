@@ -148,6 +148,11 @@ RESTful API specification for **Banda Digital Ecosystem**.
 | `POST` | `/api/v1/tourism/guides` | `admin`, `village_officer`, `smart_tourism_admin` | Register licensed tour guide profile with specialties, languages, and daily fee |
 | `PUT` | `/api/v1/tourism/guides/{id}` | `admin`, `village_officer`, `smart_tourism_admin` | Update tour guide details, daily fee, or HPI verification status |
 | `DELETE` | `/api/v1/tourism/guides/{id}` | `admin`, `village_officer`, `smart_tourism_admin` | Delete tour guide record |
+| `GET` | `/api/v1/tourism/community-contents` | Public | List curated Bank Konten Batch 1 & Pokdarwis/UMKM workshop works with `content_type`, `priority_category`, `island`, and `only_published` filters |
+| `POST` | `/api/v1/tourism/community-contents` | `admin`, `village_officer`, `smart_tourism_admin` | Upload new article, geotagged photo, reels storyboard, or community work to CMS BST |
+| `PUT` | `/api/v1/tourism/community-contents/{content_id}` | `admin`, `village_officer`, `smart_tourism_admin` | Update content, change 6-Stage SOP status, or verify 6-Point Quality Checklist |
+| `DELETE` | `/api/v1/tourism/community-contents/{content_id}` | `admin`, `village_officer`, `smart_tourism_admin` | Delete community content item from CMS |
+| `GET` | `/api/v1/tourism/literacy-modules` | Public | Retrieve 3 Digital Literacy Modules, 6-Stage Content Management SOP, 6-Point Quality Checklist, and 4 Island Signal Zones |
 
 ### 2.13 7-Layer Spatial GIS (`/api/v1/gis` & `/api/v1/peta/geojson`)
 | Method | Endpoint | Roles Allowed | Description |

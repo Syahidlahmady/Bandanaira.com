@@ -134,6 +134,126 @@ export interface TourGuideUpdatePayload {
   is_active?: boolean
 }
 
+export interface CommunityContentItem {
+  id: string
+  content_code: string
+  title: string
+  slug: string
+  content_type: string
+  priority_category: string
+  island_name: string
+  author_name: string
+  author_role: string
+  summary: string
+  body_narrative: string
+  media_url?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  sop_stage: string
+  qc_accuracy: boolean
+  qc_language: boolean
+  qc_visual: boolean
+  qc_adat_ethics: boolean
+  qc_source_validated: boolean
+  qc_consent_copyright: boolean
+  qc_passed_count: number
+  is_published: boolean
+  created_at: string
+  updated_at?: string | null
+}
+
+export interface CommunityContentCreatePayload {
+  content_code?: string
+  title: string
+  slug?: string
+  content_type: string
+  priority_category: string
+  island_name: string
+  author_name: string
+  author_role: string
+  summary: string
+  body_narrative: string
+  media_url?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  sop_stage: string
+  qc_accuracy: boolean
+  qc_language: boolean
+  qc_visual: boolean
+  qc_adat_ethics: boolean
+  qc_source_validated: boolean
+  qc_consent_copyright: boolean
+  is_published: boolean
+}
+
+export interface CommunityContentUpdatePayload {
+  title?: string
+  content_type?: string
+  priority_category?: string
+  island_name?: string
+  author_name?: string
+  author_role?: string
+  summary?: string
+  body_narrative?: string
+  media_url?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  sop_stage?: string
+  qc_accuracy?: boolean
+  qc_language?: boolean
+  qc_visual?: boolean
+  qc_adat_ethics?: boolean
+  qc_source_validated?: boolean
+  qc_consent_copyright?: boolean
+  is_published?: boolean
+}
+
+export interface LiteracyModuleItem {
+  module_code: string
+  title: string
+  validation_status: string
+  target_audience: string
+  duration_minutes: number
+  learning_objectives: string[]
+  key_topics: string[]
+  practical_output: string
+  offline_ready: boolean
+}
+
+export interface SopStageItem {
+  stage_order: number
+  stage_code: string
+  stage_name: string
+  pic_actor: string
+  description: string
+  deliverable: string
+}
+
+export interface QualityChecklistStandard {
+  field: string
+  code: string
+  label: string
+  criteria: string
+}
+
+export interface SignalZoneMapping {
+  zone_code: string
+  zone_name: string
+  islands_covered: string
+  signal_status: string
+  avg_download_mbps: number
+  recommended_sync_strategy: string
+}
+
+export interface LiteracyGovernanceResponse {
+  mandate_owner: string
+  community_brand: string
+  modules: LiteracyModuleItem[]
+  sop_stages: SopStageItem[]
+  quality_checklist_standards: QualityChecklistStandard[]
+  signal_zones_mapping: SignalZoneMapping[]
+}
+
 import { authService } from './auth'
 
 const getApiBase = () => {
@@ -305,12 +425,73 @@ export const tourismService = {
       throw new Error(err.detail || 'Gagal menghapus pemandu wisata (perlu izin Smart Tourism Admin).')
     }
   },
+
+  async listCommunityContents(params?: {
+    content_type?: string
+    priority_category?: string
+    island?: string
+    only_published?: boolean
+  }): Promise<CommunityContentItem[]> {
+    const q = new URLSearchParams()
+    if (params?.content_type) q.append('content_type', params.content_type)
+    if (params?.priority_category) q.append('priority_category', params.priority_category)
+    if (params?.island) q.append('island', params.island)
+    if (params?.only_published !== undefined) q.append('only_published', String(params.only_published))
+
+    const res = await fetch(`${getApiBase()}/tourism/community-contents?${q.toString()}`)
+    if (!res.ok) throw new Error('Gagal memuat Bank Konten & Karya Komunitas.')
+    return res.json()
+  },
+
+  async createCommunityContent(payload: CommunityContentCreatePayload): Promise<CommunityContentItem> {
+    const res = await fetch(`${getApiBase()}/tourism/community-contents`, {
+      method: 'POST',
+      headers: getAuthHeaders(true),
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }))
+      throw new Error(err.detail || 'Gagal mengunggah konten baru ke CMS BST.')
+    }
+    return res.json()
+  },
+
+  async updateCommunityContent(id: string, payload: CommunityContentUpdatePayload): Promise<CommunityContentItem> {
+    const res = await fetch(`${getApiBase()}/tourism/community-contents/${id}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(true),
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }))
+      throw new Error(err.detail || 'Gagal memperbarui konten komunitas di CMS BST.')
+    }
+    return res.json()
+  },
+
+  async deleteCommunityContent(id: string): Promise<void> {
+    const res = await fetch(`${getApiBase()}/tourism/community-contents/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(false),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }))
+      throw new Error(err.detail || 'Gagal menghapus konten dari CMS BST.')
+    }
+  },
+
+  async getLiteracyModules(): Promise<LiteracyGovernanceResponse> {
+    const res = await fetch(`${getApiBase()}/tourism/literacy-modules`)
+    if (!res.ok) throw new Error('Gagal memuat kurikulum Modul Literasi Digital & SOP Konten.')
+    return res.json()
+  },
 }
 
 export type TourismSubTab =
   | 'destinations'
   | 'accommodations'
   | 'heritage'
+  | 'community_literacy'
   | 'guides'
   | 'lookup'
   | 'bookings'
@@ -321,6 +502,7 @@ const VALID_TOURISM_SUBTABS: ReadonlySet<TourismSubTab> = new Set<TourismSubTab>
   'destinations',
   'accommodations',
   'heritage',
+  'community_literacy',
   'guides',
   'lookup',
   'bookings',

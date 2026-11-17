@@ -43,6 +43,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 38: Client-Side URL Routing, Deep-Linking, Session Restoration & Refresh Persistence**
 - [x] **Phase 39: Spatial Features Export, 54-Item GeoJSON Seeder, Non-Technical Multi-Part Village Boundary Editor & GIS Documentation**
 - [x] **Phase 40: GIS Workspace Simplification, Bounding Box Archipelagic Lock, Redundancy Elimination & Natural Copywriting Overhaul**
+- [x] **Phase 46: CMS Bank Konten Wisata, Kurikulum 3 Modul Literasi Digital Pokdarwis/UMKM & SOP 6-Tahap + 6-Point Quality Checklist (Mandat Reyhan Albar Fahryan)**
 - [x] **Phase 41: Transformasi Kartu Detail POI ke Google Maps Desktop Drawer & Penampil Panorama 360° Interaktif (Anti-Slop Modern UI)**
 - [x] **Phase 42: Kurasi & Scraping Foto Autentik Cagar Budaya/Landmark Banda Neira (Zero External Hotlinking & Full Offline Asset Resilience)**
 - [x] **Phase 43: Integrasi Komponen Sinematik <ScrollExpand /> React Bits pada Hero Section Beranda Banda Neira**
@@ -698,6 +699,13 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Mengadopsi header ikonik `Visit Banda Neira` dengan garis belah horizontal.
   - Memindahkan filter pulau dan kotak pencarian melayang langsung di dalam kanvas peta.
   - Membersihkan istilah teknis internal (GIS, SAW) pada antarmuka publik dan mengintegrasikan perhitungan rekomendasi SAW ke dalam Chat Bubble mengambang di pojok kanan bawah.
+
+### Phase 46: CMS Bank Konten Wisata, Kurikulum 3 Modul Literasi Digital Pokdarwis/UMKM & SOP 6-Tahap + 6-Point Quality Checklist (Mandat Reyhan Albar Fahryan)
+- [x] 46.1 Migrasi Alembic `013_community_contents_table.py`, model SQLAlchemy `CommunityContent`, dan skema Pydantic (`CommunityContentCreateInput`, `CommunityContentUpdateInput`, `CommunityContentItemResponse`, `LiteracyModuleItem`, `SopStageItem`, `LiteracyGovernanceResponse`).
+- [x] 46.2 Data seeder autentik `backend/app/modules/tourism/literacy_content_data.py` (Bank Konten Batch 1 H7 & Karya Peserta Workshop H11 dengan foto lokal `/images/landmarks/*.jpg`, 3 Modul Literasi Digital, SOP 6-Tahap, 6-Point Quality Checklist, dan 4 Zona Sinyal Pulau).
+- [x] 46.3 Endpoint REST API di `backend/app/modules/tourism/router.py` (`GET/POST/PUT/DELETE /api/v1/tourism/community-contents` & `GET /api/v1/tourism/literacy-modules`) serta pengayaan `heritage_data.py` dan `survei/seed_data.py` (`SRV-202611-007` & `SRV-202611-008`).
+- [x] 46.4 Integrasi Frontend Service (`frontend/src/services/tourism.ts`), komponen modular plug-and-play `frontend/src/views/CommunityLiteracyHub.tsx` (`public_hub`, `cms_manager`, `standalone_full`), serta penyematan tab publik `📚 Konten & Literasi Komunitas` dan sub-tab CMS `📝 Konten & Karya Warga` di `TourismEcoStayWorkspace.tsx`.
+
 
 
 
