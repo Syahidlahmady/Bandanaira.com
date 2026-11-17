@@ -66,11 +66,11 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
           <div className="flex-1 h-[1.5px] bg-[#0f2c59]/60" />
         </div>
 
-        {/* Peta Interaktif Spasial Langsung (Tanpa Canvas/Kotak Box Semu) */}
+        {/* Peta Interaktif Spasial Langsung */}
         <div
           ref={containerRef}
           data-lenis-prevent
-          className="w-full min-h-[640px] rounded-3xl overflow-hidden shadow-lg border border-slate-300/80 bg-white relative"
+          className="w-full relative"
         >
           {shouldLoadMap ? (
             <Suspense

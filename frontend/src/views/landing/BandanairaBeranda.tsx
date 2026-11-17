@@ -4,7 +4,6 @@ import 'lenis/dist/lenis.css'
 import {
   HeroSection,
   Banda3DPhotoGallery,
-  PanoramaIslandSection,
   PetaInteractiveSection,
   HeritageSpiceSection,
   TourismSawSection,
@@ -114,9 +113,6 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
 
       {/* 2. 3D Perspective Photo Gallery (Kompilasi Foto Banda Neira) */}
       <Banda3DPhotoGallery />
-
-      {/* 3. Island Introduction & Panorama Section */}
-      <PanoramaIslandSection />
 
       {/* 3. Interactive Spatial Map Section */}
       <PetaInteractiveSection
