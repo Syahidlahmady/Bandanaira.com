@@ -13,6 +13,7 @@ import {
   SustainableTravelSection,
   PlanYourVisitSection,
   LandingFooterSection,
+  TourismChatbotBubble,
 } from '../../components/landing'
 
 export type NavTabType =
@@ -167,6 +168,9 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
         onOpenQuickLogin={onOpenQuickLogin}
         setActiveNav={setActiveNav}
       />
+
+      {/* 12. Floating Tourism Recommendation Chatbot Bubble */}
+      <TourismChatbotBubble onNavigate={onNavigate} />
     </div>
   )
 }

@@ -5,10 +5,10 @@ import { ScrollExpand } from '../ui/ScrollExpand'
 
 export const defaultNavigationItems = [
   { label: 'Beranda', href: '#beranda' },
-  { label: 'Peta GIS', href: '#peta' },
-  { label: 'Wisata (SAW)', href: '#wisata' },
+  { label: 'Peta', href: '#peta' },
+  { label: 'Destinasi', href: '#wisata' },
   { label: 'Penginapan', href: '#eco-stay' },
-  { label: 'Marketplace UMKM', href: '#layanan-umkm' },
+  { label: 'Marketplace', href: '#layanan-umkm' },
   { label: 'Sejarah & Warga', href: '#sejarah' },
 ]
 
@@ -57,11 +57,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     >
       {/* 1. FIXED TOP NAVBAR (Hides during resting/expansion, smoothly emerges once fully expanded) */}
       <div
-        className={`fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 lg:px-12 pt-3 sm:pt-5 transition-all duration-500 ease-out ${
-          scrollProgress >= 0.85
-            ? 'opacity-100 translate-y-0 pointer-events-auto'
-            : 'opacity-0 -translate-y-8 pointer-events-none'
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 lg:px-12 pt-3 sm:pt-5 transition-all duration-500 ease-out ${scrollProgress >= 0.85
+          ? 'opacity-100 translate-y-0 pointer-events-auto'
+          : 'opacity-0 -translate-y-8 pointer-events-none'
+          }`}
       >
         <header className="flex h-16 sm:h-20 items-center justify-between px-4 sm:px-6 py-0 w-full max-w-7xl mx-auto bg-[#081d35cc] rounded-2xl overflow-hidden border border-solid border-white/20 backdrop-blur-md shadow-2xl pointer-events-auto">
           {/* Brand Logo */}
@@ -182,9 +181,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     setActiveNav(item.href)
                     setMobileMenuOpen(false)
                   }}
-                  className={`text-sm font-medium py-1.5 transition-colors ${
-                    activeNav === item.href ? 'text-[#f4b75e]' : 'text-white/90'
-                  }`}
+                  className={`text-sm font-medium py-1.5 transition-colors ${activeNav === item.href ? 'text-[#f4b75e]' : 'text-white/90'
+                    }`}
                 >
                   {item.label}
                 </a>
@@ -289,7 +287,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 onClick={() => onNavigate('gis')}
                 className="inline-flex h-[46px] sm:h-[52px] items-center gap-3 px-5 sm:px-6 bg-white/10 hover:bg-white/20 transition-colors rounded-xl border border-white/25 backdrop-blur-md font-semibold text-white text-xs sm:text-sm tracking-wide focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
-                <span>Lihat peta pulau (GIS)</span>
+                <span>Lihat peta interaktif</span>
                 <ArrowUpRightIcon className="w-4 h-4 text-white" />
               </button>
             </div>

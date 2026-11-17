@@ -252,7 +252,7 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
                 onClick={() => onNavigate('smart_planner')}
                 className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-amber-400/40 bg-amber-400/10 hover:bg-amber-400 hover:text-slate-950 text-amber-300 text-xs font-semibold transition-all duration-200"
               >
-                <span>Kalkulator Wisata SAW</span>
+                <span>Panduan Wisata Cerdas</span>
               </button>
             </div>
           </div>

@@ -98,7 +98,7 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
         {/* Aksi Buka Peta Layar Penuh di Bawah */}
         <div className="w-full flex items-center justify-between pt-4 px-2">
           <p className="text-xs text-slate-500 font-sans">
-            Menampilkan pemetaan spasial cagar budaya, potensi bahari, sumber air bersih RO, dan telemetri desa.
+            Eksplorasi spasial cagar budaya, potensi bahari, penginapan warga, dan fasilitas pulau.
           </p>
 
           <button
@@ -106,7 +106,7 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
             onClick={() => onNavigate('gis')}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#0f2c59] hover:bg-[#183e75] text-white text-xs font-semibold transition-colors shadow-sm"
           >
-            <span>Buka Layar Penuh GIS</span>
+            <span>Buka Peta Layar Penuh</span>
             <ArrowUpRightIcon className="w-3.5 h-3.5" />
           </button>
         </div>
