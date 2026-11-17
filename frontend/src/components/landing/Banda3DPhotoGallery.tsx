@@ -246,6 +246,8 @@ const PhotoCard = memo(({ item, breakpoint, registerElement }: PhotoCardProps) =
         <img
           src={item.src}
           alt={item.alt}
+          width={350}
+          height={220}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           loading="lazy"
         />
@@ -321,7 +323,29 @@ export const Banda3DPhotoGallery: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Scroll effect driving 3D Z-flythrough and Depth-of-Field Blur
+  // Scroll effect driving 3D Z-flythrough and Depth-of-Field Blur (Reflow-free)
+  const cachedBoundsRef = useRef({ activeStart: 0, activeEnd: 0, speedMultiplier: 1.2 })
+
+  useEffect(() => {
+    const measureBounds = () => {
+      if (!sectionRef.current) return
+      const rect = sectionRef.current.getBoundingClientRect()
+      const scrollY = window.scrollY
+      const sectionTop = rect.top + scrollY
+      const isMobile = window.innerWidth < 1024
+      const travelPadding = isMobile ? 250 : 200
+      const activeStart = sectionTop - travelPadding
+      const totalHeight = sectionRef.current.offsetHeight
+      const activeEnd = sectionTop + totalHeight - (isMobile ? 1000 : 900)
+      const speedMultiplier = isMobile ? 1.6 : 1.2
+      cachedBoundsRef.current = { activeStart, activeEnd, speedMultiplier }
+    }
+
+    measureBounds()
+    window.addEventListener('resize', measureBounds, { passive: true })
+    return () => window.removeEventListener('resize', measureBounds)
+  }, [])
+
   useEffect(() => {
     const section = sectionRef.current
     if (!section) return
@@ -335,19 +359,9 @@ export const Banda3DPhotoGallery: React.FC = () => {
         if (Math.abs(scrollY - lastScrollYRef.current) < 0.5) return
         lastScrollYRef.current = scrollY
 
-        const rect = sectionRef.current.getBoundingClientRect()
-        const sectionTop = rect.top + scrollY
-        const isMobile = window.innerWidth < 1024
-
-        // Active scroll range within the sticky zone
-        const travelPadding = isMobile ? 250 : 200
-        const activeStart = sectionTop - travelPadding
-        const totalHeight = sectionRef.current.offsetHeight
-        const activeEnd = sectionTop + totalHeight - (isMobile ? 1000 : 900)
-
+        const { activeStart, activeEnd, speedMultiplier } = cachedBoundsRef.current
         const isActive = scrollY >= activeStart && scrollY <= activeEnd
         const progressDist = Math.max(0, scrollY - activeStart)
-        const speedMultiplier = isMobile ? 1.6 : 1.2
 
         // Animate photo cards & floating ornaments
         for (const el of elementsRef.current) {
@@ -431,7 +445,7 @@ export const Banda3DPhotoGallery: React.FC = () => {
       <div className="relative z-10 h-[2600px] w-full lg:h-[3500px]">
         {/* Sticky viewport stage with true 3D perspective */}
         <div
-          className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center"
+          className="sticky top-0 h-[100dvh] min-h-[100dvh] w-full overflow-hidden flex items-center justify-center"
           style={{ perspective: 600 }}
         >
           {/* Luminous oceanic navy radial glow (Biru Dongker Laut Banda) */}

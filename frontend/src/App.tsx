@@ -22,13 +22,13 @@ import {
   PublicBatchVerification,
   BlockchainVerification,
 } from './services/traceability.ts'
-import { LoginSection } from './components/LoginSection.tsx'
-import { RegisterSection } from './components/RegisterSection.tsx'
-import { BlockchainModal } from './components/BlockchainModal.tsx'
-import { OfflineQueueModal } from './components/OfflineQueueModal.tsx'
-import { PublicVerifyModal } from './components/PublicVerifyModal.tsx'
-import { VerifiedMarketplaceModal } from './components/VerifiedMarketplaceModal.tsx'
-import { QuickLoginModal } from './components/QuickLoginModal.tsx'
+const LoginSection = React.lazy(() => import('./components/LoginSection.tsx').then(m => ({ default: m.LoginSection })))
+const RegisterSection = React.lazy(() => import('./components/RegisterSection.tsx').then(m => ({ default: m.RegisterSection })))
+const BlockchainModal = React.lazy(() => import('./components/BlockchainModal.tsx').then(m => ({ default: m.BlockchainModal })))
+const OfflineQueueModal = React.lazy(() => import('./components/OfflineQueueModal.tsx').then(m => ({ default: m.OfflineQueueModal })))
+const PublicVerifyModal = React.lazy(() => import('./components/PublicVerifyModal.tsx').then(m => ({ default: m.PublicVerifyModal })))
+const VerifiedMarketplaceModal = React.lazy(() => import('./components/VerifiedMarketplaceModal.tsx').then(m => ({ default: m.VerifiedMarketplaceModal })))
+const QuickLoginModal = React.lazy(() => import('./components/QuickLoginModal.tsx').then(m => ({ default: m.QuickLoginModal })))
 const ResidentsWorkspace = React.lazy(() => import('./views/ResidentsWorkspace.tsx').then(m => ({ default: m.ResidentsWorkspace })))
 const LettersWorkspace = React.lazy(() => import('./views/LettersWorkspace.tsx').then(m => ({ default: m.LettersWorkspace })))
 const FarmsGisWorkspace = React.lazy(() => import('./views/FarmsGisWorkspace.tsx').then(m => ({ default: m.FarmsGisWorkspace })))
@@ -1147,12 +1147,14 @@ export const App: React.FC = () => {
 
       {/* 1B. REGISTER DESKTOP SPLIT-SCREEN PAGE (Sesuai desainsaatini/register-dekstop) */}
       {activeTab === 'register' && (
-        <RegisterSection
-          onBackToHome={() => setActiveTab('landing')}
-          onSwitchToLogin={() => setActiveTab('population')}
-          onQuickLogin={handleQuickLogin}
-          onNavigate={(tab) => setActiveTab(tab)}
-        />
+        <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#081d35] text-amber-300">Memuat pendaftaran...</div>}>
+          <RegisterSection
+            onBackToHome={() => setActiveTab('landing')}
+            onSwitchToLogin={() => setActiveTab('population')}
+            onQuickLogin={handleQuickLogin}
+            onNavigate={(tab) => setActiveTab(tab)}
+          />
+        </React.Suspense>
       )}
 
       {/* 2. Login Portal Section for Non-authenticated Users on Protected Operational Routes */}
@@ -1161,27 +1163,29 @@ export const App: React.FC = () => {
         activeTab !== 'landing' &&
         activeTab !== 'register' &&
         !PUBLIC_EXPLORER_TABS.includes(activeTab) && (
-        <LoginSection
-          username={username}
-          setUsername={setUsername}
-          password={password}
-          setPassword={setPassword}
-          onLogin={handleLogin}
-          onQuickLogin={handleQuickLogin}
-          onBackToHome={() => setActiveTab('landing')}
-          onOpenRegister={() => setActiveTab('register')}
-          onVerifySampleBatch={(token) => handlePublicVerify(token)}
-          onPublicVerify={(token) => handlePublicVerify(token)}
-          onOpenMarketplace={() => setShowMarketplaceModal(true)}
-          onOpenPlanner={() => setActiveTab('smart_planner')}
-          onOpenKoperasi={() => setActiveTab('koperasi')}
-          onOpenTelemetry={() => setActiveTab('iot')}
-          onOpenTourism={() => setActiveTab('tourism')}
-          onOpenGIS={() => setActiveTab('gis')}
-          onOpenSurvei={() => setActiveTab('survei')}
-          loading={authLoading}
-          error={authError}
-        />
+        <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#081d35] text-amber-300">Memuat portal masuk...</div>}>
+          <LoginSection
+            username={username}
+            setUsername={setUsername}
+            password={password}
+            setPassword={setPassword}
+            onLogin={handleLogin}
+            onQuickLogin={handleQuickLogin}
+            onBackToHome={() => setActiveTab('landing')}
+            onOpenRegister={() => setActiveTab('register')}
+            onVerifySampleBatch={(token) => handlePublicVerify(token)}
+            onPublicVerify={(token) => handlePublicVerify(token)}
+            onOpenMarketplace={() => setShowMarketplaceModal(true)}
+            onOpenPlanner={() => setActiveTab('smart_planner')}
+            onOpenKoperasi={() => setActiveTab('koperasi')}
+            onOpenTelemetry={() => setActiveTab('iot')}
+            onOpenTourism={() => setActiveTab('tourism')}
+            onOpenGIS={() => setActiveTab('gis')}
+            onOpenSurvei={() => setActiveTab('survei')}
+            loading={authLoading}
+            error={authError}
+          />
+        </React.Suspense>
       )}
 
       {/* 3. Public Tourist Explorer (Zona 1 SRS: Eksplorasi Wisatawan Tanpa Login) */}
@@ -1591,36 +1595,48 @@ export const App: React.FC = () => {
       )}
 
       {/* MODALS */}
-      <BlockchainModal
-        data={verificationModal}
-        onClose={() => setVerificationModal(null)}
-      />
-      <OfflineQueueModal
-        isOpen={showQueueModal}
-        queueList={queueList}
-        isOnline={isOnline}
-        isSyncing={isSyncing}
-        onClose={() => setShowQueueModal(false)}
-        onDelete={handleDeleteQueueItem}
-        onClearAll={handleClearAllQueue}
-        onSync={handleManualSync}
-      />
-      <PublicVerifyModal
-        data={publicVerifyData}
-        onClose={() => setPublicVerifyData(null)}
-      />
-      <VerifiedMarketplaceModal
-        isOpen={showMarketplaceModal}
-        onClose={() => setShowMarketplaceModal(false)}
-        onVerifyProduct={(token) => handlePublicVerify(token)}
-      />
-      <QuickLoginModal
-        isOpen={showQuickLoginModal}
-        onClose={() => setShowQuickLoginModal(false)}
-        currentUser={currentUser}
-        onQuickLogin={handleQuickLogin}
-        onLogout={handleLogout}
-      />
+      <React.Suspense fallback={null}>
+        {verificationModal && (
+          <BlockchainModal
+            data={verificationModal}
+            onClose={() => setVerificationModal(null)}
+          />
+        )}
+        {showQueueModal && (
+          <OfflineQueueModal
+            isOpen={showQueueModal}
+            queueList={queueList}
+            isOnline={isOnline}
+            isSyncing={isSyncing}
+            onClose={() => setShowQueueModal(false)}
+            onDelete={handleDeleteQueueItem}
+            onClearAll={handleClearAllQueue}
+            onSync={handleManualSync}
+          />
+        )}
+        {publicVerifyData && (
+          <PublicVerifyModal
+            data={publicVerifyData}
+            onClose={() => setPublicVerifyData(null)}
+          />
+        )}
+        {showMarketplaceModal && (
+          <VerifiedMarketplaceModal
+            isOpen={showMarketplaceModal}
+            onClose={() => setShowMarketplaceModal(false)}
+            onVerifyProduct={(token) => handlePublicVerify(token)}
+          />
+        )}
+        {showQuickLoginModal && (
+          <QuickLoginModal
+            isOpen={showQuickLoginModal}
+            onClose={() => setShowQuickLoginModal(false)}
+            currentUser={currentUser}
+            onQuickLogin={handleQuickLogin}
+            onLogout={handleLogout}
+          />
+        )}
+      </React.Suspense>
     </div>
   )
 }

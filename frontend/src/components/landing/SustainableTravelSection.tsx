@@ -1,77 +1,57 @@
 import React from 'react'
-
-export interface TravelGuidelineItem {
-  title: string
-  description: string
-  iconType: 'waves' | 'culture' | 'leaf'
-}
-
-export const defaultTravelGuidelines: TravelGuidelineItem[] = [
-  {
-    title: 'Jaga lautnya',
-    description: 'Biarkan karang dan biota tetap di habitatnya.',
-    iconType: 'waves',
-  },
-  {
-    title: 'Hormati budayanya',
-    description: 'Kenali adat dan hargai ruang hidup warga.',
-    iconType: 'culture',
-  },
-  {
-    title: 'Pilih yang lokal',
-    description: 'Singgah, belanja, dan tumbuh bersama pulau.',
-    iconType: 'leaf',
-  },
-]
+import AnimatedNumber from '../ui/AnimatedNumber'
 
 export interface SustainableTravelSectionProps {
-  guidelines?: TravelGuidelineItem[]
+  onNavigate?: (tab: any) => void
+  onOpenLogin?: () => void
+  currentUser?: any
 }
 
-export const SustainableTravelSection: React.FC<SustainableTravelSectionProps> = ({
-  guidelines = defaultTravelGuidelines,
-}) => {
+export const SustainableTravelSection: React.FC<SustainableTravelSectionProps> = () => {
   return (
     <section
-      aria-labelledby="sustainable-travel-title"
-      className="flex flex-col lg:flex-row items-start lg:items-center gap-12 lg:gap-16 px-6 sm:px-12 lg:px-20 py-[52px] relative self-stretch w-full flex-[0_0_auto] bg-[#eaf0ed]"
+      id="penduduk-fasilitas"
+      aria-label="Statistik Demografi Kepulauan Banda"
+      className="w-full py-12 sm:py-16 px-6 sm:px-12 lg:px-20 bg-[#07192f] text-white border-y border-white/10"
     >
-      <div className="flex flex-col max-w-[355px] items-start gap-4 relative shrink-0">
-        <div className="inline-flex items-center gap-2.5 relative flex-[0_0_auto]">
-          <div aria-hidden="true" className="relative w-6 h-px bg-amber-600" />
-          <p className="mt-[-1.00px] font-semibold text-amber-600 text-[11px] tracking-[1.80px] whitespace-nowrap relative w-fit leading-[normal]">
-            DATANG SEBAGAI TAMU
-          </p>
-        </div>
-        <h2
-          id="sustainable-travel-title"
-          className="font-serif font-normal italic text-[#0f2c59] text-[34px] sm:text-[38px] tracking-[0] leading-[41.8px] relative self-stretch"
-        >
-          Tinggalkan kenangan,
-          <br />
-          bukan jejak.
-        </h2>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 relative flex-1 w-full">
-        {guidelines.map((guideline) => (
-          <article
-            key={guideline.title}
-            className="flex-col gap-3 flex items-start relative flex-1 grow"
-          >
-            <div aria-hidden="true" className="text-amber-600 text-xl">
-              {guideline.iconType === 'waves' && '≈'}
-              {guideline.iconType === 'culture' && '🏛️'}
-              {guideline.iconType === 'leaf' && '✦'}
+      <div className="max-w-6xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12 text-center">
+          <div>
+            <div className="font-sans text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-2">
+              <AnimatedNumber value={7} />
             </div>
-            <h3 className="relative w-fit font-semibold text-[#0f2c59] text-sm tracking-[0] leading-[normal]">
-              {guideline.title}
-            </h3>
-            <p className="text-[#63717d] text-xs leading-[20.4px] relative self-stretch font-normal tracking-[0]">
-              {guideline.description}
+            <p className="font-sans text-xs sm:text-sm font-semibold tracking-wider text-slate-400 uppercase">
+              Pulau Berpenghuni
             </p>
-          </article>
-        ))}
+          </div>
+
+          <div>
+            <div className="font-sans text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-2">
+              <AnimatedNumber value={11} />
+            </div>
+            <p className="font-sans text-xs sm:text-sm font-semibold tracking-wider text-slate-400 uppercase">
+              Desa Kepulauan
+            </p>
+          </div>
+
+          <div>
+            <div className="font-sans text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-2">
+              <AnimatedNumber value={21000} suffix="+" />
+            </div>
+            <p className="font-sans text-xs sm:text-sm font-semibold tracking-wider text-slate-400 uppercase">
+              Total Penduduk
+            </p>
+          </div>
+
+          <div>
+            <div className="font-sans text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-2">
+              <AnimatedNumber value={1} />
+            </div>
+            <p className="font-sans text-xs sm:text-sm font-semibold tracking-wider text-slate-400 uppercase">
+              Ekosistem Terpadu
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   )
