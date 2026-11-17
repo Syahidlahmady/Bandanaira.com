@@ -55,18 +55,22 @@ void main() {
   float base = -uLoop * 0.5 + (aPoster.y + 0.5) * uSpacing + column * 0.41 * uSpacing;
   float y = mod(base - uScroll * direction + uLoop * 0.5, uLoop) - uLoop * 0.5;
   float x = (column - (uColumns - 1.0) * 0.5) * uColumnGap;
-  float position = 5.0 + (y + uViewHeight) / (2.0 * uViewHeight) * 10.0;
+
+  // Normalized distance from center (y = 0.0)
+  float dist = clamp(abs(y) / (uViewHeight * 0.6), 0.0, 1.0);
+  // Smooth curve: 0.0 at center, grows to 1.0 towards edges
+  float curve = dist * dist * (3.0 - 2.0 * dist);
+
+  // When at center (curve = 0.0): angle = 0, dynamicDistortion = 0 (perfectly flat, open, and crisp)
+  // When scrolling in/out: tilts and glides smoothly in 3D
   float offset = (dot(vec2(1.0, 1.0), aPosition) + 0.25) / 0.5;
-  float progress = clamp(
-    (clamp(position * 0.05, 0.0, 1.0) - 0.01 * uDistortion * offset) / (1.0 - 0.01 * uDistortion),
-    0.0,
-    2.0
-  );
-  float angle = qinticInOut(progress) * uRotation;
+  float dynamicDistortion = curve * uDistortion;
+  float angle = sign(y) * curve * (uRotation * 0.35) - 0.01 * dynamicDistortion * offset;
+
   vec3 local = rotate(vec3(aPosition, 0.0), uAxis, angle);
   vec3 normal = rotate(vec3(0.0, 0.0, 1.0), uAxis, angle);
-  local = rotate(local * vec3(uPoster, uDepth), vec3(1.0, 0.0, 0.0), uLean * direction);
-  normal = rotate(normal, vec3(1.0, 0.0, 0.0), uLean * direction);
+  local = rotate(local * vec3(uPoster, uDepth), vec3(1.0, 0.0, 0.0), uLean * direction * curve);
+  normal = rotate(normal, vec3(1.0, 0.0, 0.0), uLean * direction * curve);
   vec3 world = local + vec3(x, y, 0.0);
   gl_Position = uProjection * vec4(world.xy, world.z - uCamera, 1.0);
   vUv = aPosition + 0.5;

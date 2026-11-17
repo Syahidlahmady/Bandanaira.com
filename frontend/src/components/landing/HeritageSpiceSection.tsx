@@ -99,9 +99,10 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = ({ onNa
         <div className="absolute inset-0 z-0">
           <FlyingPosters
             items={ITEMS}
-            planeWidth={360}
-            planeHeight={360}
-            distortion={3}
+            planeWidth={440}
+            planeHeight={330}
+            radius={24}
+            distortion={1.5}
             scrollEase={0.06}
             cameraFov={45}
             cameraZ={20}
