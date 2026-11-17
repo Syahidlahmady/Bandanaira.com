@@ -234,24 +234,6 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
                 {/* Scrim Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a1626]/95 via-[#0a1626]/40 to-black/20" />
 
-                {/* Top Header inside Card */}
-                <div className="relative z-10 p-5 flex items-start justify-between w-full">
-                  {/* Terracotta/Orange Badge (Identical to 'Music' badge in indonesia.travel) */}
-                  <span className="inline-block bg-[#e0672e] text-white text-[10px] font-bold tracking-wider px-3 py-1 rounded shadow-sm uppercase font-sans">
-                    {stay.type}
-                  </span>
-
-                  {/* Eco Verified Pill */}
-                  {stay.eco_stay_badge && (
-                    <span className="inline-flex items-center gap-1 bg-emerald-600/90 text-white text-[10px] font-medium px-2.5 py-1 rounded-full backdrop-blur-sm shadow-sm font-sans">
-                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                      Eco-Stay
-                    </span>
-                  )}
-                </div>
-
                 {/* Bottom Information Overlay */}
                 <div className="relative z-10 mt-auto p-6 flex flex-col justify-end text-white">
                   <h3 className="font-sans font-bold text-lg sm:text-xl text-white leading-snug group-hover:text-amber-300 transition-colors mb-2">

@@ -228,26 +228,6 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
                 {/* Scrim Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a1626]/95 via-[#0a1626]/40 to-black/20" />
 
-                {/* Top Badges */}
-                <div className="relative z-10 p-5 flex items-start justify-between w-full">
-                  {/* Terracotta/Orange Badge */}
-                  <span className="inline-block bg-[#e0672e] text-white text-[10px] font-bold tracking-wider px-3 py-1 rounded shadow-sm uppercase font-sans">
-                    {prod.categoryLabel}
-                  </span>
-
-                  {/* Blockchain Traceability Badge */}
-                  <button
-                    type="button"
-                    onClick={() => onPublicVerify(prod.batchCode)}
-                    className="inline-flex items-center gap-1 bg-sky-950/80 hover:bg-sky-900 border border-sky-400/30 text-sky-300 text-[10px] font-mono px-2.5 py-1 rounded-full backdrop-blur-sm shadow-sm transition-colors"
-                  >
-                    <svg className="w-3 h-3 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                    </svg>
-                    <span>Batch Panen</span>
-                  </button>
-                </div>
-
                 {/* Bottom Information */}
                 <div className="relative z-10 mt-auto p-6 flex flex-col justify-end text-white">
                   <h3 className="font-sans font-bold text-lg sm:text-xl text-white leading-snug group-hover:text-amber-300 transition-colors mb-2">

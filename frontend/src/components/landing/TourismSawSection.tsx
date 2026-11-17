@@ -340,26 +340,11 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
                     loading="lazy"
                   />
 
-                  {/* Top Category Badge */}
-                  <div className="absolute top-4 left-4 z-10">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-black/50 backdrop-blur-md border border-white/20 text-white">
-                      {dest.category}
-                    </span>
-                  </div>
-
-                  {/* Top-Right Island Tag */}
-                  <div className="absolute top-4 right-4 z-10">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium bg-amber-500/80 backdrop-blur-md text-slate-950 font-sans">
-                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z" />
-                        <circle cx="12" cy="10" r="2.5" />
-                      </svg>
-                      {dest.island}
-                    </span>
-                  </div>
-
                   {/* Bottom Gradient Scrim & Typography */}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#071322] via-[#071322]/50 to-transparent flex flex-col justify-end p-6 text-white">
+                    <span className="text-[11px] font-semibold text-amber-400 tracking-wider uppercase mb-1">
+                      {dest.island}
+                    </span>
                     <h3 className="font-sans font-bold text-lg sm:text-xl text-white leading-snug mb-2 group-hover:text-amber-300 transition-colors">
                       {dest.name}
                     </h3>
