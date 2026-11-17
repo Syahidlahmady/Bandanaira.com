@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useRef } from 'react'
 import { ArrowUpRightIcon } from './LandingIcons'
 import { setPreferredTourismSubTab, TourismSubTab } from '../../services/tourism'
 
@@ -28,8 +28,8 @@ export const PUBLIC_SAW_DESTINATIONS: PublicSawDestination[] = [
     facilityScore: 88,
     attractionScore: 98,
     description:
-      'Koloni karang meja raksasa yang tumbuh di atas aliran lava letusan 1988 dengan visibilitas air hingga 30 meter.',
-    highlights: ['Snorkeling & Scuba', 'Karang Vulkanik Unik', '15 Menit Perahu'],
+      'Koloni karang meja raksasa yang tumbuh subur di atas aliran lava letusan 1988 dengan visibilitas air hingga 30 meter.',
+    highlights: ['Snorkeling & Scuba', 'Karang Vulkanik', '15 Menit Perahu'],
     image:
       'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=900&q=85',
     guideWhatsapp: '6281234567891',
@@ -44,8 +44,8 @@ export const PUBLIC_SAW_DESTINATIONS: PublicSawDestination[] = [
     facilityScore: 95,
     attractionScore: 96,
     description:
-      'Benteng berarsitektur pentagon utuh abad ke-17 yang menghadap Teluk Banda dan puncak Gunung Banda Api.',
-    highlights: ['Cagar Budaya Nasional', 'Audio Guide Sejarah', 'Spot Sunset Terbaik'],
+      'Benteng berarsitektur pentagon utuh abad ke-17 yang bertengger gagah menghadap Teluk Banda dan siluet Gunung Api.',
+    highlights: ['Cagar Budaya Nasional', 'Arsitektur Pentagon', 'Spot Sunset Terbaik'],
     image:
       'https://images.unsplash.com/photo-1596402184320-417e7178b2cd?auto=format&fit=crop&w=900&q=85',
     guideWhatsapp: '6281234567892',
@@ -60,8 +60,8 @@ export const PUBLIC_SAW_DESTINATIONS: PublicSawDestination[] = [
     facilityScore: 86,
     attractionScore: 97,
     description:
-      'Pulau tenang dengan pasir putih bersih, tebing karang bawah laut, kawanan lumba-lumba, dan homestay ramah lingkungan.',
-    highlights: ['Pasir Putih Alami', 'Penyu & Lumba-lumba', 'Eco-Stay Tepi Pantai'],
+      'Tebing bawah laut bertaraf dunia dengan terumbu karang terjaga, kawanan lumba-lumba liar, dan pasir putih lembut.',
+    highlights: ['Wall Drop-Off', 'Penyu & Lumba-lumba', 'Eco-Stay Pesisir'],
     image:
       'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=900&q=85',
     guideWhatsapp: '6281234567893',
@@ -76,7 +76,7 @@ export const PUBLIC_SAW_DESTINATIONS: PublicSawDestination[] = [
     facilityScore: 94,
     attractionScore: 93,
     description:
-      'Museum hidup tempat Mohammad Hatta dan Sutan Sjahrir merumuskan gagasan kemerdekaan Indonesia bersama warga Banda.',
+      'Museum hidup saksi bisu para bapak bangsa merumuskan gagasan kemerdekaan Indonesia sembari mengajar anak-anak Banda.',
     highlights: ['Museum Kemerdekaan', 'Koleksi Asli 1936', 'Pusat Kota Neira'],
     image:
       'https://images.unsplash.com/photo-1580655653885-65763b2597d0?auto=format&fit=crop&w=900&q=85',
@@ -92,7 +92,7 @@ export const PUBLIC_SAW_DESTINATIONS: PublicSawDestination[] = [
     facilityScore: 78,
     attractionScore: 95,
     description:
-      'Jalur pendakian menantang menuju bibir kawah gunung api aktif di tengah laut dengan lanskap kepulauan 360 derajat.',
+      'Jalur pendakian memacu adrenalin menuju bibir kawah aktif dengan panorama 360 derajat seluruh gugusan Kepulauan Banda.',
     highlights: ['Trekking Sunrise', 'Kawah Vulkanik Aktif', 'Pemandu Resmi'],
     image:
       'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=85',
@@ -108,8 +108,8 @@ export const PUBLIC_SAW_DESTINATIONS: PublicSawDestination[] = [
     facilityScore: 89,
     attractionScore: 92,
     description:
-      'Menyusuri hutan pohon kenari raksasa dan kebun pala berusia berabad-abad bersama petani Poktan Lonthoir.',
-    highlights: ['Wisata Petik Pala', 'Sumur Pusaka & Benteng Hollandia', 'Kuliner Kenari'],
+      'Menyusuri naungan kanopi kenari raksasa dan kebun pala berumur ratusan tahun bersama kelompok tani adat Lonthoir.',
+    highlights: ['Wisata Petik Pala', 'Benteng Hollandia', 'Sumur Keramat'],
     image:
       'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=900&q=85',
     guideWhatsapp: '6281234567895',
@@ -124,15 +124,15 @@ export const PUBLIC_SAW_DESTINATIONS: PublicSawDestination[] = [
     facilityScore: 84,
     attractionScore: 94,
     description:
-      'Perpaduan laguna biru turkois, desa tua bersejarah Benteng Revenge, dan spot berenang bersama hiu karang ramah.',
-    highlights: ['Benteng Revenge VOC', 'Laguna Karang Sehat', 'Snorkeling Hiu Karang'],
+      'Laguna air kristal turkois, situs bersejarah Benteng Revenge VOC, dan titik snorkeling berenang bersama hiu karang jinak.',
+    highlights: ['Benteng Revenge VOC', 'Laguna Karang Kristal', 'Hiu Karang Karang'],
     image:
       'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=900&q=85',
     guideWhatsapp: '6281234567896',
   },
   {
     id: 'saw-8',
-    name: 'Pulau Rhun (Pertukaran Bersejarah Manhattan 1667)',
+    name: 'Pulau Rhun (Traktat Bersejarah Manhattan 1667)',
     island: 'Pulau Rhun',
     category: 'Sejarah & Benteng',
     costRp: 280000,
@@ -140,43 +140,11 @@ export const PUBLIC_SAW_DESTINATIONS: PublicSawDestination[] = [
     facilityScore: 81,
     attractionScore: 96,
     description:
-      'Pulau legendaris yang ditukar Inggris dengan pulau Manhattan New York dalam Traktat Breda 1667 karena pala.',
-    highlights: ['Traktat Breda 1667', 'Desa Tradisional', 'Wisata Sejarah Unik'],
+      'Pulau penghasil pala legendaris yang ditukar Inggris dengan pulau Manhattan New York dalam Traktat Breda 1667.',
+    highlights: ['Traktat Breda 1667', 'Desa Pesisir Tenang', 'Situs Sejarah Dunia'],
     image:
       'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=900&q=85',
     guideWhatsapp: '6281234567897',
-  },
-]
-
-interface TourismHighlightItem {
-  title: string
-  description: string
-  iconType: 'marine' | 'heritage' | 'volcano'
-  actionLabel: string
-  targetSubTab: TourismSubTab
-}
-
-const TOURISM_HIGHLIGHTS: TourismHighlightItem[] = [
-  {
-    title: 'Taman laut & karang',
-    description: 'Karang meja Lava Flow Banda Api, wall diving Pulau Hatta, dan laguna Pulau Ai.',
-    iconType: 'marine',
-    actionLabel: 'Lihat tempat wisata',
-    targetSubTab: 'destinations',
-  },
-  {
-    title: 'Benteng & jejak sejarah',
-    description: 'Benteng Belgica, Nassau, Rumah Pengasingan Hatta-Sjahrir, hingga Pulau Rhun.',
-    iconType: 'heritage',
-    actionLabel: 'Lihat cagar budaya',
-    targetSubTab: 'heritage',
-  },
-  {
-    title: 'Kaldera & kebun pala',
-    description: 'Pendakian sunrise Gunung Banda Api dan agrowisata pala pusaka Lonthoir.',
-    iconType: 'volcano',
-    actionLabel: 'Lihat tempat wisata',
-    targetSubTab: 'destinations',
   },
 ]
 
@@ -185,93 +153,237 @@ export interface TourismSawSectionProps {
 }
 
 export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate }) => {
+  const [activeIndex, setActiveIndex] = useState(0)
+  const carouselRef = useRef<HTMLDivElement>(null)
+
+  const activeDest = PUBLIC_SAW_DESTINATIONS[activeIndex]
+
   const openTourismSubTab = (subTab: TourismSubTab) => {
     setPreferredTourismSubTab(subTab)
     onNavigate('tourism')
+  }
+
+  const handlePrev = () => {
+    const nextIdx = activeIndex === 0 ? PUBLIC_SAW_DESTINATIONS.length - 1 : activeIndex - 1
+    setActiveIndex(nextIdx)
+    scrollToCard(nextIdx)
+  }
+
+  const handleNext = () => {
+    const nextIdx = activeIndex === PUBLIC_SAW_DESTINATIONS.length - 1 ? 0 : activeIndex + 1
+    setActiveIndex(nextIdx)
+    scrollToCard(nextIdx)
+  }
+
+  const scrollToCard = (index: number) => {
+    if (carouselRef.current) {
+      const cardWidth = 320
+      carouselRef.current.scrollTo({
+        left: index * cardWidth,
+        behavior: 'smooth',
+      })
+    }
   }
 
   return (
     <section
       id="wisata"
       aria-labelledby="tourism-routes-heading"
-      className="flex flex-col lg:flex-row items-start lg:items-center gap-12 lg:gap-20 px-6 sm:px-12 lg:px-20 py-16 relative self-stretch w-full flex-[0_0_auto] bg-[#f7f5f0]"
+      className="relative w-full py-20 px-6 sm:px-12 lg:px-20 bg-[#071322] text-white overflow-hidden"
     >
-      <header className="flex flex-col max-w-[430px] items-start gap-[18px] relative">
-        <div className="inline-flex items-center gap-2.5 relative flex-[0_0_auto]">
-          <div aria-hidden="true" className="relative w-6 h-px bg-amber-600" />
-          <p className="mt-[-1.00px] font-semibold text-amber-600 text-[11px] tracking-[1.80px] whitespace-nowrap relative w-fit leading-[normal]">
-            DESTINASI WISATA &amp; PERENCANA CERDAS
-          </p>
-        </div>
+      {/* Subtle decorative cultural motif / backdrop ambient */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none opacity-[0.04] bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:24px_24px]"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-amber-500/10 blur-3xl pointer-events-none"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute -bottom-32 right-0 w-[500px] h-[500px] rounded-full bg-sky-500/10 blur-3xl pointer-events-none"
+      />
 
-        <h2
-          id="tourism-routes-heading"
-          className="relative self-stretch font-medium text-[#0f2c59] text-[28px] sm:text-[31px] tracking-[-1.00px] leading-[38.8px]"
-        >
-          Bahari jernih, benteng tua, dan puncak api.
-        </h2>
-
-        <div className="flex flex-wrap items-center gap-2.5 pt-1">
-          <button
-            type="button"
-            onClick={() => openTourismSubTab('destinations')}
-            className="inline-flex h-[42px] items-center gap-2 bg-[#0f2c59] hover:bg-[#173d7a] text-white rounded-lg px-5 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0f2c59]"
-          >
-            <span>Jelajahi Destinasi</span>
-            <ArrowUpRightIcon className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => onNavigate('smart_planner')}
-            className="inline-flex h-[42px] items-center gap-2 border border-[#dce1df] bg-white hover:bg-amber-50 text-[#0f2c59] rounded-lg px-4 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600"
-          >
-            <span>Kalkulator Wisata SAW</span>
-          </button>
-        </div>
-      </header>
-
-      <ul className="grid grid-cols-1 sm:grid-cols-3 gap-[30px] relative flex-1 w-full">
-        {TOURISM_HIGHLIGHTS.map((item) => (
-          <li
-            key={item.title}
-            className="flex flex-col items-start gap-3.5 relative flex-1 grow"
-          >
-            <div className="flex w-10 h-10 items-center justify-center rounded-lg bg-amber-600/10 text-amber-600">
-              {item.iconType === 'marine' && (
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M2 15c2.5-2 5-2 7.5 0s5 2 7.5 0 5-2 5-2" />
-                  <path d="M2 19c2.5-2 5-2 7.5 0s5 2 7.5 0 5-2 5-2" />
-                  <circle cx="12" cy="7" r="3" />
-                </svg>
-              )}
-              {item.iconType === 'heritage' && (
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6" />
-                </svg>
-              )}
-              {item.iconType === 'volcano' && (
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M3 20h18L14 7l-3 5-2-3-6 11z" />
-                </svg>
-              )}
+      <div className="relative max-w-7xl mx-auto flex flex-col lg:flex-row items-center lg:items-stretch gap-12 lg:gap-16">
+        {/* Left Column: Spotlight Editorial Controller (Ala indonesia.travel) */}
+        <div className="flex flex-col justify-between items-start w-full lg:w-[42%] lg:max-w-[460px] flex-shrink-0 z-10">
+          <div>
+            {/* Spotlight uppercase tracking tag */}
+            <div className="inline-flex items-center gap-2 mb-4">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+              <p className="font-sans text-[11px] font-bold tracking-[0.25em] text-amber-400 uppercase">
+                SPOTLIGHT KURASI BANDA
+              </p>
             </div>
-            <h3 className="relative self-stretch font-semibold text-[#0f2c59] text-[15px] tracking-[0] leading-[normal]">
-              {item.title}
-            </h3>
-            <p className="relative self-stretch font-normal text-[#63717d] text-[13px] tracking-[0] leading-[21.4px]">
-              {item.description}
-            </p>
-            <button
-              type="button"
-              onClick={() => openTourismSubTab(item.targetSubTab)}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-600 hover:text-[#0f2c59] transition-colors"
+
+            {/* Display Headline with Nexa Pro + Intro Script */}
+            <h2
+              id="tourism-routes-heading"
+              className="font-sans font-bold text-3xl sm:text-4xl lg:text-[44px] leading-[1.12] tracking-tight text-white mb-5"
             >
-              <span>{item.actionLabel}</span>
-              <ArrowUpRightIcon className="w-3.5 h-3.5" />
-            </button>
-          </li>
-        ))}
-      </ul>
+              Jelajahi Permata{' '}
+              <span className="font-script text-amber-300 font-normal text-4xl sm:text-5xl lg:text-[52px] inline-block tracking-normal ml-1">
+                Ikonik
+              </span>{' '}
+              Banda Neira
+            </h2>
+
+            {/* Dynamic Editorial Paragraph for the currently highlighted destination */}
+            <div className="min-h-[85px] mb-6">
+              <p className="font-sans text-sm sm:text-base text-slate-300 leading-relaxed">
+                {activeDest.description}
+              </p>
+            </div>
+
+            {/* Action Buttons: Pill style */}
+            <div className="flex flex-wrap items-center gap-3 mb-8">
+              <button
+                type="button"
+                onClick={() => openTourismSubTab('destinations')}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/30 bg-white/10 hover:bg-white hover:text-[#071322] text-white text-xs font-semibold tracking-wide transition-all duration-200 group"
+              >
+                <span>Jelajahi Semua Destinasi</span>
+                <ArrowUpRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onNavigate('smart_planner')}
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-amber-400/40 bg-amber-400/10 hover:bg-amber-400 hover:text-slate-950 text-amber-300 text-xs font-semibold transition-all duration-200"
+              >
+                <span>Kalkulator Wisata SAW</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Bottom Pagination & Arrow Controls (Identical to indonesia.travel) */}
+          <div className="w-full pt-6 border-t border-white/10 flex flex-col gap-4">
+            {/* Progress line */}
+            <div className="w-full h-[2px] bg-white/15 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-amber-400 transition-all duration-300 rounded-full"
+                style={{
+                  width: `${((activeIndex + 1) / PUBLIC_SAW_DESTINATIONS.length) * 100}%`,
+                }}
+              />
+            </div>
+
+            {/* Counter + Arrow Navigation */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-baseline gap-1.5 font-mono">
+                <span className="text-2xl font-bold text-white tracking-wider">
+                  {String(activeIndex + 1).padStart(2, '0')}
+                </span>
+                <span className="text-sm text-slate-400">
+                  / {String(PUBLIC_SAW_DESTINATIONS.length).padStart(2, '0')}
+                </span>
+                <span className="ml-3 text-xs text-amber-300/80 font-sans tracking-wide">
+                  {activeDest.name}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handlePrev}
+                  aria-label="Destinasi Sebelumnya"
+                  className="w-10 h-10 rounded-full border border-white/20 bg-white/5 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  aria-label="Destinasi Berikutnya"
+                  className="w-10 h-10 rounded-full border border-white/20 bg-white/5 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Tall Spotlight Showcase Cards (Horizontal Overflow Carousel) */}
+        <div className="w-full lg:w-[58%] overflow-hidden relative">
+          <div
+            ref={carouselRef}
+            className="flex gap-5 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-none scroll-smooth"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {PUBLIC_SAW_DESTINATIONS.map((dest, idx) => {
+              const isActive = idx === activeIndex
+
+              return (
+                <div
+                  key={dest.id}
+                  onClick={() => {
+                    setActiveIndex(idx)
+                    scrollToCard(idx)
+                  }}
+                  className={`group relative flex-shrink-0 w-[270px] sm:w-[310px] aspect-[4/5] rounded-[2rem] overflow-hidden cursor-pointer snap-start transition-all duration-300 select-none ${
+                    isActive
+                      ? 'ring-2 ring-amber-400 shadow-[0_20px_50px_rgba(245,158,11,0.25)] scale-[1.02]'
+                      : 'opacity-70 hover:opacity-100 hover:scale-[0.99] border border-white/10'
+                  }`}
+                >
+                  {/* Photo with zoom on hover */}
+                  <img
+                    src={dest.image}
+                    alt={dest.name}
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                    loading="lazy"
+                  />
+
+                  {/* Top Category Badge */}
+                  <div className="absolute top-4 left-4 z-10">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-black/50 backdrop-blur-md border border-white/20 text-white">
+                      {dest.category}
+                    </span>
+                  </div>
+
+                  {/* Top-Right Island Tag */}
+                  <div className="absolute top-4 right-4 z-10">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium bg-amber-500/80 backdrop-blur-md text-slate-950 font-sans">
+                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z" />
+                        <circle cx="12" cy="10" r="2.5" />
+                      </svg>
+                      {dest.island}
+                    </span>
+                  </div>
+
+                  {/* Bottom Gradient Scrim & Typography */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#071322] via-[#071322]/50 to-transparent flex flex-col justify-end p-6 text-white">
+                    <h3 className="font-sans font-bold text-lg sm:text-xl text-white leading-snug mb-2 group-hover:text-amber-300 transition-colors">
+                      {dest.name}
+                    </h3>
+                    <p className="font-sans text-xs text-slate-300 line-clamp-2 mb-3 leading-relaxed">
+                      {dest.description}
+                    </p>
+
+                    <div className="flex flex-wrap gap-1.5 pt-2 border-t border-white/15">
+                      {dest.highlights.slice(0, 2).map((hl) => (
+                        <span
+                          key={hl}
+                          className="text-[10px] text-slate-300 bg-white/10 px-2 py-0.5 rounded-md"
+                        >
+                          {hl}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
     </section>
   )
 }
