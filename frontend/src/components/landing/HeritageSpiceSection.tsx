@@ -241,12 +241,16 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
                 type="button"
                 onClick={() => scrollToStory(i)}
                 aria-label={`Lihat cerita ${story.title}`}
-                className={`h-2 rounded-full transition-all duration-500 cursor-pointer ${
-                  activeIndex === i
-                    ? 'w-10 bg-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.8)]'
-                    : 'w-2.5 bg-slate-600/80 hover:bg-slate-400'
-                }`}
-              />
+                className="h-8 px-1 flex items-center justify-center cursor-pointer"
+              >
+                <span
+                  className={`h-2 rounded-full transition-all duration-500 block ${
+                    activeIndex === i
+                      ? 'w-10 bg-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.8)]'
+                      : 'w-2.5 bg-slate-600/80 hover:bg-slate-400'
+                  }`}
+                />
+              </button>
             ))}
           </div>
         </footer>

@@ -19,12 +19,15 @@
 .scroll-expand__track {
   position: relative;
   width: 100%;
+  min-height: 335vh;
 }
 
 .scroll-expand__stage {
   position: sticky;
   top: 0;
   width: 100%;
+  height: 100vh;
+  min-height: 100dvh;
   overflow: hidden;
   --se-title-size: 4rem;
 }

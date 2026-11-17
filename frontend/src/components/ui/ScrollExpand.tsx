@@ -237,6 +237,10 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
         <img
           src={poster || src}
           alt={alt}
+          width={1440}
+          height={802}
+          fetchPriority="high"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover -z-10"
           draggable={false}
         />

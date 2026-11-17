@@ -220,7 +220,7 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
                 onClick={() => scroll('left')}
                 disabled={!canScrollLeft}
                 aria-label="Geser ke kiri"
-                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all ${
+                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors duration-200 ${
                   canScrollLeft
                     ? 'border-slate-300 text-slate-800 hover:border-[#0f2c59] hover:bg-[#0f2c59] hover:text-white cursor-pointer shadow-sm'
                     : 'border-slate-200 text-slate-300 cursor-not-allowed opacity-50'
@@ -236,7 +236,7 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
                 onClick={() => scroll('right')}
                 disabled={!canScrollRight}
                 aria-label="Geser ke kanan"
-                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all ${
+                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors duration-200 ${
                   canScrollRight
                     ? 'border-slate-300 text-slate-800 hover:border-[#0f2c59] hover:bg-[#0f2c59] hover:text-white cursor-pointer shadow-sm'
                     : 'border-slate-200 text-slate-300 cursor-not-allowed opacity-50'
@@ -335,6 +335,7 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
                       href={`https://wa.me/${stay.contact_whatsapp}?text=Halo%2C%20saya%20ingin%20reservasi%20di%20${encodeURIComponent(stay.name)}`}
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label={`Reservasi Penginapan ${stay.name}`}
                       className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-300 hover:text-white transition-colors"
                     >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
