@@ -664,6 +664,17 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Menambahkan auto-seed `seed_roles_and_admin` saat login pada `backend/app/modules/auth/router.py`, membuka akses baca `GET /api/v1/farmers/groups` & `GET /api/v1/farmers` bagi `get_current_active_user`, serta menambahkan `ensure_default_farmers_seeded(db)` di `backend/app/modules/farmers/router.py` (3 Kelompok Tani, 4 petani bawaan `BN-PKT-001`..`004`, dan sinkronisasi otomatis warga berprofesi `Petani`/`Pekebun`).
   - Memverifikasi 20 pytest backend (`test_farmers_and_farms.py` & `test_auth.py`: `20 passed`) serta build frontend (`tsc && vite build`, 2.033 modul, exit code `0`).
 
+### Phase 43: Perbaikan Sinkronisasi & Upload Mode Offline (PWA IndexedDB Sync Queue)
+- [x] 43.1 Penguatan Mesin Sinkronisasi Offline (`frontend/src/offline/syncManager.ts`):
+  - Menyertakan item berstatus `pending`, `failed`, dan `syncing` ke dalam `getUnsyncedItems()` / `getPendingCount()` dan `processSync()` agar item gagal dapat diunggah ulang saat klik **"Kirim Sekarang ke Server"**.
+  - Mengambil token valid sebelum unggah dan me-retry otomatis via `authService.ensureValidToken(true)` saat server mengembalikan `401 Unauthorized`.
+  - Menormalisasi endpoint antrean lama (`normalizeEndpoint`: `/farmers/farms` -> `/farms`), menyembuhkan payload kosong/non-UUID (`healQueuedPayload`: `farmer_id`, `farm_id`, `village`), menangani konflik `409 Conflict` (`resident_create` dihapus sebagai tersinkron; kode ganda `farm_code`/`harvest_code` ditambahkan sufiks unik dan diunggah ulang), serta memformat error array FastAPI 422 via `serializeErrorMessage`.
+- [x] 43.2 Perbaikan Pembuatan Antrean, Modal Antrean & Service Worker (`App.tsx`, `OfflineQueueModal.tsx`, `auth.ts`, `population.ts`, `traceability.ts`, `sw.js`):
+  - Memperbaiki URL antrean offline `farm_create` di `frontend/src/App.tsx` (`/farmers/farms` -> `/farms`), menyertakan `village: 'Banda Neira'` pada antrean `resident_create`, dan menyegarkan `queueList` di `handleManualSync()` setelah `processSync()`.
+  - Mengamankan render pesan error objek di `OfflineQueueModal.tsx` dan mengaktifkan tombol **"Kirim Sekarang ke Server"** kapan pun antrean tidak kosong dan tidak sedang sinkronisasi.
+  - Menambahkan `authService.fetchWithAuth` pada `auth.ts` serta `requestWithAuth` pada `population.ts` dan `traceability.ts`.
+  - Memperbarui `frontend/public/sw.js` (`banda-digital-v5`) agar kegagalan GET `/api/` tanpa cache mengembalikan status HTTP `503` (bukan `200`) supaya mekanisme fallback cache IndexedDB bekerja semestinya.
+
 
 
 

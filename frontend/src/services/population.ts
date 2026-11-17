@@ -78,15 +78,19 @@ export const populationService = {
     }
   },
 
+  async requestWithAuth(path: string, options: RequestInit = {}): Promise<Response> {
+    return authService.fetchWithAuth(`${API_BASE}${path}`, options)
+  },
+
   async listResidents(page = 1, limit = 20, search?: string, occupation?: string): Promise<ResidentListResponse> {
-    let url = `${API_BASE}/population/residents?page=${page}&limit=${limit}`
+    let path = `/population/residents?page=${page}&limit=${limit}`
     if (search) {
-      url += `&search=${encodeURIComponent(search)}`
+      path += `&search=${encodeURIComponent(search)}`
     }
     if (occupation) {
-      url += `&occupation=${encodeURIComponent(occupation)}`
+      path += `&occupation=${encodeURIComponent(occupation)}`
     }
-    const res = await fetch(url, { headers: this.getAuthHeaders() })
+    const res = await this.requestWithAuth(path)
     if (!res.ok) {
       throw new Error(`Gagal memuat data penduduk (${res.status})`)
     }
@@ -94,9 +98,8 @@ export const populationService = {
   },
 
   async createResident(input: ResidentCreateInput): Promise<Resident> {
-    const res = await fetch(`${API_BASE}/population/residents`, {
+    const res = await this.requestWithAuth('/population/residents', {
       method: 'POST',
-      headers: this.getAuthHeaders(),
       body: JSON.stringify({ ...input, village: 'Banda Neira' }),
     })
     if (!res.ok) {
@@ -107,9 +110,8 @@ export const populationService = {
   },
 
   async verifyResident(id: string, status: 'verified' | 'rejected', notes?: string): Promise<Resident> {
-    const res = await fetch(`${API_BASE}/population/residents/${id}/verify`, {
+    const res = await this.requestWithAuth(`/population/residents/${id}/verify`, {
       method: 'POST',
-      headers: this.getAuthHeaders(),
       body: JSON.stringify({ verification_status: status, notes }),
     })
     if (!res.ok) {
@@ -119,9 +121,7 @@ export const populationService = {
   },
 
   async getStatistics(): Promise<PopulationStatistics> {
-    const res = await fetch(`${API_BASE}/population/statistics`, {
-      headers: this.getAuthHeaders(),
-    })
+    const res = await this.requestWithAuth('/population/statistics')
     if (!res.ok) {
       throw new Error(`Gagal memuat statistik penduduk (${res.status})`)
     }
@@ -129,11 +129,11 @@ export const populationService = {
   },
 
   async listRequests(page = 1, limit = 50, status?: string): Promise<AdministrativeRequestListResponse> {
-    let url = `${API_BASE}/population/requests?page=${page}&limit=${limit}`
+    let path = `/population/requests?page=${page}&limit=${limit}`
     if (status) {
-      url += `&status=${encodeURIComponent(status)}`
+      path += `&status=${encodeURIComponent(status)}`
     }
-    const res = await fetch(url, { headers: this.getAuthHeaders() })
+    const res = await this.requestWithAuth(path)
     if (!res.ok) {
       throw new Error(`Gagal memuat permohonan surat (${res.status})`)
     }
@@ -141,9 +141,8 @@ export const populationService = {
   },
 
   async createRequest(input: { resident_id?: string; request_type: string; notes?: string }): Promise<AdministrativeRequestItem> {
-    const res = await fetch(`${API_BASE}/population/requests`, {
+    const res = await this.requestWithAuth('/population/requests', {
       method: 'POST',
-      headers: this.getAuthHeaders(),
       body: JSON.stringify(input),
     })
     if (!res.ok) {
@@ -154,9 +153,8 @@ export const populationService = {
   },
 
   async updateRequestStatus(id: string, status: 'approved' | 'rejected' | 'in_review', notes?: string): Promise<AdministrativeRequestItem> {
-    const res = await fetch(`${API_BASE}/population/requests/${id}/status`, {
+    const res = await this.requestWithAuth(`/population/requests/${id}/status`, {
       method: 'PATCH',
-      headers: this.getAuthHeaders(),
       body: JSON.stringify({ status, notes }),
     })
     if (!res.ok) {

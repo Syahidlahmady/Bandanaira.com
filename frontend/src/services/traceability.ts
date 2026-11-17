@@ -97,8 +97,12 @@ export const traceabilityService = {
     }
   },
 
+  async requestWithAuth(path: string, options: RequestInit = {}): Promise<Response> {
+    return authService.fetchWithAuth(`${API_BASE}${path}`, options)
+  },
+
   async listHarvests(): Promise<{ items: Harvest[]; total: number }> {
-    const res = await fetch(`${API_BASE}/harvests?limit=100`, { headers: this.getAuthHeaders() })
+    const res = await this.requestWithAuth('/harvests?limit=100')
     if (!res.ok) throw new Error(`Gagal memuat catatan panen (${res.status})`)
     return res.json()
   },
@@ -112,9 +116,8 @@ export const traceabilityService = {
     quantity_kg: number
     quality_grade?: string
   }): Promise<Harvest> {
-    const res = await fetch(`${API_BASE}/harvests`, {
+    const res = await this.requestWithAuth('/harvests', {
       method: 'POST',
-      headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
     })
     if (!res.ok) {
@@ -125,7 +128,7 @@ export const traceabilityService = {
   },
 
   async listBatches(): Promise<{ items: ProductBatch[]; total: number }> {
-    const res = await fetch(`${API_BASE}/batches?limit=100`, { headers: this.getAuthHeaders() })
+    const res = await this.requestWithAuth('/batches?limit=100')
     if (!res.ok) throw new Error(`Gagal memuat data batch (${res.status})`)
     return res.json()
   },
@@ -136,9 +139,8 @@ export const traceabilityService = {
     production_date: string
     harvests: { harvest_id: string; allocated_quantity_kg: number }[]
   }): Promise<ProductBatch> {
-    const res = await fetch(`${API_BASE}/batches`, {
+    const res = await this.requestWithAuth('/batches', {
       method: 'POST',
-      headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
     })
     if (!res.ok) {
@@ -152,9 +154,8 @@ export const traceabilityService = {
     batchId: string,
     data: { event_type: string; location?: string; description?: string }
   ): Promise<BatchEvent> {
-    const res = await fetch(`${API_BASE}/batches/${batchId}/events`, {
+    const res = await this.requestWithAuth(`/batches/${batchId}/events`, {
       method: 'POST',
-      headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
     })
     if (!res.ok) {
@@ -165,9 +166,8 @@ export const traceabilityService = {
   },
 
   async anchorToBlockchain(batchId: string, eventId?: string): Promise<BlockchainTransaction> {
-    const res = await fetch(`${API_BASE}/blockchain/batches/${batchId}/anchor`, {
+    const res = await this.requestWithAuth(`/blockchain/batches/${batchId}/anchor`, {
       method: 'POST',
-      headers: this.getAuthHeaders(),
       body: JSON.stringify(eventId ? { event_id: eventId } : {}),
     })
     if (!res.ok) {
@@ -178,9 +178,7 @@ export const traceabilityService = {
   },
 
   async getBlockchainTransactions(batchId: string): Promise<BlockchainTransaction[]> {
-    const res = await fetch(`${API_BASE}/blockchain/batches/${batchId}/transactions`, {
-      headers: this.getAuthHeaders(),
-    })
+    const res = await this.requestWithAuth(`/blockchain/batches/${batchId}/transactions`)
     if (!res.ok) throw new Error(`Gagal memuat transaksi blockchain (${res.status})`)
     return res.json()
   },

@@ -132,7 +132,8 @@ export const OfflineQueueModal: React.FC<OfflineQueueModalProps> = ({
                   </p>
                   {item.error && (
                     <p style={{ fontSize: '0.75rem', color: '#f87171', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.3rem', margin: '0.25rem 0 0' }}>
-                      <AlertCircle size={12} /> {item.error}
+                      <AlertCircle size={12} />{' '}
+                      {typeof item.error === 'string' ? item.error : JSON.stringify(item.error)}
                     </p>
                   )}
                 </div>
@@ -168,8 +169,9 @@ export const OfflineQueueModal: React.FC<OfflineQueueModalProps> = ({
           <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
             <button
               onClick={onSync}
-              disabled={!isOnline || isSyncing || queueList.length === 0}
+              disabled={isSyncing || queueList.length === 0}
               className="btn btn-primary"
+              title={!isOnline ? 'Koneksi browser terdeteksi offline — tetap coba kirim ke server' : 'Kirim antrean ke server sekarang'}
             >
               <RefreshCw size={14} className={isSyncing ? 'animate-spin' : ''} />
               {isSyncing ? 'Sedang Sinkronisasi...' : 'Kirim Sekarang ke Server'}

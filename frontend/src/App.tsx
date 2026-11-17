@@ -717,6 +717,8 @@ export const App: React.FC = () => {
     setIsSyncing(true)
     try {
       const res = await syncManager.processSync()
+      const updated = await syncManager.getAllQueue()
+      setQueueList(updated)
       if (res.total > 0) {
         alert(`Sinkronisasi selesai: ${res.success} berhasil dikirim ke server, ${res.failed} gagal.`)
       } else {
@@ -757,7 +759,7 @@ export const App: React.FC = () => {
         'resident_create',
         `${apiBase}/population/residents`,
         'POST',
-        popForm as unknown as Record<string, unknown>,
+        { ...popForm, village: 'Banda Neira' } as unknown as Record<string, unknown>,
         `Pendaftaran Penduduk: ${popForm.full_name} (${popForm.nik})`
       )
       const optimisticResident: Resident = {
@@ -797,7 +799,7 @@ export const App: React.FC = () => {
           'resident_create',
           `${apiBase}/population/residents`,
           'POST',
-          popForm as unknown as Record<string, unknown>,
+          { ...popForm, village: 'Banda Neira' } as unknown as Record<string, unknown>,
           `Pendaftaran Penduduk: ${popForm.full_name} (${popForm.nik})`
         )
         setPopMsg({
@@ -828,7 +830,7 @@ export const App: React.FC = () => {
     if (!navigator.onLine) {
       await syncManager.enqueue(
         'farm_create',
-        `${apiBase}/farmers/farms`,
+        `${apiBase}/farms`,
         'POST',
         { ...farmForm, farmer_id: farmForm.farmer_id || (farmers[0]?.id || '') },
         `Pemetaan Lahan: ${farmForm.name} (${farmForm.farm_code})`
@@ -894,7 +896,7 @@ export const App: React.FC = () => {
       if (err instanceof TypeError || (err instanceof Error && err.message.toLowerCase().includes('fetch'))) {
         await syncManager.enqueue(
           'farm_create',
-          `${apiBase}/farmers/farms`,
+          `${apiBase}/farms`,
           'POST',
           { ...farmForm, farmer_id: farmForm.farmer_id || (farmers[0]?.id || '') },
           `Pemetaan Lahan: ${farmForm.name} (${farmForm.farm_code})`

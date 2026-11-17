@@ -489,6 +489,30 @@ export const authService = {
     }
   },
 
+  async fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
+    const token = await this.ensureValidToken()
+    const buildHeaders = (tk: string | null): HeadersInit => ({
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+      ...(tk ? { Authorization: `Bearer ${tk}` } : {}),
+    })
+
+    let res = await fetch(url, {
+      ...options,
+      headers: buildHeaders(token),
+    })
+    if (res.status === 401) {
+      const refreshed = await this.ensureValidToken(true)
+      if (refreshed) {
+        res = await fetch(url, {
+          ...options,
+          headers: buildHeaders(refreshed),
+        })
+      }
+    }
+    return res
+  },
+
   logout() {
     this.clearTokens()
   },
