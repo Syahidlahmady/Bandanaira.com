@@ -81,113 +81,109 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = ({ onNa
       className="relative w-full bg-[#081d35] text-white"
       style={{ height: '280vh' }}
     >
-      {/* Sticky viewport staying centered during section scroll */}
-      <div className="sticky top-0 h-screen w-full flex flex-col justify-between items-center py-8 sm:py-12 px-4 sm:px-8 lg:px-16 overflow-hidden">
-        {/* Background Ambience */}
+      {/* Sticky full-screen viewport taking entire section */}
+      <div className="sticky top-0 h-screen w-full flex flex-col justify-between overflow-hidden">
+        {/* Background Radial Glow */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,#113a68_0%,#081d35_70%)] pointer-events-none" />
 
-        {/* SECTION HEADER */}
-        <header className="relative z-10 flex flex-col items-center text-center max-w-2xl shrink-0">
+        {/* FULL SECTION FLYING POSTERS: Fills the entire section without any inner box */}
+        <div className="absolute inset-0 z-0">
+          <FlyingPosters
+            items={ITEMS}
+            planeWidth={360}
+            planeHeight={360}
+            distortion={3}
+            scrollEase={0.01}
+            cameraFov={45}
+            cameraZ={20}
+            pageScroll={0.8}
+            className="w-full h-full"
+          />
+        </div>
+
+        {/* SECTION HEADER: Floats gracefully on top */}
+        <header className="relative z-10 flex flex-col items-center text-center max-w-2xl mx-auto pt-8 sm:pt-12 px-4 shrink-0 pointer-events-none">
           <span className="font-mono text-xs tracking-widest text-[#f4b75e] uppercase mb-2">
             SEJARAH BANDA NEIRA
           </span>
           <h2
             id="heritage-heading"
-            className="text-2xl sm:text-4xl font-sans font-bold tracking-tight text-white leading-tight"
+            className="text-3xl sm:text-5xl font-sans font-bold tracking-tight text-white leading-tight drop-shadow-md"
           >
             Cerita dari Jantung Rempah
           </h2>
-          <p className="mt-1.5 text-slate-300 text-xs sm:text-sm max-w-md hidden sm:block">
+          <p className="mt-2 text-slate-300 text-xs sm:text-sm max-w-md hidden sm:block">
             Gulir ke bawah untuk menelusuri perjalanan sejarah Banda Neira
           </p>
         </header>
 
-        {/* CENTER STAGE: FlyingPosters + Synchronized Story Narratives */}
-        <div className="relative z-10 w-full max-w-6xl my-auto flex items-center justify-center">
-          <div
-            style={{ height: 600, position: 'relative' }}
-            className="w-full rounded-3xl overflow-hidden border border-amber-400/20 bg-slate-950/60 shadow-2xl backdrop-blur-sm"
-          >
-            <FlyingPosters
-              items={ITEMS}
-              planeWidth={320}
-              planeHeight={320}
-              distortion={3}
-              scrollEase={0.01}
-              cameraFov={45}
-              cameraZ={20}
-              pageScroll={0.8}
-            />
+        {/* DESKTOP/TABLET NARRATIVES: Floating directly in the section on the left and right */}
+        <div className="hidden sm:flex relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-12 lg:px-16 my-auto pointer-events-none items-center justify-between">
+          {/* Left Slot (for stories with align === 'left') */}
+          <div className="relative w-full max-w-sm lg:max-w-md min-h-[220px] flex items-center">
+            {STORIES.map((story, i) => {
+              if (story.align !== 'left') return null
+              const isActive = activeIndex === i
+              return (
+                <article
+                  key={story.id}
+                  className={`absolute inset-x-0 p-6 sm:p-8 rounded-2xl bg-slate-950/85 backdrop-blur-md border border-amber-400/30 shadow-2xl transition-all duration-500 ease-out ${
+                    isActive
+                      ? 'opacity-100 translate-x-0 pointer-events-auto'
+                      : 'opacity-0 -translate-x-12 pointer-events-none'
+                  }`}
+                >
+                  <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                    {story.title}
+                  </h3>
+                  <p className="mt-3 text-slate-300 text-sm sm:text-base leading-relaxed font-sans">
+                    {story.description}
+                  </p>
+                </article>
+              )
+            })}
+          </div>
 
-            {/* Desktop / Tablet Alternating Story Overlays */}
-            <div className="hidden sm:flex absolute inset-0 pointer-events-none items-center justify-between p-6 sm:p-10 lg:p-14">
-              {/* Left Slot (for stories with align === 'left') */}
-              <div className="relative w-full max-w-sm lg:max-w-md h-full flex items-center">
-                {STORIES.map((story, i) => {
-                  if (story.align !== 'left') return null
-                  const isActive = activeIndex === i
-                  return (
-                    <article
-                      key={story.id}
-                      className={`absolute inset-x-0 p-6 sm:p-8 rounded-2xl bg-slate-950/85 backdrop-blur-md border border-amber-400/30 shadow-2xl transition-all duration-500 ease-out ${
-                        isActive
-                          ? 'opacity-100 translate-x-0 pointer-events-auto'
-                          : 'opacity-0 -translate-x-8 pointer-events-none'
-                      }`}
-                    >
-                      <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                        {story.title}
-                      </h3>
-                      <p className="mt-3 text-slate-300 text-sm sm:text-base leading-relaxed font-sans">
-                        {story.description}
-                      </p>
-                    </article>
-                  )
-                })}
-              </div>
-
-              {/* Right Slot (for stories with align === 'right') */}
-              <div className="relative w-full max-w-sm lg:max-w-md h-full flex items-center">
-                {STORIES.map((story, i) => {
-                  if (story.align !== 'right') return null
-                  const isActive = activeIndex === i
-                  return (
-                    <article
-                      key={story.id}
-                      className={`absolute inset-x-0 p-6 sm:p-8 rounded-2xl bg-slate-950/85 backdrop-blur-md border border-amber-400/30 shadow-2xl transition-all duration-500 ease-out ${
-                        isActive
-                          ? 'opacity-100 translate-x-0 pointer-events-auto'
-                          : 'opacity-0 translate-x-8 pointer-events-none'
-                      }`}
-                    >
-                      <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                        {story.title}
-                      </h3>
-                      <p className="mt-3 text-slate-300 text-sm sm:text-base leading-relaxed font-sans">
-                        {story.description}
-                      </p>
-                    </article>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Mobile Story Card (bottom aligned inside stage) */}
-            <div className="sm:hidden absolute bottom-3 inset-x-3 pointer-events-auto">
-              <article className="p-4 rounded-xl bg-slate-950/90 backdrop-blur-md border border-amber-400/30 shadow-2xl">
-                <h3 className="text-base font-bold text-white">
-                  {STORIES[activeIndex].title}
-                </h3>
-                <p className="mt-1.5 text-slate-300 text-xs leading-relaxed">
-                  {STORIES[activeIndex].description}
-                </p>
-              </article>
-            </div>
+          {/* Right Slot (for stories with align === 'right') */}
+          <div className="relative w-full max-w-sm lg:max-w-md min-h-[220px] flex items-center">
+            {STORIES.map((story, i) => {
+              if (story.align !== 'right') return null
+              const isActive = activeIndex === i
+              return (
+                <article
+                  key={story.id}
+                  className={`absolute inset-x-0 p-6 sm:p-8 rounded-2xl bg-slate-950/85 backdrop-blur-md border border-amber-400/30 shadow-2xl transition-all duration-500 ease-out ${
+                    isActive
+                      ? 'opacity-100 translate-x-0 pointer-events-auto'
+                      : 'opacity-0 translate-x-12 pointer-events-none'
+                  }`}
+                >
+                  <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                    {story.title}
+                  </h3>
+                  <p className="mt-3 text-slate-300 text-sm sm:text-base leading-relaxed font-sans">
+                    {story.description}
+                  </p>
+                </article>
+              )
+            })}
           </div>
         </div>
 
+        {/* MOBILE STORY CARD (centered at bottom of screen) */}
+        <div className="sm:hidden relative z-10 w-full px-4 mb-3 pointer-events-auto">
+          <article className="p-4 rounded-xl bg-slate-950/90 backdrop-blur-md border border-amber-400/30 shadow-2xl">
+            <h3 className="text-base font-bold text-white">
+              {STORIES[activeIndex].title}
+            </h3>
+            <p className="mt-1.5 text-slate-300 text-xs leading-relaxed">
+              {STORIES[activeIndex].description}
+            </p>
+          </article>
+        </div>
+
         {/* BOTTOM CONTROLS: Timeline Step Indicators & CTA */}
-        <footer className="relative z-10 w-full flex flex-col sm:flex-row items-center justify-between gap-4 max-w-6xl shrink-0 pt-2">
+        <footer className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-12 lg:px-16 pb-8 sm:pb-12 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0">
           {/* Progress Indicators */}
           <div className="flex items-center gap-2">
             {STORIES.map((story, i) => (
@@ -196,7 +192,7 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = ({ onNa
                 className={`h-1.5 rounded-full transition-all duration-500 ${
                   activeIndex === i
                     ? 'w-8 bg-amber-400'
-                    : 'w-2 bg-slate-700'
+                    : 'w-2 bg-slate-700/80'
                 }`}
               />
             ))}
@@ -205,7 +201,7 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = ({ onNa
           <button
             type="button"
             onClick={() => onNavigate('gis')}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 border border-amber-400/40 rounded-xl transition-all text-xs sm:text-sm font-medium shadow-md hover:border-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-600/40 hover:bg-amber-600/60 text-amber-200 border border-amber-400/50 rounded-xl transition-all text-xs sm:text-sm font-medium shadow-lg hover:border-amber-400 backdrop-blur-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
           >
             <span>Lihat Lokasi Bersejarah di Peta</span>
             <ArrowUpRightIcon className="w-4 h-4 text-amber-300" />
