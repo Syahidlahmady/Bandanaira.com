@@ -200,7 +200,7 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
                 onClick={() => scroll('left')}
                 disabled={!canScrollLeft}
                 aria-label="Geser ke kiri"
-                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all ${
+                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors duration-200 ${
                   canScrollLeft
                     ? 'border-slate-300 text-slate-800 hover:border-[#0f2c59] hover:bg-[#0f2c59] hover:text-white cursor-pointer shadow-sm'
                     : 'border-slate-200 text-slate-300 cursor-not-allowed opacity-50'
@@ -216,7 +216,7 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
                 onClick={() => scroll('right')}
                 disabled={!canScrollRight}
                 aria-label="Geser ke kanan"
-                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all ${
+                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors duration-200 ${
                   canScrollRight
                     ? 'border-slate-300 text-slate-800 hover:border-[#0f2c59] hover:bg-[#0f2c59] hover:text-white cursor-pointer shadow-sm'
                     : 'border-slate-200 text-slate-300 cursor-not-allowed opacity-50'

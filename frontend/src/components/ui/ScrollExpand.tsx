@@ -239,7 +239,7 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
           alt={alt}
           width={1440}
           height={802}
-          fetchPriority="high"
+          {...({ fetchpriority: 'high' } as any)}
           decoding="async"
           className="absolute inset-0 w-full h-full object-cover -z-10"
           draggable={false}
