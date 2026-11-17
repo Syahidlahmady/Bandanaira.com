@@ -484,13 +484,13 @@ export const Banda3DPhotoGallery: React.FC = () => {
                 className="absolute -bottom-8 -right-10 sm:-bottom-10 sm:-right-12 w-24 h-16 sm:w-28 sm:h-20 object-contain rotate-6 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] pointer-events-none"
               />
 
-              {/* Top Subtitle */}
-              <span className="font-mono text-xs sm:text-sm tracking-[0.24em] text-amber-300 uppercase">
+              {/* Top Subtitle in Nexa Sans */}
+              <span className="font-sans text-xs sm:text-sm font-semibold tracking-[0.24em] text-amber-300 uppercase">
                 Jelajahi Keindahan
               </span>
 
-              {/* Main Script Headline */}
-              <h2 className="text-3xl sm:text-5xl font-serif italic text-white tracking-tight leading-tight drop-shadow-md">
+              {/* Main Headline in Intro Script */}
+              <h2 className="text-4xl sm:text-6xl font-script font-normal text-white tracking-wide leading-tight drop-shadow-lg">
                 Banda Neira
               </h2>
 

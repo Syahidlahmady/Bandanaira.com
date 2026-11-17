@@ -115,14 +115,14 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = ({ onNa
 
         {/* SECTION HEADER: Floats gracefully on top */}
         <header className="relative z-10 flex flex-col items-center text-center max-w-2xl mx-auto pt-8 sm:pt-12 px-4 shrink-0 pointer-events-none">
-          <span className="font-mono text-xs tracking-widest text-[#f4b75e] uppercase mb-2">
+          <span className="font-sans text-xs font-semibold tracking-widest text-[#f4b75e] uppercase mb-2">
             SEJARAH BANDA NEIRA
           </span>
           <h2
             id="heritage-heading"
             className="text-3xl sm:text-5xl font-sans font-bold tracking-tight text-white leading-tight drop-shadow-md"
           >
-            Cerita dari Jantung Rempah
+            Cerita dari <span className="font-script font-normal text-amber-200">Jantung Rempah</span>
           </h2>
           <p className="mt-2 text-slate-300 text-xs sm:text-sm max-w-md hidden sm:block">
             Gulir ke bawah untuk menelusuri perjalanan sejarah Banda Neira

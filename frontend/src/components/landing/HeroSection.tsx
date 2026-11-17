@@ -257,7 +257,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             >
               <span>Di jantung rempah dunia,</span>
               <br />
-              <span className="font-serif italic font-normal text-amber-200 text-4xl sm:text-6xl lg:text-8xl leading-[1.05] drop-shadow-[0_4px_28px_rgba(0,0,0,0.9)]">
+              <span className="font-script font-normal text-amber-200 text-4xl sm:text-6xl lg:text-8xl leading-[1.05] drop-shadow-[0_4px_28px_rgba(0,0,0,0.9)]">
                 temukan Banda.
               </span>
             </h1>
