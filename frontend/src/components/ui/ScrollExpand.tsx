@@ -10,7 +10,8 @@ const smoothstep = (edge0: number, edge1: number, x: number) => {
 
 export interface ScrollExpandProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
   src?: string
-  mediaType?: 'image' | 'video'
+  mediaType?: 'image' | 'video' | 'iframe' | 'youtube'
+  youtubeId?: string
   poster?: string
   alt?: string
   title?: React.ReactNode
@@ -35,6 +36,7 @@ export interface ScrollExpandProps extends Omit<React.HTMLAttributes<HTMLDivElem
 export const ScrollExpand: React.FC<ScrollExpandProps> = ({
   src = '',
   mediaType = 'image',
+  youtubeId = '',
   poster = '',
   alt = '',
   title = '',
@@ -60,7 +62,7 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
   const trackRef = useRef<HTMLDivElement | null>(null)
   const stageRef = useRef<HTMLDivElement | null>(null)
   const frameRef = useRef<HTMLDivElement | null>(null)
-  const mediaRef = useRef<HTMLImageElement | HTMLVideoElement | null>(null)
+  const mediaRef = useRef<HTMLImageElement | HTMLVideoElement | HTMLDivElement | null>(null)
   const titleRef = useRef<HTMLDivElement | null>(null)
   const overlayRef = useRef<HTMLDivElement | null>(null)
   const scrimRef = useRef<HTMLDivElement | null>(null)
@@ -224,27 +226,49 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     }
   }, [applyProgress, useWindowScroll])
 
-  const media =
-    mediaType === 'video' ? (
-      <video
-        ref={mediaRef as React.RefObject<HTMLVideoElement>}
-        className="scroll-expand__media"
-        src={src}
-        poster={poster}
-        autoPlay
-        muted
-        loop
-        playsInline
+  const isYoutube = mediaType === 'youtube' || mediaType === 'iframe' || Boolean(youtubeId)
+
+  const media = isYoutube ? (
+    <div
+      ref={mediaRef as React.RefObject<HTMLDivElement>}
+      className="scroll-expand__media scroll-expand__youtube-wrap"
+    >
+      {poster || src ? (
+        <img
+          src={poster || src}
+          alt={alt}
+          className="absolute inset-0 w-full h-full object-cover -z-10"
+          draggable={false}
+        />
+      ) : null}
+      <iframe
+        className="scroll-expand__youtube-iframe"
+        src={`https://www.youtube-nocookie.com/embed/${youtubeId || 'bVvv6oNiFnw'}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId || 'bVvv6oNiFnw'}&playsinline=1&rel=0&disablekb=1&modestbranding=1&iv_load_policy=3&showinfo=0&fs=0`}
+        title="Banda Neira Aerial Video Backdrop"
+        allow="autoplay; encrypted-media; picture-in-picture"
+        tabIndex={-1}
       />
-    ) : (
-      <img
-        ref={mediaRef as React.RefObject<HTMLImageElement>}
-        className="scroll-expand__media"
-        src={src}
-        alt={alt}
-        draggable={false}
-      />
-    )
+    </div>
+  ) : mediaType === 'video' ? (
+    <video
+      ref={mediaRef as React.RefObject<HTMLVideoElement>}
+      className="scroll-expand__media"
+      src={src}
+      poster={poster}
+      autoPlay
+      muted
+      loop
+      playsInline
+    />
+  ) : (
+    <img
+      ref={mediaRef as React.RefObject<HTMLImageElement>}
+      className="scroll-expand__media"
+      src={src}
+      alt={alt}
+      draggable={false}
+    />
+  )
 
   return (
     <div
