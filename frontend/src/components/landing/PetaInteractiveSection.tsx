@@ -45,58 +45,71 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
   return (
     <section
       id="peta"
-      className="flex flex-col items-start gap-[32px] pt-12 pb-20 px-6 sm:px-12 lg:px-20 relative self-stretch w-full flex-[0_0_auto] bg-[#f7f5f0]"
+      aria-labelledby="peta-heading"
+      className="relative w-full py-16 px-4 sm:px-8 lg:px-16 bg-[#f7f5f0] text-slate-900 overflow-hidden"
     >
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 relative self-stretch w-full flex-[0_0_auto]">
-        <div className="flex flex-col max-w-[700px] items-start gap-[18px] relative">
-          <div className="inline-flex items-center gap-2.5 relative flex-[0_0_auto]">
-            <div className="relative w-6 h-px bg-amber-600" />
-            <span className="mt-[-1.00px] font-semibold text-amber-600 text-[11px] tracking-[1.80px] whitespace-nowrap relative w-fit leading-[normal]">
-              PETA EKSPLORASI SPASIAL
-            </span>
-          </div>
-          <h2 className="relative self-stretch font-medium text-[#0f2c59] text-[36px] sm:text-[50px] tracking-[-2.00px] leading-[1.12]">
-            Banda, dari sudut pandang baru.
+      <div className="relative max-w-7xl mx-auto flex flex-col items-center">
+        {/* Top Tracking Subtitle (Ala indonesia.travel) */}
+        <p className="font-sans text-[11px] sm:text-xs font-bold tracking-[0.25em] text-[#0f2c59]/75 uppercase text-center mb-3">
+          DISCOVER TOP DESTINATIONS AND ATTRACTIONS
+        </p>
+
+        {/* The Signature Split Divider Header: ──── Visit Banda Neira ──── */}
+        <div className="flex items-center justify-center w-full max-w-4xl mx-auto gap-4 sm:gap-8 mb-8">
+          <div className="flex-1 h-[1.5px] bg-[#0f2c59]/60" />
+          <h2
+            id="peta-heading"
+            className="font-sans font-bold text-3xl sm:text-4xl lg:text-[46px] text-[#0f2c59] tracking-tight whitespace-nowrap"
+          >
+            Visit Banda Neira
           </h2>
+          <div className="flex-1 h-[1.5px] bg-[#0f2c59]/60" />
         </div>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+
+        {/* Peta Interaktif Spasial Langsung */}
+        <div
+          ref={containerRef}
+          data-lenis-prevent
+          className="w-full relative"
+        >
+          {shouldLoadMap ? (
+            <Suspense
+              fallback={
+                <div className="w-full h-[640px] flex flex-col items-center justify-center gap-3 bg-sky-50">
+                  <div className="w-8 h-8 rounded-full border-2 border-[#0f2c59] border-t-transparent animate-spin" />
+                  <span className="text-xs font-semibold text-slate-600">
+                    Menyiapkan Peta Spasial Banda Neira...
+                  </span>
+                </div>
+              }
+            >
+              <InteractiveMapWorkspace currentUser={currentUser} />
+            </Suspense>
+          ) : (
+            <div className="w-full h-[640px] flex flex-col items-center justify-center gap-3 bg-sky-50/50">
+              <div className="w-8 h-8 rounded-full border-2 border-[#0f2c59] border-t-transparent animate-spin" />
+              <span className="text-xs font-semibold text-slate-600">
+                Menyiapkan Peta Spasial Banda Neira...
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Aksi Buka Peta Layar Penuh di Bawah */}
+        <div className="w-full flex items-center justify-between pt-4 px-2">
+          <p className="text-xs text-slate-500 font-sans">
+            Eksplorasi spasial cagar budaya, potensi bahari, penginapan warga, dan fasilitas pulau.
+          </p>
+
           <button
             type="button"
             onClick={() => onNavigate('gis')}
-            className="inline-flex h-10 items-center gap-2 px-5 bg-[#081d35] hover:bg-[#0f2c59] text-white rounded-lg text-xs font-semibold transition-colors shadow-sm"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#0f2c59] hover:bg-[#183e75] text-white text-xs font-semibold transition-colors shadow-sm"
           >
-            <span>Layar Penuh Peta</span>
+            <span>Buka Peta Layar Penuh</span>
             <ArrowUpRightIcon className="w-3.5 h-3.5" />
           </button>
         </div>
-      </div>
-
-      <div
-        ref={containerRef}
-        data-lenis-prevent
-        className="w-full min-h-[640px] rounded-2xl overflow-hidden border border-[#dce1df] shadow-md bg-white p-4 sm:p-6"
-      >
-        {shouldLoadMap ? (
-          <Suspense
-            fallback={
-              <div className="w-full h-[620px] rounded-xl bg-sky-50 border border-slate-200 flex flex-col items-center justify-center gap-3">
-                <div className="w-8 h-8 rounded-full border-2 border-emerald-600 border-t-transparent animate-spin" />
-                <span className="text-xs font-semibold text-slate-500">
-                  Menyiapkan Peta Spasial Banda Neira...
-                </span>
-              </div>
-            }
-          >
-            <InteractiveMapWorkspace currentUser={currentUser} />
-          </Suspense>
-        ) : (
-          <div className="w-full h-[620px] rounded-xl bg-sky-50/40 border border-slate-200 flex flex-col items-center justify-center gap-3">
-            <div className="w-8 h-8 rounded-full border-2 border-emerald-600 border-t-transparent animate-spin" />
-            <span className="text-xs font-semibold text-slate-500">
-              Menyiapkan Peta Spasial Banda Neira...
-            </span>
-          </div>
-        )}
       </div>
     </section>
   )

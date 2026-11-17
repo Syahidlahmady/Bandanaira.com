@@ -2322,135 +2322,6 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
           : undefined
       }
     >
-      {/* Workspace Header */}
-      <div
-        className="workspace-header"
-        style={{
-          marginBottom: isFullscreen ? '0.65rem' : '1.25rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '0.75rem',
-        }}
-      >
-        <div>
-          <h2
-            style={{
-              margin: 0,
-              fontSize: isFullscreen ? '1.25rem' : '1.45rem',
-              fontWeight: 800,
-              color: '#0f2c59',
-              letterSpacing: '-0.02em',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-            }}
-          >
-            Peta Kepulauan Banda Neira
-            {isFullscreen && (
-              <span
-                style={{
-                  fontSize: '0.68rem',
-                  fontWeight: 600,
-                  padding: '0.15rem 0.5rem',
-                  borderRadius: '4px',
-                  background: '#e0f2fe',
-                  color: '#0369a1',
-                }}
-              >
-                Layar Penuh
-              </span>
-            )}
-          </h2>
-          {!isFullscreen && (
-            <p style={{ margin: '0.2rem 0 0', color: '#64748b', fontSize: '0.825rem' }}>
-              Eksplorasi destinasi wisata bahari, cagar budaya, penginapan, dan fasilitas umum di seluruh pulau.
-            </p>
-          )}
-        </div>
-
-        {/* Action Controls (Clean Admin Actions & Fullscreen Toggle) */}
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          {isOfficerOrAdmin && (
-            <>
-              <button
-                type="button"
-                onClick={handleOpenNewRoute}
-                style={{
-                  fontSize: '0.78rem',
-                  padding: '0.42rem 0.85rem',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  background: adminStudioOpen && geometryMode === 'route' ? '#0284c7' : '#ffffff',
-                  color: adminStudioOpen && geometryMode === 'route' ? '#ffffff' : '#0284c7',
-                  border: '1.5px solid #0284c7',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  boxShadow: '0 1px 2px rgba(2, 132, 199, 0.08)',
-                }}
-              >
-                <Route size={13} />
-                Tarik Rute Baru
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (adminStudioOpen) {
-                    handleCloseAdminStudio()
-                  } else {
-                    handleOpenNewPoint()
-                  }
-                }}
-                style={{
-                  fontSize: '0.78rem',
-                  padding: '0.42rem 0.85rem',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  background: adminStudioOpen && geometryMode === 'point' ? '#059669' : '#ffffff',
-                  color: adminStudioOpen && geometryMode === 'point' ? '#ffffff' : '#059669',
-                  border: '1.5px solid #059669',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  boxShadow: '0 1px 2px rgba(5, 150, 105, 0.08)',
-                }}
-              >
-                <Edit2 size={13} />
-                {adminStudioOpen && geometryMode === 'point' ? 'Tutup Studio' : 'Tambah Titik'}
-              </button>
-            </>
-          )}
-
-          {/* Fullscreen Toggle Icon Button (Accessible for both regular users and admins) */}
-          <button
-            type="button"
-            onClick={toggleFullscreen}
-            style={{
-              width: '34px',
-              height: '34px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: isFullscreen ? '#0f172a' : '#ffffff',
-              color: isFullscreen ? '#ffffff' : '#334155',
-              border: isFullscreen ? '1.5px solid #0f172a' : '1.5px solid #cbd5e1',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-              transition: 'all 0.15s ease',
-            }}
-            title={isFullscreen ? 'Keluar dari Layar Penuh (Esc)' : 'Layar Penuh Peta (Fullscreen)'}
-            aria-label="Toggle Fullscreen"
-          >
-            {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-          </button>
-        </div>
-      </div>
-
       {/* Alert Notification Toast */}
       {notificationMsg && (
         <div
@@ -2512,91 +2383,6 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
           </button>
         </div>
       )}
-
-      {/* Streamlined Search & Island Filter Bar */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '0.65rem',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          marginBottom: '0.85rem',
-        }}
-      >
-        {/* Search Box */}
-        <div style={{ position: 'relative', flex: '1 1 260px', maxWidth: '360px' }}>
-          {loading ? (
-            <RefreshCw size={13} className="animate-spin" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#0284c7' }} />
-          ) : (
-            <Search size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
-          )}
-          <input
-            type="text"
-            placeholder="Cari tempat, benteng, pantai, penginapan..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '0.45rem 2rem 0.45rem 2.2rem',
-              fontSize: '0.8rem',
-              background: '#ffffff',
-              border: '1px solid #cbd5e1',
-              borderRadius: '999px',
-              color: '#0f172a',
-              outline: 'none',
-              boxShadow: '0 2px 6px rgba(15, 44, 89, 0.04)',
-            }}
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              style={{
-                position: 'absolute',
-                right: '10px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'none',
-                border: 'none',
-                color: '#94a3b8',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-              }}
-            >
-              <X size={12} />
-            </button>
-          )}
-        </div>
-
-        {/* Island Filter Chips */}
-        <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          {['', 'Pulau Neira', 'Banda Besar', 'Pulau Hatta', 'Pulau Ay', 'Pulau Rhun'].map((isl) => {
-            const isSelected = islandFilter === isl
-            return (
-              <button
-                type="button"
-                key={isl}
-                onClick={() => setIslandFilter(isl)}
-                style={{
-                  fontSize: '0.75rem',
-                  padding: '0.32rem 0.75rem',
-                  borderRadius: '999px',
-                  border: isSelected ? '1.5px solid #081d35' : '1px solid #e2e8f0',
-                  background: isSelected ? '#081d35' : '#ffffff',
-                  color: isSelected ? '#ffffff' : '#475569',
-                  cursor: 'pointer',
-                  fontWeight: isSelected ? 700 : 500,
-                  boxShadow: isSelected ? '0 2px 4px rgba(8, 29, 53, 0.15)' : '0 1px 2px rgba(0,0,0,0.03)',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                {isl || 'Semua Pulau'}
-              </button>
-            )
-          })}
-        </div>
-      </div>
 
       {/* Admin Studio Editor Panel */}
       {adminStudioOpen && isOfficerOrAdmin && (
@@ -4313,6 +4099,152 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
             background: '#ffffff',
           }}
         >
+          {/* In-Map Floating Search & Island Filter Bar (Top Left Canvas) */}
+          <div
+            data-lenis-prevent
+            style={{
+              position: 'absolute',
+              top: '14px',
+              left: '14px',
+              zIndex: 1000,
+              display: 'flex',
+              gap: '0.45rem',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              maxWidth: 'calc(100% - 100px)',
+            }}
+          >
+            {/* Search Box */}
+            <div style={{ position: 'relative', width: '220px' }}>
+              {loading ? (
+                <RefreshCw size={13} className="animate-spin" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#0284c7' }} />
+              ) : (
+                <Search size={13} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+              )}
+              <input
+                type="text"
+                placeholder="Cari tempat..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.4rem 1.6rem 0.4rem 1.8rem',
+                  fontSize: '0.78rem',
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(8px)',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '999px',
+                  color: '#0f172a',
+                  outline: 'none',
+                  boxShadow: '0 2px 8px rgba(15, 44, 89, 0.1)',
+                }}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  style={{
+                    position: 'absolute',
+                    right: '8px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: '#94a3b8',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+
+            {/* Island Filter Chips */}
+            <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              {['', 'Pulau Neira', 'Banda Besar', 'Pulau Hatta', 'Pulau Ay', 'Pulau Rhun'].map((isl) => {
+                const isSelected = islandFilter === isl
+                return (
+                  <button
+                    type="button"
+                    key={isl}
+                    onClick={() => setIslandFilter(isl)}
+                    style={{
+                      fontSize: '0.72rem',
+                      padding: '0.3rem 0.65rem',
+                      borderRadius: '999px',
+                      border: isSelected ? '1.5px solid #081d35' : '1px solid rgba(203, 213, 225, 0.85)',
+                      background: isSelected ? '#081d35' : 'rgba(255, 255, 255, 0.92)',
+                      backdropFilter: 'blur(8px)',
+                      color: isSelected ? '#ffffff' : '#334155',
+                      cursor: 'pointer',
+                      fontWeight: isSelected ? 700 : 600,
+                      boxShadow: isSelected ? '0 2px 6px rgba(8, 29, 53, 0.2)' : '0 1px 4px rgba(0,0,0,0.06)',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {isl || 'Semua Pulau'}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Admin Controls */}
+            {isOfficerOrAdmin && (
+              <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={handleOpenNewRoute}
+                  style={{
+                    fontSize: '0.72rem',
+                    padding: '0.3rem 0.6rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    background: adminStudioOpen && geometryMode === 'route' ? '#0284c7' : 'rgba(255,255,255,0.95)',
+                    color: adminStudioOpen && geometryMode === 'route' ? '#ffffff' : '#0284c7',
+                    border: '1.5px solid #0284c7',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                  }}
+                >
+                  <Route size={12} />
+                  Rute
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (adminStudioOpen) {
+                      handleCloseAdminStudio()
+                    } else {
+                      handleOpenNewPoint()
+                    }
+                  }}
+                  style={{
+                    fontSize: '0.72rem',
+                    padding: '0.3rem 0.6rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    background: adminStudioOpen && geometryMode === 'point' ? '#059669' : 'rgba(255,255,255,0.95)',
+                    color: adminStudioOpen && geometryMode === 'point' ? '#ffffff' : '#059669',
+                    border: '1.5px solid #059669',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                  }}
+                >
+                  <Edit2 size={12} />
+                  {adminStudioOpen && geometryMode === 'point' ? 'Tutup' : 'Titik'}
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Subtle In-Map Fullscreen Toggle Button (Top Right) */}
           <button
             type="button"
@@ -4389,8 +4321,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               data-lenis-prevent
               style={{
                 position: 'absolute',
-                top: '12px',
-                left: '12px',
+                top: '64px',
+                left: '14px',
                 zIndex: 1000,
                 background: 'rgba(255, 255, 255, 0.98)',
                 backdropFilter: 'blur(10px)',

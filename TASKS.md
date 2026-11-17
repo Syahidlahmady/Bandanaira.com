@@ -45,6 +45,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 40: GIS Workspace Simplification, Bounding Box Archipelagic Lock, Redundancy Elimination & Natural Copywriting Overhaul**
 - [x] **Phase 41: Transformasi Kartu Detail POI ke Google Maps Desktop Drawer & Penampil Panorama 360° Interaktif (Anti-Slop Modern UI)**
 - [x] **Phase 42: Kurasi & Scraping Foto Autentik Cagar Budaya/Landmark Banda Neira (Zero External Hotlinking & Full Offline Asset Resilience)**
+- [x] **Phase 43: Integrasi Komponen Sinematik <ScrollExpand /> React Bits pada Hero Section Beranda Banda Neira**
 
 ---
 
@@ -674,6 +675,29 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Mengamankan render pesan error objek di `OfflineQueueModal.tsx` dan mengaktifkan tombol **"Kirim Sekarang ke Server"** kapan pun antrean tidak kosong dan tidak sedang sinkronisasi.
   - Menambahkan `authService.fetchWithAuth` pada `auth.ts` serta `requestWithAuth` pada `population.ts` dan `traceability.ts`.
   - Memperbarui `frontend/public/sw.js` (`banda-digital-v5`) agar kegagalan GET `/api/` tanpa cache mengembalikan status HTTP `503` (bukan `200`) supaya mekanisme fallback cache IndexedDB bekerja semestinya.
+
+### Phase 44: Integrasi Komponen Sinematik <ScrollExpand /> React Bits pada Hero Section Beranda Banda Neira
+- [x] 44.1 Pembuatan Modul Komponen `ScrollExpand.tsx` dan `ScrollExpand.css`:
+  - Mengembangkan `ScrollExpand.tsx` berbasis TypeScript murni dengan dukungan interpolasi matematis `smoothstep`, peredaman inersia `smoothing: 0.12`, transformasi `clipPath` inset melingkar dinamis, serta kalkulasi ukuran berbasis `useWindowScroll`.
+  - Mengimplementasikan `ScrollExpand.css` dengan tata letak panggung sticky, media scaling presisi tanpa distorsi, scrim peredam kontras bergaya maritim Banda (`rgba(8, 29, 53, ...)`), serta penanganan `pointerEvents` selektif agar elemen anak (*children*) interaktif secara penuh saat ekspansi mencapai bleed 100%.
+- [x] 44.2 Transformasi Hero Section Beranda (`HeroSection.tsx`):
+  - Menempatkan bilah navigasi kaca melayang (*fixed frosted glass header*) di layer teratas (`z-50`) dengan akses tautan menu, tombol login/daftar, dan identitas logo Pala (*NutmegLogoIcon*).
+  - Mengonfigurasi `<ScrollExpand />` dengan bingkai awal sinematik (`startWidth: 46%` desktop / `88%` mobile, `startHeight: 60%`, `startRadius: 28px`), efek zoom media halus `1.3x -> 1.0x`, serta judul pra-scroll mengambang berbalut badge titik koordinat rempah Banda.
+  - Membangun tata letak editorial asimetris di sisi kiri pada fase ekspansi penuh: judul ganda kombinasi sans-serif `Plus Jakarta Sans` dan serif miring `Cormorant Garamond italic`, paragraf narasi terarah, dual CTA button (Jelajahi Banda & Peta GIS), dan status bar sekilas pulau.
+  - Memverifikasi build produksi `npm run build` (2.036 modul tertransformasi, exit code `0`) dan uji backend PostGIS GIS (`8 passed in 21.08s`).
+
+### Phase 45: Redesain Beranda Visual Ala Wonderful Indonesia, Tipografi Nexa Pro/Intro Script & Chatbot Cerdas
+- [x] 45.1 YouTube Cinematic Hero Backdrop & Konfigurasi Tipografi Nexa Pro / Intro Script:
+  - Menyematkan video YouTube tanpa batas dengan rasio sinematik dan kontrol tersembunyi sebagai latar belakang aperture.
+  - Mengonfigurasi `@font-face` untuk Nexa Pro (`font-sans font-bold`) dan Intro Script (`font-script`).
+- [x] 45.2 Redesain Katalog Destinasi, Penginapan, dan Marketplace UMKM Bergaya `indonesia.travel`:
+  - Mengubah `TourismSawSection` menjadi Spotlight Hero Slider interaktif dengan indikator numerik dan kartu vertikal.
+  - Mengubah `EcoStayCatalogSection` dan `TraceabilityMarketplaceSection` menjadi kartu showcase bersih tanpa badge mengambang yang menutupi gambar.
+  - Mengubah CTA kunjungan dengan kutipan legendaris Sutan Sjahrir *"Jangan mati sebelum ke Banda!"*.
+- [x] 45.3 Pembersihan Kanvas Peta & Floating Chatbot Rekomendasi Wisata (SAW):
+  - Mengadopsi header ikonik `Visit Banda Neira` dengan garis belah horizontal.
+  - Memindahkan filter pulau dan kotak pencarian melayang langsung di dalam kanvas peta.
+  - Membersihkan istilah teknis internal (GIS, SAW) pada antarmuka publik dan mengintegrasikan perhitungan rekomendasi SAW ke dalam Chat Bubble mengambang di pojok kanan bawah.
 
 
 

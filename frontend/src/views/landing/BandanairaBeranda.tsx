@@ -3,7 +3,7 @@ import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import {
   HeroSection,
-  PanoramaIslandSection,
+  Banda3DPhotoGallery,
   PetaInteractiveSection,
   HeritageSpiceSection,
   TourismSawSection,
@@ -13,6 +13,7 @@ import {
   SustainableTravelSection,
   PlanYourVisitSection,
   LandingFooterSection,
+  TourismChatbotBubble,
 } from '../../components/landing'
 
 export type NavTabType =
@@ -111,8 +112,8 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
         setActiveNav={setActiveNav}
       />
 
-      {/* 2. Island Introduction & Panorama Section */}
-      <PanoramaIslandSection />
+      {/* 2. 3D Perspective Photo Gallery (Kompilasi Foto Banda Neira) */}
+      <Banda3DPhotoGallery />
 
       {/* 3. Interactive Spatial Map Section */}
       <PetaInteractiveSection
@@ -167,6 +168,9 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
         onOpenQuickLogin={onOpenQuickLogin}
         setActiveNav={setActiveNav}
       />
+
+      {/* 12. Floating Tourism Recommendation Chatbot Bubble */}
+      <TourismChatbotBubble onNavigate={onNavigate} />
     </div>
   )
 }

@@ -1,4 +1,5 @@
 export { HeroSection } from './HeroSection';
+export { Banda3DPhotoGallery } from './Banda3DPhotoGallery';
 export { PanoramaIslandSection } from './PanoramaIslandSection';
 export { PetaInteractiveSection } from './PetaInteractiveSection';
 export { HeritageSpiceSection } from './HeritageSpiceSection';
@@ -9,4 +10,5 @@ export { TraceabilityMarketplaceSection } from './TraceabilityMarketplaceSection
 export { SustainableTravelSection } from './SustainableTravelSection';
 export { PlanYourVisitSection } from './PlanYourVisitSection';
 export { LandingFooterSection } from './LandingFooterSection';
+export { TourismChatbotBubble } from './TourismChatbotBubble';
 export * from './LandingIcons';

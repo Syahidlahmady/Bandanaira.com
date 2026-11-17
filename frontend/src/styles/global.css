@@ -1,5 +1,54 @@
 /* ==========================================================================
-   Banda Digital Ecosystem — Global Rules, Typography, Animations & Utilities
+   Banda Digital Ecosystem — Typography: Nexa Pro & Intro Script (@font-face)
+   ========================================================================== */
+
+@font-face {
+  font-family: 'Intro Script';
+  src: url('/fonts/IntroScript-Regular.woff2') format('woff2'),
+       url('/fonts/IntroScript-Regular.woff') format('woff'),
+       url('/fonts/IntroScript.otf') format('opentype'),
+       url('/fonts/IntroScript.ttf') format('truetype'),
+       local('Intro Script'),
+       local('IntroScript');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nexa Pro';
+  src: url('/fonts/NexaPro-Regular.woff2') format('woff2'),
+       url('/fonts/NexaPro-Regular.woff') format('woff'),
+       url('/fonts/NexaPro.otf') format('opentype'),
+       url('/fonts/NexaPro.ttf') format('truetype'),
+       local('Nexa Pro'),
+       local('Nexa Pro Regular'),
+       local('Nexa Regular'),
+       local('Nexa');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nexa Pro';
+  src: url('/fonts/NexaPro-Bold.woff2') format('woff2'),
+       url('/fonts/NexaPro-Bold.woff') format('woff'),
+       url('/fonts/NexaPro.otf') format('opentype'),
+       url('/fonts/NexaPro.ttf') format('truetype'),
+       local('Nexa Pro Bold'),
+       local('Nexa Bold');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-script {
+  font-family: var(--font-script), cursive;
+}
+
+/* ==========================================================================
+   Global Rules, Layout & Surfaces
    ========================================================================== */
 
 * {
