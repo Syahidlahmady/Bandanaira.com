@@ -1,7 +1,33 @@
+import json
 import math
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 import uuid
 from backend.app.modules.farms.models import Farm
+
+_SEEDS_DIR = Path(__file__).resolve().parent.parent.parent / "seeds"
+_VILLAGES_GEOJSON_PATH = _SEEDS_DIR / "banda_villages.geojson"
+
+
+def load_village_boundary_from_file(village_name: str) -> Optional[Dict[str, Any]]:
+    """Memuat geometri poligon batas desa dari berkas seeder GeoJSON resmi."""
+    if not _VILLAGES_GEOJSON_PATH.exists():
+        return None
+    try:
+        with open(_VILLAGES_GEOJSON_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            v_lower = village_name.strip().lower()
+            if v_lower in ("banda neira", "neira", "desa banda neira"):
+                v_lower = "nusantara"
+            for feat in data.get("features", []):
+                props = feat.get("properties", {})
+                name = props.get("village_name") or props.get("name") or ""
+                n_lower = name.strip().lower()
+                if n_lower == v_lower or v_lower in n_lower or n_lower in v_lower:
+                    return feat.get("geometry")
+    except Exception:
+        pass
+    return None
 
 
 def extract_polygon_rings(geojson: Dict[str, Any]) -> List[List[List[float]]]:
@@ -162,3 +188,67 @@ def find_overlapping_farm(
             continue
 
     return None
+
+
+def is_point_inside_geojson_geom(pt: List[float], geom: Dict[str, Any]) -> bool:
+    """
+    Memeriksa apakah titik [lon, lat] berada di dalam geometri GeoJSON (Polygon / MultiPolygon).
+    """
+    gtype = geom.get("type")
+    coords = geom.get("coordinates")
+    if not gtype or not coords:
+        return False
+
+    if gtype == "Polygon":
+        if isinstance(coords, list) and len(coords) > 0:
+            return _point_in_polygon(pt, coords[0])
+    elif gtype == "MultiPolygon":
+        if isinstance(coords, list):
+            for poly in coords:
+                if isinstance(poly, list) and len(poly) > 0:
+                    if _point_in_polygon(pt, poly[0]):
+                        return True
+    return False
+
+
+def check_farm_within_village_boundary(
+    farm_geojson: Dict[str, Any],
+    village_geom: Dict[str, Any],
+    village_name: str,
+) -> Tuple[bool, Optional[str]]:
+    """
+    Memvalidasi apakah poligon lahan kebun berada di dalam batas wilayah desa administratif resmi.
+    Menguji centroid (titik tengah) dan sebaran titik batas poligon kebun.
+    """
+    try:
+        outer_ring = validate_polygon_geojson(farm_geojson)
+    except ValueError as err:
+        return False, str(err)
+
+    pts = outer_ring[:-1]
+    if not pts:
+        return False, "Poligon kebun tidak memiliki koordinat."
+
+    # 1. Hitung centroid
+    center_lon = sum(p[0] for p in pts) / len(pts)
+    center_lat = sum(p[1] for p in pts) / len(pts)
+    center_inside = is_point_inside_geojson_geom([center_lon, center_lat], village_geom)
+
+    # 2. Cek titik-titik sudut
+    inside_count = sum(1 for p in pts if is_point_inside_geojson_geom(p, village_geom))
+    ratio = inside_count / len(pts)
+
+    # Jika titik tengah di luar dan mayoritas titik di luar batas desa
+    if not center_inside and ratio < 0.5:
+        return False, (
+            f"Batas lahan berada di luar wilayah administratif resmi Desa {village_name}. "
+            f"Harap petakan lahan di dalam batas wilayah desa Anda."
+        )
+
+    if ratio < 0.5:
+        return False, (
+            f"Mayoritas titik sudut lahan berada di luar batas wilayah administratif Desa {village_name}."
+        )
+
+    return True, None
+

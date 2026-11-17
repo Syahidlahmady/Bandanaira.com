@@ -25,6 +25,7 @@ export interface DemoActorAccount {
   roleKey: string
   icon: string
   badge: string
+  village?: string
   accentColor: string
   badgeClass: string
   desc: string
@@ -34,18 +35,34 @@ export interface DemoActorAccount {
 
 export const DEMO_ACTOR_ACCOUNTS: DemoActorAccount[] = [
   {
-    role: 'Petugas Kantor Desa',
+    role: 'Petugas Kantor Desa (Lonthoir)',
     name: 'Budi Santoso',
     u: 'petugas',
     p: 'Petugas123!',
     roleKey: 'village_officer',
+    village: 'Lonthoir',
     icon: '🏛️',
-    badge: 'Pemerintahan',
+    badge: 'Desa Lonthoir',
     accentColor: '#f59e0b',
     badgeClass: 'badge-amber',
-    desc: 'Verifikasi kependudukan NIK, validasi permohonan surat & rekap audit desa',
+    desc: 'Verifikasi kependudukan, pengesahan plot kebun & yurisdiksi wilayah Desa Lonthoir',
     destinationTab: 'population',
-    landingTitle: '👥 Kependudukan & Layanan Desa',
+    landingTitle: '👥 Kependudukan & Layanan Desa Lonthoir',
+  },
+  {
+    role: 'Petugas Kantor Desa (Nusantara)',
+    name: 'La Ode Arifin',
+    u: 'petugas_nusantara',
+    p: 'Petugas123!',
+    roleKey: 'village_officer',
+    village: 'Nusantara',
+    icon: '🏛️',
+    badge: 'Desa Nusantara',
+    accentColor: '#0284c7',
+    badgeClass: 'badge-blue',
+    desc: 'Verifikasi kependudukan, pengesahan plot kebun & yurisdiksi wilayah Desa Nusantara',
+    destinationTab: 'population',
+    landingTitle: '👥 Kependudukan & Layanan Desa Nusantara',
   },
   {
     role: 'Pengelola Koperasi Hatta',
@@ -60,20 +77,6 @@ export const DEMO_ACTOR_ACCOUNTS: DemoActorAccount[] = [
     desc: 'Timbangan kasir komoditas pala, bank sampah botol 10L, & koin air minum RO',
     destinationTab: 'koperasi',
     landingTitle: '⚖️ Koperasi & Bank Sampah',
-  },
-  {
-    role: 'Wisatawan & Pengunjung Pulau',
-    name: 'Nadia Putri',
-    u: '8171010101900003',
-    p: 'Warga123!',
-    roleKey: 'tourist',
-    icon: '🧳',
-    badge: 'Pengunjung Wisata',
-    accentColor: '#f59e0b',
-    badgeClass: 'badge-amber',
-    desc: 'Eksplorasi katalog Eco-Stay, booking WhatsApp, audio guide 177 cagar budaya, peta GIS & SAW',
-    destinationTab: 'tourism',
-    landingTitle: '🧭 Eksplorasi Wisatawan & Eco-Stay',
   },
   {
     role: 'Pengelola Eco-Stay & Wisata',
@@ -118,58 +121,61 @@ export const DEMO_ACTOR_ACCOUNTS: DemoActorAccount[] = [
     landingTitle: '📋 Survei & ETL Hybrid',
   },
   {
-    role: 'Ketua Kelompok Tani',
+    role: 'Ketua Kelompok Tani (Lonthoir)',
     name: 'Hasan Baadilla',
     u: 'ketua_kelompok',
     p: 'Ketua123!',
     roleKey: 'farmer_group_admin',
+    village: 'Lonthoir',
     icon: '👥',
     badge: 'Poktan Lonthoir',
     accentColor: '#c084fc',
     badgeClass: 'badge-purple',
-    desc: 'Validasi petak kebun anggota & rekapitulasi panen rempah pala desa',
+    desc: 'Pendaftaran petak kebun anggota & rekapitulasi panen rempah pala di Desa Lonthoir',
     destinationTab: 'farming',
-    landingTitle: '🗺️ Peta Kebun & Poktan',
+    landingTitle: '🗺️ Peta Kebun & Poktan Lonthoir',
   },
   {
-    role: 'Petani Rempah Pala',
+    role: 'Petani Rempah Pala (Lonthoir)',
     name: 'Ali Wailissa',
     u: 'petani',
     p: 'Petani123!',
     roleKey: 'farmer',
+    village: 'Lonthoir',
     icon: '👨‍🌾',
-    badge: 'Pala & Cengkeh',
+    badge: 'Petani Lonthoir',
     accentColor: '#10b981',
     badgeClass: 'badge-emerald',
-    desc: 'Catat hasil panen kebun, pantau mutu Grade AAA/B & geolokasi petak',
+    desc: 'Catat hasil panen kebun, pantau mutu Grade AAA/B & geolokasi petak Desa Lonthoir',
     destinationTab: 'traceability',
-    landingTitle: '📦 Panen & Mutu Rempah',
+    landingTitle: '📦 Panen & Mutu Rempah Lonthoir',
   },
   {
-    role: 'Warga Masyarakat Desa',
+    role: 'Warga Masyarakat Desa (Lonthoir)',
     name: 'Siti Rahma',
     u: 'warga',
     p: 'Warga123!',
     roleKey: 'resident',
+    village: 'Lonthoir',
     icon: '👤',
-    badge: 'Layanan Mandiri',
+    badge: 'Warga Lonthoir',
     accentColor: '#38bdf8',
     badgeClass: 'badge-blue',
-    desc: 'Cek kuota air minum RO, tabungan botol plastik, & permohonan surat SKU',
+    desc: 'Cek kuota air minum RO, tabungan botol plastik, & permohonan surat SKU Desa Lonthoir',
     destinationTab: 'koperasi',
     landingTitle: '⚖️ Koperasi & Layanan Mandiri',
   },
   {
-    role: 'Administrator Sistem',
+    role: 'Administrator Sistem (Lintas Desa)',
     name: 'Administrator Banda',
     u: 'admin',
     p: 'Admin123!',
     roleKey: 'admin',
     icon: '🛡️',
-    badge: 'Root Access',
+    badge: 'Akses Semua Wilayah',
     accentColor: '#ec4899',
     badgeClass: 'badge-red',
-    desc: 'Master suite 11 modul, audit trail OWASP, blockchain EVM & konfigurasi',
+    desc: 'Master suite 11 modul, audit trail OWASP, blockchain EVM & pemantauan seluruh desa',
     destinationTab: 'population',
     landingTitle: '👥 Administrasi Master (11 Tab)',
   },
@@ -209,7 +215,7 @@ export const QuickLoginModal: React.FC<QuickLoginModalProps> = ({
     : filterRole === 'economy'
     ? DEMO_ACTOR_ACCOUNTS.filter((a) => ['coop_manager', 'resident', 'farmer', 'farmer_group_admin'].includes(a.roleKey))
     : filterRole === 'tourism'
-    ? DEMO_ACTOR_ACCOUNTS.filter((a) => ['tourist', 'homestay_operator', 'smart_tourism_admin'].includes(a.roleKey))
+    ? DEMO_ACTOR_ACCOUNTS.filter((a) => ['homestay_operator', 'smart_tourism_admin'].includes(a.roleKey))
     : DEMO_ACTOR_ACCOUNTS.filter((a) => ['field_surveyor'].includes(a.roleKey))
 
   return (
@@ -401,7 +407,7 @@ export const QuickLoginModal: React.FC<QuickLoginModalProps> = ({
                 { id: 'all', label: `Semua (${DEMO_ACTOR_ACCOUNTS.length})` },
                 { id: 'gov', label: '🏛️ Desa' },
                 { id: 'economy', label: '⚖️ Koperasi & Tani' },
-                { id: 'tourism', label: '🏖️ Wisata' },
+                { id: 'tourism', label: '🏖️ Pengelola Wisata' },
                 { id: 'survey', label: '📋 Survei' },
               ].map((f) => (
                 <button
@@ -451,6 +457,53 @@ export const QuickLoginModal: React.FC<QuickLoginModalProps> = ({
           </div>
         </div>
 
+        {/* Public Notice Banner: Wisatawan Bebas Akses Tanpa Login */}
+        <div
+          style={{
+            margin: '0.85rem 1.5rem 0.25rem',
+            padding: '0.75rem 1rem',
+            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.08) 100%)',
+            border: '1px solid rgba(245, 158, 11, 0.35)',
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '0.65rem',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <span style={{ fontSize: '1.25rem' }}>🧭</span>
+            <div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#fef3c7' }}>
+                Wisatawan Tidak Memerlukan Akun / Login
+              </div>
+              <div style={{ fontSize: '0.74rem', color: '#cbd5e1' }}>
+                Katalog penginapan eco-stay, audio guide 177 cagar budaya, perencana rute SAW, &amp; peta 7-layer dapat langsung diakses publik secara bebas.
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleSwitchToGuest}
+            style={{
+              padding: '0.35rem 0.75rem',
+              borderRadius: '8px',
+              background: '#f59e0b',
+              border: 'none',
+              color: '#0f172a',
+              fontSize: '0.74rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.3rem',
+            }}
+          >
+            Akses Sebagai Wisatawan Publik →
+          </button>
+        </div>
+
         {/* Modal Body: Cards Grid */}
         <div
           style={{
@@ -463,17 +516,7 @@ export const QuickLoginModal: React.FC<QuickLoginModalProps> = ({
           }}
         >
           {filteredAccounts.map((acc) => {
-            const currentIsTourist = Boolean(
-              currentUser?.roles?.some(
-                (r) => r.name === 'tourist' || r.name === 'wisatawan'
-              )
-            )
-            const isActive =
-              acc.roleKey === 'tourist'
-                ? currentIsTourist
-                : acc.roleKey === 'resident'
-                ? currentUser?.username === acc.u && !currentIsTourist
-                : currentUser?.username === acc.u
+            const isActive = currentUser?.username === acc.u
             const isSwitching = switchingUser === acc.u
 
             return (

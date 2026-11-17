@@ -252,11 +252,11 @@ async def test_farm_approval_workflow_and_role_permissions(client: AsyncClient):
 async def test_spatial_polygon_boundary_and_overlap_validation(client: AsyncClient):
     token = await get_admin_token(client)
 
-    # 1. Setup group & farmer
+    # 1. Setup group & farmer in Lonthoir
     grp_res = await client.post(
         "/api/v1/farmers/groups",
         headers={"Authorization": f"Bearer {token}"},
-        json={"name": "Poktan Pala Spasial Banda"},
+        json={"name": "Poktan Pala Spasial Banda", "village": "Lonthoir"},
     )
     group_id = grp_res.json()["id"]
 
@@ -267,17 +267,17 @@ async def test_spatial_polygon_boundary_and_overlap_validation(client: AsyncClie
     )
     farmer_id = frm_res.json()["id"]
 
-    # 2. Polygon 1: Kebun Pala Lonthoir (100m x 100m)
-    # lon, lat: 129.8970, -4.5310
+    # 2. Polygon 1: Kebun Pala Lonthoir (100m x 100m di dalam batas resmi Lonthoir)
+    # lon, lat: 129.8940, -4.5550
     poly1 = {
         "type": "Polygon",
         "coordinates": [
             [
-                [129.8970, -4.5310],
-                [129.8979, -4.5310],
-                [129.8979, -4.5301],
-                [129.8970, -4.5301],
-                [129.8970, -4.5310],
+                [129.8940, -4.5550],
+                [129.8949, -4.5550],
+                [129.8949, -4.5541],
+                [129.8940, -4.5541],
+                [129.8940, -4.5550],
             ]
         ],
     }
@@ -290,10 +290,11 @@ async def test_spatial_polygon_boundary_and_overlap_validation(client: AsyncClie
             "farmer_id": farmer_id,
             "farm_code": "BN-FARM-SP01",
             "name": "Kebun Pala Spasial Lonthoir",
-            "latitude": -4.5310,
-            "longitude": 129.8970,
+            "latitude": -4.5550,
+            "longitude": 129.8940,
             "area_sqm": 0.0,
             "primary_commodity": "Pala",
+            "village": "Lonthoir",
             "polygon_boundary_geojson": poly1,
         },
     )
@@ -304,12 +305,12 @@ async def test_spatial_polygon_boundary_and_overlap_validation(client: AsyncClie
     # 3. Test validate-boundary endpoint with invalid geometry (<4 coords)
     invalid_poly = {
         "type": "Polygon",
-        "coordinates": [[[129.8970, -4.5310], [129.8979, -4.5310]]],
+        "coordinates": [[[129.8940, -4.5550], [129.8949, -4.5550]]],
     }
     val_inv = await client.post(
         "/api/v1/farms/validate-boundary",
         headers={"Authorization": f"Bearer {token}"},
-        json={"polygon_boundary_geojson": invalid_poly},
+        json={"polygon_boundary_geojson": invalid_poly, "village": "Lonthoir"},
     )
     assert val_inv.status_code == 200
     assert val_inv.json()["is_valid"] is False
@@ -319,11 +320,11 @@ async def test_spatial_polygon_boundary_and_overlap_validation(client: AsyncClie
         "type": "Polygon",
         "coordinates": [
             [
-                [129.8975, -4.5315],
-                [129.8985, -4.5315],
-                [129.8985, -4.5305],
-                [129.8975, -4.5305],
-                [129.8975, -4.5315],
+                [129.8945, -4.5555],
+                [129.8955, -4.5555],
+                [129.8955, -4.5545],
+                [129.8945, -4.5545],
+                [129.8945, -4.5555],
             ]
         ],
     }
@@ -332,7 +333,7 @@ async def test_spatial_polygon_boundary_and_overlap_validation(client: AsyncClie
     val_over = await client.post(
         "/api/v1/farms/validate-boundary",
         headers={"Authorization": f"Bearer {token}"},
-        json={"polygon_boundary_geojson": poly_overlap},
+        json={"polygon_boundary_geojson": poly_overlap, "village": "Lonthoir"},
     )
     assert val_over.status_code == 200
     assert val_over.json()["is_valid"] is True
@@ -347,18 +348,97 @@ async def test_spatial_polygon_boundary_and_overlap_validation(client: AsyncClie
             "farmer_id": farmer_id,
             "farm_code": "BN-FARM-SP02",
             "name": "Kebun Tumpang Tindih",
-            "latitude": -4.5315,
-            "longitude": 129.8975,
+            "latitude": -4.5555,
+            "longitude": 129.8945,
             "area_sqm": 0.0,
             "primary_commodity": "Cengkih",
+            "village": "Lonthoir",
             "polygon_boundary_geojson": poly_overlap,
         },
     )
     assert fail_res.status_code == 409
     assert "bertubrukan (overlap)" in fail_res.json()["detail"]
 
-    # 5. Polygon 3: Non-overlapping (Pulau Ay: lon 129.8300, lat -4.5200)
+    # 5. Polygon 3: Non-overlapping (Pulau Ay: lon 129.7740, lat -4.5240)
     poly_ok = {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [129.7740, -4.5240],
+                [129.7749, -4.5240],
+                [129.7749, -4.5231],
+                [129.7740, -4.5231],
+                [129.7740, -4.5240],
+            ]
+        ],
+    }
+
+    val_ok = await client.post(
+        "/api/v1/farms/validate-boundary",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"polygon_boundary_geojson": poly_ok, "village": "Pulau Ay"},
+    )
+    assert val_ok.status_code == 200
+    assert val_ok.json()["is_valid"] is True
+    assert val_ok.json()["has_overlap"] is False
+
+    # Setup group & farmer in Pulau Ay
+    grp_ay = await client.post(
+        "/api/v1/farmers/groups",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"name": "Poktan Rempah Pulau Ay", "village": "Pulau Ay"},
+    )
+    ay_group_id = grp_ay.json()["id"]
+
+    frm_ay = await client.post(
+        "/api/v1/farmers",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"farmer_code": "BN-FRM-AY01", "name": "Petani Pulau Ay", "farmer_group_id": ay_group_id},
+    )
+    ay_farmer_id = frm_ay.json()["id"]
+
+    # Create non-overlapping farm in Pulau Ay -> 201 Created!
+    ok_res = await client.post(
+        "/api/v1/farms",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "farmer_id": ay_farmer_id,
+            "farm_code": "BN-FARM-SP03",
+            "name": "Kebun Pala Pulau Ay",
+            "latitude": -4.5240,
+            "longitude": 129.7740,
+            "area_sqm": 0.0,
+            "primary_commodity": "Pala",
+            "village": "Pulau Ay",
+            "polygon_boundary_geojson": poly_ok,
+        },
+    )
+    assert ok_res.status_code == 201
+    assert ok_res.json()["area_sqm"] > 9000.0
+
+
+@pytest.mark.asyncio
+async def test_village_boundary_enforcement_and_territorial_scoping(client: AsyncClient):
+    ketua_token = await get_user_token(client, "ketua_kelompok", "Ketua123!")
+
+    # 1. Fetch farmers as ketua_kelompok (Desa Lonthoir) -> should only see Lonthoir
+    farmers_res = await client.get(
+        "/api/v1/farmers",
+        headers={"Authorization": f"Bearer {ketua_token}"},
+    )
+    assert farmers_res.status_code == 200
+
+    # 2. Setup a farmer in Lonthoir
+    farmer_res = await client.post(
+        "/api/v1/farmers",
+        headers={"Authorization": f"Bearer {ketua_token}"},
+        json={"farmer_code": "BN-FRM-TERRITORY-01", "name": "Petani Lonthoir Terikat"},
+    )
+    assert farmer_res.status_code == 201
+    farmer_id = farmer_res.json()["id"]
+
+    # 3. Attempt to register a farm outside Lonthoir (e.g. at coords on Pulau Ai or sea: 129.8300, -4.5200)
+    out_of_bounds_poly = {
         "type": "Polygon",
         "coordinates": [
             [
@@ -370,31 +450,22 @@ async def test_spatial_polygon_boundary_and_overlap_validation(client: AsyncClie
             ]
         ],
     }
-
-    val_ok = await client.post(
-        "/api/v1/farms/validate-boundary",
-        headers={"Authorization": f"Bearer {token}"},
-        json={"polygon_boundary_geojson": poly_ok},
-    )
-    assert val_ok.status_code == 200
-    assert val_ok.json()["is_valid"] is True
-    assert val_ok.json()["has_overlap"] is False
-
-    # Create non-overlapping farm -> 201 Created!
-    ok_res = await client.post(
+    rejected_res = await client.post(
         "/api/v1/farms",
-        headers={"Authorization": f"Bearer {token}"},
+        headers={"Authorization": f"Bearer {ketua_token}"},
         json={
             "farmer_id": farmer_id,
-            "farm_code": "BN-FARM-SP03",
-            "name": "Kebun Pala Pulau Ay",
+            "farm_code": "BN-FARM-OUT-OF-BOUNDS",
+            "name": "Kebun Di Luar Batas Lonthoir",
             "latitude": -4.5200,
             "longitude": 129.8300,
-            "area_sqm": 0.0,
+            "area_sqm": 2500.0,
             "primary_commodity": "Pala",
-            "polygon_boundary_geojson": poly_ok,
+            "polygon_boundary_geojson": out_of_bounds_poly,
         },
     )
-    assert ok_res.status_code == 201
-    assert ok_res.json()["area_sqm"] > 9000.0
+    # Harus ditolak dengan 422 karena berada di luar batas wilayah administratif Desa Lonthoir!
+    assert rejected_res.status_code == 422
+    assert "di luar wilayah administratif" in rejected_res.json()["detail"].lower()
+
 

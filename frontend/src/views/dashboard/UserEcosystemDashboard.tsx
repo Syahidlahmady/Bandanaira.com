@@ -84,11 +84,10 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
   const isCoopManager = roles.includes('coop_manager') || roles.includes('pengelola_koperasi')
   const isSmartTourismAdmin = roles.includes('smart_tourism_admin') || roles.includes('admin_wisata')
   const isSurveyor = roles.includes('field_surveyor') || roles.includes('surveyor')
-  const isTourist = roles.includes('tourist') || roles.includes('wisatawan')
   const isResident =
     roles.includes('resident') ||
     roles.includes('warga') ||
-    (!isOfficerOrAdmin && !isFarmer && !isHomestayOperator && !isTourist)
+    (!isOfficerOrAdmin && !isFarmer && !isHomestayOperator)
 
   const getRoleDisplayName = () => {
     if (isSuperuser || roles.includes('admin')) return 'Administrator Sistem'
@@ -99,14 +98,10 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
     if (isCoopManager) return 'Pengelola Koperasi Hatta'
     if (isSmartTourismAdmin) return 'Pemandu Wisata & Cagar Budaya HPI'
     if (isSurveyor) return 'Surveyor Lapangan & IoT'
-    if (isTourist) return 'Wisatawan & Pengunjung Kepulauan'
     return 'Warga Masyarakat Desa'
   }
 
   const getRoleWelcomeDesc = () => {
-    if (isTourist) {
-      return 'Eksplorasi katalog penginapan Eco-Stay, 177 situs cagar budaya & audio guide, peta 7-layer, dan perencana wisata SAW.'
-    }
     return 'Portal Komando Ekosistem Digital Terpadu Kepulauan Banda Neira'
   }
 
@@ -710,8 +705,8 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
             </button>
           )}
 
-          {/* Untuk Wisatawan & Pengunjung */}
-          {isTourist && (
+          {/* Eksplorasi Eco-Stay & Cagar Budaya */}
+          {(!isHomestayOperator && !isSmartTourismAdmin && !isOfficerOrAdmin) && (
             <button
               type="button"
               onClick={() => onNavigate('tourism')}

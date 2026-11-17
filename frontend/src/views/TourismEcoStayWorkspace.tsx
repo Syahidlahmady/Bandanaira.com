@@ -55,11 +55,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
     ? (currentUser.roles || []).map((r: any) => (typeof r === 'string' ? r : r.name))
     : []
   const isSuperuser = Boolean(currentUser?.is_superuser)
-  const isTourist = userRoleNames.includes('tourist') || userRoleNames.includes('wisatawan')
   const isHomestayOperator = isSuperuser || userRoleNames.some((r) => ['admin', 'village_officer', 'operator_homestay', 'homestay_operator'].includes(r))
   const isSmartTourismAdmin = isSuperuser || userRoleNames.some((r) => ['admin', 'village_officer', 'smart_tourism_admin'].includes(r))
-  const canAccessCMS = !isTourist && (isHomestayOperator || isSmartTourismAdmin)
-  const canAccessBookings = !isTourist && (isHomestayOperator || isSmartTourismAdmin)
+  const canAccessCMS = isHomestayOperator || isSmartTourismAdmin
+  const canAccessBookings = isHomestayOperator || isSmartTourismAdmin
 
   // Accommodations State
   const [accommodations, setAccommodations] = useState<AccommodationItem[]>([])
@@ -490,13 +489,9 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               <span className="badge badge-blue" style={{ fontSize: '0.72rem' }}>
                 🧭 Mode Eksplorasi Wisatawan Publik
               </span>
-            ) : isTourist ? (
-              <span className="badge badge-blue" style={{ fontSize: '0.72rem' }}>
-                🧳 Wisatawan: {currentUser.full_name || currentUser.username}
-              </span>
             ) : canAccessCMS ? (
               <span className="badge badge-blue" style={{ fontSize: '0.72rem' }}>
-                👤 Operator: {currentUser.full_name || currentUser.username}
+                👤 Pengelola: {currentUser.full_name || currentUser.username}
               </span>
             ) : (
               <span className="badge badge-blue" style={{ fontSize: '0.72rem' }}>

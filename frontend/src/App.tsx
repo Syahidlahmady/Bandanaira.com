@@ -275,7 +275,18 @@ export const App: React.FC = () => {
   })
 
   // Form: Farm
-  const [farmForm, setFarmForm] = useState({
+  const [farmForm, setFarmForm] = useState<{
+    farmer_id: string
+    farm_code: string
+    name: string
+    location_description: string
+    latitude: number
+    longitude: number
+    area_sqm: number
+    primary_commodity: string
+    polygon_boundary_geojson?: Record<string, unknown>
+    village?: string
+  }>({
     farmer_id: '',
     farm_code: 'BN-FARM-001',
     name: 'Kebun Pala Lonthoir',
@@ -284,6 +295,7 @@ export const App: React.FC = () => {
     longitude: 129.8974,
     area_sqm: 6500,
     primary_commodity: 'Pala',
+    village: 'Lonthoir',
   })
 
   // Form: Harvest
@@ -444,12 +456,13 @@ export const App: React.FC = () => {
 
   const fetchFarmingData = async () => {
     try {
+      const userVillage = currentUser?.village || undefined
       const [groups, farmerList, farmList, geo, fStats] = await Promise.all([
-        farmerService.listGroups(),
-        farmerService.listFarmers(),
-        farmerService.listFarms(),
-        farmerService.getFarmsGeoJSON(),
-        farmerService.getStatistics(),
+        farmerService.listGroups(userVillage),
+        farmerService.listFarmers(userVillage),
+        farmerService.listFarms(userVillage),
+        farmerService.getFarmsGeoJSON(userVillage),
+        farmerService.getStatistics(userVillage),
       ])
       setFarmerGroups(groups)
       setFarmers(farmerList.items)
@@ -655,12 +668,6 @@ export const App: React.FC = () => {
 
   const getRoleDefaultTab = (user: User | null): typeof activeTab => {
     if (!user) return 'landing'
-    const roleNames = (user.roles || []).map((r) =>
-      typeof r === 'string' ? r : r.name
-    )
-    if (roleNames.includes('tourist') || roleNames.includes('wisatawan')) {
-      return 'tourism'
-    }
     // Mengarahkan ke Dasbor Ekosistem Terpadu (Landing Page 2) yang menyesuaikan tampilan dengan role
     return 'dashboard'
   }
@@ -827,12 +834,14 @@ export const App: React.FC = () => {
     e.preventDefault()
     setFarmMsg(null)
 
+    const targetVillage = currentUser?.village || farmForm.village || undefined
+
     if (!navigator.onLine) {
       await syncManager.enqueue(
         'farm_create',
         `${apiBase}/farms`,
         'POST',
-        { ...farmForm, farmer_id: farmForm.farmer_id || (farmers[0]?.id || '') },
+        { ...farmForm, farmer_id: farmForm.farmer_id || (farmers[0]?.id || ''), village: targetVillage },
         `Pemetaan Lahan: ${farmForm.name} (${farmForm.farm_code})`
       )
       const optimisticFarm: Farm = {
@@ -846,6 +855,7 @@ export const App: React.FC = () => {
         area_sqm: farmForm.area_sqm,
         primary_commodity: farmForm.primary_commodity,
         verification_status: isOfficerOrAdmin ? 'verified' : 'pending',
+        village: targetVillage,
         created_at: new Date().toISOString(),
       }
       setFarms((prev) => [optimisticFarm, ...prev])
@@ -869,19 +879,23 @@ export const App: React.FC = () => {
       if (!targetFarmerId) {
         let groupId = farmerGroups[0]?.id
         if (!groupId) {
-          const newGrp = await farmerService.createGroup({ name: 'Kelompok Tani Pala Banda Neira' })
+          const newGrp = await farmerService.createGroup({
+            name: targetVillage ? `Kelompok Tani Desa ${targetVillage}` : 'Kelompok Tani Pala Banda Neira',
+            village: targetVillage,
+          })
           groupId = newGrp.id
         }
         const newFrm = await farmerService.createFarmer({
           farmer_code: `BN-FRM-00${farmers.length + 1}`,
-          name: 'Ibrahim Lonthoir',
+          name: targetVillage ? `Petani ${targetVillage}` : 'Ibrahim Lonthoir',
           phone: '081233445566',
           farmer_group_id: groupId,
+          village: targetVillage,
         })
         targetFarmerId = newFrm.id
       }
 
-      await farmerService.createFarm({ ...farmForm, farmer_id: targetFarmerId })
+      await farmerService.createFarm({ ...farmForm, farmer_id: targetFarmerId, village: targetVillage })
       const successText = isOfficerOrAdmin
         ? `Kebun ${farmForm.name} berhasil dipetakan dan disahkan!`
         : `Pengajuan plot kebun "${farmForm.name}" berhasil dikirim! Menunggu persetujuan verifikasi dari Petugas Kantor Desa.`
@@ -898,7 +912,7 @@ export const App: React.FC = () => {
           'farm_create',
           `${apiBase}/farms`,
           'POST',
-          { ...farmForm, farmer_id: farmForm.farmer_id || (farmers[0]?.id || '') },
+          { ...farmForm, farmer_id: farmForm.farmer_id || (farmers[0]?.id || ''), village: targetVillage },
           `Pemetaan Lahan: ${farmForm.name} (${farmForm.farm_code})`
         )
         setFarmMsg({
@@ -1401,6 +1415,7 @@ export const App: React.FC = () => {
           {activeTab === 'farming' && (
             (isOfficerOrAdmin || isFarmerGroupAdmin || isFarmer) ? (
               <FarmsGisWorkspace
+                currentUser={currentUser}
                 farmers={farmers}
                 farmerGroups={farmerGroups}
                 farms={farms}

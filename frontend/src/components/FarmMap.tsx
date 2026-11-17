@@ -34,6 +34,8 @@ export interface FarmMapProps {
   draftVertices?: [number, number][]
   onDraftChange?: (draft: FarmDraftGeometry) => void
   focusFarmId?: string | null
+  activeVillageName?: string
+  villageBoundaryGeoJSON?: any
 }
 
 const BANDA_ARCHIPELAGO_BOUNDS = L.latLngBounds(
@@ -135,11 +137,14 @@ export const FarmMap: React.FC<FarmMapProps> = ({
   draftVertices = [],
   onDraftChange,
   focusFarmId = null,
+  activeVillageName,
+  villageBoundaryGeoJSON,
 }) => {
   const wrapperRef = useRef<HTMLDivElement | null>(null)
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
   const layerGroupRef = useRef<L.LayerGroup | null>(null)
+  const villageBoundaryLayerRef = useRef<L.GeoJSON | null>(null)
   const baseTileLayerRef = useRef<L.TileLayer | null>(null)
   const labelsTileLayerRef = useRef<L.TileLayer | null>(null)
   const draftCenterMarkerRef = useRef<L.Marker | null>(null)
@@ -405,6 +410,48 @@ export const FarmMap: React.FC<FarmMapProps> = ({
     }
   }, [focusFarmId, features])
 
+  // Render official village administrative boundary if provided
+  useEffect(() => {
+    const map = mapInstanceRef.current
+    if (!map) return
+
+    if (villageBoundaryLayerRef.current) {
+      villageBoundaryLayerRef.current.remove()
+      villageBoundaryLayerRef.current = null
+    }
+
+    if (villageBoundaryGeoJSON) {
+      try {
+        const boundaryLayer = L.geoJSON(villageBoundaryGeoJSON as any, {
+          style: {
+            color: '#d97706',
+            weight: 2.5,
+            dashArray: '6, 6',
+            fillColor: '#fef3c7',
+            fillOpacity: 0.12,
+          },
+        })
+        boundaryLayer.bindTooltip(
+          `Batas Resmi Wilayah: Desa ${activeVillageName || 'Yurisdiksi'}`,
+          { sticky: true, direction: 'center' }
+        )
+        boundaryLayer.addTo(map)
+        villageBoundaryLayerRef.current = boundaryLayer
+
+        try {
+          const bounds = boundaryLayer.getBounds()
+          if (bounds.isValid()) {
+            map.fitBounds(bounds, { padding: [35, 35], maxZoom: 15 })
+          }
+        } catch {
+          // ignore invalid bounds
+        }
+      } catch (err) {
+        console.warn('Gagal memuat batas resmi desa pada peta kebun:', err)
+      }
+    }
+  }, [villageBoundaryGeoJSON, activeVillageName])
+
   // Render editable draft center pin + draft polygon + draggable vertex handles
   useEffect(() => {
     const map = mapInstanceRef.current
@@ -627,6 +674,25 @@ export const FarmMap: React.FC<FarmMapProps> = ({
           >
             <RefreshCw size={11} /> Pusat Banda
           </button>
+          {activeVillageName && (
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                padding: '0.25rem 0.6rem',
+                borderRadius: '999px',
+                background: '#fef3c7',
+                border: '1px solid #fde68a',
+                color: '#92400e',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+              }}
+              title={`Yurisdiksi aktif dibatasi pada Desa ${activeVillageName}`}
+            >
+              🏛️ Desa {activeVillageName}
+            </span>
+          )}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
@@ -895,6 +961,12 @@ export const FarmMap: React.FC<FarmMapProps> = ({
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ width: '11px', height: '11px', borderRadius: '2px', background: '#fbbf24', border: '2px solid #d97706', display: 'inline-block' }} />
                 <span style={{ color: '#92400e', fontWeight: 600 }}>Batas Draf Baru</span>
+              </div>
+            )}
+            {activeVillageName && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ width: '13px', height: '0px', borderTop: '2px dashed #d97706', display: 'inline-block' }} />
+                <span style={{ color: '#92400e', fontWeight: 600 }}>Batas Wilayah {activeVillageName}</span>
               </div>
             )}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px', fontSize: '10px', color: '#64748b', paddingTop: '3px', borderTop: '1px dashed #e2e8f0' }}>

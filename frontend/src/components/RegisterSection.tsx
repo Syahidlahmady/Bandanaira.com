@@ -78,16 +78,6 @@ const roles: RoleOption[] = [
     targetTab: 'tourism',
   },
   {
-    title: 'Wisatawan',
-    description: 'Jelajahi pulau',
-    iconType: 'wisatawan',
-    roleCode: 'tourist',
-    demoUsername: 'warga',
-    demoPassword: 'Warga123!',
-    defaultNik: '8171010101900003',
-    targetTab: 'tourism',
-  },
-  {
     title: 'Pemandu Wisata',
     description: 'Cagar budaya & HPI',
     iconType: 'wisatawan',
@@ -606,7 +596,7 @@ export const IslandLifeIntroSection: React.FC<{
           Lebih dekat dengan kehidupan pulau.
         </h1>
         <p className="relative self-stretch font-normal text-[#dbe5f0] text-base tracking-[0] leading-[27.2px]">
-          Bergabung sebagai warga, mitra usaha, atau wisatawan. Satu akun untuk
+          Bergabung sebagai warga desa, petani, mitra usaha, atau pengelola komunitas. Satu akun untuk
           terhubung dengan layanan dan kehidupan Banda.
         </p>
         <p className="relative w-fit font-serif font-normal italic text-white text-[30px] sm:text-[34px] tracking-[0] leading-[normal]">
@@ -784,6 +774,27 @@ export const AccountRegistrationSection: React.FC<RegisterSectionProps> = ({
               </button>
             )
           })}
+        </div>
+        <div className="w-full p-2.5 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-between text-xs text-amber-900 mt-1">
+          <div className="flex items-center gap-2">
+            <span>🧭</span>
+            <span><b>Wisatawan?</b> Anda tidak perlu mendaftar atau login untuk menikmati panduan cagar budaya, katalog penginapan, dan peta wisata.</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              if (onNavigate) {
+                onNavigate('tourism')
+              } else if (onBackToHome) {
+                onBackToHome()
+              } else if (onSwitchToLogin) {
+                onSwitchToLogin()
+              }
+            }}
+            className="font-bold underline text-amber-800 hover:text-amber-950 shrink-0 ml-2 cursor-pointer"
+          >
+            Eksplorasi Publik →
+          </button>
         </div>
         <p className="self-stretch text-[#627085] text-[11px] leading-[17.6px] relative font-normal tracking-[0]">
           Peran dipilih satu kali saat pendaftaran dan tersimpan otomatis pada

@@ -47,7 +47,8 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 42: Kurasi & Scraping Foto Autentik Cagar Budaya/Landmark Banda Neira (Zero External Hotlinking & Full Offline Asset Resilience)**
 - [x] **Phase 43: Integrasi Komponen Sinematik <ScrollExpand /> React Bits pada Hero Section Beranda Banda Neira**
 - [x] **Phase 44: History Timeline Redesign, Infographics Anti-Slop Overhaul, Full Mobile Responsiveness, and Lighthouse Performance Optimization (CLS 0, Code-Splitting, SEO 100)**
-
+- [x] **Phase 45: Redesain Beranda Visual Ala Wonderful Indonesia, Tipografi Nexa Pro/Intro Script & Chatbot Cerdas**
+- [x] **Phase 46: Territorial Jurisdiction Scoping & Official GIS Village Boundary Enforcement (Pemetaan Aktor & Batas Wilayah Desa)**
 ---
 
 ## Detailed Task Checklist
@@ -699,6 +700,28 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Mengadopsi header ikonik `Visit Banda Neira` dengan garis belah horizontal.
   - Memindahkan filter pulau dan kotak pencarian melayang langsung di dalam kanvas peta.
   - Membersihkan istilah teknis internal (GIS, SAW) pada antarmuka publik dan mengintegrasikan perhitungan rekomendasi SAW ke dalam Chat Bubble mengambang di pojok kanan bawah.
+
+### Phase 46: Territorial Jurisdiction Scoping & Official GIS Village Boundary Enforcement (Pemetaan Aktor & Batas Wilayah Desa)
+- [x] 46.1 Database Migration & Scoping Model:
+  - Membuat migrasi Alembic `013_user_farm_village_scope.py` untuk menambahkan kolom `village` (String) pada tabel `users` dan `farms` dengan indeks pencarian.
+  - Memperbarui model SQLAlchemy `User` dan `Farm`, skema Pydantic `User`, `FarmCreate`, `FarmResponse`, `FarmStatisticsResponse`, `FarmBoundaryValidationRequest`, dan `FarmBoundaryValidationResponse`.
+  - Memperbarui seeder `demo_seed.py` dengan penetapan desa yurisdiksi (`petugas` -> Lonthoir, `petugas_nusantara` -> Nusantara, `ketua_kelompok` -> Lonthoir, `petani` -> Lonthoir, `warga` -> Lonthoir, `admin` -> Lintas Desa).
+- [x] 46.2 Backend RBAC Territorial Enforcement & Spatial Boundary Validation:
+  - Mengimplementasikan `check_farm_within_village_boundary` dan `load_village_boundary_from_file` di `spatial.py` untuk memverifikasi centroid dan sebaran titik poligon kebun terhadap 17 poligon administratif resmi desa di Kepulauan Banda.
+  - Memperketat endpoint `POST /farms` dan `POST /farms/validate-boundary`: penolakan otomatis (HTTP 422) jika poligon kebun berada di luar batas wilayah desa aktor yang bersangkutan.
+  - Memfilter daftar kelompok tani (`/farmers/groups`), daftar petani (`/farmers`), daftar kebun (`/farms`), GeoJSON kebun (`/farms/geojson`), statistik (`/farms/statistics`), dan verifikasi kebun (`PUT /farms/{id}/verify`) sesuai yurisdiksi desa aktor non-admin.
+  - Mengembangkan unit & integrasi test di `tests/test_farmers_and_farms.py` (`test_village_boundary_enforcement_and_territorial_scoping`): 7 passed (100% lulus).
+- [x] 46.3 Frontend Territorial Scoping & In-Map Boundary Visualization:
+  - Mengintegrasikan batas wilayah GeoJSON resmi pada `FarmMap.tsx` dengan garis putus-putus amber/emas dan badge yurisdiksi aktif.
+  - Mengisolasi ruang kerja `FarmsGisWorkspace.tsx`: menampilkan banner teritorial aktif, membatasi dropdown pemilihan petani & kelompok tani hanya pada desa yang berwenang, dan memvalidasi batas wilayah kebun sebelum pendaftaran.
+  - Mengaitkan `fetchFarmingData` dan `handleCreateQuickFarmerAndFarm` di `App.tsx` ke desa aktor aktif (online & offline queue).
+  - Menambahkan aktor simulasi `petugas_nusantara` dan tag desa di `QuickLoginModal.tsx`.
+  - Verifikasi build produksi Vite frontend (`npm run build`, exit code `0`).
+- [x] 46.4 Penghapusan Aktor Login Wisatawan & Pembukaan Eksplorasi Penuh untuk Publik:
+  - Menghapus aktor wisatawan Nadia Putri (`tourist`) dari daftar akun modal simulasi login `QuickLoginModal.tsx`.
+  - Menambahkan banner informatif pada modal dan form registrasi `RegisterSection.tsx` bahwa wisatawan dapat langsung mengeksplorasi seluruh fitur pariwisata, katalog eco-stay, 177 cagar budaya, rute SAW, dan peta spasial 7-layer secara publik tanpa perlu membuat akun atau login.
+  - Membersihkan percabangan peran sintetis `role-tourist` pada `auth.ts`, `DashboardLayout.tsx`, `UserEcosystemDashboard.tsx`, dan `TourismEcoStayWorkspace.tsx`.
+  - Memverifikasi ulang build produksi Vite frontend (`npm run build`, exit code `0`).
 
 
 

@@ -30,7 +30,9 @@ from backend.app.modules.farms.schemas import (
 )
 from backend.app.modules.farms.spatial import (
     calculate_polygon_area_sqm,
+    check_farm_within_village_boundary,
     find_overlapping_farm,
+    load_village_boundary_from_file,
     validate_polygon_geojson,
 )
 
@@ -48,11 +50,21 @@ async def list_farms(
     commodity: Optional[str] = None,
     farmer_id: Optional[uuid.UUID] = None,
     verification_status: Optional[str] = None,
+    village: Optional[str] = None,
     search: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     query = select(Farm)
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+
+    # Pembatasan yurisdiksi: jika bukan admin dan akun memiliki desa binaan
+    if not is_admin and current_user.village:
+        query = query.where(Farm.village == current_user.village)
+    elif village:
+        query = query.where(Farm.village.ilike(f"%{village}%"))
+
     if commodity:
         query = query.where(Farm.primary_commodity.ilike(f"%{commodity}%"))
     if farmer_id:
@@ -86,6 +98,12 @@ async def create_farm(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(FARM_MANAGERS),
 ):
+    user_role_names = {r.name for r in current_user.roles}
+    is_officer_or_admin = current_user.is_superuser or bool(
+        user_role_names.intersection({ROLE_ADMIN, ROLE_VILLAGE_OFFICER})
+    )
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+
     # Verify farmer exists
     farmer_stmt = select(Farmer).where(Farmer.id == farm_in.farmer_id)
     farmer = (await db.execute(farmer_stmt)).scalar_one_or_none()
@@ -94,6 +112,19 @@ async def create_farm(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Farmer not found",
         )
+
+    # Tentukan yurisdiksi desa
+    farmer_group_village = farmer.group.village if farmer.group else None
+    target_village = (farm_in.village or farmer_group_village or current_user.village or "Lonthoir").strip()
+
+    # Validasi yurisdiksi: jika bukan admin dan akun memiliki desa, wajib sama dengan desanya
+    if not is_admin and current_user.village:
+        if target_village.lower() != current_user.village.lower():
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Anda hanya berwenang mendaftarkan lahan di wilayah Desa {current_user.village}. Tidak dapat memetakan untuk desa '{target_village}'.",
+            )
+        target_village = current_user.village
 
     # Check unique farm_code
     code_stmt = select(Farm).where(Farm.farm_code == farm_in.farm_code)
@@ -118,7 +149,7 @@ async def create_farm(
         if farm_in.area_sqm <= 0:
             farm_in.area_sqm = calc_area
 
-        # Deteksi tumpang tindih (overlap) batas lahan dengan kebun yang sudah terdaftar
+        # 1. Deteksi tumpang tindih (overlap) batas lahan dengan kebun yang sudah terdaftar
         farms_stmt = select(Farm).where(Farm.polygon_boundary_geojson.is_not(None))
         existing_farms = (await db.execute(farms_stmt)).scalars().all()
         overlapping = find_overlapping_farm(farm_in.polygon_boundary_geojson, existing_farms)
@@ -128,15 +159,25 @@ async def create_farm(
                 detail=f"Batas poligon lahan bertubrukan (overlap) dengan kebun '{overlapping.name}' ({overlapping.farm_code}). Harap sesuaikan titik batas koordinat.",
             )
 
-    user_role_names = {r.name for r in current_user.roles}
-    is_officer_or_admin = current_user.is_superuser or bool(
-        user_role_names.intersection({ROLE_ADMIN, ROLE_VILLAGE_OFFICER})
-    )
+        # 2. Validasi batas wilayah administratif desa
+        v_geom = load_village_boundary_from_file(target_village)
+        if v_geom:
+            is_in, v_err = check_farm_within_village_boundary(
+                farm_in.polygon_boundary_geojson, v_geom, target_village
+            )
+            if not is_in:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=v_err or f"Batas poligon lahan berada di luar wilayah administratif Desa {target_village}.",
+                )
+
     # Lahan yang didaftarkan kelompok tani (farmer_group_admin) berstatus 'pending' menunggu persetujuan desa
     # Pendaftaran langsung oleh petugas desa/admin otomatis 'verified'
     init_status = "verified" if is_officer_or_admin else "pending"
 
-    farm = Farm(**farm_in.model_dump(), verification_status=init_status)
+    farm_data = farm_in.model_dump()
+    farm_data["village"] = target_village
+    farm = Farm(**farm_data, verification_status=init_status)
     db.add(farm)
     await db.flush()
 
@@ -146,7 +187,7 @@ async def create_farm(
         entity_name="farms",
         entity_id=farm.id,
         user_id=current_user.id,
-        changes={**farm_in.model_dump(mode="json"), "verification_status": init_status},
+        changes={**farm_in.model_dump(mode="json"), "village": target_village, "verification_status": init_status},
     )
 
     await db.commit()
@@ -158,10 +199,10 @@ async def create_farm(
 async def validate_boundary(
     req: FarmBoundaryValidationRequest,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
-    Endpoint uji validasi batas poligon kebun dan deteksi tumpang tindih secara real-time.
+    Endpoint uji validasi batas poligon kebun, batas wilayah desa, dan deteksi tumpang tindih secara real-time.
     """
     try:
         coords = validate_polygon_geojson(req.polygon_boundary_geojson)
@@ -169,6 +210,8 @@ async def validate_boundary(
         return FarmBoundaryValidationResponse(
             is_valid=False,
             has_overlap=False,
+            is_within_village=False,
+            village=req.village,
             message=f"Format poligon tidak valid: {str(err)}",
         )
 
@@ -183,6 +226,8 @@ async def validate_boundary(
         return FarmBoundaryValidationResponse(
             is_valid=True,
             has_overlap=True,
+            is_within_village=True,
+            village=req.village,
             overlapping_farm_id=str(overlapping.id),
             overlapping_farm_code=overlapping.farm_code,
             overlapping_farm_name=overlapping.name,
@@ -190,11 +235,31 @@ async def validate_boundary(
             message=f"Batas poligon bertubrukan (overlap) dengan plot kebun '{overlapping.name}' ({overlapping.farm_code}).",
         )
 
+    # Validasi batas wilayah administratif desa jika desa ditentukan
+    target_village = (req.village or current_user.village or "").strip()
+    if target_village:
+        v_geom = load_village_boundary_from_file(target_village)
+        if v_geom:
+            is_in, v_err = check_farm_within_village_boundary(
+                req.polygon_boundary_geojson, v_geom, target_village
+            )
+            if not is_in:
+                return FarmBoundaryValidationResponse(
+                    is_valid=False,
+                    has_overlap=False,
+                    is_within_village=False,
+                    village=target_village,
+                    calculated_area_sqm=calc_area,
+                    message=v_err or f"Batas poligon berada di luar wilayah administratif Desa {target_village}.",
+                )
+
     return FarmBoundaryValidationResponse(
         is_valid=True,
         has_overlap=False,
+        is_within_village=True if target_village else None,
+        village=target_village if target_village else None,
         calculated_area_sqm=calc_area,
-        message="Batas poligon valid dan bebas dari tumpang tindih dengan plot kebun lain.",
+        message=f"Batas poligon sah{f' di dalam wilayah Desa {target_village}' if target_village else ''} dan bebas tumpang tindih.",
     )
 
 
@@ -202,10 +267,19 @@ async def validate_boundary(
 async def get_farms_geojson(
     commodity: Optional[str] = None,
     verification_status: Optional[str] = None,
+    village: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     query = select(Farm)
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+
+    if not is_admin and current_user.village:
+        query = query.where(Farm.village == current_user.village)
+    elif village:
+        query = query.where(Farm.village.ilike(f"%{village}%"))
+
     if commodity:
         query = query.where(Farm.primary_commodity.ilike(f"%{commodity}%"))
     if verification_status:
@@ -227,6 +301,7 @@ async def get_farms_geojson(
                 "farm_code": f.farm_code,
                 "name": f.name,
                 "commodity": f.primary_commodity,
+                "village": f.village,
                 "area_sqm": f.area_sqm,
                 "farmer_id": str(f.farmer_id),
                 "location_description": f.location_description,
@@ -242,18 +317,45 @@ async def get_farms_geojson(
 
 @router.get("/statistics/summary", response_model=FarmStatisticsResponse)
 async def get_farm_statistics(
+    village: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_active_user),
 ):
-    total_farmers = (await db.execute(select(func.count(Farmer.id)))).scalar_one()
-    total_groups = (await db.execute(select(func.count(FarmerGroup.id)))).scalar_one()
-    total_farms = (await db.execute(select(func.count(Farm.id)))).scalar_one()
-    total_area = (await db.execute(select(func.coalesce(func.sum(Farm.area_sqm), 0.0)))).scalar_one()
-    verified_farms = (await db.execute(select(func.count(Farm.id)).where(Farm.verification_status == "verified"))).scalar_one()
-    pending_farms = (await db.execute(select(func.count(Farm.id)).where(Farm.verification_status == "pending"))).scalar_one()
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+
+    f_query = select(Farm)
+    if not is_admin and current_user.village:
+        f_query = f_query.where(Farm.village == current_user.village)
+    elif village:
+        f_query = f_query.where(Farm.village.ilike(f"%{village}%"))
+
+    total_farms = (await db.execute(select(func.count()).select_from(f_query.subquery()))).scalar_one()
+    total_area = (await db.execute(select(func.coalesce(func.sum(Farm.area_sqm), 0.0)).select_from(f_query.subquery()))).scalar_one()
+    
+    verified_stmt = select(func.count()).select_from(f_query.where(Farm.verification_status == "verified").subquery())
+    verified_farms = (await db.execute(verified_stmt)).scalar_one()
+
+    pending_stmt = select(func.count()).select_from(f_query.where(Farm.verification_status == "pending").subquery())
+    pending_farms = (await db.execute(pending_stmt)).scalar_one()
+
+    # Petani & Poktan scoping
+    grp_query = select(FarmerGroup)
+    if not is_admin and current_user.village:
+        grp_query = grp_query.where(FarmerGroup.village.ilike(f"%{current_user.village}%"))
+    elif village:
+        grp_query = grp_query.where(FarmerGroup.village.ilike(f"%{village}%"))
+    total_groups = (await db.execute(select(func.count()).select_from(grp_query.subquery()))).scalar_one()
+
+    farmer_query = select(Farmer)
+    if not is_admin and current_user.village:
+        farmer_query = farmer_query.join(FarmerGroup, Farmer.farmer_group_id == FarmerGroup.id, isouter=True).where(
+            or_(FarmerGroup.village.ilike(f"%{current_user.village}%"), FarmerGroup.village.is_(None))
+        )
+    total_farmers = (await db.execute(select(func.count()).select_from(farmer_query.subquery()))).scalar_one()
 
     # Commodity distribution
-    comm_stmt = select(Farm.primary_commodity, func.count(Farm.id)).group_by(Farm.primary_commodity)
+    comm_stmt = select(Farm.primary_commodity, func.count(Farm.id)).select_from(f_query.subquery()).group_by(Farm.primary_commodity)
     comm_rows = (await db.execute(comm_stmt)).all()
     commodity_dist = {str(row[0]): int(row[1]) for row in comm_rows}
 
@@ -282,6 +384,17 @@ async def verify_farm(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Farm not found",
         )
+
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+
+    # Validasi wewenang desa petugas
+    if not is_admin and current_user.village:
+        if farm.village.lower() != current_user.village.lower():
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Petugas Desa {current_user.village} tidak berwenang memverifikasi lahan di Desa {farm.village}."
+            )
 
     old_status = farm.verification_status
     farm.verification_status = verification_in.verification_status
