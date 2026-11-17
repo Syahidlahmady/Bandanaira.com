@@ -39,52 +39,28 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
   }
 
   return (
-    <section className="app-card animate-fade-in" style={{ padding: '2rem', marginBottom: '2rem' }}>
-      {/* Header Bar */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '1.75rem',
-          flexWrap: 'wrap',
-          gap: '1rem',
-          borderBottom: '1px solid var(--border-color)',
-          paddingBottom: '1.25rem',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-          <div
-            style={{
-              width: '46px',
-              height: '46px',
-              borderRadius: '14px',
-              background: 'rgba(245, 158, 11, 0.15)',
-              color: '#fbbf24',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '1px solid rgba(245, 158, 11, 0.35)',
-              boxShadow: '0 0 15px rgba(245, 158, 11, 0.2)',
-            }}
-          >
+    <section className="p-6 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs animate-fade-in text-[#081D35] mb-8">
+      {/* Header Bar Sesuai Gaya Redesain */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E2E8F0] mb-6">
+        <div className="flex items-center gap-4">
+          <div className="size-13 rounded-full bg-[#2563EB] text-white flex items-center justify-center shrink-0 shadow-sm">
             <Mail size={24} />
           </div>
           <div>
-            <span style={{ fontSize: '0.72rem', color: '#fbbf24', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-              Pelayanan Administrasi
+            <span className="text-[11px] font-bold text-[#2563EB] uppercase tracking-wider block">
+              PELAYANAN ADMINISTRASI DESA
             </span>
-            <h2 style={{ fontSize: '1.45rem', color: '#f8fafc', fontWeight: 900, margin: 0, letterSpacing: '-0.02em' }}>
+            <h2 className="text-xl sm:text-2xl font-black font-serif text-[#081D35] tracking-tight mt-0.5">
               Kotak Masuk Pelayanan Surat Warga (Inbox Desa)
             </h2>
-            <p style={{ fontSize: '0.825rem', color: '#94a3b8', margin: '0.2rem 0 0' }}>
-              Verifikasi dan terbitkan surat keterangan usaha (Petani Pala, Nelayan, Pengolah Fuli) dan surat domisili warga.
+            <p className="text-xs text-slate-500 mt-0.5">
+              Verifikasi dan terbitkan surat keterangan usaha (Petani Pala, Nelayan, Fuli) dan surat domisili warga desa.
             </p>
           </div>
         </div>
 
         {/* Filter Tabs */}
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <div className="flex items-center gap-2 flex-wrap">
           {[
             { st: '', label: 'Semua' },
             { st: 'submitted', label: 'Menunggu' },
@@ -98,31 +74,17 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
                 key={st}
                 type="button"
                 onClick={() => setRequestFilterStatus(st)}
-                style={{
-                  padding: '0.45rem 0.95rem',
-                  borderRadius: 'var(--radius-full)',
-                  fontSize: '0.78rem',
-                  fontWeight: 700,
-                  border: active ? '2px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.12)',
-                  background: active ? 'rgba(245, 158, 11, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                  color: active ? '#fbbf24' : '#cbd5e1',
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.45rem',
-                  transition: 'all 0.2s',
-                }}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition flex items-center gap-2 ${
+                  active
+                    ? 'bg-[#2563EB] text-white font-bold shadow-xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
               >
                 <span>{label}</span>
                 <span
-                  style={{
-                    background: active ? '#f59e0b' : 'rgba(255, 255, 255, 0.12)',
-                    color: active ? '#080c14' : '#cbd5e1',
-                    borderRadius: '10px',
-                    padding: '0.1rem 0.45rem',
-                    fontSize: '0.7rem',
-                    fontWeight: 800,
-                  }}
+                  className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                    active ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
+                  }`}
                 >
                   {count}
                 </span>
@@ -134,96 +96,90 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
 
       {letterActionMsg && (
         <div
-          className="animate-fade-in"
-          style={{
-            marginBottom: '1.5rem',
-            padding: '0.85rem 1.15rem',
-            borderRadius: 'var(--radius-md)',
-            fontSize: '0.875rem',
-            background: letterActionMsg.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-            color: letterActionMsg.type === 'success' ? '#a7f3d0' : '#fca5a5',
-            border: `1px solid ${letterActionMsg.type === 'success' ? 'rgba(16, 185, 129, 0.35)' : 'rgba(239, 68, 68, 0.35)'}`,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.6rem',
-            fontWeight: 600,
-          }}
+          className={`p-3.5 rounded-xl mb-5 flex items-center gap-2.5 text-xs font-semibold animate-fade-in ${
+            letterActionMsg.type === 'success'
+              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+              : 'bg-rose-50 text-rose-800 border border-rose-200'
+          }`}
         >
-          {letterActionMsg.type === 'success' ? <CheckCircle2 size={17} color="#34d399" /> : <X size={17} color="#f87171" />}
-          {letterActionMsg.text}
+          {letterActionMsg.type === 'success' ? (
+            <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+          ) : (
+            <X size={16} className="text-rose-600 shrink-0" />
+          )}
+          <span>{letterActionMsg.text}</span>
         </div>
       )}
 
       {/* Requests Table */}
-      <div className="table-responsive">
-        <table className="data-table">
-          <thead>
+      <div className="overflow-x-auto rounded-xl border border-[#E2E8F0]">
+        <table className="w-full text-left text-xs">
+          <thead className="bg-slate-50 border-b border-[#E2E8F0] text-slate-500 uppercase font-bold text-[10px] tracking-wider">
             <tr>
-              <th>Warga Pemohon</th>
-              <th>Profesi</th>
-              <th>Jenis Surat yang Diminta</th>
-              <th>Keperluan / Catatan</th>
-              <th>Status</th>
-              <th style={{ textAlign: 'center' }}>Tindakan Perangkat Desa</th>
+              <th className="py-3 px-4">Warga Pemohon</th>
+              <th className="py-3 px-4">Profesi</th>
+              <th className="py-3 px-4">Jenis Surat yang Diminta</th>
+              <th className="py-3 px-4">Keperluan / Catatan</th>
+              <th className="py-3 px-4">Status</th>
+              <th className="py-3 px-4 text-center">Tindakan Perangkat Desa</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-[#E2E8F0]">
             {adminRequests
               .filter((req) => !requestFilterStatus || req.status === requestFilterStatus)
               .map((req) => (
-                <tr key={req.id}>
-                  <td>
-                    <span style={{ fontWeight: 700, color: '#f8fafc', display: 'block' }}>
+                <tr key={req.id} className="hover:bg-slate-50/80 transition">
+                  <td className="py-3.5 px-4">
+                    <span className="font-bold text-[#081D35] block text-sm">
                       {req.resident_name || 'Warga Terdaftar'}
                     </span>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
+                    <span className="text-[11px] text-slate-500 font-mono">
                       {req.resident_nik || '-'}
                     </span>
                   </td>
-                  <td>{getOccupationBadge(req.resident_occupation)}</td>
-                  <td style={{ fontWeight: 600, color: '#38bdf8' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <FileText size={15} color="#38bdf8" />
-                      {req.request_type}
+                  <td className="py-3.5 px-4">{getOccupationBadge(req.resident_occupation)}</td>
+                  <td className="py-3.5 px-4 font-semibold text-[#081D35]">
+                    <div className="flex items-center gap-1.5 text-[#2563EB]">
+                      <FileText size={15} />
+                      <span>{req.request_type}</span>
                     </div>
                   </td>
-                  <td style={{ color: '#cbd5e1', fontSize: '0.825rem', maxWidth: '240px', lineHeight: 1.45 }}>
+                  <td className="py-3.5 px-4 text-slate-600 text-xs max-w-xs leading-relaxed">
                     {req.notes || '-'}
                   </td>
-                  <td>
+                  <td className="py-3.5 px-4">
                     <span
-                      className={`badge ${
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${
                         req.status === 'approved'
-                          ? 'badge-emerald'
+                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                           : req.status === 'submitted'
-                          ? 'badge-amber'
-                          : 'badge-red'
+                          ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                          : 'bg-rose-50 text-rose-800 border border-rose-200'
                       }`}
                     >
                       {req.status === 'approved' ? (
                         <>
-                          <CheckCircle2 size={11} /> Disetujui
+                          <CheckCircle2 size={12} /> Disetujui
                         </>
                       ) : req.status === 'submitted' ? (
                         <>
-                          <Clock size={11} /> Menunggu
+                          <Clock size={12} /> Menunggu
                         </>
                       ) : (
                         <>
-                          <X size={11} /> Ditolak
+                          <X size={12} /> Ditolak
                         </>
                       )}
                     </span>
                   </td>
-                  <td style={{ textAlign: 'center' }}>
+                  <td className="py-3.5 px-4 text-center">
                     {req.status === 'submitted' ? (
-                      <div style={{ display: 'inline-flex', gap: '0.45rem' }}>
+                      <div className="inline-flex gap-2">
                         <button
                           type="button"
                           disabled={updatingRequestId === req.id}
                           onClick={() => handleUpdateRequestStatus(req.id, 'approved')}
-                          className="btn btn-sm btn-success"
-                          style={{ padding: '0.3rem 0.75rem' }}
+                          className="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition flex items-center gap-1 shadow-2xs cursor-pointer"
                         >
                           <Check size={13} /> {updatingRequestId === req.id ? '...' : 'Setujui'}
                         </button>
@@ -231,8 +187,7 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
                           type="button"
                           disabled={updatingRequestId === req.id}
                           onClick={() => handleUpdateRequestStatus(req.id, 'rejected')}
-                          className="btn btn-sm btn-danger"
-                          style={{ padding: '0.3rem 0.75rem' }}
+                          className="px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white transition flex items-center gap-1 shadow-2xs cursor-pointer"
                         >
                           <X size={13} /> {updatingRequestId === req.id ? '...' : 'Tolak'}
                         </button>
@@ -241,27 +196,22 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
                       <button
                         type="button"
                         onClick={() => handlePrint(req)}
-                        className="btn btn-sm btn-primary"
-                        style={{ padding: '0.3rem 0.75rem' }}
+                        className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#2563EB] hover:bg-blue-700 text-white transition inline-flex items-center gap-1.5 shadow-2xs cursor-pointer"
                       >
                         <Printer size={13} /> Cetak Surat
                       </button>
                     ) : (
-                      <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontStyle: 'italic' }}>
-                        Ditolak
-                      </span>
+                      <span className="text-[11px] text-slate-400 italic">Ditolak</span>
                     )}
                   </td>
                 </tr>
               ))}
             {adminRequests.length === 0 && (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '3rem 1.5rem', color: '#94a3b8' }}>
-                  <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📬</div>
-                  <p style={{ fontWeight: 800, margin: 0, color: '#f8fafc', fontSize: '1rem' }}>
-                    Belum ada permohonan surat masuk
-                  </p>
-                  <p style={{ fontSize: '0.825rem', marginTop: '0.35rem', color: '#94a3b8' }}>
+                <td colSpan={6} className="text-center py-12 px-4 text-slate-400">
+                  <div className="text-3xl mb-2">📬</div>
+                  <p className="font-bold text-[#081D35] text-base">Belum ada permohonan surat masuk</p>
+                  <p className="text-xs text-slate-500 mt-1">
                     Warga dapat mengajukan permohonan SKU atau surat domisili secara mandiri melalui Portal Warga.
                   </p>
                 </td>
@@ -274,47 +224,31 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
       {/* MODAL CETAK SURAT RESMI DESA (Official Paper Output) */}
       {printLetter && (
         <div
-          className="modal-backdrop"
+          className="modal-backdrop fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto"
           onClick={() => setPrintLetter(null)}
         >
           <div
-            className="modal-content animate-fade-in"
-            style={{
-              maxWidth: '720px',
-              fontFamily: 'serif',
-              color: '#0f172a',
-              background: '#ffffff',
-              padding: '2.5rem',
-            }}
+            className="modal-content animate-fade-in w-full max-w-2xl bg-white text-slate-900 rounded-2xl p-8 shadow-2xl relative"
+            style={{ fontFamily: 'serif' }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Action Bar (Not printed) */}
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginBottom: '1.5rem',
-                borderBottom: '1px solid #e2e8f0',
-                paddingBottom: '0.75rem',
-                fontFamily: 'sans-serif',
-              }}
-              className="no-print"
-            >
-              <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>
+            <div className="flex items-center justify-between pb-3 mb-6 border-b border-slate-200 no-print font-sans">
+              <span className="text-xs font-bold text-slate-500">
                 Pratinjau Format Surat Resmi Kantor Desa Banda Neira
               </span>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={triggerBrowserPrint}
-                  className="btn btn-sm btn-primary"
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#2563EB] hover:bg-blue-700 text-white transition flex items-center gap-1 cursor-pointer"
                 >
-                  <Printer size={13} /> Cetak / Simpan PDF
+                  <Printer size={13} /> Cetak / PDF
                 </button>
                 <button
                   type="button"
                   onClick={() => setPrintLetter(null)}
-                  className="btn btn-sm btn-secondary"
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
                 >
                   Tutup
                 </button>
@@ -322,102 +256,88 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
             </div>
 
             {/* KOP SURAT DESA RESMI */}
-            <div style={{ textAlign: 'center', borderBottom: '3px double #000000', paddingBottom: '0.75rem', marginBottom: '1.5rem' }}>
-              <h3 style={{ margin: 0, fontSize: '1.05rem', letterSpacing: '1px', textTransform: 'uppercase' }}>
+            <div className="text-center border-b-2 border-slate-900 pb-3 mb-5">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-700">
                 PEMERINTAH KABUPATEN MALUKU TENGAH
               </h3>
-              <h4 style={{ margin: '0.2rem 0', fontSize: '1rem', textTransform: 'uppercase' }}>
+              <h4 className="text-xs uppercase font-bold text-slate-700">
                 KECAMATAN KEPULAUAN BANDA
               </h4>
-              <h2 style={{ margin: '0.2rem 0', fontSize: '1.3rem', fontWeight: 'bold', textTransform: 'uppercase' }}>
+              <h2 className="text-base font-black uppercase text-slate-900 mt-0.5">
                 KANTOR KEPALA DESA BANDA NEIRA
               </h2>
-              <p style={{ margin: 0, fontSize: '0.8rem', fontStyle: 'italic', color: '#334155' }}>
+              <p className="text-[11px] italic text-slate-600 mt-0.5">
                 Jalan Nusantara No. 01, Banda Neira, Kepulauan Banda, Maluku Tengah 97593
               </p>
             </div>
 
             {/* JUDUL SURAT */}
-            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-              <h3 style={{ margin: 0, textDecoration: 'underline', fontSize: '1.15rem', textTransform: 'uppercase' }}>
+            <div className="text-center mb-5">
+              <h3 className="text-sm font-bold uppercase underline tracking-wide text-slate-900">
                 {printLetter.request_type}
               </h3>
-              <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem', fontFamily: 'sans-serif' }}>
+              <p className="text-xs text-slate-600 font-sans mt-0.5">
                 Nomor: 503/{printLetter.id.substring(0, 5).toUpperCase()}/KD-BN/{new Date().getFullYear()}
               </p>
             </div>
 
             {/* ISI SURAT */}
-            <div style={{ fontSize: '0.95rem', lineHeight: '1.8' }}>
-              <p style={{ textIndent: '2rem', margin: '0 0 0.75rem 0' }}>
+            <div className="text-xs leading-relaxed text-slate-800 space-y-3">
+              <p className="indent-6">
                 Yang bertanda tangan di bawah ini, Kepala Desa Banda Neira, Kecamatan Kepulauan Banda, Kabupaten Maluku Tengah, dengan ini menerangkan bahwa:
               </p>
 
-              <table style={{ width: '100%', margin: '0.5rem 0 1rem 1rem', fontSize: '0.92rem' }}>
+              <table className="w-full ml-4 text-xs">
                 <tbody>
                   <tr>
-                    <td style={{ width: '160px', padding: '0.2rem 0' }}>Nama Lengkap</td>
-                    <td>: <b>{printLetter.resident_name || 'Ahmad Baadilla'}</b></td>
+                    <td className="w-36 py-1 text-slate-600">Nama Lengkap</td>
+                    <td className="py-1">: <b className="text-slate-900">{printLetter.resident_name || 'Ahmad Baadilla'}</b></td>
                   </tr>
                   <tr>
-                    <td style={{ padding: '0.2rem 0' }}>NIK</td>
-                    <td>: <span style={{ fontFamily: 'monospace' }}>{printLetter.resident_nik || '-'}</span></td>
+                    <td className="py-1 text-slate-600">NIK</td>
+                    <td className="py-1 font-mono">: {printLetter.resident_nik || '-'}</td>
                   </tr>
                   <tr>
-                    <td style={{ padding: '0.2rem 0' }}>Mata Pencaharian</td>
-                    <td>: {printLetter.resident_occupation || 'Petani Rempah Pala'}</td>
+                    <td className="py-1 text-slate-600">Mata Pencaharian</td>
+                    <td className="py-1">: {printLetter.resident_occupation || 'Petani Rempah Pala'}</td>
                   </tr>
                   <tr>
-                    <td style={{ padding: '0.2rem 0' }}>Alamat / Domisili</td>
-                    <td>: Desa Banda Neira, Kec. Kepulauan Banda, Kab. Maluku Tengah</td>
+                    <td className="py-1 text-slate-600">Alamat / Domisili</td>
+                    <td className="py-1">: Desa Banda Neira, Kec. Kepulauan Banda, Kab. Maluku Tengah</td>
                   </tr>
                 </tbody>
               </table>
 
-              <p style={{ textIndent: '2rem', margin: '0 0 0.75rem 0' }}>
+              <p className="indent-6">
                 Adalah benar yang bersangkutan merupakan warga penduduk yang berdomisili sah di wilayah Desa Banda Neira dan benar menjalankan kegiatan usaha/mata pencaharian sebagaimana tercatat di atas.
               </p>
 
-              <p style={{ textIndent: '2rem', margin: '0 0 0.75rem 0' }}>
+              <p className="indent-6">
                 Surat keterangan ini diberikan atas permohonan yang bersangkutan untuk keperluan: <b>{printLetter.notes || 'Pengajuan Persyaratan Administrasi & Modal Usaha'}</b>.
               </p>
 
-              <p style={{ textIndent: '2rem', margin: '0 0 1.5rem 0' }}>
+              <p className="indent-6">
                 Demikian surat keterangan ini kami buat dengan sebenarnya agar dapat dipergunakan sebagaimana mestinya.
               </p>
             </div>
 
             {/* TANDA TANGAN & STEMPEL */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2rem', textAlign: 'center' }}>
-              <div style={{ minWidth: '220px' }}>
-                <p style={{ margin: 0, fontSize: '0.9rem' }}>Banda Neira, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-                <p style={{ margin: '0.2rem 0 3.5rem 0', fontWeight: 'bold', fontSize: '0.9rem' }}>KEPALA DESA BANDA NEIRA,</p>
-                <p style={{ margin: 0, fontWeight: 'bold', textDecoration: 'underline' }}>M. SYAFI'I BAADILLA</p>
-                <p style={{ margin: 0, fontSize: '0.8rem', color: '#475569' }}>NIP. 19780512 200501 1 004</p>
+            <div className="flex justify-end mt-8 text-center text-xs">
+              <div className="min-w-48">
+                <p>Banda Neira, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                <p className="font-bold mt-1 mb-14">KEPALA DESA BANDA NEIRA,</p>
+                <p className="font-bold underline">M. SYAFI'I BAADILLA</p>
+                <p className="text-[10px] text-slate-500">NIP. 19780512 200501 1 004</p>
               </div>
             </div>
 
             {/* FOOTER VERIFIKASI KEASLIAN DIGITAL */}
-            <div
-              style={{
-                marginTop: '2rem',
-                borderTop: '1px dashed #cbd5e1',
-                paddingTop: '0.75rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                fontSize: '0.75rem',
-                color: '#64748b',
-                fontFamily: 'sans-serif',
-              }}
-            >
+            <div className="mt-6 pt-3 border-t border-dashed border-slate-300 flex items-center justify-between text-[10px] text-slate-500 font-sans">
               <div>
                 <span>🛡️ Terdaftar di <b>Ekosistem Digital Banda Neira</b></span><br />
                 <span>ID Dokumen: {printLetter.id}</span>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <span style={{ color: '#059669', fontWeight: 600 }}>✓ Keabsahan Dokumen Terverifikasi</span>
-              </div>
+              <span className="text-emerald-700 font-bold">✓ Keabsahan Dokumen Terverifikasi</span>
             </div>
           </div>
         </div>
@@ -425,3 +345,4 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
     </section>
   )
 }
+export default LettersWorkspace

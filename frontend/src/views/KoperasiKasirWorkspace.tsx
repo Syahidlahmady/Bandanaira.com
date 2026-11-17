@@ -22,10 +22,25 @@ import {
   WATER_STATIONS,
 } from '../services/koperasi'
 
-export const KoperasiKasirWorkspace: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'komoditas' | 'sampah' | 'dispenser' | 'ledger'>('komoditas')
+export interface KoperasiKasirWorkspaceProps {
+  currentUser?: any
+}
 
-  // Citizen Search & Profile
+export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ currentUser }) => {
+  // Ekstraksi Peran Pengguna Sebenarnya
+  const roles: string[] = currentUser
+    ? (currentUser.roles || []).map((r: any) => (typeof r === 'string' ? r : r.name))
+    : []
+  const isSuperuser = Boolean(currentUser?.is_superuser)
+  const isOfficerOrAdmin = isSuperuser || roles.some((r) => ['admin', 'village_officer'].includes(r))
+  const isCoopManager = roles.includes('coop_manager') || roles.includes('pengelola_koperasi')
+  const canOperateCashier = isOfficerOrAdmin || isCoopManager
+
+  const [activeTab, setActiveTab] = useState<
+    'komoditas' | 'sampah' | 'dispenser' | 'ledger' | 'katalog_harga' | 'riwayat_warga' | 'panduan_warga'
+  >(canOperateCashier ? 'komoditas' : 'katalog_harga')
+
+  // Citizen Search & Profile (default NIK)
   const [nikInput, setNikInput] = useState<string>('8171010101900001')
   const [citizenProfile, setCitizenProfile] = useState<CitizenCoopProfileResponse | null>(null)
   const [loadingCitizen, setLoadingCitizen] = useState<boolean>(false)
@@ -243,98 +258,167 @@ export const KoperasiKasirWorkspace: React.FC = () => {
       <div className="workspace-header" style={{ marginBottom: '1.75rem' }}>
         <div>
           <span className="badge badge-emerald" style={{ marginBottom: '0.4rem', display: 'inline-flex', gap: '0.35rem' }}>
-            <Building2 size={12} /> Mandat Prof. Purwo &amp; Koperasi Hatta
+            <Building2 size={12} /> {canOperateCashier ? 'Mandat Prof. Purwo • Kasir Koperasi Hatta' : 'Koperasi Hatta • Tabungan Warga'}
           </span>
           <h2 style={{ margin: 0, fontSize: '1.65rem', fontWeight: 900, color: '#f8fafc', letterSpacing: '-0.02em' }}>
-            Kasir Koperasi, Bank Sampah &amp; Dispenser RO
+            {canOperateCashier ? 'Kasir Koperasi, Bank Sampah & Dispenser RO' : 'Buku Tabungan Koperasi & Kuota Air Bersih'}
           </h2>
           <p style={{ margin: '0.35rem 0 0', color: '#94a3b8', fontSize: '0.875rem' }}>
-            Ekosistem sirkular pulau: Timbangan komoditas rempah, tukar 1 kg plastik jadi 10 liter air bersih, &amp; dispenser otomatis Solenoid Valve.
+            {canOperateCashier
+              ? 'Ekosistem sirkular pulau: Timbangan komoditas rempah, tukar 1 kg plastik jadi 10 liter air bersih, & dispenser otomatis Solenoid Valve.'
+              : 'Pantau saldo simpanan, kuota air bersih RO, buku tabungan bank sampah, dan harga acuan pembelian resmi pala desa.'}
           </p>
         </div>
 
         {/* Tab Switcher */}
         <div style={{ display: 'flex', gap: '0.4rem', background: 'rgba(15, 23, 42, 0.8)', padding: '0.35rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            onClick={() => setActiveTab('komoditas')}
-            style={{
-              padding: '0.5rem 0.9rem',
-              borderRadius: 'var(--radius-md)',
-              border: 'none',
-              fontSize: '0.8rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              transition: 'all 0.2s',
-              background: activeTab === 'komoditas' ? 'linear-gradient(135deg, #10b981, #059669)' : 'transparent',
-              color: activeTab === 'komoditas' ? '#ffffff' : '#94a3b8',
-            }}
-          >
-            <Scale size={14} /> ⚖️ Timbangan Rempah
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('sampah')}
-            style={{
-              padding: '0.5rem 0.9rem',
-              borderRadius: 'var(--radius-md)',
-              border: 'none',
-              fontSize: '0.8rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              transition: 'all 0.2s',
-              background: activeTab === 'sampah' ? 'linear-gradient(135deg, #06b6d4, #0284c7)' : 'transparent',
-              color: activeTab === 'sampah' ? '#ffffff' : '#94a3b8',
-            }}
-          >
-            <Recycle size={14} /> ♻️ Bank Sampah Plastik
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('dispenser')}
-            style={{
-              padding: '0.5rem 0.9rem',
-              borderRadius: 'var(--radius-md)',
-              border: 'none',
-              fontSize: '0.8rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              transition: 'all 0.2s',
-              background: activeTab === 'dispenser' ? 'linear-gradient(135deg, #3b82f6, #6366f1)' : 'transparent',
-              color: activeTab === 'dispenser' ? '#ffffff' : '#94a3b8',
-            }}
-          >
-            <Droplets size={14} /> 🚰 Dispenser Air RO
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('ledger')}
-            style={{
-              padding: '0.5rem 0.9rem',
-              borderRadius: 'var(--radius-md)',
-              border: 'none',
-              fontSize: '0.8rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              transition: 'all 0.2s',
-              background: activeTab === 'ledger' ? 'linear-gradient(135deg, #8b5cf6, #d946ef)' : 'transparent',
-              color: activeTab === 'ledger' ? '#ffffff' : '#94a3b8',
-            }}
-          >
-            <CreditCard size={14} /> 📜 Buku Besar
-          </button>
+          {canOperateCashier ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setActiveTab('komoditas')}
+                style={{
+                  padding: '0.5rem 0.9rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: 'none',
+                  fontSize: '0.8rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  transition: 'all 0.2s',
+                  background: activeTab === 'komoditas' ? 'linear-gradient(135deg, #10b981, #059669)' : 'transparent',
+                  color: activeTab === 'komoditas' ? '#ffffff' : '#94a3b8',
+                }}
+              >
+                <Scale size={14} /> ⚖️ Timbangan Rempah
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('sampah')}
+                style={{
+                  padding: '0.5rem 0.9rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: 'none',
+                  fontSize: '0.8rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  transition: 'all 0.2s',
+                  background: activeTab === 'sampah' ? 'linear-gradient(135deg, #06b6d4, #0284c7)' : 'transparent',
+                  color: activeTab === 'sampah' ? '#ffffff' : '#94a3b8',
+                }}
+              >
+                <Recycle size={14} /> ♻️ Bank Sampah Plastik
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('dispenser')}
+                style={{
+                  padding: '0.5rem 0.9rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: 'none',
+                  fontSize: '0.8rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  transition: 'all 0.2s',
+                  background: activeTab === 'dispenser' ? 'linear-gradient(135deg, #3b82f6, #6366f1)' : 'transparent',
+                  color: activeTab === 'dispenser' ? '#ffffff' : '#94a3b8',
+                }}
+              >
+                <Droplets size={14} /> 🚰 Dispenser Air RO
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('ledger')}
+                style={{
+                  padding: '0.5rem 0.9rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: 'none',
+                  fontSize: '0.8rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  transition: 'all 0.2s',
+                  background: activeTab === 'ledger' ? 'linear-gradient(135deg, #8b5cf6, #d946ef)' : 'transparent',
+                  color: activeTab === 'ledger' ? '#ffffff' : '#94a3b8',
+                }}
+              >
+                <CreditCard size={14} /> 📜 Buku Besar
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => setActiveTab('katalog_harga')}
+                style={{
+                  padding: '0.5rem 0.9rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: 'none',
+                  fontSize: '0.8rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  transition: 'all 0.2s',
+                  background: activeTab === 'katalog_harga' ? 'linear-gradient(135deg, #10b981, #059669)' : 'transparent',
+                  color: activeTab === 'katalog_harga' ? '#ffffff' : '#94a3b8',
+                }}
+              >
+                <Scale size={14} /> 📊 Harga Acuan Rempah &amp; Sampah
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('riwayat_warga')}
+                style={{
+                  padding: '0.5rem 0.9rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: 'none',
+                  fontSize: '0.8rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  transition: 'all 0.2s',
+                  background: activeTab === 'riwayat_warga' ? 'linear-gradient(135deg, #8b5cf6, #d946ef)' : 'transparent',
+                  color: activeTab === 'riwayat_warga' ? '#ffffff' : '#94a3b8',
+                }}
+              >
+                <CreditCard size={14} /> 📜 Riwayat Transaksi Saya
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('panduan_warga')}
+                style={{
+                  padding: '0.5rem 0.9rem',
+                  borderRadius: 'var(--radius-md)',
+                  border: 'none',
+                  fontSize: '0.8rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  transition: 'all 0.2s',
+                  background: activeTab === 'panduan_warga' ? 'linear-gradient(135deg, #06b6d4, #0284c7)' : 'transparent',
+                  color: activeTab === 'panduan_warga' ? '#ffffff' : '#94a3b8',
+                }}
+              >
+                <Droplets size={14} /> 📍 Stasiun RO &amp; Bank Sampah
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -381,81 +465,92 @@ export const KoperasiKasirWorkspace: React.FC = () => {
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 360px) 1fr', gap: '1.25rem', alignItems: 'start' }}>
         {/* Left Column: Citizen Lookup & Balance Card */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {/* NIK Search Box */}
-          <div className="card" style={{ padding: '1.15rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
-            <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.875rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-              <Search size={15} style={{ color: '#10b981' }} /> Identifikasi NIK Warga
-            </h4>
-            <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.65rem' }}>
-              <input
-                type="text"
-                maxLength={16}
-                value={nikInput}
-                onChange={(e) => setNikInput(e.target.value)}
-                placeholder="16 Digit NIK Warga Desa..."
-                style={{
-                  flex: 1,
-                  background: 'rgba(15, 23, 42, 0.8)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 'var(--radius-md)',
-                  color: '#f8fafc',
-                  padding: '0.5rem 0.75rem',
-                  fontSize: '0.825rem',
-                  fontFamily: 'monospace',
-                }}
-              />
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => handleSearchCitizen(nikInput)}
-                disabled={loadingCitizen}
-                style={{ padding: '0.5rem 0.85rem' }}
-              >
-                {loadingCitizen ? <RefreshCw size={14} className="animate-spin" /> : 'Cek'}
-              </button>
-            </div>
-
-            {/* Quick Demo NIK Pickers */}
-            <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '0.7rem', color: '#64748b', alignSelf: 'center' }}>Sampel:</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setNikInput('8171010101900001')
-                  handleSearchCitizen('8171010101900001')
-                }}
-                style={{ fontSize: '0.7rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#94a3b8', borderRadius: '4px', padding: '0.15rem 0.4rem', cursor: 'pointer' }}
-              >
-                Ahmad (Pala)
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setNikInput('8171010101900002')
-                  handleSearchCitizen('8171010101900002')
-                }}
-                style={{ fontSize: '0.7rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#94a3b8', borderRadius: '4px', padding: '0.15rem 0.4rem', cursor: 'pointer' }}
-              >
-                Fatima (Fuli)
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setNikInput('8171010101900003')
-                  handleSearchCitizen('8171010101900003')
-                }}
-                style={{ fontSize: '0.7rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#94a3b8', borderRadius: '4px', padding: '0.15rem 0.4rem', cursor: 'pointer' }}
-              >
-                Syahrir (Pesisir)
-              </button>
-            </div>
-
-            {citizenError && (
-              <div style={{ marginTop: '0.65rem', padding: '0.45rem 0.65rem', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-sm)', color: '#f87171', fontSize: '0.75rem' }}>
-                {citizenError}
+          {/* NIK Search Box - Khusus untuk Kasir / Admin */}
+          {canOperateCashier ? (
+            <div className="card" style={{ padding: '1.15rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
+              <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.875rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                <Search size={15} style={{ color: '#10b981' }} /> Identifikasi NIK Warga (Kasir)
+              </h4>
+              <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.65rem' }}>
+                <input
+                  type="text"
+                  maxLength={16}
+                  value={nikInput}
+                  onChange={(e) => setNikInput(e.target.value)}
+                  placeholder="16 Digit NIK Warga Desa..."
+                  style={{
+                    flex: 1,
+                    background: 'rgba(15, 23, 42, 0.8)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--radius-md)',
+                    color: '#f8fafc',
+                    padding: '0.5rem 0.75rem',
+                    fontSize: '0.825rem',
+                    fontFamily: 'monospace',
+                  }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => handleSearchCitizen(nikInput)}
+                  disabled={loadingCitizen}
+                  style={{ padding: '0.5rem 0.85rem' }}
+                >
+                  {loadingCitizen ? <RefreshCw size={14} className="animate-spin" /> : 'Cek'}
+                </button>
               </div>
-            )}
-          </div>
+
+              {/* Quick Demo NIK Pickers */}
+              <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.7rem', color: '#64748b', alignSelf: 'center' }}>Sampel:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNikInput('8171010101900001')
+                    handleSearchCitizen('8171010101900001')
+                  }}
+                  style={{ fontSize: '0.7rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#94a3b8', borderRadius: '4px', padding: '0.15rem 0.4rem', cursor: 'pointer' }}
+                >
+                  Ahmad (Pala)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNikInput('8171010101900002')
+                    handleSearchCitizen('8171010101900002')
+                  }}
+                  style={{ fontSize: '0.7rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#94a3b8', borderRadius: '4px', padding: '0.15rem 0.4rem', cursor: 'pointer' }}
+                >
+                  Fatima (Fuli)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNikInput('8171010101900003')
+                    handleSearchCitizen('8171010101900003')
+                  }}
+                  style={{ fontSize: '0.7rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#94a3b8', borderRadius: '4px', padding: '0.15rem 0.4rem', cursor: 'pointer' }}
+                >
+                  Syahrir (Pesisir)
+                </button>
+              </div>
+
+              {citizenError && (
+                <div style={{ marginTop: '0.65rem', padding: '0.45rem 0.65rem', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-sm)', color: '#f87171', fontSize: '0.75rem' }}>
+                  {citizenError}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="card" style={{ padding: '1rem', background: 'rgba(15, 23, 42, 0.7)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10b981', fontSize: '0.8rem', fontWeight: 800 }}>
+                <ShieldCheck size={16} /> Buku Rekening Koperasi Anda
+              </div>
+              <p style={{ margin: '0.35rem 0 0', fontSize: '0.75rem', color: '#94a3b8', lineHeight: 1.4 }}>
+                Akun terikat otomatis pada profil identitas Anda. Saldo tabungan dan jatah kuota air minum RO tercatat resmi di pembukuan Koperasi Hatta.
+              </p>
+            </div>
+          )}
 
           {/* Citizen Smart Card Details */}
           {citizenProfile ? (
@@ -1167,6 +1262,217 @@ export const KoperasiKasirWorkspace: React.FC = () => {
                   </table>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* TAB WARGA 1: Katalog Harga Acuan Rempah & Nilai Tukar Sampah */}
+          {activeTab === 'katalog_harga' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div className="card" style={{ padding: '1.5rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Scale size={18} style={{ color: '#10b981' }} /> Harga Pembelian Resmi Koperasi Hatta
+                  </h3>
+                  <p style={{ margin: '0.2rem 0 0', color: '#94a3b8', fontSize: '0.8rem' }}>
+                    Standar harga beli hasil panen rempah pala &amp; fuli di kasir Koperasi Hatta.
+                  </p>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.85rem' }}>
+                  {COMMODITY_OPTIONS.map((item) => (
+                    <div
+                      key={item.code}
+                      style={{
+                        padding: '1rem',
+                        borderRadius: 'var(--radius-md)',
+                        background: 'rgba(15, 23, 42, 0.6)',
+                        border: '1px solid rgba(16, 185, 129, 0.2)',
+                      }}
+                    >
+                      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <span>{item.icon}</span> {item.name}
+                      </div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#10b981', margin: '0.35rem 0' }}>
+                        Rp {item.price.toLocaleString()} <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 500 }}>/ Kg</span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#94a3b8' }}>
+                        Standar mutu resmi Koperasi Hatta Banda Neira.
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="card" style={{ padding: '1.5rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Recycle size={18} style={{ color: '#06b6d4' }} /> Nilai Tukar Bank Sampah Plastik
+                  </h3>
+                  <p style={{ margin: '0.2rem 0 0', color: '#94a3b8', fontSize: '0.8rem' }}>
+                    Tukar sampah plastik bersih Anda menjadi kuota air bersih RO atau saldo simpanan koperasi.
+                  </p>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.85rem' }}>
+                  {WASTE_OPTIONS.map((item) => (
+                    <div
+                      key={item.code}
+                      style={{
+                        padding: '1rem',
+                        borderRadius: 'var(--radius-md)',
+                        background: 'rgba(15, 23, 42, 0.6)',
+                        border: '1px solid rgba(6, 182, 212, 0.2)',
+                      }}
+                    >
+                      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#f8fafc' }}>
+                        {item.name}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: '0.35rem 0' }}>
+                        <span style={{ fontSize: '1.1rem', fontWeight: 900, color: '#38bdf8' }}>
+                          +{item.waterPerKg} L Air RO
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>atau</span>
+                        <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#10b981' }}>
+                          Rp {item.price.toLocaleString()}
+                        </span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#94a3b8' }}>
+                        Bonus: +5 Poin Warga per kilogram terverifikasi
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB WARGA 2: Riwayat Transaksi Saya */}
+          {activeTab === 'riwayat_warga' && (
+            <div className="card" style={{ padding: '1.5rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <CreditCard size={18} style={{ color: '#8b5cf6' }} /> Riwayat Transaksi &amp; Kuota Saya
+                  </h3>
+                  <p style={{ margin: '0.2rem 0 0', color: '#94a3b8', fontSize: '0.8rem' }}>
+                    Catatan setoran hasil panen, penukaran sampah, dan pengambilan air minum RO Anda.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={loadLedger}
+                  disabled={loadingLedger}
+                  className="btn btn-secondary"
+                  style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
+                >
+                  <RefreshCw size={13} className={loadingLedger ? 'animate-spin' : ''} /> Segarkan
+                </button>
+              </div>
+
+              {ledgerTransactions.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '2rem 1rem', color: '#64748b', fontSize: '0.85rem' }}>
+                  Belum ada catatan transaksi pada akun Anda. Kunjungi kasir Koperasi Hatta untuk transaksi pertama.
+                </div>
+              ) : (
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.78rem' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid var(--border-color)', color: '#94a3b8', textAlign: 'left' }}>
+                        <th style={{ padding: '0.55rem 0.6rem' }}>Waktu</th>
+                        <th style={{ padding: '0.55rem 0.6rem' }}>Jenis Transaksi</th>
+                        <th style={{ padding: '0.55rem 0.6rem' }}>Komoditas / Sampah</th>
+                        <th style={{ padding: '0.55rem 0.6rem' }}>Kuantitas</th>
+                        <th style={{ padding: '0.55rem 0.6rem' }}>Nilai (Rp)</th>
+                        <th style={{ padding: '0.55rem 0.6rem' }}>Dampak Kuota Air</th>
+                        <th style={{ padding: '0.55rem 0.6rem' }}>Receipt Hash</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ledgerTransactions.map((trx) => (
+                        <tr key={trx.id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.04)' }}>
+                          <td style={{ padding: '0.55rem 0.6rem', color: '#64748b', whiteSpace: 'nowrap' }}>
+                            {new Date(trx.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}{' '}
+                            {new Date(trx.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </td>
+                          <td style={{ padding: '0.55rem 0.6rem', fontWeight: 700, color: '#f8fafc' }}>
+                            <span style={{ fontSize: '0.7rem', color: '#38bdf8' }}>{trx.transaction_type}</span>
+                            <div style={{ fontSize: '0.68rem', color: '#64748b', fontFamily: 'monospace' }}>
+                              {trx.transaction_code}
+                            </div>
+                          </td>
+                          <td style={{ padding: '0.55rem 0.6rem', color: '#e2e8f0', fontWeight: 600 }}>
+                            {trx.item_name}
+                          </td>
+                          <td style={{ padding: '0.55rem 0.6rem', color: '#f8fafc', fontWeight: 700 }}>
+                            {trx.weight_or_volume.toFixed(1)} {trx.transaction_type === 'REDEEM_WATER' ? 'L' : 'Kg'}
+                          </td>
+                          <td style={{ padding: '0.55rem 0.6rem', color: '#10b981', fontWeight: 700 }}>
+                            {trx.monetary_value_rp > 0 ? `Rp ${trx.monetary_value_rp.toLocaleString()}` : '—'}
+                          </td>
+                          <td style={{ padding: '0.55rem 0.6rem', fontWeight: 700 }}>
+                            {trx.water_quota_impact_ltr > 0 ? (
+                              <span style={{ color: '#06b6d4' }}>+{trx.water_quota_impact_ltr} L</span>
+                            ) : trx.water_quota_impact_ltr < 0 ? (
+                              <span style={{ color: '#f87171' }}>{trx.water_quota_impact_ltr} L</span>
+                            ) : (
+                              <span style={{ color: '#64748b' }}>0</span>
+                            )}
+                          </td>
+                          <td style={{ padding: '0.55rem 0.6rem', fontFamily: 'monospace', color: '#94a3b8', fontSize: '0.68rem' }}>
+                            {trx.receipt_hash.slice(0, 10)}...{trx.receipt_hash.slice(-6)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB WARGA 3: Lokasi Stasiun RO & Bank Sampah */}
+          {activeTab === 'panduan_warga' && (
+            <div className="card" style={{ padding: '1.5rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
+              <div style={{ marginBottom: '1.25rem' }}>
+                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Droplets size={18} style={{ color: '#38bdf8' }} /> 4 Titik Stasiun Air Minum RO &amp; Penukaran
+                </h3>
+                <p style={{ margin: '0.2rem 0 0', color: '#94a3b8', fontSize: '0.8rem' }}>
+                  Lokasi fasilitas dispenser air minum bersih RO otomatis dan pos penimbangan bank sampah di pulau Banda.
+                </p>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
+                {WATER_STATIONS.map((station) => (
+                  <div
+                    key={station.code}
+                    style={{
+                      padding: '1.15rem',
+                      borderRadius: 'var(--radius-md)',
+                      background: 'rgba(15, 23, 42, 0.6)',
+                      border: '1px solid rgba(56, 189, 248, 0.2)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                      <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#38bdf8', textTransform: 'uppercase' }}>
+                        {station.code}
+                      </span>
+                      <span className="badge badge-emerald" style={{ fontSize: '0.65rem' }}>
+                        Aktif Beroperasi
+                      </span>
+                    </div>
+                    <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: '#f8fafc' }}>
+                      {station.name}
+                    </h4>
+                    <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#cbd5e1' }}>
+                      Kapasitas Tandon: <b>5.000 Liter RO</b>
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '0.25rem' }}>
+                      Solenoid: <span style={{ color: '#34d399', fontWeight: 600 }}>Terkoneksi IoT Otomatis</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

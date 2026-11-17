@@ -1313,7 +1313,7 @@ export const App: React.FC = () => {
       {currentUser && activeTab !== 'landing' && activeTab !== 'register' && (
         <DashboardLayout
           currentUser={currentUser}
-          activeTab={activeTab}
+          activeTab={activeTab as any}
           onSelectTab={(tab) => setActiveTab(tab)}
           onOpenLanding={() => setActiveTab('landing')}
           onOpenMarketplace={() => setShowMarketplaceModal(true)}
@@ -1326,6 +1326,9 @@ export const App: React.FC = () => {
           isSyncing={isSyncing}
           adminPendingLettersCount={adminRequests.filter((r) => r.status === 'submitted').length}
           pendingFarmsCount={farms.filter((f) => f.verification_status === 'pending').length}
+          systemHealth={health}
+          loadingHealth={loadingHealth}
+          healthError={healthError}
         >
           <ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Ruang Kerja">
           <React.Suspense fallback={<div className="p-8 text-center text-slate-500 font-medium">Memuat antarmuka...</div>}>
@@ -1473,7 +1476,7 @@ export const App: React.FC = () => {
 
           {/* TAB 5: KOPERASI HATTA, BANK SAMPAH & DISPENSER AIR RO */}
           {activeTab === 'koperasi' && (
-            <KoperasiKasirWorkspace />
+            <KoperasiKasirWorkspace currentUser={currentUser} />
           )}
 
           {/* TAB 6: SMART TOURISM, ECO-STAY & WARISAN BUDAYA */}
@@ -1493,7 +1496,17 @@ export const App: React.FC = () => {
 
           {/* TAB 9: PUSAT KOMANDO TELEMETRI IoT & RESILIENSI PULAU */}
           {activeTab === 'iot' && (
-            <IslandTelemetryWorkspace />
+            (isFieldSurveyor || isOfficerOrAdmin) ? (
+              <IslandTelemetryWorkspace />
+            ) : (
+              <AccessRestrictedNotice
+                workspaceTitle="Pusat Komando Telemetri IoT & Resiliensi Pulau"
+                roleTitle="Surveyor Lapangan atau Administrator Sistem"
+                currentRole={currentRoleTitle}
+                onBackToDashboard={() => setActiveTab('dashboard')}
+                onOpenQuickSwitch={() => setShowQuickLoginModal(true)}
+              />
+            )
           )}
 
           {/* TAB 10: SURVEI LAPANGAN DINAMIS & PIPA ETL HYBRID */}
@@ -1524,65 +1537,6 @@ export const App: React.FC = () => {
                 onOpenQuickSwitch={() => setShowQuickLoginModal(true)}
               />
             )
-          )}
-
-          {/* System Telemetry Section (Khusus untuk Administrator Sistem) */}
-          {isAdmin && (
-            <section
-              className="app-card animate-fade-in"
-              style={{
-                marginTop: '2rem',
-                border: '1px solid rgba(244, 183, 94, 0.2)',
-                padding: '1.5rem',
-                borderRadius: '1rem',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-                <div>
-                  <h2 className="font-serif" style={{ fontSize: '1.4rem', fontWeight: 700, margin: 0, color: '#081D35' }}>
-                    Telemetri Infrastruktur Kepulauan
-                  </h2>
-                  <p style={{ fontSize: '0.825rem', color: '#64748B', margin: '0.25rem 0 0' }}>
-                    Ketersediaan backend API, mesin geospasial PostGIS, dan persistensi database terdistribusi.
-                  </p>
-                </div>
-                <span className="badge badge-emerald">
-                  ● SISTEM OPERASIONAL LENGKAP
-                </span>
-              </div>
-
-              {loadingHealth && <p style={{ color: '#64748B', fontSize: '0.875rem' }}>Memeriksa koneksi layanan backend...</p>}
-              {healthError && (
-                <div style={{ color: '#fca5a5', background: 'rgba(239, 68, 68, 0.15)', padding: '0.85rem 1.25rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem', border: '1px solid rgba(239, 68, 68, 0.35)', fontSize: '0.875rem', fontWeight: 600 }}>
-                  ⚠️ Backend offline: {healthError}
-                </div>
-              )}
-              {health && (
-                <div className="stat-grid">
-                  <div className="stat-card" style={{ borderLeft: '4px solid #f4b75e' }}>
-                    <span className="stat-label">API Gateway</span>
-                    <div className="stat-value" style={{ color: '#f4b75e', fontSize: '1.25rem' }}>
-                      {health.services.api.toUpperCase()}
-                    </div>
-                    <span style={{ fontSize: '0.75rem', color: '#64748B', fontFamily: 'var(--font-mono)' }}>Versi: v{health.version}</span>
-                  </div>
-                  <div className="stat-card" style={{ borderLeft: `4px solid ${health.services.database === 'connected' ? '#10b981' : '#f59e0b'}` }}>
-                    <span className="stat-label">Database Engine</span>
-                    <div className="stat-value" style={{ color: health.services.database === 'connected' ? '#34d399' : '#fbbf24', fontSize: '1.25rem' }}>
-                      {health.services.database.toUpperCase()}
-                    </div>
-                    <span style={{ fontSize: '0.75rem', color: '#64748B' }}>PostgreSQL 15 &amp; PostGIS 3</span>
-                  </div>
-                  <div className="stat-card" style={{ borderLeft: '4px solid #38bdf8' }}>
-                    <span className="stat-label">Status Global</span>
-                    <div className="stat-value" style={{ color: '#38bdf8', fontSize: '1.25rem' }}>
-                      {health.status.toUpperCase()}
-                    </div>
-                    <span style={{ fontSize: '0.75rem', color: '#64748B' }}>bandanaira.com Operational</span>
-                  </div>
-                </div>
-              )}
-            </section>
           )}
 
           {/* UNIFIED ECOSYSTEM FOOTER DI BAGIAN BAWAH KONTEN DASBOR */}
