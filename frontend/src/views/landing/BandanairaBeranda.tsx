@@ -152,8 +152,12 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
         onPublicVerify={onPublicVerify}
       />
 
-      {/* 9. Sustainable Travel Guidelines */}
-      <SustainableTravelSection />
+      {/* 9. Demographics & Island Vitality Stats */}
+      <SustainableTravelSection
+        onNavigate={onNavigate}
+        onOpenLogin={onOpenLogin}
+        currentUser={currentUser}
+      />
 
       {/* 10. Plan Your Visit CTA */}
       <PlanYourVisitSection
