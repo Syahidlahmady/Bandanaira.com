@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { ArrowUpRightIcon } from './LandingIcons'
 
 export interface MarketplaceProductItem {
@@ -48,12 +48,12 @@ export const FEATURED_MARKETPLACE_PRODUCTS: MarketplaceProductItem[] = [
     id: 'prod-3',
     name: 'Sirup Sari Buah Pala Segar Neira',
     category: 'OLAHAN REMPAH',
-    categoryLabel: 'MINUMAN SEGAR',
+    categoryLabel: 'MINUMAN KHAS BANDA',
     priceRp: 35000,
     unit: 'botol (600ml)',
     originDesa: 'Desa Nusantara',
     islandName: 'Pulau Neira',
-    batchCode: 'BN-SIRUP-NEIRA-09',
+    batchCode: 'BN-SIRUP-NEIRA-02',
     producerName: 'UMKM Ibu Pala Berkarya',
     photoUrl:
       'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=800&q=80',
@@ -62,21 +62,21 @@ export const FEATURED_MARKETPLACE_PRODUCTS: MarketplaceProductItem[] = [
     id: 'prod-4',
     name: 'Ikan Asar Cakalang Asap Tempurung Pala',
     category: 'HASIL LAUT',
-    categoryLabel: 'HASIL LAUT TRADISIONAL',
+    categoryLabel: 'KULINER KHAS LAUT',
     priceRp: 65000,
     unit: 'ekor',
     originDesa: 'Kampung Lama',
     islandName: 'Pulau Hatta',
-    batchCode: 'BN-CAKALANG-HATTA-12',
-    producerName: 'Koperasi Nelayan Bahari Hatta',
+    batchCode: 'BN-ASAR-HATTA-01',
+    producerName: 'Kelompok Nelayan Karang Hatta',
     photoUrl:
-      'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1544943910-4c1dc44aab44?auto=format&fit=crop&w=800&q=80',
   },
   {
     id: 'prod-5',
     name: 'Halwa Kenari & Manisan Buah Pala',
     category: 'OLAHAN REMPAH',
-    categoryLabel: 'KULINER KHAS',
+    categoryLabel: 'KUDAPAN TRADISIONAL',
     priceRp: 45000,
     unit: 'toples (300g)',
     originDesa: 'Kampung Baru',
@@ -113,6 +113,9 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
   onPublicVerify,
 }) => {
   const [selectedFilter, setSelectedFilter] = useState<'ALL' | 'REMPAH' | 'OLAHAN' | 'LAUT'>('ALL')
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(true)
 
   const filterOptions = [
     { key: 'ALL', label: 'Semua Produk' },
@@ -129,15 +132,42 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
     return true
   })
 
+  const checkScrollButtons = () => {
+    const el = scrollContainerRef.current
+    if (!el) return
+    setCanScrollLeft(el.scrollLeft > 20)
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 20)
+  }
+
+  useEffect(() => {
+    const el = scrollContainerRef.current
+    if (!el) return
+    checkScrollButtons()
+    el.addEventListener('scroll', checkScrollButtons)
+    window.addEventListener('resize', checkScrollButtons)
+    return () => {
+      el.removeEventListener('scroll', checkScrollButtons)
+      window.removeEventListener('resize', checkScrollButtons)
+    }
+  }, [filteredProducts])
+
+  const scroll = (direction: 'left' | 'right') => {
+    const el = scrollContainerRef.current
+    if (!el) return
+    const card = el.querySelector('div')
+    const scrollAmount = card ? (card.clientWidth + 24) * (direction === 'left' ? -1 : 1) : 380 * (direction === 'left' ? -1 : 1)
+    el.scrollBy({ left: scrollAmount, behavior: 'smooth' })
+  }
+
   return (
     <section
       id="layanan-umkm"
       aria-labelledby="local-cuisine-heading"
-      className="relative w-full py-20 px-6 sm:px-12 lg:px-20 bg-[#f7f5f0] text-slate-900 border-t border-slate-200/80"
+      className="relative w-full py-16 px-6 sm:px-12 lg:px-20 bg-[#f7f5f0] text-slate-900 border-t border-slate-200/80"
     >
       <div className="max-w-7xl mx-auto">
-        {/* Header Row: Title on Left, Action Pill on Right (Ala indonesia.travel) */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        {/* Header Row: Title on Left, Controls & Actions on Right */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
           <div>
             <div className="inline-flex items-center gap-2 mb-3">
               <span className="w-5 h-px bg-amber-600" />
@@ -161,20 +191,56 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          {/* Actions & Carousel Navigation */}
+          <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
+            {/* Carousel navigation arrows */}
+            <div className="flex items-center gap-1.5 mr-1">
+              <button
+                type="button"
+                onClick={() => scroll('left')}
+                disabled={!canScrollLeft}
+                aria-label="Geser ke kiri"
+                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors duration-200 ${
+                  canScrollLeft
+                    ? 'border-slate-300 text-slate-800 hover:border-[#0f2c59] hover:bg-[#0f2c59] hover:text-white cursor-pointer shadow-sm'
+                    : 'border-slate-200 text-slate-300 cursor-not-allowed opacity-50'
+                }`}
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => scroll('right')}
+                disabled={!canScrollRight}
+                aria-label="Geser ke kanan"
+                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors duration-200 ${
+                  canScrollRight
+                    ? 'border-slate-300 text-slate-800 hover:border-[#0f2c59] hover:bg-[#0f2c59] hover:text-white cursor-pointer shadow-sm'
+                    : 'border-slate-200 text-slate-300 cursor-not-allowed opacity-50'
+                }`}
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+            </div>
+
             <button
               type="button"
               onClick={onOpenMarketplace}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0f2c59] text-white hover:bg-[#183d75] text-xs font-semibold tracking-wide transition-all duration-200 shadow-sm group"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#0f2c59] text-white hover:bg-[#183d75] text-xs font-semibold tracking-wide transition-all duration-200 shadow-sm group cursor-pointer"
             >
-              <span>Buka Marketplace UMKM</span>
-              <ArrowUpRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              <span>Selengkapnya</span>
+              <ArrowUpRightIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </button>
 
             <button
               type="button"
               onClick={() => onPublicVerify('BN_VERIFY_PALA_SUPER_2026_LONTHOIR')}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-slate-300 bg-white hover:bg-amber-50 text-slate-700 text-xs font-semibold tracking-wide transition-all duration-200"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border border-slate-300 bg-white hover:bg-amber-50 text-slate-700 text-xs font-semibold tracking-wide transition-all duration-200 cursor-pointer"
             >
               <svg className="w-3.5 h-3.5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -186,13 +252,16 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 scrollbar-none">
+        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 scrollbar-none">
           {filterOptions.map((opt) => (
             <button
               key={opt.key}
               type="button"
-              onClick={() => setSelectedFilter(opt.key)}
-              className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
+              onClick={() => {
+                setSelectedFilter(opt.key)
+                scrollContainerRef.current?.scrollTo({ left: 0, behavior: 'smooth' })
+              }}
+              className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
                 selectedFilter === opt.key
                   ? 'bg-[#0f2c59] text-white shadow-sm'
                   : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300'
@@ -203,8 +272,11 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
           ))}
         </div>
 
-        {/* Catalog Showcase Cards (Poster Style with Terracotta Badge) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        {/* Carousel Showcase (Single row of top 3 visible, smooth horizontal snap) */}
+        <div
+          ref={scrollContainerRef}
+          className="flex gap-6 overflow-x-auto pb-6 scroll-smooth snap-x snap-mandatory scrollbar-none -mx-6 px-6 sm:-mx-12 sm:px-12 lg:-mx-20 lg:px-20"
+        >
           {filteredProducts.map((prod) => {
             const formattedPrice = new Intl.NumberFormat('id-ID', {
               style: 'currency',
@@ -215,7 +287,7 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
             return (
               <div
                 key={prod.id}
-                className="group relative flex flex-col rounded-[2rem] overflow-hidden bg-slate-900 aspect-[3/4] shadow-md hover:shadow-2xl transition-all duration-300 select-none"
+                className="group relative shrink-0 w-[85vw] sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] min-w-[260px] max-w-[420px] snap-start flex flex-col rounded-[2rem] overflow-hidden bg-slate-900 aspect-[3/4] shadow-md hover:shadow-2xl transition-all duration-300 select-none"
               >
                 {/* Product Photo */}
                 <img
@@ -258,7 +330,7 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
                     <button
                       type="button"
                       onClick={onOpenMarketplace}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-amber-300 hover:text-white transition-colors"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-amber-300 hover:text-white transition-colors cursor-pointer"
                     >
                       <span>Lihat Produk</span>
                       <ArrowUpRightIcon className="w-3.5 h-3.5" />
@@ -268,6 +340,33 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
               </div>
             )
           })}
+
+          {/* "Selengkapnya" Final Card in Carousel */}
+          <div className="group relative shrink-0 w-[85vw] sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] min-w-[260px] max-w-[420px] snap-start flex flex-col justify-between rounded-[2rem] bg-gradient-to-br from-[#0f2c59] to-[#081d35] p-8 text-white aspect-[3/4] shadow-md border border-white/10 hover:border-amber-400/40 transition-all select-none">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-300 flex items-center justify-center mb-6">
+                <ArrowUpRightIcon className="w-6 h-6" />
+              </div>
+              <span className="font-sans text-[11px] font-bold tracking-[0.2em] text-[#f4b75e] uppercase block mb-2">
+                KATALOG LENGKAP
+              </span>
+              <h3 className="font-sans font-bold text-2xl text-white leading-tight mb-3">
+                Rempah &amp; Hasil Bumi Pilihan
+              </h3>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Telusuri seluruh hasil panen biji pala organik, fuli merah kering, minyak atsiri, hingga olahan kuliner langsung dari petani pulau.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={onOpenMarketplace}
+              className="inline-flex items-center justify-center gap-2 w-full py-3.5 px-6 rounded-full bg-amber-600 hover:bg-amber-500 text-white font-sans text-xs font-semibold tracking-wide transition-all shadow-md group cursor-pointer"
+            >
+              <span>Buka Marketplace UMKM</span>
+              <ArrowUpRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </button>
+          </div>
         </div>
       </div>
     </section>

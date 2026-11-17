@@ -1,20 +1,19 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Suspense } from 'react'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
-import {
-  HeroSection,
-  Banda3DPhotoGallery,
-  PetaInteractiveSection,
-  HeritageSpiceSection,
-  TourismSawSection,
-  EcoStayCatalogSection,
-  EcosystemFeaturesSection,
-  TraceabilityMarketplaceSection,
-  SustainableTravelSection,
-  PlanYourVisitSection,
-  LandingFooterSection,
-  TourismChatbotBubble,
-} from '../../components/landing'
+import { HeroSection } from '../../components/landing/HeroSection'
+import { Banda3DPhotoGallery } from '../../components/landing/Banda3DPhotoGallery'
+
+const PetaInteractiveSection = React.lazy(() => import('../../components/landing/PetaInteractiveSection'))
+const HeritageSpiceSection = React.lazy(() => import('../../components/landing/HeritageSpiceSection'))
+const TourismSawSection = React.lazy(() => import('../../components/landing/TourismSawSection'))
+const EcoStayCatalogSection = React.lazy(() => import('../../components/landing/EcoStayCatalogSection'))
+const EcosystemFeaturesSection = React.lazy(() => import('../../components/landing/EcosystemFeaturesSection'))
+const TraceabilityMarketplaceSection = React.lazy(() => import('../../components/landing/TraceabilityMarketplaceSection'))
+const SustainableTravelSection = React.lazy(() => import('../../components/landing/SustainableTravelSection'))
+const PlanYourVisitSection = React.lazy(() => import('../../components/landing/PlanYourVisitSection'))
+const LandingFooterSection = React.lazy(() => import('../../components/landing/LandingFooterSection'))
+const TourismChatbotBubble = React.lazy(() => import('../../components/landing/TourismChatbotBubble'))
 
 export type NavTabType =
   | 'population'
@@ -115,62 +114,68 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
       {/* 2. 3D Perspective Photo Gallery (Kompilasi Foto Banda Neira) */}
       <Banda3DPhotoGallery />
 
-      {/* 3. Interactive Spatial Map Section */}
-      <PetaInteractiveSection
-        onNavigate={onNavigate}
-        currentUser={currentUser}
-      />
+      <Suspense fallback={null}>
+        {/* 3. Interactive Spatial Map Section */}
+        <PetaInteractiveSection
+          onNavigate={onNavigate}
+          currentUser={currentUser}
+        />
 
-      {/* 4. Spice Heritage & Cultural Sites Section */}
-      <HeritageSpiceSection
-        onNavigate={onNavigate}
-      />
+        {/* 4. Spice Heritage & Cultural Sites Section */}
+        <HeritageSpiceSection
+          onNavigate={onNavigate}
+        />
 
-      {/* 5. Marine & Heritage Tourism with SAW Recommender */}
-      <TourismSawSection
-        onNavigate={onNavigate}
-      />
+        {/* 5. Marine & Heritage Tourism with SAW Recommender */}
+        <TourismSawSection
+          onNavigate={onNavigate}
+        />
 
-      {/* 6. Island Stays & Eco-Lodges Directory */}
-      <EcoStayCatalogSection
-        onNavigate={onNavigate}
-        onOpenLogin={onOpenLogin}
-        onOpenQuickLogin={onOpenQuickLogin}
-      />
+        {/* 6. Island Stays & Eco-Lodges Directory */}
+        <EcoStayCatalogSection
+          onNavigate={onNavigate}
+          onOpenLogin={onOpenLogin}
+          onOpenQuickLogin={onOpenQuickLogin}
+        />
 
-      {/* 7. Resident Services & Digital Island Ecosystem */}
-      <EcosystemFeaturesSection
-        onNavigate={onNavigate}
-        onOpenLogin={onOpenLogin}
-        currentUser={currentUser}
-      />
+        {/* 7. Resident Services & Digital Island Ecosystem */}
+        <EcosystemFeaturesSection
+          onNavigate={onNavigate}
+          onOpenLogin={onOpenLogin}
+          currentUser={currentUser}
+        />
 
-      {/* 8. Verified Blockchain Marketplace & Local UMKM */}
-      <TraceabilityMarketplaceSection
-        onNavigate={onNavigate}
-        onOpenMarketplace={onOpenMarketplace}
-        onPublicVerify={onPublicVerify}
-      />
+        {/* 8. Verified Blockchain Marketplace & Local UMKM */}
+        <TraceabilityMarketplaceSection
+          onNavigate={onNavigate}
+          onOpenMarketplace={onOpenMarketplace}
+          onPublicVerify={onPublicVerify}
+        />
 
-      {/* 9. Sustainable Travel Guidelines */}
-      <SustainableTravelSection />
+        {/* 9. Demographics & Island Vitality Stats */}
+        <SustainableTravelSection
+          onNavigate={onNavigate}
+          onOpenLogin={onOpenLogin}
+          currentUser={currentUser}
+        />
 
-      {/* 10. Plan Your Visit CTA */}
-      <PlanYourVisitSection
-        onNavigate={onNavigate}
-      />
+        {/* 10. Plan Your Visit CTA */}
+        <PlanYourVisitSection
+          onNavigate={onNavigate}
+        />
 
-      {/* 11. Comprehensive Ecosystem Footer */}
-      <LandingFooterSection
-        onNavigate={onNavigate}
-        onOpenLogin={onOpenLogin}
-        onOpenRegister={onOpenRegister}
-        onOpenQuickLogin={onOpenQuickLogin}
-        setActiveNav={setActiveNav}
-      />
+        {/* 11. Comprehensive Ecosystem Footer */}
+        <LandingFooterSection
+          onNavigate={onNavigate}
+          onOpenLogin={onOpenLogin}
+          onOpenRegister={onOpenRegister}
+          onOpenQuickLogin={onOpenQuickLogin}
+          setActiveNav={setActiveNav}
+        />
 
-      {/* 12. Floating Tourism Recommendation Chatbot Bubble */}
-      <TourismChatbotBubble onNavigate={onNavigate} />
+        {/* 12. Floating Tourism Recommendation Chatbot Bubble */}
+        <TourismChatbotBubble onNavigate={onNavigate} />
+      </Suspense>
     </div>
   )
 }

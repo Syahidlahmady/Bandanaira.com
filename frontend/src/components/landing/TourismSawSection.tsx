@@ -211,7 +211,7 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
           <div>
             {/* Spotlight uppercase tracking tag */}
             <div className="inline-flex items-center gap-2 mb-4">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
               <p className="font-sans text-[11px] font-bold tracking-[0.25em] text-amber-400 uppercase">
                 SPOTLIGHT KURASI BANDA
               </p>
