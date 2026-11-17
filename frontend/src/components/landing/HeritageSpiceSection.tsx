@@ -53,6 +53,7 @@ export interface HeritageSpiceSectionProps {
 
 export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = ({ onNavigate }) => {
   const sectionRef = useRef<HTMLElement>(null)
+  const [scrollProgress, setScrollProgress] = useState(0)
   const [activeIndex, setActiveIndex] = useState(0)
 
   useEffect(() => {
@@ -64,14 +65,22 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = ({ onNa
 
       const currentScroll = -rect.top
       const progress = Math.max(0, Math.min(1, currentScroll / totalScrollable))
-      const nextIndex = Math.min(STORIES.length - 1, Math.floor(progress * STORIES.length))
-      setActiveIndex(nextIndex)
+      setScrollProgress(progress)
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
     handleScroll()
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  const scrollToStory = (index: number) => {
+    if (!sectionRef.current) return
+    const rect = sectionRef.current.getBoundingClientRect()
+    const sectionTop = window.scrollY + rect.top
+    const totalScrollable = rect.height - window.innerHeight
+    const targetY = sectionTop + (index / (STORIES.length - 1)) * totalScrollable
+    window.scrollTo({ top: targetY, behavior: 'smooth' })
+  }
 
   return (
     <section
@@ -93,10 +102,12 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = ({ onNa
             planeWidth={360}
             planeHeight={360}
             distortion={3}
-            scrollEase={0.01}
+            scrollEase={0.06}
             cameraFov={45}
             cameraZ={20}
-            pageScroll={0.8}
+            progress={scrollProgress}
+            onActiveIndexChange={(idx) => setActiveIndex(idx)}
+            onItemClick={(_, idx) => scrollToStory(idx)}
             className="w-full h-full"
           />
         </div>
@@ -187,12 +198,15 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = ({ onNa
           {/* Progress Indicators */}
           <div className="flex items-center gap-2">
             {STORIES.map((story, i) => (
-              <div
+              <button
                 key={story.id}
-                className={`h-1.5 rounded-full transition-all duration-500 ${
+                type="button"
+                onClick={() => scrollToStory(i)}
+                aria-label={`Lihat cerita ${story.title}`}
+                className={`h-2 rounded-full transition-all duration-500 cursor-pointer ${
                   activeIndex === i
-                    ? 'w-8 bg-amber-400'
-                    : 'w-2 bg-slate-700/80'
+                    ? 'w-10 bg-amber-400'
+                    : 'w-2.5 bg-slate-700/80 hover:bg-slate-500'
                 }`}
               />
             ))}

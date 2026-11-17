@@ -152,7 +152,9 @@ export interface FlyingPostersProps {
   wheel?: boolean;
   drag?: boolean;
   pageScroll?: number;
+  progress?: number;
   onItemClick?: (item: any, index: number) => void;
+  onActiveIndexChange?: (index: number) => void;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -179,13 +181,20 @@ const FlyingPosters: React.FC<FlyingPostersProps> = ({
   wheel = true,
   drag = true,
   pageScroll = 0,
+  progress,
   onItemClick,
+  onActiveIndexChange,
   className = '',
   style
 }) => {
   const rootRef = useRef(null);
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
+  const onActiveRef = useRef(onActiveIndexChange);
+  onActiveRef.current = onActiveIndexChange;
+  const progressRef = useRef(progress);
+  progressRef.current = progress;
+  const lastActiveRef = useRef(-1);
   const settings = {
     planeWidth: Math.max(10, planeWidth),
     planeHeight: Math.max(10, planeHeight),
@@ -206,7 +215,8 @@ const FlyingPosters: React.FC<FlyingPostersProps> = ({
     shading: clamp(shading, 0, 1),
     wheel,
     drag,
-    pageScroll
+    pageScroll,
+    progress
   };
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
@@ -359,6 +369,16 @@ const FlyingPosters: React.FC<FlyingPostersProps> = ({
       }
       gl.bindBuffer(gl.ARRAY_BUFFER, posterBuffer);
       gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+
+      if (!state.initialSet) {
+        state.initialSet = true;
+        const loop = slots * spacing;
+        const uScroll_0 = -loop * 0.5 + 0.5 * spacing;
+        const p = typeof progressRef.current === 'number' ? progressRef.current : 0;
+        const initial = uScroll_0 + p * (total - 1) * spacing;
+        state.scroll = initial;
+        state.target = initial;
+      }
     };
 
     const paintAtlas = () => {
@@ -486,6 +506,30 @@ const FlyingPosters: React.FC<FlyingPostersProps> = ({
       gl.bindVertexArray(vao);
       gl.drawElementsInstanced(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0, state.count);
       gl.bindVertexArray(null);
+
+      if (onActiveRef.current && state.slots > 0) {
+        const loop = state.slots * spacing;
+        let closestDist = Infinity;
+        let closestItem = 0;
+        const total = Math.max(1, itemsRef.current.length);
+        for (let column = 0; column < s.columns; column++) {
+          const direction = s.alternate && column % 2 === 1 ? -1 : 1;
+          for (let slot = 0; slot < state.slots; slot++) {
+            const base = -loop * 0.5 + (slot + 0.5) * spacing + column * 0.41 * spacing;
+            const raw = base - state.scroll * direction + loop * 0.5;
+            const cy = (((raw % loop) + loop) % loop) - loop * 0.5;
+            const dist = Math.abs(cy);
+            if (dist < closestDist) {
+              closestDist = dist;
+              closestItem = (slot + column * 2) % total;
+            }
+          }
+        }
+        if (closestItem !== lastActiveRef.current) {
+          lastActiveRef.current = closestItem;
+          onActiveRef.current(closestItem);
+        }
+      }
     };
 
     const frame = now => {
@@ -498,7 +542,15 @@ const FlyingPosters: React.FC<FlyingPostersProps> = ({
       if (atlas.aspect !== s.planeWidth / s.planeHeight) paintAtlas();
       if (atlas.dirty) uploadAtlas();
       state.reveal = Math.min(1, state.reveal + dt / (reduce ? 0.01 : 0.6));
-      if (!pointer.active && !reduce) state.target -= s.speed * dt;
+      if (typeof progressRef.current === 'number') {
+        const { spacing } = metrics();
+        const loop = state.slots * spacing;
+        const uScroll_0 = -loop * 0.5 + 0.5 * spacing;
+        const total = Math.max(1, itemsRef.current.length);
+        state.target = uScroll_0 + progressRef.current * (total - 1) * spacing;
+      } else if (!pointer.active && !reduce) {
+        state.target -= s.speed * dt;
+      }
       const previous = state.scroll;
       state.scroll += (state.target - state.scroll) * (1 - Math.pow(1 - s.scrollEase, dt * 60));
       state.velocity += ((state.scroll - previous) / dt - state.velocity) * (1 - Math.exp(-dt * 8));
@@ -584,7 +636,17 @@ const FlyingPosters: React.FC<FlyingPostersProps> = ({
       wake();
     };
 
-    engineRef.current = { loadItems, wake };
+    const applyProgress = p => {
+      if (typeof p !== 'number') return;
+      const { spacing } = metrics();
+      const loop = state.slots * spacing;
+      const uScroll_0 = -loop * 0.5 + 0.5 * spacing;
+      const total = Math.max(1, itemsRef.current.length);
+      state.target = uScroll_0 + p * (total - 1) * spacing;
+      wake();
+    };
+
+    engineRef.current = { loadItems, wake, applyProgress };
 
     canvas.addEventListener('wheel', onWheel, { passive: false });
     canvas.addEventListener('pointerdown', onPointerDown);
@@ -634,6 +696,12 @@ const FlyingPosters: React.FC<FlyingPostersProps> = ({
   useEffect(() => {
     engineRef.current?.wake();
   });
+
+  useEffect(() => {
+    if (typeof progress === 'number') {
+      engineRef.current?.applyProgress(progress);
+    }
+  }, [progress]);
 
   return (
     <div ref={rootRef} className={`flying-posters${className ? ` ${className}` : ''}`} style={style}>
