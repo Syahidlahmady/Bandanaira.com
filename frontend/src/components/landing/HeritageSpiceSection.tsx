@@ -100,9 +100,9 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
         <div className="absolute inset-0 z-0">
           <FlyingPosters
             items={ITEMS}
-            planeWidth={440}
-            planeHeight={330}
-            radius={24}
+            planeWidth={380}
+            planeHeight={285}
+            radius={20}
             distortion={1.5}
             scrollEase={0.06}
             cameraFov={45}
@@ -134,43 +134,33 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
         </header>
 
         {/* DESKTOP TIMELINE SYSTEM: Vertical Line, Center Point Node, and Horizontal Connectors */}
-        <div className="hidden sm:block absolute inset-0 pointer-events-none z-10">
+        <div className="hidden md:block absolute inset-0 pointer-events-none z-10">
           {/* Vertical Timeline Guide Line */}
           <div className="absolute left-1/2 top-36 bottom-24 -translate-x-1/2 w-[1.5px] bg-amber-400/25" />
 
           {/* Central Point Node right in the middle of active poster */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center pointer-events-none">
             <div className="w-5 h-5 rounded-full bg-white border-2 border-slate-950 shadow-[0_0_14px_rgba(245,158,11,0.85)] flex items-center justify-center">
               <div className="w-2 h-2 rounded-full bg-amber-500" />
             </div>
           </div>
 
-          {/* Dynamic Horizontal Connector Line */}
+          {/* Dynamic Horizontal Connector Line: Extends from center node through poster edge to the narrative */}
           {currentStory.align === 'right' ? (
             <div
-              className="absolute left-1/2 top-1/2 -translate-y-1/2 h-[1.5px] bg-amber-400/80 shadow-[0_0_8px_rgba(245,158,11,0.6)] transition-all duration-500 origin-left"
-              style={{
-                width: 'calc(50vw - 380px)',
-                maxWidth: '240px',
-                minWidth: '120px',
-              }}
+              className="absolute left-1/2 top-1/2 -translate-y-1/2 h-[1.5px] bg-amber-400/80 shadow-[0_0_8px_rgba(245,158,11,0.6)] transition-all duration-500 origin-left w-[250px] lg:w-[285px] xl:w-[320px]"
             />
           ) : (
             <div
-              className="absolute right-1/2 top-1/2 -translate-y-1/2 h-[1.5px] bg-amber-400/80 shadow-[0_0_8px_rgba(245,158,11,0.6)] transition-all duration-500 origin-right"
-              style={{
-                width: 'calc(50vw - 380px)',
-                maxWidth: '240px',
-                minWidth: '120px',
-              }}
+              className="absolute right-1/2 top-1/2 -translate-y-1/2 h-[1.5px] bg-amber-400/80 shadow-[0_0_8px_rgba(245,158,11,0.6)] transition-all duration-500 origin-right w-[250px] lg:w-[285px] xl:w-[320px]"
             />
           )}
         </div>
 
-        {/* FRAMELESS DESKTOP NARRATIVES: Floating naturally without cards/boxes */}
-        <div className="hidden sm:flex relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-12 lg:px-16 my-auto pointer-events-none items-center justify-between">
+        {/* FRAMELESS DESKTOP NARRATIVES: Floating naturally with guaranteed clearance from photo */}
+        <div className="hidden md:block absolute inset-0 pointer-events-none z-10">
           {/* Left Slot (stories with align === 'left') */}
-          <div className="relative w-full max-w-sm lg:max-w-md min-h-[220px] flex items-center">
+          <div className="absolute right-[calc(50%+250px)] lg:right-[calc(50%+285px)] xl:right-[calc(50%+320px)] top-1/2 -translate-y-1/2 w-[280px] lg:w-[340px] xl:w-[390px] max-w-[calc(50vw-48px)] min-h-[220px] flex items-center text-right">
             {STORIES.map((story, i) => {
               if (story.align !== 'left') return null
               const isActive = activeIndex === i
@@ -195,7 +185,7 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
           </div>
 
           {/* Right Slot (stories with align === 'right') */}
-          <div className="relative w-full max-w-sm lg:max-w-md min-h-[220px] flex items-center text-left">
+          <div className="absolute left-[calc(50%+250px)] lg:left-[calc(50%+285px)] xl:left-[calc(50%+320px)] top-1/2 -translate-y-1/2 w-[280px] lg:w-[340px] xl:w-[390px] max-w-[calc(50vw-48px)] min-h-[220px] flex items-center text-left">
             {STORIES.map((story, i) => {
               if (story.align !== 'right') return null
               const isActive = activeIndex === i
@@ -221,7 +211,7 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
         </div>
 
         {/* MOBILE PRESENTATION: Frameless typography with center node indicator */}
-        <div className="sm:hidden relative z-10 w-full px-6 mb-4 pointer-events-auto text-center flex flex-col items-center">
+        <div className="md:hidden relative z-10 w-full px-6 mb-4 pointer-events-auto text-center flex flex-col items-center">
           <div className="w-4 h-4 rounded-full bg-white border-2 border-slate-950 shadow-md mb-2 flex items-center justify-center">
             <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
           </div>
