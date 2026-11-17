@@ -54,6 +54,14 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
   const sectionRef = useRef<HTMLElement>(null)
   const [scrollProgress, setScrollProgress] = useState(0)
   const [activeIndex, setActiveIndex] = useState(0)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -92,7 +100,7 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
       style={{ height: '300vh' }}
     >
       {/* Sticky full-screen viewport taking entire section */}
-      <div className="sticky top-0 h-screen w-full flex flex-col justify-between overflow-hidden">
+      <div className="sticky top-0 h-[100dvh] min-h-[100dvh] w-full flex flex-col justify-between overflow-hidden">
         {/* Background Radial Glow */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,#113a68_0%,#081d35_70%)] pointer-events-none" />
 
@@ -100,9 +108,9 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
         <div className="absolute inset-0 z-0">
           <FlyingPosters
             items={ITEMS}
-            planeWidth={380}
-            planeHeight={285}
-            radius={20}
+            planeWidth={isMobile ? 260 : 380}
+            planeHeight={isMobile ? 195 : 285}
+            radius={18}
             distortion={1.5}
             scrollEase={0.06}
             cameraFov={45}
@@ -114,8 +122,8 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
           />
         </div>
 
-        {/* SECTION HEADER: Placed safely below the fixed navbar (pt-24 to pt-32) */}
-        <header className="relative z-10 flex flex-col items-center text-center max-w-2xl mx-auto pt-24 sm:pt-28 lg:pt-32 px-4 shrink-0 pointer-events-none">
+        {/* SECTION HEADER: Placed safely below the fixed navbar */}
+        <header className="relative z-10 flex flex-col items-center text-center max-w-2xl mx-auto pt-20 sm:pt-28 lg:pt-32 px-4 shrink-0 pointer-events-none">
           <span className="font-sans text-xs font-semibold tracking-widest text-[#f4b75e] uppercase mb-2">
             SEJARAH BANDA NEIRA
           </span>

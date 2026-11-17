@@ -287,7 +287,7 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
             return (
               <div
                 key={prod.id}
-                className="group relative shrink-0 w-[85vw] sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] min-w-[280px] max-w-[420px] snap-start flex flex-col rounded-[2rem] overflow-hidden bg-slate-900 aspect-[3/4] shadow-md hover:shadow-2xl transition-all duration-300 select-none"
+                className="group relative shrink-0 w-[85vw] sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] min-w-[260px] max-w-[420px] snap-start flex flex-col rounded-[2rem] overflow-hidden bg-slate-900 aspect-[3/4] shadow-md hover:shadow-2xl transition-all duration-300 select-none"
               >
                 {/* Product Photo */}
                 <img
@@ -342,7 +342,7 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
           })}
 
           {/* "Selengkapnya" Final Card in Carousel */}
-          <div className="group relative shrink-0 w-[85vw] sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] min-w-[280px] max-w-[420px] snap-start flex flex-col justify-between rounded-[2rem] bg-gradient-to-br from-[#0f2c59] to-[#081d35] p-8 text-white aspect-[3/4] shadow-md border border-white/10 hover:border-amber-400/40 transition-all select-none">
+          <div className="group relative shrink-0 w-[85vw] sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] min-w-[260px] max-w-[420px] snap-start flex flex-col justify-between rounded-[2rem] bg-gradient-to-br from-[#0f2c59] to-[#081d35] p-8 text-white aspect-[3/4] shadow-md border border-white/10 hover:border-amber-400/40 transition-all select-none">
             <div>
               <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-300 flex items-center justify-center mb-6">
                 <ArrowUpRightIcon className="w-6 h-6" />

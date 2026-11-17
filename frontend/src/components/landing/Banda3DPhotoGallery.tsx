@@ -431,7 +431,7 @@ export const Banda3DPhotoGallery: React.FC = () => {
       <div className="relative z-10 h-[2600px] w-full lg:h-[3500px]">
         {/* Sticky viewport stage with true 3D perspective */}
         <div
-          className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center"
+          className="sticky top-0 h-[100dvh] min-h-[100dvh] w-full overflow-hidden flex items-center justify-center"
           style={{ perspective: 600 }}
         >
           {/* Luminous oceanic navy radial glow (Biru Dongker Laut Banda) */}

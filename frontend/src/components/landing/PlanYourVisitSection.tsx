@@ -27,18 +27,18 @@ export const PlanYourVisitSection: React.FC<PlanYourVisitSectionProps> = ({ onNa
       />
 
       {/* Decorative tag / Attribution */}
-      <div className="inline-flex items-center gap-3 relative z-10 flex-[0_0_auto]">
-        <span className="w-8 relative h-px bg-[#f4b75e]" aria-hidden="true" />
-        <span className="font-sans font-bold text-[#f4b75e] text-xs tracking-[0.25em] uppercase whitespace-nowrap">
+      <div className="inline-flex items-center gap-2 sm:gap-3 relative z-10 flex-[0_0_auto]">
+        <span className="w-4 sm:w-8 relative h-px bg-[#f4b75e]" aria-hidden="true" />
+        <span className="font-sans font-bold text-[#f4b75e] text-[10px] sm:text-xs tracking-[0.18em] sm:tracking-[0.25em] uppercase whitespace-nowrap">
           SUTAN SJAHRIR &bull; BANDA NEIRA 1936
         </span>
-        <span className="w-8 relative h-px bg-[#f4b75e]" aria-hidden="true" />
+        <span className="w-4 sm:w-8 relative h-px bg-[#f4b75e]" aria-hidden="true" />
       </div>
 
       {/* Legendary Quote in Intro Script cursive */}
       <h2
         id="plan-your-visit-heading"
-        className="relative z-10 max-w-4xl font-script font-normal text-amber-200 text-5xl sm:text-7xl lg:text-8xl leading-[1.18] tracking-wide drop-shadow-[0_4px_30px_rgba(0,0,0,0.85)] px-4"
+        className="relative z-10 max-w-4xl font-script font-normal text-amber-200 text-4xl sm:text-7xl lg:text-8xl leading-[1.18] tracking-wide drop-shadow-[0_4px_30px_rgba(0,0,0,0.85)] px-2 sm:px-4"
       >
         &ldquo;Jangan mati sebelum ke Banda Neira!&rdquo;
       </h2>
