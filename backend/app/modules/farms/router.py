@@ -32,6 +32,8 @@ from backend.app.modules.farms.spatial import (
     calculate_polygon_area_sqm,
     check_farm_within_village_boundary,
     find_overlapping_farm,
+    find_village_for_point,
+    is_point_inside_geojson_geom,
     load_village_boundary_from_file,
     validate_polygon_geojson,
 )
@@ -115,7 +117,8 @@ async def create_farm(
 
     # Tentukan yurisdiksi desa
     farmer_group_village = farmer.group.village if farmer.group else None
-    target_village = (farm_in.village or farmer_group_village or current_user.village or "Lonthoir").strip()
+    detected_village = find_village_for_point(farm_in.longitude, farm_in.latitude)
+    target_village = (farm_in.village or farmer_group_village or current_user.village or detected_village or "Lonthoir").strip()
 
     # Validasi yurisdiksi: jika bukan admin dan akun memiliki desa, wajib sama dengan desanya
     if not is_admin and current_user.village:
@@ -169,6 +172,16 @@ async def create_farm(
                 raise HTTPException(
                     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                     detail=v_err or f"Batas poligon lahan berada di luar wilayah administratif Desa {target_village}.",
+                )
+    else:
+        # Validasi titik koordinat jika poligon tidak disertakan
+        v_geom = load_village_boundary_from_file(target_village)
+        if v_geom:
+            is_pt_in = is_point_inside_geojson_geom([farm_in.longitude, farm_in.latitude], v_geom)
+            if not is_pt_in:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"Titik koordinat kebun ({farm_in.latitude}, {farm_in.longitude}) berada di luar batas wilayah administratif resmi Desa {target_village}.",
                 )
 
     # Lahan yang didaftarkan kelompok tani (farmer_group_admin) berstatus 'pending' menunggu persetujuan desa
@@ -396,6 +409,35 @@ async def verify_farm(
                 detail=f"Petugas Desa {current_user.village} tidak berwenang memverifikasi lahan di Desa {farm.village}."
             )
 
+    # Validasi bahwa kepala desa TIDAK BISA menyetujui jika lahan melewati batas desa
+    if verification_in.verification_status == "verified":
+        target_village = (farm.village or "").strip()
+        v_geom = load_village_boundary_from_file(target_village)
+        if v_geom:
+            if farm.polygon_boundary_geojson:
+                is_in, v_err = check_farm_within_village_boundary(
+                    farm.polygon_boundary_geojson, v_geom, target_village
+                )
+                if not is_in:
+                    raise HTTPException(
+                        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                        detail=(
+                            f"Lahan kebun '{farm.name}' ({farm.farm_code}) tidak dapat disahkan oleh Kepala Desa "
+                            f"karena batas poligon bertubrukan atau melewati batas wilayah resmi Desa {target_village}: {v_err}. "
+                            f"Perbaiki batas lahan di dalam wilayah desa sebelum disetujui."
+                        ),
+                    )
+            else:
+                is_pt_in = is_point_inside_geojson_geom([farm.longitude, farm.latitude], v_geom)
+                if not is_pt_in:
+                    raise HTTPException(
+                        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                        detail=(
+                            f"Lahan kebun '{farm.name}' ({farm.farm_code}) tidak dapat disahkan oleh Kepala Desa "
+                            f"karena titik koordinat ({farm.latitude}, {farm.longitude}) berada di luar batas wilayah resmi Desa {target_village}."
+                        ),
+                    )
+
     old_status = farm.verification_status
     farm.verification_status = verification_in.verification_status
     await db.flush()
@@ -413,6 +455,49 @@ async def verify_farm(
         },
     )
 
+    await db.commit()
+    await db.refresh(farm)
+    return farm
+
+
+@router.put("/{id}", response_model=FarmResponse)
+async def update_farm(
+    id: uuid.UUID,
+    farm_in: FarmUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(FARM_MANAGERS),
+):
+    stmt = select(Farm).where(Farm.id == id)
+    farm = (await db.execute(stmt)).scalar_one_or_none()
+    if not farm:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Farm not found",
+        )
+
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+
+    if not is_admin and current_user.village:
+        if farm.village.lower() != current_user.village.lower():
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Anda hanya berwenang memperbarui kebun di Desa {current_user.village}."
+            )
+
+    update_data = farm_in.model_dump(exclude_unset=True)
+    for field, val in update_data.items():
+        setattr(farm, field, val)
+
+    await db.flush()
+    await log_audit_event(
+        db=db,
+        action="UPDATE_FARM",
+        entity_name="farms",
+        entity_id=farm.id,
+        user_id=current_user.id,
+        changes=update_data,
+    )
     await db.commit()
     await db.refresh(farm)
     return farm

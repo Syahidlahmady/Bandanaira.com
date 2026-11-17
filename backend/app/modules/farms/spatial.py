@@ -17,14 +17,68 @@ def load_village_boundary_from_file(village_name: str) -> Optional[Dict[str, Any
         with open(_VILLAGES_GEOJSON_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
             v_lower = village_name.strip().lower()
-            if v_lower in ("banda neira", "neira", "desa banda neira"):
-                v_lower = "nusantara"
+            if v_lower in ("banda neira", "neira", "desa banda neira", "pulau neira"):
+                multi_coords = []
+                for feat in data.get("features", []):
+                    props = feat.get("properties", {})
+                    island = (props.get("island") or "").strip().lower()
+                    if island == "pulau neira":
+                        geom = feat.get("geometry")
+                        if geom:
+                            if geom.get("type") == "MultiPolygon":
+                                multi_coords.extend(geom.get("coordinates", []))
+                            elif geom.get("type") == "Polygon":
+                                multi_coords.append(geom.get("coordinates", []))
+                if multi_coords:
+                    return {"type": "MultiPolygon", "coordinates": multi_coords}
+
             for feat in data.get("features", []):
                 props = feat.get("properties", {})
                 name = props.get("village_name") or props.get("name") or ""
                 n_lower = name.strip().lower()
                 if n_lower == v_lower or v_lower in n_lower or n_lower in v_lower:
                     return feat.get("geometry")
+    except Exception:
+        pass
+    return None
+
+
+def find_village_for_point(lon: float, lat: float) -> Optional[str]:
+    """Mencari nama desa resmi yang menaungi titik koordinat [lon, lat]."""
+    if not _VILLAGES_GEOJSON_PATH.exists():
+        return None
+    try:
+        with open(_VILLAGES_GEOJSON_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            for feat in data.get("features", []):
+                geom = feat.get("geometry")
+                if geom and is_point_inside_geojson_geom([lon, lat], geom):
+                    props = feat.get("properties", {})
+                    return props.get("village_name") or props.get("name")
+
+            # Fallback jika titik dekat dengan salah satu desa (< 0.02 derajat / ~2km)
+            nearest_name = None
+            min_dist = float("inf")
+            for feat in data.get("features", []):
+                geom = feat.get("geometry", {})
+                coords = []
+                if geom.get("type") == "MultiPolygon":
+                    for p in geom.get("coordinates", []):
+                        for ring in p:
+                            coords.extend(ring)
+                elif geom.get("type") == "Polygon":
+                    for ring in geom.get("coordinates", []):
+                        coords.extend(ring)
+                if coords:
+                    c_lon = sum(c[0] for c in coords) / len(coords)
+                    c_lat = sum(c[1] for c in coords) / len(coords)
+                    dist = math.hypot(lon - c_lon, lat - c_lat)
+                    if dist < min_dist:
+                        min_dist = dist
+                        props = feat.get("properties", {})
+                        nearest_name = props.get("village_name") or props.get("name")
+            if min_dist <= 0.02:
+                return nearest_name
     except Exception:
         pass
     return None
@@ -217,8 +271,8 @@ def check_farm_within_village_boundary(
     village_name: str,
 ) -> Tuple[bool, Optional[str]]:
     """
-    Memvalidasi apakah poligon lahan kebun berada di dalam batas wilayah desa administratif resmi.
-    Menguji centroid (titik tengah) dan sebaran titik batas poligon kebun.
+    Memvalidasi apakah poligon lahan kebun berada sepenuhnya di dalam batas wilayah desa administratif resmi.
+    Menguji centroid (titik tengah), seluruh titik batas, dan perpotongan garis batas desa.
     """
     try:
         outer_ring = validate_polygon_geojson(farm_geojson)
@@ -233,22 +287,35 @@ def check_farm_within_village_boundary(
     center_lon = sum(p[0] for p in pts) / len(pts)
     center_lat = sum(p[1] for p in pts) / len(pts)
     center_inside = is_point_inside_geojson_geom([center_lon, center_lat], village_geom)
-
-    # 2. Cek titik-titik sudut
-    inside_count = sum(1 for p in pts if is_point_inside_geojson_geom(p, village_geom))
-    ratio = inside_count / len(pts)
-
-    # Jika titik tengah di luar dan mayoritas titik di luar batas desa
-    if not center_inside and ratio < 0.5:
+    if not center_inside:
         return False, (
-            f"Batas lahan berada di luar wilayah administratif resmi Desa {village_name}. "
-            f"Harap petakan lahan di dalam batas wilayah desa Anda."
+            f"Titik tengah lahan kebun berada di luar batas administratif resmi Desa {village_name}."
         )
 
-    if ratio < 0.5:
+    # 2. Cek seluruh titik sudut poligon kebun (harus 100% di dalam batas desa)
+    outside_pts_count = sum(1 for p in pts if not is_point_inside_geojson_geom(p, village_geom))
+    if outside_pts_count > 0:
         return False, (
-            f"Mayoritas titik sudut lahan berada di luar batas wilayah administratif Desa {village_name}."
+            f"Batas lahan melewati/keluar dari wilayah administratif Desa {village_name}. "
+            f"Terdapat {outside_pts_count} dari {len(pts)} titik batas kebun yang berada di luar batas resmi desa."
         )
+
+    # 3. Cek perpotongan sisi (segmen batas poligon kebun tidak boleh menabrak/memotong garis batas desa)
+    try:
+        village_rings = extract_polygon_rings(village_geom)
+        farm_ring = outer_ring
+        for v_ring in village_rings:
+            for i in range(len(farm_ring) - 1):
+                p1, p2 = farm_ring[i], farm_ring[i + 1]
+                for j in range(len(v_ring) - 1):
+                    v1, v2 = v_ring[j], v_ring[j + 1]
+                    if _segments_intersect(p1, p2, v1, v2):
+                        return False, (
+                            f"Batas sisi poligon kebun memotong garis batas administratif resmi Desa {village_name}. "
+                            f"Lahan kebun tidak boleh melewati atau bertubrukan dengan batas desa."
+                        )
+    except Exception:
+        pass
 
     return True, None
 

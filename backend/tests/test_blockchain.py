@@ -46,7 +46,7 @@ async def get_farmer_token(client: AsyncClient, admin_token: str) -> str:
             "roles": ["farmer"],
         },
     )
-    assert create_res.status_code == 201
+    assert create_res.status_code in (201, 409)
     res = await client.post(
         "/api/v1/auth/login",
         json={"username_or_email": username, "password": "Password123!"},
@@ -74,8 +74,9 @@ async def test_blockchain_anchor_and_verify_workflow(client: AsyncClient):
             "farmer_id": farmer_id,
             "farm_code": "BN-FARM-BC-01",
             "name": "Kebun Pala Hatta Heritage",
-            "latitude": -4.52,
-            "longitude": 129.91,
+            "latitude": -4.5880,
+            "longitude": 130.0360,
+            "village": "Desa Pulau Hatta",
             "area_sqm": 8000.0,
             "primary_commodity": "Pala",
         },

@@ -10,11 +10,13 @@ import {
 import {
   farmerService,
   FarmGeoJSONFeatureCollection,
+  FarmGeoJSONFeature,
   Farmer,
   FarmerGroup,
   Farm,
   FarmStatistics,
 } from './services/farmers.ts'
+import { generateSquarePolygonVertices } from './components/FarmMap.tsx'
 import {
   traceabilityService,
   Harvest,
@@ -159,6 +161,27 @@ export const getInitialTab = (): TabId => {
   }
 
   return 'landing'
+}
+
+const ensureFarmPolygonGeoJSON = (
+  polygon?: Record<string, unknown> | null,
+  lat?: number,
+  lng?: number,
+  areaSqm?: number
+): Record<string, unknown> => {
+  if (polygon && polygon.type === 'Polygon' && Array.isArray((polygon as any).coordinates)) {
+    return polygon
+  }
+  const validLat = typeof lat === 'number' && !isNaN(lat) ? lat : -4.5550
+  const validLng = typeof lng === 'number' && !isNaN(lng) ? lng : 129.8940
+  const targetArea = typeof areaSqm === 'number' && areaSqm > 0 ? areaSqm : 2500
+  const verts = generateSquarePolygonVertices(validLat, validLng, targetArea)
+  const ring = verts.map(([vlat, vlng]) => [parseFloat(vlng.toFixed(6)), parseFloat(vlat.toFixed(6))])
+  ring.push([ring[0][0], ring[0][1]])
+  return {
+    type: 'Polygon',
+    coordinates: [ring],
+  }
 }
 
 export const App: React.FC = () => {
@@ -835,33 +858,78 @@ export const App: React.FC = () => {
     setFarmMsg(null)
 
     const targetVillage = currentUser?.village || farmForm.village || undefined
+    const effectivePolygon = ensureFarmPolygonGeoJSON(
+      farmForm.polygon_boundary_geojson,
+      farmForm.latitude,
+      farmForm.longitude,
+      farmForm.area_sqm
+    )
 
     if (!navigator.onLine) {
+      const payload = {
+        ...farmForm,
+        farmer_id: farmForm.farmer_id || (farmers[0]?.id || ''),
+        village: targetVillage,
+        polygon_boundary_geojson: effectivePolygon,
+      }
       await syncManager.enqueue(
         'farm_create',
         `${apiBase}/farms`,
         'POST',
-        { ...farmForm, farmer_id: farmForm.farmer_id || (farmers[0]?.id || ''), village: targetVillage },
+        payload,
         `Pemetaan Lahan: ${farmForm.name} (${farmForm.farm_code})`
       )
+      const offlineFarmId = `offline-${Date.now()}`
       const optimisticFarm: Farm = {
-        id: `offline-${Date.now()}`,
+        id: offlineFarmId,
         farmer_id: farmForm.farmer_id || (farmers[0]?.id || ''),
         farm_code: farmForm.farm_code,
         name: farmForm.name,
         location_description: farmForm.location_description,
         latitude: farmForm.latitude,
         longitude: farmForm.longitude,
+        polygon_boundary_geojson: effectivePolygon,
         area_sqm: farmForm.area_sqm,
         primary_commodity: farmForm.primary_commodity,
         verification_status: isOfficerOrAdmin ? 'verified' : 'pending',
         village: targetVillage,
         created_at: new Date().toISOString(),
       }
-      setFarms((prev) => [optimisticFarm, ...prev])
+
+      const optimisticFeature: FarmGeoJSONFeature = {
+        type: 'Feature',
+        id: offlineFarmId,
+        geometry: {
+          type: 'Point',
+          coordinates: [optimisticFarm.longitude, optimisticFarm.latitude],
+        },
+        properties: {
+          farm_code: optimisticFarm.farm_code,
+          name: optimisticFarm.name,
+          commodity: optimisticFarm.primary_commodity,
+          village: optimisticFarm.village,
+          area_sqm: optimisticFarm.area_sqm,
+          farmer_id: optimisticFarm.farmer_id,
+          location_description: optimisticFarm.location_description,
+          verification_status: optimisticFarm.verification_status,
+          polygon_boundary_geojson: effectivePolygon,
+        },
+      }
+
+      const updatedFarms = [optimisticFarm, ...farms]
+      const updatedGeoJSON: FarmGeoJSONFeatureCollection = {
+        type: 'FeatureCollection',
+        features: [optimisticFeature, ...(farmGeoJSON?.features || [])],
+      }
+
+      setFarms(updatedFarms)
+      setFarmGeoJSON(updatedGeoJSON)
+      await offlineDB.cacheData('farms', updatedFarms)
+      await offlineDB.cacheData('farmGeoJSON', updatedGeoJSON)
+
       const offText = isOfficerOrAdmin
-        ? `📦 Mode Offline: Kebun ${farmForm.name} disimpan ke antrean lokal!`
-        : `📦 Mode Offline: Pengajuan kebun ${farmForm.name} disimpan ke antrean lokal (Menunggu Persetujuan Desa saat online).`
+        ? `📦 Mode Offline: Kebun & poligon batas ${farmForm.name} tersimpan di peta lokal dan antrean sinkronisasi!`
+        : `📦 Mode Offline: Pengajuan kebun & poligon batas ${farmForm.name} tersimpan di peta lokal (Menunggu Persetujuan Desa saat online).`
       setFarmMsg({
         type: 'success',
         text: offText,
@@ -895,10 +963,15 @@ export const App: React.FC = () => {
         targetFarmerId = newFrm.id
       }
 
-      await farmerService.createFarm({ ...farmForm, farmer_id: targetFarmerId, village: targetVillage })
+      await farmerService.createFarm({
+        ...farmForm,
+        farmer_id: targetFarmerId,
+        village: targetVillage,
+        polygon_boundary_geojson: effectivePolygon,
+      })
       const successText = isOfficerOrAdmin
-        ? `Kebun ${farmForm.name} berhasil dipetakan dan disahkan!`
-        : `Pengajuan plot kebun "${farmForm.name}" berhasil dikirim! Menunggu persetujuan verifikasi dari Petugas Kantor Desa.`
+        ? `Kebun ${farmForm.name} berhasil dipetakan beserta batas poligon dan disahkan!`
+        : `Pengajuan plot kebun "${farmForm.name}" beserta batas poligon berhasil dikirim! Menunggu persetujuan verifikasi dari Petugas Kantor Desa.`
       setFarmMsg({ type: 'success', text: successText })
       setFarmForm((prev) => ({
         ...prev,
@@ -908,16 +981,67 @@ export const App: React.FC = () => {
       fetchFarmingData()
     } catch (err: unknown) {
       if (err instanceof TypeError || (err instanceof Error && err.message.toLowerCase().includes('fetch'))) {
+        const payload = {
+          ...farmForm,
+          farmer_id: farmForm.farmer_id || (farmers[0]?.id || ''),
+          village: targetVillage,
+          polygon_boundary_geojson: effectivePolygon,
+        }
         await syncManager.enqueue(
           'farm_create',
           `${apiBase}/farms`,
           'POST',
-          { ...farmForm, farmer_id: farmForm.farmer_id || (farmers[0]?.id || ''), village: targetVillage },
+          payload,
           `Pemetaan Lahan: ${farmForm.name} (${farmForm.farm_code})`
         )
+        const offlineFarmId = `offline-${Date.now()}`
+        const optimisticFarm: Farm = {
+          id: offlineFarmId,
+          farmer_id: farmForm.farmer_id || (farmers[0]?.id || ''),
+          farm_code: farmForm.farm_code,
+          name: farmForm.name,
+          location_description: farmForm.location_description,
+          latitude: farmForm.latitude,
+          longitude: farmForm.longitude,
+          polygon_boundary_geojson: effectivePolygon,
+          area_sqm: farmForm.area_sqm,
+          primary_commodity: farmForm.primary_commodity,
+          verification_status: isOfficerOrAdmin ? 'verified' : 'pending',
+          village: targetVillage,
+          created_at: new Date().toISOString(),
+        }
+        const optimisticFeature: FarmGeoJSONFeature = {
+          type: 'Feature',
+          id: offlineFarmId,
+          geometry: {
+            type: 'Point',
+            coordinates: [optimisticFarm.longitude, optimisticFarm.latitude],
+          },
+          properties: {
+            farm_code: optimisticFarm.farm_code,
+            name: optimisticFarm.name,
+            commodity: optimisticFarm.primary_commodity,
+            village: optimisticFarm.village,
+            area_sqm: optimisticFarm.area_sqm,
+            farmer_id: optimisticFarm.farmer_id,
+            location_description: optimisticFarm.location_description,
+            verification_status: optimisticFarm.verification_status,
+            polygon_boundary_geojson: effectivePolygon,
+          },
+        }
+        const updatedFarms = [optimisticFarm, ...farms]
+        const updatedGeoJSON: FarmGeoJSONFeatureCollection = {
+          type: 'FeatureCollection',
+          features: [optimisticFeature, ...(farmGeoJSON?.features || [])],
+        }
+        setFarms(updatedFarms)
+        setFarmGeoJSON(updatedGeoJSON)
+        await offlineDB.cacheData('farms', updatedFarms)
+        await offlineDB.cacheData('farmGeoJSON', updatedGeoJSON)
+
         setFarmMsg({
           type: 'success',
-          text: `📦 Jaringan terputus: Data kebun ${farmForm.name} diamankan ke antrean offline lokal!`,
+          text: `📦 Jaringan terputus: Data kebun & poligon batas ${farmForm.name} diamankan ke antrean offline lokal dan peta!`,
         })
       } else if (err instanceof Error) {
         setFarmMsg({ type: 'error', text: err.message })

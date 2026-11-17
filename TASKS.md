@@ -722,6 +722,18 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Menambahkan banner informatif pada modal dan form registrasi `RegisterSection.tsx` bahwa wisatawan dapat langsung mengeksplorasi seluruh fitur pariwisata, katalog eco-stay, 177 cagar budaya, rute SAW, dan peta spasial 7-layer secara publik tanpa perlu membuat akun atau login.
   - Membersihkan percabangan peran sintetis `role-tourist` pada `auth.ts`, `DashboardLayout.tsx`, `UserEcosystemDashboard.tsx`, dan `TourismEcoStayWorkspace.tsx`.
   - Memverifikasi ulang build produksi Vite frontend (`npm run build`, exit code `0`).
+- [x] 46.5 Validasi Ketat Batas Wilayah Persetujuan Desa & Penyimpanan Poligon Offline Mode:
+  - **Pencegahan Persetujuan Kepala Desa atas Lahan Melewati Batas Desa**:
+    - Di `backend/app/modules/farms/router.py`: pada `verify_farm`, memvalidasi ulang poligon batas kebun atau koordinat terhadap batas resmi desa (`load_village_boundary_from_file`). Jika melanggar/melewati batas desa, pendaftaran ditolak (HTTP 422) dengan pesan tegas bahwa Kepala Desa tidak dapat mengesahkan lahan yang bertubrukan atau melewati batas yurisdiksi.
+    - Menambahkan endpoint `PUT /api/v1/farms/{id}` untuk pembaruan data kebun oleh manager kebun/admin.
+    - Di `frontend/src/views/FarmsGisWorkspace.tsx`: menambahkan fungsi `checkFarmExceedsVillageBoundary` yang mengecek koordinat dan seluruh titik poligon terhadap batas wilayah desa. Menampilkan badge peringatan `⛔ Melewati Batas Desa` pada tabel kebun dan me-nonaktifkan tombol `✓ Setujui` milik Kepala Desa dengan tooltip alasan penolakan.
+  - **Perbaikan Penyimpanan Batas Poligon pada Mode Offline**:
+    - Di `frontend/src/App.tsx`: mengimplementasikan `ensureFarmPolygonGeoJSON` yang menjamin `polygon_boundary_geojson` selalu terbentuk dan tersimpan (baik digambar manual maupun kalkulasi otomatis titik & luas).
+    - Pada kondisi `!navigator.onLine` maupun saat tangkapan `catch` (jaringan terputus): menyimpan `polygon_boundary_geojson` ke dalam payload `syncManager.enqueue`, menyisipkan `optimisticFeature` berpoligon ke dalam `farmGeoJSON`, serta mengamankan kedua dataset ke IndexedDB lokal (`offlineDB.cacheData('farms', ...)` dan `offlineDB.cacheData('farmGeoJSON', ...)`). Peta satelit Leaflet `FarmMap` kini langsung menampilkan visualisasi poligon lahan secara utuh saat offline.
+    - Di `frontend/src/views/FarmsGisWorkspace.tsx`: membuat wrapper form submit `onSubmitWithPolygon` untuk memastikan poligon dari `draftVertices` selalu terikat sebelum diserahkan ke handler pembuatan kebun.
+  - **Pengujian & Verifikasi**:
+    - Seluruh pengujian otomatis backend `pytest tests/test_farmers_and_farms.py tests/test_blockchain.py` lulus 100% (10 passed).
+    - Build produksi Vite frontend `npm run build` sukses bersih tanpa error (exit code `0`).
 
 
 

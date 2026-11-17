@@ -57,6 +57,55 @@ const verticesToPolygonGeoJSON = (vertices: [number, number][]): Record<string, 
   }
 }
 
+const isPointInPolygon = (point: [number, number], ring: [number, number][]): boolean => {
+  const [x, y] = point
+  let inside = false
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0]
+    const yi = ring[i][1]
+    const xj = ring[j][0]
+    const yj = ring[j][1]
+    const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi
+    if (intersect) inside = !inside
+  }
+  return inside
+}
+
+const isPointInsideGeoJSONGeometry = (pt: [number, number], geom: any): boolean => {
+  if (!geom || !geom.coordinates) return true
+  if (geom.type === 'Polygon') {
+    return isPointInPolygon(pt, geom.coordinates[0])
+  }
+  if (geom.type === 'MultiPolygon') {
+    return geom.coordinates.some((poly: any) => isPointInPolygon(pt, poly[0]))
+  }
+  return true
+}
+
+const checkFarmExceedsVillageBoundary = (
+  farm: Farm,
+  villageGeom: any
+): { exceeds: boolean; reason?: string } => {
+  if (!villageGeom) return { exceeds: false }
+  const pt: [number, number] = [farm.longitude, farm.latitude]
+  if (!isPointInsideGeoJSONGeometry(pt, villageGeom)) {
+    return { exceeds: true, reason: 'Titik koordinat berada di luar batas wilayah resmi desa.' }
+  }
+  if (farm.polygon_boundary_geojson && (farm.polygon_boundary_geojson as any).coordinates) {
+    const coords = (farm.polygon_boundary_geojson as any).coordinates[0]
+    if (Array.isArray(coords)) {
+      const outsidePts = coords.filter((c: [number, number]) => !isPointInsideGeoJSONGeometry(c, villageGeom))
+      if (outsidePts.length > 0) {
+        return {
+          exceeds: true,
+          reason: `Sebagian titik sudut batas poligon (${outsidePts.length} titik) memotong / keluar batas resmi desa.`,
+        }
+      }
+    }
+  }
+  return { exceeds: false }
+}
+
 export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
   currentUser,
   farmers,
@@ -406,6 +455,15 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
     document.body.removeChild(link)
   }
 
+  const onSubmitWithPolygon = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (draftVertices.length >= 3 && !farmForm.polygon_boundary_geojson) {
+      const polyGeo = verticesToPolygonGeoJSON(draftVertices)
+      farmForm.polygon_boundary_geojson = polyGeo
+    }
+    handleCreateQuickFarmerAndFarm(e)
+  }
+
   return (
     <section className="app-card animate-fade-in" style={{ marginBottom: '2rem' }}>
       <div
@@ -753,7 +811,7 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
           )}
 
           {/* Langkah 2: Identitas Kebun & Petani */}
-          <form onSubmit={handleCreateQuickFarmerAndFarm}>
+          <form onSubmit={onSubmitWithPolygon}>
             <div style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', color: '#0284c7', marginBottom: '0.55rem' }}>
               Langkah 2 · Identitas Kebun &amp; Pemilik Lahan
             </div>
@@ -1106,7 +1164,7 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                       <small style={{ color: 'var(--text-muted)' }}>
                         {f.latitude.toFixed(4)}, {f.longitude.toFixed(4)}
                       </small>
-                      <div style={{ marginTop: '0.2rem' }}>
+                      <div style={{ marginTop: '0.2rem', display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
                         <span
                           style={{
                             fontSize: '0.68rem',
@@ -1119,6 +1177,15 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                         >
                           {f.polygon_boundary_geojson ? '📐 Batas Poligon' : '📍 Titik Saja'}
                         </span>
+                        {checkFarmExceedsVillageBoundary(f, villageBoundaryGeoJSON).exceeds && (
+                          <span
+                            className="badge badge-rose"
+                            style={{ fontSize: '0.66rem', padding: '0.12rem 0.4rem' }}
+                            title={checkFarmExceedsVillageBoundary(f, villageBoundaryGeoJSON).reason}
+                          >
+                            ⛔ Melewati Batas Desa
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td>
@@ -1149,26 +1216,35 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                         >
                           <MapPin size={12} /> Lihat di Peta
                         </button>
-                        {isOfficerOrAdmin && f.verification_status === 'pending' && (
-                          <>
-                            <button
-                              type="button"
-                              disabled={verifyingFarmId === f.id}
-                              onClick={() => handleVerifyFarm(f.id, 'verified')}
-                              className="btn btn-xs btn-success"
-                            >
-                              {verifyingFarmId === f.id ? '...' : '✓ Setujui'}
-                            </button>
-                            <button
-                              type="button"
-                              disabled={verifyingFarmId === f.id}
-                              onClick={() => handleVerifyFarm(f.id, 'rejected')}
-                              className="btn btn-xs btn-danger"
-                            >
-                              {verifyingFarmId === f.id ? '...' : '✕ Tolak'}
-                            </button>
-                          </>
-                        )}
+                        {isOfficerOrAdmin && f.verification_status === 'pending' && (() => {
+                          const boundaryCheck = checkFarmExceedsVillageBoundary(f, villageBoundaryGeoJSON)
+                          return (
+                            <>
+                              <button
+                                type="button"
+                                disabled={verifyingFarmId === f.id || boundaryCheck.exceeds}
+                                onClick={() => handleVerifyFarm(f.id, 'verified')}
+                                className="btn btn-xs btn-success"
+                                title={
+                                  boundaryCheck.exceeds
+                                    ? `Tidak dapat disahkan oleh Kepala Desa: ${boundaryCheck.reason}`
+                                    : 'Setujui dan sahkan plot kebun'
+                                }
+                                style={boundaryCheck.exceeds ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+                              >
+                                {verifyingFarmId === f.id ? '...' : '✓ Setujui'}
+                              </button>
+                              <button
+                                type="button"
+                                disabled={verifyingFarmId === f.id}
+                                onClick={() => handleVerifyFarm(f.id, 'rejected')}
+                                className="btn btn-xs btn-danger"
+                              >
+                                {verifyingFarmId === f.id ? '...' : '✕ Tolak'}
+                              </button>
+                            </>
+                          )
+                        })()}
                       </div>
                     </td>
                   </tr>

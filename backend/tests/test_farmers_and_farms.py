@@ -145,8 +145,9 @@ async def test_duplicate_farm_code_rejected(client: AsyncClient):
         "farmer_id": farmer_id,
         "farm_code": "BN-FARM-DUPLICATE",
         "name": "Kebun Asli",
-        "latitude": -4.52,
-        "longitude": 129.90,
+        "latitude": -4.5550,
+        "longitude": 129.8940,
+        "village": "Lonthoir",
         "area_sqm": 1000.0,
         "primary_commodity": "Cengkih",
     }
@@ -194,8 +195,8 @@ async def test_farm_approval_workflow_and_role_permissions(client: AsyncClient):
         "farmer_id": farmer_id,
         "farm_code": "BN-FARM-PETANI-FAIL",
         "name": "Kebun Petani Ilegal",
-        "latitude": -4.53,
-        "longitude": 129.89,
+        "latitude": -4.5550,
+        "longitude": 129.8940,
         "area_sqm": 2500.0,
         "primary_commodity": "Pala",
     }
@@ -466,6 +467,72 @@ async def test_village_boundary_enforcement_and_territorial_scoping(client: Asyn
     )
     # Harus ditolak dengan 422 karena berada di luar batas wilayah administratif Desa Lonthoir!
     assert rejected_res.status_code == 422
-    assert "di luar wilayah administratif" in rejected_res.json()["detail"].lower()
+    detail_lower = rejected_res.json()["detail"].lower()
+    assert "di luar batas administratif" in detail_lower or "di luar wilayah administratif" in detail_lower
+
+    # 4. Uji pencegahan persetujuan Kepala Desa pada lahan yang melewati batas desa
+    # Buat kebun valid di Lonthoir
+    valid_lonthoir_poly = {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [129.8940, -4.5550],
+                [129.8950, -4.5550],
+                [129.8950, -4.5540],
+                [129.8940, -4.5540],
+                [129.8940, -4.5550],
+            ]
+        ],
+    }
+    valid_farm_res = await client.post(
+        "/api/v1/farms",
+        headers={"Authorization": f"Bearer {ketua_token}"},
+        json={
+            "farmer_id": farmer_id,
+            "farm_code": "BN-FARM-LONTHOIR-VALID",
+            "name": "Kebun Valid Lonthoir",
+            "latitude": -4.5550,
+            "longitude": 129.8940,
+            "area_sqm": 2500.0,
+            "primary_commodity": "Pala",
+            "polygon_boundary_geojson": valid_lonthoir_poly,
+        },
+    )
+    assert valid_farm_res.status_code == 201
+    valid_farm_id = valid_farm_res.json()["id"]
+
+    # Petugas Lonthoir menyetujui kebun valid -> Berhasil 200!
+    petugas_token = await get_user_token(client, "petugas", "Petugas123!")
+    approve_ok = await client.patch(
+        f"/api/v1/farms/{valid_farm_id}/verification",
+        headers={"Authorization": f"Bearer {petugas_token}"},
+        json={"verification_status": "verified", "notes": "Disahkan Kepala Desa"},
+    )
+    assert approve_ok.status_code == 200
+    assert approve_ok.json()["verification_status"] == "verified"
+
+    # Uji: jika kebun di database dimodifikasi koordinatnya ke luar batas desa, Kepala Desa TIDAK BISA menyetujui!
+    # Gunakan admin untuk memodifikasi polygon ke luar batas
+    admin_token = await get_admin_token(client)
+    await client.put(
+        f"/api/v1/farms/{valid_farm_id}",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={
+            "verification_status": "pending",
+            "polygon_boundary_geojson": out_of_bounds_poly,
+            "latitude": -4.5200,
+            "longitude": 129.8300,
+        },
+    )
+
+    # Kepala Desa mencoba menyetujui kebun yang melewati batas -> HARUS DITOLAK 422!
+    approve_fail = await client.patch(
+        f"/api/v1/farms/{valid_farm_id}/verification",
+        headers={"Authorization": f"Bearer {petugas_token}"},
+        json={"verification_status": "verified", "notes": "Coba setujui lahan luar batas"},
+    )
+    assert approve_fail.status_code == 422
+    assert "tidak dapat disahkan oleh kepala desa" in approve_fail.json()["detail"].lower()
+    assert "melewati batas wilayah resmi" in approve_fail.json()["detail"].lower()
 
 
