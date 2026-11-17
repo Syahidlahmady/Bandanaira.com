@@ -7,8 +7,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
-        sans: ['"Plus Jakarta Sans"', '-apple-system', 'sans-serif'],
+        sans: ['"Nexa Pro"', '"Nexa"', 'Montserrat', '"Plus Jakarta Sans"', '-apple-system', 'sans-serif'],
+        script: ['"Intro Script"', '"IntroScript"', '"Style Script"', 'cursive'],
+        serif: ['"Intro Script"', '"Cormorant Garamond"', 'Georgia', 'serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
       },
       colors: {
