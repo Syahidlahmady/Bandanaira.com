@@ -61,15 +61,16 @@ async def seed_all():
             roles_dict[role_name] = role
 
         users_def = [
-            ("admin", "admin@bandaneira.desa.id", "Admin123!", "Ahmad Baadilla, S.STP", ["admin", "village_officer"]),
-            ("petugas", "petugas@bandaneira.desa.id", "Petugas123!", "Siti Rahma Marasabessy", ["village_officer"]),
-            ("ketua_kelompok", "ketua@bandaneira.desa.id", "Ketua123!", "Daud Walalayo", ["farmer_group_admin", "farmer"]),
-            ("petani", "petani@bandaneira.desa.id", "Petani123!", "Usman Alkatiri", ["farmer"]),
-            ("warga", "warga@bandaneira.desa.id", "Warga123!", "Nurul Hidayah Baadilla", ["resident"]),
+            ("admin", "admin@bandaneira.desa.id", "Admin123!", "Ahmad Baadilla, S.STP", ["admin", "village_officer"], None),
+            ("petugas", "petugas@bandaneira.desa.id", "Petugas123!", "Siti Rahma Marasabessy (Lonthoir)", ["village_officer"], "Lonthoir"),
+            ("petugas_nusantara", "petugas_nusantara@bandaneira.desa.id", "Petugas123!", "La Ode Arifin (Nusantara)", ["village_officer"], "Nusantara"),
+            ("ketua_kelompok", "ketua@bandaneira.desa.id", "Ketua123!", "Daud Walalayo", ["farmer_group_admin", "farmer"], "Lonthoir"),
+            ("petani", "petani@bandaneira.desa.id", "Petani123!", "Usman Alkatiri", ["farmer"], "Lonthoir"),
+            ("warga", "warga@bandaneira.desa.id", "Warga123!", "Nurul Hidayah Baadilla", ["resident"], "Lonthoir"),
         ]
 
         users_dict = {}
-        for uname, email, pwd, fname, user_roles in users_def:
+        for uname, email, pwd, fname, user_roles, u_village in users_def:
             res = await session.execute(select(User).where(User.username == uname))
             u = res.scalar_one_or_none()
             if not u:
@@ -80,11 +81,16 @@ async def seed_all():
                     full_name=fname,
                     is_active=True,
                     is_superuser=(uname == "admin"),
+                    village=u_village,
                 )
                 for rname in user_roles:
                     u.roles.append(roles_dict[rname])
                 session.add(u)
                 await session.flush()
+            else:
+                if u.village != u_village:
+                    u.village = u_village
+                    await session.flush()
             users_dict[uname] = u
 
         # 2. FARMER GROUPS

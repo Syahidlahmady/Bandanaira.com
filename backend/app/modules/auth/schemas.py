@@ -19,6 +19,7 @@ class UserResponse(BaseModel):
     full_name: str
     is_active: bool
     is_superuser: bool
+    village: Optional[str] = None
     roles: List[RoleResponse]
     created_at: datetime
 
@@ -47,5 +48,6 @@ class UserCreate(BaseModel):
     username: str = Field(..., min_length=3, max_length=100)
     password: str = Field(..., min_length=6, max_length=128)
     full_name: str = Field(..., min_length=2, max_length=255)
+    village: Optional[str] = None
     roles: List[str] = Field(default_factory=lambda: ["village_officer"])
     is_superuser: bool = False

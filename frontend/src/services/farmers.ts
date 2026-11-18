@@ -17,6 +17,7 @@ export interface Farmer {
   name: string
   phone?: string
   status: string
+  village?: string
   farmer_group_id?: string
   group?: FarmerGroup
   created_at: string
@@ -33,6 +34,7 @@ export interface Farm {
   polygon_boundary_geojson?: Record<string, unknown> | null
   area_sqm: number
   primary_commodity: string
+  village?: string
   verification_status: string
   created_at: string
 }
@@ -48,6 +50,7 @@ export interface FarmGeoJSONFeature {
     farm_code: string
     name: string
     commodity: string
+    village?: string
     area_sqm: number
     farmer_id: string
     location_description?: string
@@ -59,11 +62,14 @@ export interface FarmGeoJSONFeature {
 export interface FarmBoundaryValidationRequest {
   polygon_boundary_geojson: Record<string, unknown>
   exclude_farm_id?: string
+  village?: string
 }
 
 export interface FarmBoundaryValidationResponse {
   is_valid: boolean
   has_overlap: boolean
+  is_within_village?: boolean
+  village?: string
   overlapping_farm_id?: string
   overlapping_farm_code?: string
   overlapping_farm_name?: string
@@ -121,16 +127,17 @@ export const farmerService = {
     return res
   },
 
-  async listGroups(): Promise<FarmerGroup[]> {
-    const res = await this.requestWithAuth('/farmers/groups')
+  async listGroups(village?: string): Promise<FarmerGroup[]> {
+    const q = village ? `?village=${encodeURIComponent(village)}` : ''
+    const res = await this.requestWithAuth(`/farmers/groups${q}`)
     if (!res.ok) throw new Error(`Gagal memuat kelompok tani (${res.status})`)
     return res.json()
   },
 
-  async createGroup(data: { name: string; leader_name?: string }): Promise<FarmerGroup> {
+  async createGroup(data: { name: string; leader_name?: string; village?: string }): Promise<FarmerGroup> {
     const res = await this.requestWithAuth('/farmers/groups', {
       method: 'POST',
-      body: JSON.stringify({ ...data, village: 'Banda Neira' }),
+      body: JSON.stringify({ ...data, village: data.village || 'Lonthoir' }),
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
@@ -139,13 +146,14 @@ export const farmerService = {
     return res.json()
   },
 
-  async listFarmers(): Promise<{ items: Farmer[]; total: number }> {
-    const res = await this.requestWithAuth('/farmers?limit=100')
+  async listFarmers(village?: string): Promise<{ items: Farmer[]; total: number }> {
+    const q = village ? `?limit=100&village=${encodeURIComponent(village)}` : '?limit=100'
+    const res = await this.requestWithAuth(`/farmers${q}`)
     if (!res.ok) throw new Error(`Gagal memuat daftar petani (${res.status})`)
     return res.json()
   },
 
-  async createFarmer(data: { farmer_code: string; name: string; phone?: string; farmer_group_id?: string }): Promise<Farmer> {
+  async createFarmer(data: { farmer_code: string; name: string; phone?: string; farmer_group_id?: string; village?: string }): Promise<Farmer> {
     const res = await this.requestWithAuth('/farmers', {
       method: 'POST',
       body: JSON.stringify({ ...data, status: 'active' }),
@@ -157,8 +165,9 @@ export const farmerService = {
     return res.json()
   },
 
-  async listFarms(): Promise<{ items: Farm[]; total: number }> {
-    const res = await this.requestWithAuth('/farms?limit=100')
+  async listFarms(village?: string): Promise<{ items: Farm[]; total: number }> {
+    const q = village ? `?limit=100&village=${encodeURIComponent(village)}` : '?limit=100'
+    const res = await this.requestWithAuth(`/farms${q}`)
     if (!res.ok) throw new Error(`Gagal memuat data kebun (${res.status})`)
     return res.json()
   },
@@ -171,6 +180,7 @@ export const farmerService = {
     longitude: number
     area_sqm: number
     primary_commodity: string
+    village?: string
     location_description?: string
     polygon_boundary_geojson?: Record<string, unknown>
   }): Promise<Farm> {
@@ -185,14 +195,16 @@ export const farmerService = {
     return res.json()
   },
 
-  async getFarmsGeoJSON(): Promise<FarmGeoJSONFeatureCollection> {
-    const res = await this.requestWithAuth('/farms/geojson/all')
+  async getFarmsGeoJSON(village?: string): Promise<FarmGeoJSONFeatureCollection> {
+    const q = village ? `?village=${encodeURIComponent(village)}` : ''
+    const res = await this.requestWithAuth(`/farms/geojson/all${q}`)
     if (!res.ok) throw new Error(`Gagal memuat GeoJSON kebun (${res.status})`)
     return res.json()
   },
 
-  async getStatistics(): Promise<FarmStatistics> {
-    const res = await this.requestWithAuth('/farms/statistics/summary')
+  async getStatistics(village?: string): Promise<FarmStatistics> {
+    const q = village ? `?village=${encodeURIComponent(village)}` : ''
+    const res = await this.requestWithAuth(`/farms/statistics/summary${q}`)
     if (!res.ok) throw new Error(`Gagal memuat statistik pertanian (${res.status})`)
     return res.json()
   },

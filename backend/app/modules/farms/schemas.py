@@ -14,6 +14,7 @@ class FarmCreate(BaseModel):
     polygon_boundary_geojson: Optional[Dict[str, Any]] = None
     area_sqm: float = Field(..., ge=0.0)
     primary_commodity: str = Field(..., min_length=2, max_length=100)  # e.g. "Pala", "Cengkih"
+    village: Optional[str] = None
 
 
 class FarmUpdate(BaseModel):
@@ -24,6 +25,7 @@ class FarmUpdate(BaseModel):
     polygon_boundary_geojson: Optional[Dict[str, Any]] = None
     area_sqm: Optional[float] = Field(None, ge=0.0)
     primary_commodity: Optional[str] = None
+    village: Optional[str] = None
     verification_status: Optional[str] = Field(None, pattern=r"^(pending|verified|rejected)$")
 
 
@@ -43,6 +45,7 @@ class FarmResponse(BaseModel):
     polygon_boundary_geojson: Optional[Dict[str, Any]] = None
     area_sqm: float
     primary_commodity: str
+    village: str = "Lonthoir"
     verification_status: str
     created_at: datetime
     updated_at: datetime
@@ -88,11 +91,14 @@ class FarmStatisticsResponse(BaseModel):
 class FarmBoundaryValidationRequest(BaseModel):
     polygon_boundary_geojson: Dict[str, Any]
     exclude_farm_id: Optional[uuid.UUID] = None
+    village: Optional[str] = None
 
 
 class FarmBoundaryValidationResponse(BaseModel):
     is_valid: bool
     has_overlap: bool
+    is_within_village: Optional[bool] = None
+    village: Optional[str] = None
     overlapping_farm_id: Optional[str] = None
     overlapping_farm_code: Optional[str] = None
     overlapping_farm_name: Optional[str] = None

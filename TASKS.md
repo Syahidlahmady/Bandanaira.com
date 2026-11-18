@@ -43,11 +43,20 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 38: Client-Side URL Routing, Deep-Linking, Session Restoration & Refresh Persistence**
 - [x] **Phase 39: Spatial Features Export, 54-Item GeoJSON Seeder, Non-Technical Multi-Part Village Boundary Editor & GIS Documentation**
 - [x] **Phase 40: GIS Workspace Simplification, Bounding Box Archipelagic Lock, Redundancy Elimination & Natural Copywriting Overhaul**
-- [x] **Phase 46: CMS Bank Konten Wisata, Kurikulum 3 Modul Literasi Digital Pokdarwis/UMKM & SOP 6-Tahap + 6-Point Quality Checklist (Mandat Reyhan Albar Fahryan)**
 - [x] **Phase 41: Transformasi Kartu Detail POI ke Google Maps Desktop Drawer & Penampil Panorama 360° Interaktif (Anti-Slop Modern UI)**
 - [x] **Phase 42: Kurasi & Scraping Foto Autentik Cagar Budaya/Landmark Banda Neira (Zero External Hotlinking & Full Offline Asset Resilience)**
 - [x] **Phase 43: Integrasi Komponen Sinematik <ScrollExpand /> React Bits pada Hero Section Beranda Banda Neira**
-
+- [x] **Phase 44: History Timeline Redesign, Infographics Anti-Slop Overhaul, Full Mobile Responsiveness, and Lighthouse Performance Optimization (CLS 0, Code-Splitting, SEO 100)**
+- [x] **Phase 45: Redesain Beranda Visual Ala Wonderful Indonesia, Tipografi Nexa Pro/Intro Script & Chatbot Cerdas**
+- [x] **Phase 46: Territorial Jurisdiction Scoping & Official GIS Village Boundary Enforcement (Pemetaan Aktor & Batas Wilayah Desa)**
+- [x] **Phase 47: Redesain Sidebar Dashboard Sesuai Desain Referensi Floating Dark Card & Preservasi Palet Asli Banda Neira**
+- [x] **Phase 48: Redesain Komponen Top Bar / Header Dashboard Gaya Floating Search Bar Minimalis Satu Baris (promtdesain.md)**
+- [x] **Phase 49: Fungsionalitas Quick Search Command Palette pada Floating Topbar (Pencarian Cepat Dashboard)**
+- [x] **Phase 50: Rombak Total Dashboard Ekosistem: Sapaan Dinamis WIT & 4 Klaster Baris Grafik Lintas Seluruh 11 Workspace (100% Full Width Grid)**
+- [x] **Phase 51: Restorasi Tata Letak Dashboard Kanvas Utama (Grid 3-Bagian Sesuai Peran & Perspektif Role Switcher)**
+- [x] **Phase 52: Pengetatan Hak Akses RBAC & Diferensiasi Fitur Berbasis Peran Pengguna (Admin Super Control vs Non-Admin)**
+- [x] **Phase 53: Redesain Minimalis Telemetri Infrastruktur Kepulauan (Ikon Header & Popover 21st.dev Khusus Admin)**
+- [x] **Phase 54: CMS Bank Konten Wisata, Kurikulum 3 Modul Literasi Digital Pokdarwis/UMKM & SOP 6-Tahap + 6-Point Quality Checklist (Mandat Reyhan Albar Fahryan)**
 ---
 
 ## Detailed Task Checklist
@@ -700,16 +709,145 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Memindahkan filter pulau dan kotak pencarian melayang langsung di dalam kanvas peta.
   - Membersihkan istilah teknis internal (GIS, SAW) pada antarmuka publik dan mengintegrasikan perhitungan rekomendasi SAW ke dalam Chat Bubble mengambang di pojok kanan bawah.
 
-### Phase 46: CMS Bank Konten Wisata, Kurikulum 3 Modul Literasi Digital Pokdarwis/UMKM & SOP 6-Tahap + 6-Point Quality Checklist (Mandat Reyhan Albar Fahryan)
-- [x] 46.1 Migrasi Alembic `014_community_contents_table.py`, model SQLAlchemy `CommunityContent`, dan skema Pydantic (`CommunityContentCreateInput`, `CommunityContentUpdateInput`, `CommunityContentItemResponse`, `LiteracyModuleItem`, `SopStageItem`, `LiteracyGovernanceResponse`).
-- [x] 46.2 Data seeder autentik `backend/app/modules/tourism/literacy_content_data.py` (Bank Konten Batch 1 H7 & Karya Peserta Workshop H11 dengan foto lokal `/images/landmarks/*.jpg`, 3 Modul Literasi Digital, SOP 6-Tahap, 6-Point Quality Checklist, dan 4 Zona Sinyal Pulau).
-- [x] 46.3 Endpoint REST API di `backend/app/modules/tourism/router.py` (`GET/POST/PUT/DELETE /api/v1/tourism/community-contents` & `GET /api/v1/tourism/literacy-modules`) serta pengayaan `heritage_data.py` dan `survei/seed_data.py` (`SRV-202611-007` & `SRV-202611-008`).
-- [x] 46.4 Integrasi Frontend Service (`frontend/src/services/tourism.ts`), komponen modular plug-and-play `frontend/src/views/CommunityLiteracyHub.tsx` (`public_hub`, `cms_manager`, `standalone_full`), serta penyematan tab publik `📚 Konten & Literasi Komunitas` dan sub-tab CMS `Konten & Karya Warga` di `TourismEcoStayWorkspace.tsx`.
-- [x] 46.5 Perombakan UI/UX `CommunityLiteracyHub.tsx` berbasis REA + Tailwind Design Tokens serta integrasi aset `.webp` asli Banda Neira (`nirana-logo.webp`, `bst-emblem.webp`, `pohon-sejuta-umat.webp`, `gunung-api-portrait.webp`, dan Reels 9:16 `media/*.webp` dengan optimasi FCP/LCP `IntersectionObserver`).
+### Phase 46: Territorial Jurisdiction Scoping & Official GIS Village Boundary Enforcement (Pemetaan Aktor & Batas Wilayah Desa)
+- [x] 46.1 Database Migration & Scoping Model:
+  - Membuat migrasi Alembic `013_user_farm_village_scope.py` untuk menambahkan kolom `village` (String) pada tabel `users` dan `farms` dengan indeks pencarian.
+  - Memperbarui model SQLAlchemy `User` dan `Farm`, skema Pydantic `User`, `FarmCreate`, `FarmResponse`, `FarmStatisticsResponse`, `FarmBoundaryValidationRequest`, dan `FarmBoundaryValidationResponse`.
+  - Memperbarui seeder `demo_seed.py` dengan penetapan desa yurisdiksi (`petugas` -> Lonthoir, `petugas_nusantara` -> Nusantara, `ketua_kelompok` -> Lonthoir, `petani` -> Lonthoir, `warga` -> Lonthoir, `admin` -> Lintas Desa).
+- [x] 46.2 Backend RBAC Territorial Enforcement & Spatial Boundary Validation:
+  - Mengimplementasikan `check_farm_within_village_boundary` dan `load_village_boundary_from_file` di `spatial.py` untuk memverifikasi centroid dan sebaran titik poligon kebun terhadap 17 poligon administratif resmi desa di Kepulauan Banda.
+  - Memperketat endpoint `POST /farms` dan `POST /farms/validate-boundary`: penolakan otomatis (HTTP 422) jika poligon kebun berada di luar batas wilayah desa aktor yang bersangkutan.
+  - Memfilter daftar kelompok tani (`/farmers/groups`), daftar petani (`/farmers`), daftar kebun (`/farms`), GeoJSON kebun (`/farms/geojson`), statistik (`/farms/statistics`), dan verifikasi kebun (`PUT /farms/{id}/verify`) sesuai yurisdiksi desa aktor non-admin.
+  - Mengembangkan unit & integrasi test di `tests/test_farmers_and_farms.py` (`test_village_boundary_enforcement_and_territorial_scoping`): 7 passed (100% lulus).
+- [x] 46.3 Frontend Territorial Scoping & In-Map Boundary Visualization:
+  - Mengintegrasikan batas wilayah GeoJSON resmi pada `FarmMap.tsx` dengan garis putus-putus amber/emas dan badge yurisdiksi aktif.
+  - Mengisolasi ruang kerja `FarmsGisWorkspace.tsx`: menampilkan banner teritorial aktif, membatasi dropdown pemilihan petani & kelompok tani hanya pada desa yang berwenang, dan memvalidasi batas wilayah kebun sebelum pendaftaran.
+  - Mengaitkan `fetchFarmingData` dan `handleCreateQuickFarmerAndFarm` di `App.tsx` ke desa aktor aktif (online & offline queue).
+  - Menambahkan aktor simulasi `petugas_nusantara` dan tag desa di `QuickLoginModal.tsx`.
+  - Verifikasi build produksi Vite frontend (`npm run build`, exit code `0`).
+- [x] 46.4 Penghapusan Aktor Login Wisatawan & Pembukaan Eksplorasi Penuh untuk Publik:
+  - Menghapus aktor wisatawan Nadia Putri (`tourist`) dari daftar akun modal simulasi login `QuickLoginModal.tsx`.
+  - Menambahkan banner informatif pada modal dan form registrasi `RegisterSection.tsx` bahwa wisatawan dapat langsung mengeksplorasi seluruh fitur pariwisata, katalog eco-stay, 177 cagar budaya, rute SAW, dan peta spasial 7-layer secara publik tanpa perlu membuat akun atau login.
+  - Membersihkan percabangan peran sintetis `role-tourist` pada `auth.ts`, `DashboardLayout.tsx`, `UserEcosystemDashboard.tsx`, dan `TourismEcoStayWorkspace.tsx`.
+  - Memverifikasi ulang build produksi Vite frontend (`npm run build`, exit code `0`).
+- [x] 46.5 Validasi Ketat Batas Wilayah Persetujuan Desa & Penyimpanan Poligon Offline Mode:
+  - **Pencegahan Persetujuan Kepala Desa atas Lahan Melewati Batas Desa**:
+    - Di `backend/app/modules/farms/router.py`: pada `verify_farm`, memvalidasi ulang poligon batas kebun atau koordinat terhadap batas resmi desa (`load_village_boundary_from_file`). Jika melanggar/melewati batas desa, pendaftaran ditolak (HTTP 422) dengan pesan tegas bahwa Kepala Desa tidak dapat mengesahkan lahan yang bertubrukan atau melewati batas yurisdiksi.
+    - Menambahkan endpoint `PUT /api/v1/farms/{id}` untuk pembaruan data kebun oleh manager kebun/admin.
+    - Di `frontend/src/views/FarmsGisWorkspace.tsx`: menambahkan fungsi `checkFarmExceedsVillageBoundary` yang mengecek koordinat dan seluruh titik poligon terhadap batas wilayah desa. Menampilkan badge peringatan `⛔ Melewati Batas Desa` pada tabel kebun dan me-nonaktifkan tombol `✓ Setujui` milik Kepala Desa dengan tooltip alasan penolakan.
+  - **Perbaikan Penyimpanan Batas Poligon pada Mode Offline**:
+    - Di `frontend/src/App.tsx`: mengimplementasikan `ensureFarmPolygonGeoJSON` yang menjamin `polygon_boundary_geojson` selalu terbentuk dan tersimpan (baik digambar manual maupun kalkulasi otomatis titik & luas).
+    - Pada kondisi `!navigator.onLine` maupun saat tangkapan `catch` (jaringan terputus): menyimpan `polygon_boundary_geojson` ke dalam payload `syncManager.enqueue`, menyisipkan `optimisticFeature` berpoligon ke dalam `farmGeoJSON`, serta mengamankan kedua dataset ke IndexedDB lokal (`offlineDB.cacheData('farms', ...)` dan `offlineDB.cacheData('farmGeoJSON', ...)`). Peta satelit Leaflet `FarmMap` kini langsung menampilkan visualisasi poligon lahan secara utuh saat offline.
+    - Di `frontend/src/views/FarmsGisWorkspace.tsx`: membuat wrapper form submit `onSubmitWithPolygon` untuk memastikan poligon dari `draftVertices` selalu terikat sebelum diserahkan ke handler pembuatan kebun.
+  - **Pengujian & Verifikasi**:
+    - Seluruh pengujian otomatis backend `pytest tests/test_farmers_and_farms.py tests/test_blockchain.py` lulus 100% (10 passed).
+    - Build produksi Vite frontend `npm run build` sukses bersih tanpa error (exit code `0`).
 
+### Phase 47: Redesain Sidebar Dashboard Sesuai Desain Referensi Floating Dark Card & Preservasi Palet Asli Banda Neira
+- [x] 47.1 Dokumentasi Pemetaan 10 Role & Workspace:
+  - Menyusun dokumen referensi komprehensif `list_role_workspace.md` di direktori utama yang memetakan matriks 10 role dan hak akses fitur.
+- [x] 47.2 Struktur Tata Letak Sidebar Mengambang (Floating Rounded-3xl Card):
+  - Mengimplementasikan desain sidebar mengambang `rounded-3xl` dengan transisi ekspansi/penyusutan mulus (`w-64` expanded, `w-20` collapsed) serta penyimpanan status collapse otomatis di `localStorage`.
+- [x] 47.3 Header Sidebar & Ikon Emblem Lingkaran:
+  - Lingkaran emblem berbingkai `#0F2C59` dengan SVG Star of David 6-point sesuai referensi visual, nama aplikasi `bandanaira.com`, dan tombol ciutkan chevron dropdown.
+- [x] 47.4 Item Navigasi Workspace & Indikator Aktif:
+  - Indikator bar vertikal `#F4B75E` di sisi kiri item aktif, teks & ikon putih terang saat terpilih, serta tooltip mengambang gelap (`#0F2C59` border `#1E3A5F`) saat sidebar dalam kondisi terlipat (collapsed).
+- [x] 47.5 Seksi Utilitas, Notifikasi & Dokumen:
+  - Tombol Notification dengan badge angka bulat `#F4B75E` (teks `#081D35`) di expanded mode dan titik dot di collapsed mode.
+  - Item Documents (Verifikasi Blockchain) dan Help (Beranda Desa).
+- [x] 47.6 Kartu Profil Pengguna Bawah & Menu Pengaturan Cepat:
+  - Avatar foto melingkar dengan inisial fallback, nama pengguna, email/role, dan tombol gear Settings dengan dropdown menu (Simulasi Ganti Role, Marketplace, Verifikasi Blockchain, Antrean Offline dengan animasi `isSyncing`, dan Keluar Akun).
+- [x] 47.7 Preservasi Penuh Palet Warna Asli:
+  - Mempertahankan skema warna `#081D35` (Deep Navy), `#0F2C59` (Ocean Navy), `#F4B75E` (Warm Pala Gold), `#1E3A5F` (Borders), dan latar kanvas `#F7F5F0` (Warm Linen).
+  - Verifikasi build `npm run build` berhasil 100% tanpa error TypeScript (exit code 0).
 
+### Phase 48: Redesain Komponen Top Bar / Header Dashboard Gaya Floating Search Bar Minimalis Satu Baris (promtdesain.md)
+- [x] 48.1 Kontainer Floating Minimalis Gaya Vuexy / Sneat UI:
+  - Mengubah header menjadi kartu mengambang satu baris (`rounded-xl bg-white border border-slate-200/80 shadow-xs mx-4 sm:mx-6 lg:mx-8 mt-3 mb-2 h-14`).
+- [x] 48.2 Global Search Bar & Keyboard Shortcut:
+  - Input pencarian melebar tanpa border kotak dalam (`placeholder="Cari data, batch, berkas... (Ctrl+/)"`).
+  - Shortcut keyboard `Ctrl + /` (dan `Cmd + /`) otomatis memfokuskan kursor ke input pencarian dengan lencana kbd.
+- [x] 48.3 Deretan Ikon Utilitas Kanan:
+  - Status koneksi sistem (*Online* dengan dot hijau / *Offline*).
+  - Tombol toggle Dark/Light mode (ikon bulan/matahari).
+  - Tombol Quick Menu / App Grid (ikon 4 kotak) untuk akses cepat ke *Beranda Desa*.
+  - Tombol Notifikasi (ikon lonceng) dengan badge merah di pojok kanan atas.
+- [x] 48.4 Pembersihan Redundansi & Slop:
+  - Menghapus breadcrumb lama di header dan search bar duplikat dari judul konten di `UserEcosystemDashboard.tsx`.
+  - Verifikasi build produksi `npm run build` lulus 100% (exit code 0).
 
+### Phase 49: Fungsionalitas Quick Search Command Palette pada Floating Topbar (Pencarian Cepat Dashboard)
+- [x] 49.1 Indeks Pencarian Multi-Kategori:
+  - Mengindeks seluruh 12 ruang kerja operasional dengan judul, deskripsi, dan kata kunci sinonim lengkap.
+  - Mengintegrasikan opsi aksi cepat sistem: Verifikasi Blockchain, Marketplace Rempah, Beranda Satu Pintu, Simulasi Ganti Role, dan Antrean Sinkronisasi Offline.
+  - Mendukung verifikasi token/hash dinamis on-the-fly (`Cek Batch / Hash "{query}" di Blockchain`).
+- [x] 49.2 Command Palette Dropdown UI:
+  - Menampilkan panel melayang modern (`bg-white rounded-2xl border border-slate-200/90 shadow-2xl`) saat input pencarian aktif.
+  - Rekomendasi pintasan cepat saat kolom pencarian kosong dan filter otomatis saat pengguna mengetik.
+  - Tombol hapus cepat (`X`) untuk mengosongkan input seketika.
+- [x] 49.3 Navigasi Keyboard Penuh (A11y & Power User):
+  - Dukungan tombol panah `↑` dan `↓` untuk memindahkan pilihan sorotan.
+  - Tombol `Enter` untuk langsung mengeksekusi / berpindah workspace.
+  - Tombol `Esc` untuk menutup dropdown seketika dan mengembalikan fokus.
+  - Tombol pintas `Ctrl + /` (dan `Cmd + /`) memicu pembukaan dan pemfokusan instan.
+- [x] 49.4 Verifikasi & Clean Code:
+  - Menangani interaksi klik luar (*click-outside*) dengan rapi.
+  - Build produksi lolos 100% tanpa error TypeScript (2.042 modul, exit code 0).
 
+### Phase 51: Restorasi Tata Letak Dashboard Kanvas Utama (Grid 3-Bagian Sesuai Peran & Perspektif Role Switcher)
+- [x] 51.1 Restorasi Penuh Tata Letak Kanvas Utama `UserEcosystemDashboard.tsx`:
+  - Mengembalikan struktur tata letak dashboard ke kondisi sebelum instruksi 4-klaster `promtdesain.md`:
+    - Baris 1: 4 Kartu KPI Ringkasan Horizontal disesuaikan secara dinamis untuk 10 profil peran pengguna.
+    - Baris 2: ~60% Grafik Multi-Line Tren Operasional & ~40% Donut Chart Komposisi Komoditas/Layanan.
+    - Baris 3: 3 Kartu Modul Lintas Workspace sesuai domain tugas masing-masing role.
+    - Kolom Samping Kanan (~25%): Widget Transparansi Data, Generator Unduh Data Terbuka (CSV/XLSX), dan Radar Verifikasi Cepat Batch Blockchain.
+    - Bilah Pemilih Perspektif Role (*Role Preview Switcher Bar*): Navigasi instan 10 peran untuk preview tampilan dashboard.
+    - Footer Lanskap Seni Siluet Banda Neira: Benteng Belgica, Gunung Api Banda, dan Perahu Kora-Kora.
+- [x] 51.2 Mempertahankan Sidebar & Floating Topbar Header Baru:
+  - Sidebar ramping mengambang (`DashboardLayout.tsx`) dengan palet warna asli Banda Neira (`#081D35`, `#0F2C59`, `#F4B75E`, `#1E3A5F`).
+  - Logo autentik `logo.png` terpasang rapi di header sidebar.
+  - Floating minimal search bar dengan tombol pintas keyboard `Ctrl + /` dan pencarian cepat command palette tetap aktif dan berfungsi optimal.
+- [x] 51.3 Verifikasi Build & Kestabilan Sistem:
+  - Menjalankan `npm --prefix frontend run build` lolos 100% tanpa error TypeScript (2.042 modul ditransformasikan, exit code 0).
+
+### Phase 52: Pengetatan Hak Akses RBAC & Diferensiasi Fitur Berbasis Peran Pengguna (Admin Super Control vs Non-Admin)
+- [x] 52.1 Isolasi Bilah Perspektif Role Switcher di `UserEcosystemDashboard.tsx`:
+  - Bilah pratinjau perspektif 10 role kini diisolasi eksklusif hanya untuk Administrator Sistem (`isSuperuser || roles.includes('admin')`) guna memantau dan mengontrol seluruh ekosistem.
+  - Untuk pengguna non-admin (warga, petani, poktan, homestay, koperasi, dsb.), dashboard dikunci secara permanen pada data dan metrik role masing-masing tanpa tombol bypass ke Admin.
+  - Quick Action Launchpad disaring secara ketat agar hanya menampilkan modul kerja yang diizinkan untuk peran yang sedang aktif.
+- [x] 52.2 Filter Menu Navigasi Sidebar Berbasis Matriks Role (`DashboardLayout.tsx`):
+  - `Telemetri IoT Cuaca (`iot`)`: Dikunci hanya terlihat untuk Administrator dan Surveyor Lapangan (`isSurveyor || isOfficerOrAdmin`), disembunyikan dari warga/petani/homestay.
+  - `Koperasi Hatta (`koperasi`)`: Ditampilkan sebagai "Kasir Koperasi Hatta" untuk pengelola koperasi dan admin, serta sebagai "Koperasi & Tabungan Warga" untuk warga/petani.
+  - `Pelayanan Surat` vs `Permohonan Surat`, `Peta Kebun Poktan` vs `Peta Kebun Saya`, serta `Master Data Wisata` disesuaikan otomatis mengikuti domain tugas peran.
+- [x] 52.3 Proteksi Ruang Kerja di Tingkat Routing (`App.tsx`):
+  - Memasang `AccessRestrictedNotice` pada tab `iot` bagi pengguna yang tidak memiliki otorisasi surveyor/admin.
+  - Meneruskan `currentUser` ke `KoperasiKasirWorkspace`.
+- [x] 52.4 Diferensiasi Fitur Operasional Koperasi Kasir vs Warga (`KoperasiKasirWorkspace.tsx`):
+  - Mode Kasir/Admin (`isCoopManager || isOfficerOrAdmin`): Hak kontrol penuh terhadap pencarian NIK warga, timbangan komoditas, bank sampah, buka katup solenoid dispenser RO, dan buku besar transaksi.
+  - Mode Anggota/Warga (`resident`, `farmer`, dll.): Antarmuka aman yang menampilkan kartu tabungan digital pribadi (saldo koperasi, jatah kuota air RO, poin bank sampah), katalog harga beli resmi rempah & nilai tukar sampah, riwayat transaksi akun sendiri, serta lokasi 4 stasiun RO pulau. Fitur pencatatan kasir dan manipulasi saldo orang lain dinonaktifkan.
+- [x] 52.5 Verifikasi Build & Kestabilan Sistem:
+  - Menjalankan `npm --prefix frontend run build` lolos 100% (2.042 modul ditransformasikan, exit code 0).
+
+### Phase 53: Redesain Minimalis Telemetri Infrastruktur Kepulauan (Ikon Header & Popover 21st.dev Khusus Admin)
+- [x] 53.1 Penghapusan Kartu Besar Telemetri dari Bawah Workspace (`App.tsx`):
+  - Menghapus komponen stat-card besar "Telemetri Infrastruktur Kepulauan" dari bawah seluruh workspace di `App.tsx` sehingga kanvas workspace bersih, leluasa, dan tidak ada lagi polusi UI pada role non-admin maupun admin.
+- [x] 53.2 Implementasi Ikon Minimalis & Live Status Ping di Header (`DashboardLayout.tsx`):
+  - Menerapkan tombol ikon server minimalis di floating topbar header yang **eksklusif hanya tampil untuk Administrator Sistem (`isAdmin`)**.
+  - Mengintegrasikan indikator status radar ping hidup ala 21st.dev (`animate-ping`, hijau saat sehat, merah/amber saat ada kendala).
+- [x] 53.3 Popover Kartu 3-Bento Ringkas Telemetri Server:
+  - Saat ikon diklik, membuka popover mengambang yang rapi dengan backdrop shadow:
+    - Status badge: `● SISTEM OPERASIONAL` (atau pesan kendala jika offline).
+    - 3 Mini Bento Metrics: API Gateway (HEALTHY, versi), Database Engine (CONNECTED, PostgreSQL 15 & PostGIS 3), Status Global (HEALTHY, bandanaira.com Operational).
+    - Menutup otomatis saat pengguna mengeklik di luar area (*click-outside listener*).
+- [x] 53.4 Verifikasi Build & Kestabilan:
+  - Menjalankan `npm --prefix frontend run build` lolos 100% tanpa error TypeScript (2.042 modul ditransformasikan, exit code 0).
+
+### Phase 54: CMS Bank Konten Wisata, Kurikulum 3 Modul Literasi Digital Pokdarwis/UMKM & SOP 6-Tahap + 6-Point Quality Checklist (Mandat Reyhan Albar Fahryan)
+- [x] 54.1 Migrasi Alembic `014_community_contents_table.py`, model SQLAlchemy `CommunityContent`, dan skema Pydantic (`CommunityContentCreateInput`, `CommunityContentUpdateInput`, `CommunityContentItemResponse`, `LiteracyModuleItem`, `SopStageItem`, `LiteracyGovernanceResponse`).
+- [x] 54.2 Data seeder autentik `backend/app/modules/tourism/literacy_content_data.py` (Bank Konten Batch 1 H7 & Karya Peserta Workshop H11 dengan foto lokal `/images/landmarks/*.jpg`, 3 Modul Literasi Digital, SOP 6-Tahap, 6-Point Quality Checklist, dan 4 Zona Sinyal Pulau).
+- [x] 54.3 Endpoint REST API di `backend/app/modules/tourism/router.py` (`GET/POST/PUT/DELETE /api/v1/tourism/community-contents` & `GET /api/v1/tourism/literacy-modules`) serta pengayaan `heritage_data.py` dan `survei/seed_data.py` (`SRV-202611-007` & `SRV-202611-008`).
+- [x] 54.4 Integrasi Frontend Service (`frontend/src/services/tourism.ts`), komponen modular plug-and-play `frontend/src/views/CommunityLiteracyHub.tsx` (`public_hub`, `cms_manager`, `standalone_full`), serta penyematan tab publik `📚 Konten & Literasi Komunitas` dan sub-tab CMS `Konten & Karya Warga` di `TourismEcoStayWorkspace.tsx`.
+- [x] 54.5 Perombakan UI/UX `CommunityLiteracyHub.tsx` berbasis Anti-Slop + YAGNI + Humanizer + `safeMediaUrl` guard serta integrasi aset `.webp` asli Banda Neira (`nirana-logo.webp`, `bst-emblem.webp`, `pohon-sejuta-umat.webp`, `gunung-api-portrait.webp`, dan Reels 9:16 `media/*.webp` dengan optimasi FCP/LCP `IntersectionObserver`).
 
 
 

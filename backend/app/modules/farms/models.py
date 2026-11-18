@@ -20,6 +20,7 @@ class Farm(Base, TimestampMixin):
     polygon_boundary_geojson: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON, nullable=True)
     area_sqm: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     primary_commodity: Mapped[str] = mapped_column(String(100), index=True, nullable=False)  # Pala, Cengkih
+    village: Mapped[str] = mapped_column(String(100), default="Lonthoir", nullable=False, index=True)
     verification_status: Mapped[str] = mapped_column(String(20), default="pending", nullable=False)
 
     farmer: Mapped["Farmer"] = relationship("Farmer", back_populates="farms")

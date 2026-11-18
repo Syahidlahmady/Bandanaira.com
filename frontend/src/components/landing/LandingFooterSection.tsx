@@ -81,10 +81,11 @@ export const LandingFooterSection: React.FC<LandingFooterSectionProps> = ({
             Banda Smart Tourism &amp; Island Ecosystem. Menghubungkan
             perjalanan, warisan, dan kehidupan di Kepulauan Banda.
           </p>
-          <address className="not-italic inline-flex items-center gap-2 relative flex-[0_0_auto]">
-            <span className="text-[#f4b75e] text-xs" aria-hidden="true">
-              ⌖
-            </span>
+          <address className="not-italic inline-flex items-center gap-1.5 relative flex-[0_0_auto]">
+            <svg className="w-3.5 h-3.5 text-[#f4b75e] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z" />
+              <circle cx="12" cy="10" r="2.5" />
+            </svg>
             <span className="relative w-fit mt-[-0.50px] font-normal text-[#c1ced8] text-[11px] tracking-[0] leading-[normal] whitespace-nowrap">
               Kepulauan Banda, Maluku, Indonesia
             </span>

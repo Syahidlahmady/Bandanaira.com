@@ -1,5 +1,5 @@
 import uuid
-from typing import List
+from typing import List, Optional
 from sqlalchemy import Boolean, Column, ForeignKey, String, Table, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -50,6 +50,7 @@ class User(Base, TimestampMixin):
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    village: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, index=True)
 
     roles: Mapped[List[Role]] = relationship(
         "Role", secondary=user_roles, back_populates="users", lazy="selectin"

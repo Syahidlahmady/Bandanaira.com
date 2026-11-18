@@ -4104,18 +4104,20 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
             data-lenis-prevent
             style={{
               position: 'absolute',
-              top: '14px',
-              left: '14px',
+              top: isMobile ? '10px' : '14px',
+              left: isMobile ? '10px' : '14px',
+              right: isMobile ? '86px' : 'auto',
               zIndex: 1000,
               display: 'flex',
-              gap: '0.45rem',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              maxWidth: 'calc(100% - 100px)',
+              flexDirection: isMobile ? 'column' : 'row',
+              gap: isMobile ? '0.35rem' : '0.45rem',
+              alignItems: isMobile ? 'stretch' : 'center',
+              flexWrap: isMobile ? 'nowrap' : 'wrap',
+              maxWidth: isMobile ? 'none' : 'calc(100% - 100px)',
             }}
           >
             {/* Search Box */}
-            <div style={{ position: 'relative', width: '220px' }}>
+            <div style={{ position: 'relative', width: isMobile ? '100%' : '220px' }}>
               {loading ? (
                 <RefreshCw size={13} className="animate-spin" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#0284c7' }} />
               ) : (
@@ -4128,8 +4130,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
                   width: '100%',
-                  padding: '0.4rem 1.6rem 0.4rem 1.8rem',
-                  fontSize: '0.78rem',
+                  padding: isMobile ? '0.35rem 1.4rem 0.35rem 1.8rem' : '0.4rem 1.6rem 0.4rem 1.8rem',
+                  fontSize: isMobile ? '0.74rem' : '0.78rem',
                   background: 'rgba(255, 255, 255, 0.95)',
                   backdropFilter: 'blur(8px)',
                   border: '1px solid #cbd5e1',
@@ -4162,7 +4164,20 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
             </div>
 
             {/* Island Filter Chips */}
-            <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: '0.3rem',
+                alignItems: 'center',
+                flexWrap: isMobile ? 'nowrap' : 'wrap',
+                overflowX: isMobile ? 'auto' : 'visible',
+                maxWidth: isMobile ? 'calc(100vw - 36px)' : 'none',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch',
+                paddingBottom: isMobile ? '2px' : 0,
+              }}
+            >
               {['', 'Pulau Neira', 'Banda Besar', 'Pulau Hatta', 'Pulau Ay', 'Pulau Rhun'].map((isl) => {
                 const isSelected = islandFilter === isl
                 return (
@@ -4171,8 +4186,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     key={isl}
                     onClick={() => setIslandFilter(isl)}
                     style={{
-                      fontSize: '0.72rem',
-                      padding: '0.3rem 0.65rem',
+                      fontSize: isMobile ? '0.68rem' : '0.72rem',
+                      padding: isMobile ? '0.25rem 0.55rem' : '0.3rem 0.65rem',
                       borderRadius: '999px',
                       border: isSelected ? '1.5px solid #081d35' : '1px solid rgba(203, 213, 225, 0.85)',
                       background: isSelected ? '#081d35' : 'rgba(255, 255, 255, 0.92)',
@@ -4182,6 +4197,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                       fontWeight: isSelected ? 700 : 600,
                       boxShadow: isSelected ? '0 2px 6px rgba(8, 29, 53, 0.2)' : '0 1px 4px rgba(0,0,0,0.06)',
                       transition: 'all 0.15s ease',
+                      flexShrink: 0,
+                      whiteSpace: 'nowrap',
                     }}
                   >
                     {isl || 'Semua Pulau'}
@@ -4251,11 +4268,11 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
             onClick={toggleFullscreen}
             style={{
               position: 'absolute',
-              top: '16px',
-              right: '16px',
+              top: isMobile ? '10px' : '16px',
+              right: isMobile ? '10px' : '16px',
               zIndex: 1000,
-              width: '34px',
-              height: '34px',
+              width: isMobile ? '32px' : '34px',
+              height: isMobile ? '32px' : '34px',
               background: isFullscreen ? '#0f172a' : '#ffffff',
               border: '1.5px solid #cbd5e1',
               borderRadius: '8px',
@@ -4270,7 +4287,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
             title={isFullscreen ? 'Keluar dari Layar Penuh (Esc)' : 'Layar Penuh Peta (Fullscreen)'}
             aria-label="Toggle Fullscreen"
           >
-            {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+            {isFullscreen ? <Minimize2 size={isMobile ? 14 : 16} /> : <Maximize2 size={isMobile ? 14 : 16} />}
           </button>
 
           {/* Subtle In-Map Re-Center Compass Button (Top Right under Fullscreen) */}
@@ -4279,11 +4296,11 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
             onClick={handleResetMapView}
             style={{
               position: 'absolute',
-              top: '56px',
-              right: '16px',
+              top: isMobile ? '46px' : '56px',
+              right: isMobile ? '10px' : '16px',
               zIndex: 1000,
-              width: '34px',
-              height: '34px',
+              width: isMobile ? '32px' : '34px',
+              height: isMobile ? '32px' : '34px',
               background: '#ffffff',
               border: '1.5px solid #cbd5e1',
               borderRadius: '8px',
@@ -4297,7 +4314,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
             }}
             title="Pusatkan kembali ke Kepulauan Banda"
           >
-            <Compass size={16} />
+            <Compass size={isMobile ? 14 : 16} />
           </button>
 
           {/* Leaflet Map Div */}
@@ -4307,8 +4324,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               width: '100%',
               height: isFullscreen
                 ? (adminStudioOpen ? 'calc(100vh - 380px)' : 'calc(100vh - 145px)')
-                : '640px',
-              minHeight: isFullscreen ? '480px' : '640px',
+                : isMobile ? '480px' : '640px',
+              minHeight: isFullscreen ? '480px' : (isMobile ? '440px' : '640px'),
               background: '#e0f2fe',
               transition: 'height 0.2s ease',
             }}
@@ -4321,16 +4338,20 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               data-lenis-prevent
               style={{
                 position: 'absolute',
-                top: '64px',
-                left: '14px',
+                top: isMobile ? 'auto' : '64px',
+                bottom: isMobile ? '10px' : 'auto',
+                left: isMobile ? '10px' : '14px',
+                right: isMobile ? '10px' : 'auto',
                 zIndex: 1000,
                 background: 'rgba(255, 255, 255, 0.98)',
                 backdropFilter: 'blur(10px)',
                 border: '1.5px solid #cbd5e1',
                 borderRadius: '16px',
-                padding: '1.15rem 1.25rem',
-                maxWidth: '310px',
-                width: 'calc(100% - 24px)',
+                padding: isMobile ? '0.85rem 1rem' : '1.15rem 1.25rem',
+                maxWidth: isMobile ? 'none' : '310px',
+                maxHeight: isMobile ? '55vh' : 'calc(100% - 80px)',
+                overflowY: 'auto',
+                width: isMobile ? 'auto' : 'calc(100% - 24px)',
                 boxShadow: '0 10px 30px rgba(15, 44, 89, 0.14)',
               }}
             >
@@ -4623,8 +4644,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
           <div
             style={{
               position: 'absolute',
-              bottom: '16px',
-              left: !isMobile && selectedFeature && !isDrawerCollapsed ? '424px' : '16px',
+              bottom: isMobile ? '12px' : '16px',
+              left: !isMobile && selectedFeature && !isDrawerCollapsed ? '424px' : (isMobile ? '12px' : '16px'),
               zIndex: 1010,
               transition: 'left 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
             }}
@@ -4634,8 +4655,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               type="button"
               onClick={() => setIsLayerMenuOpen((prev) => !prev)}
               style={{
-                width: '66px',
-                height: '66px',
+                width: isMobile ? '52px' : '66px',
+                height: isMobile ? '52px' : '66px',
                 borderRadius: '12px',
                 border: isLayerMenuOpen ? '2.5px solid #0284c7' : '2px solid #ffffff',
                 boxShadow: '0 6px 20px rgba(15, 23, 42, 0.35)',
@@ -4643,7 +4664,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                 cursor: 'pointer',
                 position: 'relative',
                 overflow: 'hidden',
-                padding: '6px 4px',
+                padding: '4px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -4665,7 +4686,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
               {/* Centered Stacking Layers Icon */}
               <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Layers size={25} color="#ffffff" strokeWidth={2.2} style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.6))' }} />
+                <Layers size={isMobile ? 18 : 25} color="#ffffff" strokeWidth={2.2} style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.6))' }} />
               </div>
 
               {/* Text Label "Layers" */}
@@ -4673,11 +4694,11 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                 style={{
                   position: 'relative',
                   zIndex: 1,
-                  fontSize: '0.68rem',
+                  fontSize: isMobile ? '0.58rem' : '0.68rem',
                   fontWeight: 700,
                   color: '#ffffff',
                   letterSpacing: '0.02em',
-                  marginTop: '4px',
+                  marginTop: isMobile ? '2px' : '4px',
                   textShadow: '0 1px 3px rgba(0,0,0,0.9)',
                 }}
               >
@@ -4692,16 +4713,19 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                 data-lenis-prevent
                 style={{
                   position: 'absolute',
-                  bottom: '78px',
+                  bottom: isMobile ? '62px' : '78px',
                   left: '0',
                   zIndex: 1020,
-                  width: '300px',
+                  width: isMobile ? 'calc(100vw - 40px)' : '300px',
+                  maxWidth: '300px',
                   background: 'rgba(255, 255, 255, 0.98)',
                   backdropFilter: 'blur(12px)',
                   border: '1.5px solid #cbd5e1',
                   borderRadius: '16px',
                   boxShadow: '0 12px 36px rgba(15, 23, 42, 0.22)',
                   padding: '14px',
+                  maxHeight: isMobile ? '60vh' : 'none',
+                  overflowY: isMobile ? 'auto' : 'visible',
                 }}
               >
                 {/* Popup Header */}

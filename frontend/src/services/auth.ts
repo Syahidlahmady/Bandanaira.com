@@ -13,6 +13,7 @@ export interface User {
   full_name: string
   is_active: boolean
   is_superuser: boolean
+  village?: string
   roles: Role[]
   created_at: string
 }
@@ -74,16 +75,6 @@ export const DEFAULT_PROJECT_ACCOUNTS: RegisteredAccountRecord[] = [
     roleCode: 'homestay_operator',
     demoUsername: 'operator_homestay',
     demoPassword: 'Homestay123!',
-  },
-  {
-    name: 'Nadia Putri (Wisatawan)',
-    nik: '8171010101900003',
-    whatsapp: '081234560003',
-    pin: '1234',
-    roleTitle: 'Wisatawan',
-    roleCode: 'tourist',
-    demoUsername: 'warga',
-    demoPassword: 'Warga123!',
   },
   {
     name: 'Dewi Nusantara (Pemandu Wisata HPI)',
@@ -268,17 +259,6 @@ export const authService = {
         data.user = {
           ...data.user,
           full_name: matchedAccount.name || data.user.full_name,
-          ...(matchedAccount.roleCode === 'tourist'
-            ? {
-                roles: [
-                  {
-                    id: 'role-tourist',
-                    name: 'tourist',
-                    description: 'Wisatawan & Pengunjung Kepulauan',
-                  },
-                ],
-              }
-            : {}),
         }
       }
       this.setTokens(data.access_token, data.refresh_token)

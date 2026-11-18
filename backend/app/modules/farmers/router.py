@@ -137,11 +137,21 @@ async def ensure_default_farmers_seeded(db: AsyncSession) -> None:
 # --- Farmer Groups ---
 @router.get("/groups", response_model=List[FarmerGroupResponse])
 async def list_farmer_groups(
+    village: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     await ensure_default_farmers_seeded(db)
-    stmt = select(FarmerGroup).order_by(FarmerGroup.name)
+    stmt = select(FarmerGroup)
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+
+    if not is_admin and current_user.village:
+        stmt = stmt.where(FarmerGroup.village.ilike(f"%{current_user.village}%"))
+    elif village:
+        stmt = stmt.where(FarmerGroup.village.ilike(f"%{village}%"))
+
+    stmt = stmt.order_by(FarmerGroup.name)
     result = await db.execute(stmt)
     return result.scalars().all()
 
@@ -152,6 +162,16 @@ async def create_farmer_group(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(FARMER_MANAGERS),
 ):
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+
+    if not is_admin and current_user.village:
+        if group_in.village.lower() != current_user.village.lower():
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Anda hanya berwenang membuat kelompok tani untuk Desa {current_user.village}."
+            )
+
     check_stmt = select(FarmerGroup).where(FarmerGroup.name == group_in.name)
     existing = (await db.execute(check_stmt)).scalar_one_or_none()
     if existing:
@@ -185,11 +205,24 @@ async def list_farmers(
     limit: int = Query(20, ge=1, le=100),
     search: Optional[str] = None,
     group_id: Optional[uuid.UUID] = None,
+    village: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     await ensure_default_farmers_seeded(db)
     query = select(Farmer)
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+
+    if not is_admin and current_user.village:
+        query = query.join(FarmerGroup, Farmer.farmer_group_id == FarmerGroup.id, isouter=True).where(
+            or_(FarmerGroup.village.ilike(f"%{current_user.village}%"), FarmerGroup.village.is_(None))
+        )
+    elif village:
+        query = query.join(FarmerGroup, Farmer.farmer_group_id == FarmerGroup.id, isouter=True).where(
+            FarmerGroup.village.ilike(f"%{village}%")
+        )
+
     if search:
         search_fmt = f"%{search}%"
         query = query.where(
@@ -219,6 +252,18 @@ async def create_farmer(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(FARMER_MANAGERS),
 ):
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+
+    if not is_admin and current_user.village and farmer_in.farmer_group_id:
+        grp_stmt = select(FarmerGroup).where(FarmerGroup.id == farmer_in.farmer_group_id)
+        grp = (await db.execute(grp_stmt)).scalar_one_or_none()
+        if grp and grp.village.lower() != current_user.village.lower():
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Kelompok tani '{grp.name}' berada di Desa {grp.village}. Anda hanya berwenang mengelola petani di Desa {current_user.village}."
+            )
+
     check_stmt = select(Farmer).where(Farmer.farmer_code == farmer_in.farmer_code)
     existing = (await db.execute(check_stmt)).scalar_one_or_none()
     if existing:

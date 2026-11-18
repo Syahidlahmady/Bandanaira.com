@@ -10,11 +10,13 @@ import {
 import {
   farmerService,
   FarmGeoJSONFeatureCollection,
+  FarmGeoJSONFeature,
   Farmer,
   FarmerGroup,
   Farm,
   FarmStatistics,
 } from './services/farmers.ts'
+import { generateSquarePolygonVertices } from './components/FarmMap.tsx'
 import {
   traceabilityService,
   Harvest,
@@ -22,13 +24,13 @@ import {
   PublicBatchVerification,
   BlockchainVerification,
 } from './services/traceability.ts'
-import { LoginSection } from './components/LoginSection.tsx'
-import { RegisterSection } from './components/RegisterSection.tsx'
-import { BlockchainModal } from './components/BlockchainModal.tsx'
-import { OfflineQueueModal } from './components/OfflineQueueModal.tsx'
-import { PublicVerifyModal } from './components/PublicVerifyModal.tsx'
-import { VerifiedMarketplaceModal } from './components/VerifiedMarketplaceModal.tsx'
-import { QuickLoginModal } from './components/QuickLoginModal.tsx'
+const LoginSection = React.lazy(() => import('./components/LoginSection.tsx').then(m => ({ default: m.LoginSection })))
+const RegisterSection = React.lazy(() => import('./components/RegisterSection.tsx').then(m => ({ default: m.RegisterSection })))
+const BlockchainModal = React.lazy(() => import('./components/BlockchainModal.tsx').then(m => ({ default: m.BlockchainModal })))
+const OfflineQueueModal = React.lazy(() => import('./components/OfflineQueueModal.tsx').then(m => ({ default: m.OfflineQueueModal })))
+const PublicVerifyModal = React.lazy(() => import('./components/PublicVerifyModal.tsx').then(m => ({ default: m.PublicVerifyModal })))
+const VerifiedMarketplaceModal = React.lazy(() => import('./components/VerifiedMarketplaceModal.tsx').then(m => ({ default: m.VerifiedMarketplaceModal })))
+const QuickLoginModal = React.lazy(() => import('./components/QuickLoginModal.tsx').then(m => ({ default: m.QuickLoginModal })))
 const ResidentsWorkspace = React.lazy(() => import('./views/ResidentsWorkspace.tsx').then(m => ({ default: m.ResidentsWorkspace })))
 const LettersWorkspace = React.lazy(() => import('./views/LettersWorkspace.tsx').then(m => ({ default: m.LettersWorkspace })))
 const FarmsGisWorkspace = React.lazy(() => import('./views/FarmsGisWorkspace.tsx').then(m => ({ default: m.FarmsGisWorkspace })))
@@ -161,6 +163,27 @@ export const getInitialTab = (): TabId => {
   return 'landing'
 }
 
+const ensureFarmPolygonGeoJSON = (
+  polygon?: Record<string, unknown> | null,
+  lat?: number,
+  lng?: number,
+  areaSqm?: number
+): Record<string, unknown> => {
+  if (polygon && polygon.type === 'Polygon' && Array.isArray((polygon as any).coordinates)) {
+    return polygon
+  }
+  const validLat = typeof lat === 'number' && !isNaN(lat) ? lat : -4.5550
+  const validLng = typeof lng === 'number' && !isNaN(lng) ? lng : 129.8940
+  const targetArea = typeof areaSqm === 'number' && areaSqm > 0 ? areaSqm : 2500
+  const verts = generateSquarePolygonVertices(validLat, validLng, targetArea)
+  const ring = verts.map(([vlat, vlng]) => [parseFloat(vlng.toFixed(6)), parseFloat(vlat.toFixed(6))])
+  ring.push([ring[0][0], ring[0][1]])
+  return {
+    type: 'Polygon',
+    coordinates: [ring],
+  }
+}
+
 export const App: React.FC = () => {
   const [activeTab, setActiveTabState] = useState<TabId>(getInitialTab)
 
@@ -275,7 +298,18 @@ export const App: React.FC = () => {
   })
 
   // Form: Farm
-  const [farmForm, setFarmForm] = useState({
+  const [farmForm, setFarmForm] = useState<{
+    farmer_id: string
+    farm_code: string
+    name: string
+    location_description: string
+    latitude: number
+    longitude: number
+    area_sqm: number
+    primary_commodity: string
+    polygon_boundary_geojson?: Record<string, unknown>
+    village?: string
+  }>({
     farmer_id: '',
     farm_code: 'BN-FARM-001',
     name: 'Kebun Pala Lonthoir',
@@ -284,6 +318,7 @@ export const App: React.FC = () => {
     longitude: 129.8974,
     area_sqm: 6500,
     primary_commodity: 'Pala',
+    village: 'Lonthoir',
   })
 
   // Form: Harvest
@@ -444,12 +479,13 @@ export const App: React.FC = () => {
 
   const fetchFarmingData = async () => {
     try {
+      const userVillage = currentUser?.village || undefined
       const [groups, farmerList, farmList, geo, fStats] = await Promise.all([
-        farmerService.listGroups(),
-        farmerService.listFarmers(),
-        farmerService.listFarms(),
-        farmerService.getFarmsGeoJSON(),
-        farmerService.getStatistics(),
+        farmerService.listGroups(userVillage),
+        farmerService.listFarmers(userVillage),
+        farmerService.listFarms(userVillage),
+        farmerService.getFarmsGeoJSON(userVillage),
+        farmerService.getStatistics(userVillage),
       ])
       setFarmerGroups(groups)
       setFarmers(farmerList.items)
@@ -655,12 +691,6 @@ export const App: React.FC = () => {
 
   const getRoleDefaultTab = (user: User | null): typeof activeTab => {
     if (!user) return 'landing'
-    const roleNames = (user.roles || []).map((r) =>
-      typeof r === 'string' ? r : r.name
-    )
-    if (roleNames.includes('tourist') || roleNames.includes('wisatawan')) {
-      return 'tourism'
-    }
     // Mengarahkan ke Dasbor Ekosistem Terpadu (Landing Page 2) yang menyesuaikan tampilan dengan role
     return 'dashboard'
   }
@@ -827,31 +857,79 @@ export const App: React.FC = () => {
     e.preventDefault()
     setFarmMsg(null)
 
+    const targetVillage = currentUser?.village || farmForm.village || undefined
+    const effectivePolygon = ensureFarmPolygonGeoJSON(
+      farmForm.polygon_boundary_geojson,
+      farmForm.latitude,
+      farmForm.longitude,
+      farmForm.area_sqm
+    )
+
     if (!navigator.onLine) {
+      const payload = {
+        ...farmForm,
+        farmer_id: farmForm.farmer_id || (farmers[0]?.id || ''),
+        village: targetVillage,
+        polygon_boundary_geojson: effectivePolygon,
+      }
       await syncManager.enqueue(
         'farm_create',
         `${apiBase}/farms`,
         'POST',
-        { ...farmForm, farmer_id: farmForm.farmer_id || (farmers[0]?.id || '') },
+        payload,
         `Pemetaan Lahan: ${farmForm.name} (${farmForm.farm_code})`
       )
+      const offlineFarmId = `offline-${Date.now()}`
       const optimisticFarm: Farm = {
-        id: `offline-${Date.now()}`,
+        id: offlineFarmId,
         farmer_id: farmForm.farmer_id || (farmers[0]?.id || ''),
         farm_code: farmForm.farm_code,
         name: farmForm.name,
         location_description: farmForm.location_description,
         latitude: farmForm.latitude,
         longitude: farmForm.longitude,
+        polygon_boundary_geojson: effectivePolygon,
         area_sqm: farmForm.area_sqm,
         primary_commodity: farmForm.primary_commodity,
         verification_status: isOfficerOrAdmin ? 'verified' : 'pending',
+        village: targetVillage,
         created_at: new Date().toISOString(),
       }
-      setFarms((prev) => [optimisticFarm, ...prev])
+
+      const optimisticFeature: FarmGeoJSONFeature = {
+        type: 'Feature',
+        id: offlineFarmId,
+        geometry: {
+          type: 'Point',
+          coordinates: [optimisticFarm.longitude, optimisticFarm.latitude],
+        },
+        properties: {
+          farm_code: optimisticFarm.farm_code,
+          name: optimisticFarm.name,
+          commodity: optimisticFarm.primary_commodity,
+          village: optimisticFarm.village,
+          area_sqm: optimisticFarm.area_sqm,
+          farmer_id: optimisticFarm.farmer_id,
+          location_description: optimisticFarm.location_description,
+          verification_status: optimisticFarm.verification_status,
+          polygon_boundary_geojson: effectivePolygon,
+        },
+      }
+
+      const updatedFarms = [optimisticFarm, ...farms]
+      const updatedGeoJSON: FarmGeoJSONFeatureCollection = {
+        type: 'FeatureCollection',
+        features: [optimisticFeature, ...(farmGeoJSON?.features || [])],
+      }
+
+      setFarms(updatedFarms)
+      setFarmGeoJSON(updatedGeoJSON)
+      await offlineDB.cacheData('farms', updatedFarms)
+      await offlineDB.cacheData('farmGeoJSON', updatedGeoJSON)
+
       const offText = isOfficerOrAdmin
-        ? `📦 Mode Offline: Kebun ${farmForm.name} disimpan ke antrean lokal!`
-        : `📦 Mode Offline: Pengajuan kebun ${farmForm.name} disimpan ke antrean lokal (Menunggu Persetujuan Desa saat online).`
+        ? `📦 Mode Offline: Kebun & poligon batas ${farmForm.name} tersimpan di peta lokal dan antrean sinkronisasi!`
+        : `📦 Mode Offline: Pengajuan kebun & poligon batas ${farmForm.name} tersimpan di peta lokal (Menunggu Persetujuan Desa saat online).`
       setFarmMsg({
         type: 'success',
         text: offText,
@@ -869,22 +947,31 @@ export const App: React.FC = () => {
       if (!targetFarmerId) {
         let groupId = farmerGroups[0]?.id
         if (!groupId) {
-          const newGrp = await farmerService.createGroup({ name: 'Kelompok Tani Pala Banda Neira' })
+          const newGrp = await farmerService.createGroup({
+            name: targetVillage ? `Kelompok Tani Desa ${targetVillage}` : 'Kelompok Tani Pala Banda Neira',
+            village: targetVillage,
+          })
           groupId = newGrp.id
         }
         const newFrm = await farmerService.createFarmer({
           farmer_code: `BN-FRM-00${farmers.length + 1}`,
-          name: 'Ibrahim Lonthoir',
+          name: targetVillage ? `Petani ${targetVillage}` : 'Ibrahim Lonthoir',
           phone: '081233445566',
           farmer_group_id: groupId,
+          village: targetVillage,
         })
         targetFarmerId = newFrm.id
       }
 
-      await farmerService.createFarm({ ...farmForm, farmer_id: targetFarmerId })
+      await farmerService.createFarm({
+        ...farmForm,
+        farmer_id: targetFarmerId,
+        village: targetVillage,
+        polygon_boundary_geojson: effectivePolygon,
+      })
       const successText = isOfficerOrAdmin
-        ? `Kebun ${farmForm.name} berhasil dipetakan dan disahkan!`
-        : `Pengajuan plot kebun "${farmForm.name}" berhasil dikirim! Menunggu persetujuan verifikasi dari Petugas Kantor Desa.`
+        ? `Kebun ${farmForm.name} berhasil dipetakan beserta batas poligon dan disahkan!`
+        : `Pengajuan plot kebun "${farmForm.name}" beserta batas poligon berhasil dikirim! Menunggu persetujuan verifikasi dari Petugas Kantor Desa.`
       setFarmMsg({ type: 'success', text: successText })
       setFarmForm((prev) => ({
         ...prev,
@@ -894,16 +981,67 @@ export const App: React.FC = () => {
       fetchFarmingData()
     } catch (err: unknown) {
       if (err instanceof TypeError || (err instanceof Error && err.message.toLowerCase().includes('fetch'))) {
+        const payload = {
+          ...farmForm,
+          farmer_id: farmForm.farmer_id || (farmers[0]?.id || ''),
+          village: targetVillage,
+          polygon_boundary_geojson: effectivePolygon,
+        }
         await syncManager.enqueue(
           'farm_create',
           `${apiBase}/farms`,
           'POST',
-          { ...farmForm, farmer_id: farmForm.farmer_id || (farmers[0]?.id || '') },
+          payload,
           `Pemetaan Lahan: ${farmForm.name} (${farmForm.farm_code})`
         )
+        const offlineFarmId = `offline-${Date.now()}`
+        const optimisticFarm: Farm = {
+          id: offlineFarmId,
+          farmer_id: farmForm.farmer_id || (farmers[0]?.id || ''),
+          farm_code: farmForm.farm_code,
+          name: farmForm.name,
+          location_description: farmForm.location_description,
+          latitude: farmForm.latitude,
+          longitude: farmForm.longitude,
+          polygon_boundary_geojson: effectivePolygon,
+          area_sqm: farmForm.area_sqm,
+          primary_commodity: farmForm.primary_commodity,
+          verification_status: isOfficerOrAdmin ? 'verified' : 'pending',
+          village: targetVillage,
+          created_at: new Date().toISOString(),
+        }
+        const optimisticFeature: FarmGeoJSONFeature = {
+          type: 'Feature',
+          id: offlineFarmId,
+          geometry: {
+            type: 'Point',
+            coordinates: [optimisticFarm.longitude, optimisticFarm.latitude],
+          },
+          properties: {
+            farm_code: optimisticFarm.farm_code,
+            name: optimisticFarm.name,
+            commodity: optimisticFarm.primary_commodity,
+            village: optimisticFarm.village,
+            area_sqm: optimisticFarm.area_sqm,
+            farmer_id: optimisticFarm.farmer_id,
+            location_description: optimisticFarm.location_description,
+            verification_status: optimisticFarm.verification_status,
+            polygon_boundary_geojson: effectivePolygon,
+          },
+        }
+        const updatedFarms = [optimisticFarm, ...farms]
+        const updatedGeoJSON: FarmGeoJSONFeatureCollection = {
+          type: 'FeatureCollection',
+          features: [optimisticFeature, ...(farmGeoJSON?.features || [])],
+        }
+        setFarms(updatedFarms)
+        setFarmGeoJSON(updatedGeoJSON)
+        await offlineDB.cacheData('farms', updatedFarms)
+        await offlineDB.cacheData('farmGeoJSON', updatedGeoJSON)
+
         setFarmMsg({
           type: 'success',
-          text: `📦 Jaringan terputus: Data kebun ${farmForm.name} diamankan ke antrean offline lokal!`,
+          text: `📦 Jaringan terputus: Data kebun & poligon batas ${farmForm.name} diamankan ke antrean offline lokal dan peta!`,
         })
       } else if (err instanceof Error) {
         setFarmMsg({ type: 'error', text: err.message })
@@ -1147,12 +1285,14 @@ export const App: React.FC = () => {
 
       {/* 1B. REGISTER DESKTOP SPLIT-SCREEN PAGE (Sesuai desainsaatini/register-dekstop) */}
       {activeTab === 'register' && (
-        <RegisterSection
-          onBackToHome={() => setActiveTab('landing')}
-          onSwitchToLogin={() => setActiveTab('population')}
-          onQuickLogin={handleQuickLogin}
-          onNavigate={(tab) => setActiveTab(tab)}
-        />
+        <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#081d35] text-amber-300">Memuat pendaftaran...</div>}>
+          <RegisterSection
+            onBackToHome={() => setActiveTab('landing')}
+            onSwitchToLogin={() => setActiveTab('population')}
+            onQuickLogin={handleQuickLogin}
+            onNavigate={(tab) => setActiveTab(tab)}
+          />
+        </React.Suspense>
       )}
 
       {/* 2. Login Portal Section for Non-authenticated Users on Protected Operational Routes */}
@@ -1161,27 +1301,29 @@ export const App: React.FC = () => {
         activeTab !== 'landing' &&
         activeTab !== 'register' &&
         !PUBLIC_EXPLORER_TABS.includes(activeTab) && (
-        <LoginSection
-          username={username}
-          setUsername={setUsername}
-          password={password}
-          setPassword={setPassword}
-          onLogin={handleLogin}
-          onQuickLogin={handleQuickLogin}
-          onBackToHome={() => setActiveTab('landing')}
-          onOpenRegister={() => setActiveTab('register')}
-          onVerifySampleBatch={(token) => handlePublicVerify(token)}
-          onPublicVerify={(token) => handlePublicVerify(token)}
-          onOpenMarketplace={() => setShowMarketplaceModal(true)}
-          onOpenPlanner={() => setActiveTab('smart_planner')}
-          onOpenKoperasi={() => setActiveTab('koperasi')}
-          onOpenTelemetry={() => setActiveTab('iot')}
-          onOpenTourism={() => setActiveTab('tourism')}
-          onOpenGIS={() => setActiveTab('gis')}
-          onOpenSurvei={() => setActiveTab('survei')}
-          loading={authLoading}
-          error={authError}
-        />
+        <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#081d35] text-amber-300">Memuat portal masuk...</div>}>
+          <LoginSection
+            username={username}
+            setUsername={setUsername}
+            password={password}
+            setPassword={setPassword}
+            onLogin={handleLogin}
+            onQuickLogin={handleQuickLogin}
+            onBackToHome={() => setActiveTab('landing')}
+            onOpenRegister={() => setActiveTab('register')}
+            onVerifySampleBatch={(token) => handlePublicVerify(token)}
+            onPublicVerify={(token) => handlePublicVerify(token)}
+            onOpenMarketplace={() => setShowMarketplaceModal(true)}
+            onOpenPlanner={() => setActiveTab('smart_planner')}
+            onOpenKoperasi={() => setActiveTab('koperasi')}
+            onOpenTelemetry={() => setActiveTab('iot')}
+            onOpenTourism={() => setActiveTab('tourism')}
+            onOpenGIS={() => setActiveTab('gis')}
+            onOpenSurvei={() => setActiveTab('survei')}
+            loading={authLoading}
+            error={authError}
+          />
+        </React.Suspense>
       )}
 
       {/* 3. Public Tourist Explorer (Zona 1 SRS: Eksplorasi Wisatawan Tanpa Login) */}
@@ -1309,7 +1451,7 @@ export const App: React.FC = () => {
       {currentUser && activeTab !== 'landing' && activeTab !== 'register' && (
         <DashboardLayout
           currentUser={currentUser}
-          activeTab={activeTab}
+          activeTab={activeTab as any}
           onSelectTab={(tab) => setActiveTab(tab)}
           onOpenLanding={() => setActiveTab('landing')}
           onOpenMarketplace={() => setShowMarketplaceModal(true)}
@@ -1322,6 +1464,9 @@ export const App: React.FC = () => {
           isSyncing={isSyncing}
           adminPendingLettersCount={adminRequests.filter((r) => r.status === 'submitted').length}
           pendingFarmsCount={farms.filter((f) => f.verification_status === 'pending').length}
+          systemHealth={health}
+          loadingHealth={loadingHealth}
+          healthError={healthError}
         >
           <ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Ruang Kerja">
           <React.Suspense fallback={<div className="p-8 text-center text-slate-500 font-medium">Memuat antarmuka...</div>}>
@@ -1397,6 +1542,7 @@ export const App: React.FC = () => {
           {activeTab === 'farming' && (
             (isOfficerOrAdmin || isFarmerGroupAdmin || isFarmer) ? (
               <FarmsGisWorkspace
+                currentUser={currentUser}
                 farmers={farmers}
                 farmerGroups={farmerGroups}
                 farms={farms}
@@ -1469,7 +1615,7 @@ export const App: React.FC = () => {
 
           {/* TAB 5: KOPERASI HATTA, BANK SAMPAH & DISPENSER AIR RO */}
           {activeTab === 'koperasi' && (
-            <KoperasiKasirWorkspace />
+            <KoperasiKasirWorkspace currentUser={currentUser} />
           )}
 
           {/* TAB 6: SMART TOURISM, ECO-STAY & WARISAN BUDAYA */}
@@ -1489,7 +1635,17 @@ export const App: React.FC = () => {
 
           {/* TAB 9: PUSAT KOMANDO TELEMETRI IoT & RESILIENSI PULAU */}
           {activeTab === 'iot' && (
-            <IslandTelemetryWorkspace />
+            (isFieldSurveyor || isOfficerOrAdmin) ? (
+              <IslandTelemetryWorkspace />
+            ) : (
+              <AccessRestrictedNotice
+                workspaceTitle="Pusat Komando Telemetri IoT & Resiliensi Pulau"
+                roleTitle="Surveyor Lapangan atau Administrator Sistem"
+                currentRole={currentRoleTitle}
+                onBackToDashboard={() => setActiveTab('dashboard')}
+                onOpenQuickSwitch={() => setShowQuickLoginModal(true)}
+              />
+            )
           )}
 
           {/* TAB 10: SURVEI LAPANGAN DINAMIS & PIPA ETL HYBRID */}
@@ -1522,65 +1678,6 @@ export const App: React.FC = () => {
             )
           )}
 
-          {/* System Telemetry Section (Khusus untuk Administrator Sistem) */}
-          {isAdmin && (
-            <section
-              className="app-card animate-fade-in"
-              style={{
-                marginTop: '2rem',
-                border: '1px solid rgba(244, 183, 94, 0.2)',
-                padding: '1.5rem',
-                borderRadius: '1rem',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-                <div>
-                  <h2 className="font-serif" style={{ fontSize: '1.4rem', fontWeight: 700, margin: 0, color: '#081D35' }}>
-                    Telemetri Infrastruktur Kepulauan
-                  </h2>
-                  <p style={{ fontSize: '0.825rem', color: '#64748B', margin: '0.25rem 0 0' }}>
-                    Ketersediaan backend API, mesin geospasial PostGIS, dan persistensi database terdistribusi.
-                  </p>
-                </div>
-                <span className="badge badge-emerald">
-                  ● SISTEM OPERASIONAL LENGKAP
-                </span>
-              </div>
-
-              {loadingHealth && <p style={{ color: '#64748B', fontSize: '0.875rem' }}>Memeriksa koneksi layanan backend...</p>}
-              {healthError && (
-                <div style={{ color: '#fca5a5', background: 'rgba(239, 68, 68, 0.15)', padding: '0.85rem 1.25rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem', border: '1px solid rgba(239, 68, 68, 0.35)', fontSize: '0.875rem', fontWeight: 600 }}>
-                  ⚠️ Backend offline: {healthError}
-                </div>
-              )}
-              {health && (
-                <div className="stat-grid">
-                  <div className="stat-card" style={{ borderLeft: '4px solid #f4b75e' }}>
-                    <span className="stat-label">API Gateway</span>
-                    <div className="stat-value" style={{ color: '#f4b75e', fontSize: '1.25rem' }}>
-                      {health.services.api.toUpperCase()}
-                    </div>
-                    <span style={{ fontSize: '0.75rem', color: '#64748B', fontFamily: 'var(--font-mono)' }}>Versi: v{health.version}</span>
-                  </div>
-                  <div className="stat-card" style={{ borderLeft: `4px solid ${health.services.database === 'connected' ? '#10b981' : '#f59e0b'}` }}>
-                    <span className="stat-label">Database Engine</span>
-                    <div className="stat-value" style={{ color: health.services.database === 'connected' ? '#34d399' : '#fbbf24', fontSize: '1.25rem' }}>
-                      {health.services.database.toUpperCase()}
-                    </div>
-                    <span style={{ fontSize: '0.75rem', color: '#64748B' }}>PostgreSQL 15 &amp; PostGIS 3</span>
-                  </div>
-                  <div className="stat-card" style={{ borderLeft: '4px solid #38bdf8' }}>
-                    <span className="stat-label">Status Global</span>
-                    <div className="stat-value" style={{ color: '#38bdf8', fontSize: '1.25rem' }}>
-                      {health.status.toUpperCase()}
-                    </div>
-                    <span style={{ fontSize: '0.75rem', color: '#64748B' }}>bandanaira.com Operational</span>
-                  </div>
-                </div>
-              )}
-            </section>
-          )}
-
           {/* UNIFIED ECOSYSTEM FOOTER DI BAGIAN BAWAH KONTEN DASBOR */}
           <div style={{ marginTop: '4rem', marginLeft: '-1rem', marginRight: '-1rem', marginBottom: '-1rem' }}>
             <BandaUnifiedFooter />
@@ -1591,36 +1688,48 @@ export const App: React.FC = () => {
       )}
 
       {/* MODALS */}
-      <BlockchainModal
-        data={verificationModal}
-        onClose={() => setVerificationModal(null)}
-      />
-      <OfflineQueueModal
-        isOpen={showQueueModal}
-        queueList={queueList}
-        isOnline={isOnline}
-        isSyncing={isSyncing}
-        onClose={() => setShowQueueModal(false)}
-        onDelete={handleDeleteQueueItem}
-        onClearAll={handleClearAllQueue}
-        onSync={handleManualSync}
-      />
-      <PublicVerifyModal
-        data={publicVerifyData}
-        onClose={() => setPublicVerifyData(null)}
-      />
-      <VerifiedMarketplaceModal
-        isOpen={showMarketplaceModal}
-        onClose={() => setShowMarketplaceModal(false)}
-        onVerifyProduct={(token) => handlePublicVerify(token)}
-      />
-      <QuickLoginModal
-        isOpen={showQuickLoginModal}
-        onClose={() => setShowQuickLoginModal(false)}
-        currentUser={currentUser}
-        onQuickLogin={handleQuickLogin}
-        onLogout={handleLogout}
-      />
+      <React.Suspense fallback={null}>
+        {verificationModal && (
+          <BlockchainModal
+            data={verificationModal}
+            onClose={() => setVerificationModal(null)}
+          />
+        )}
+        {showQueueModal && (
+          <OfflineQueueModal
+            isOpen={showQueueModal}
+            queueList={queueList}
+            isOnline={isOnline}
+            isSyncing={isSyncing}
+            onClose={() => setShowQueueModal(false)}
+            onDelete={handleDeleteQueueItem}
+            onClearAll={handleClearAllQueue}
+            onSync={handleManualSync}
+          />
+        )}
+        {publicVerifyData && (
+          <PublicVerifyModal
+            data={publicVerifyData}
+            onClose={() => setPublicVerifyData(null)}
+          />
+        )}
+        {showMarketplaceModal && (
+          <VerifiedMarketplaceModal
+            isOpen={showMarketplaceModal}
+            onClose={() => setShowMarketplaceModal(false)}
+            onVerifyProduct={(token) => handlePublicVerify(token)}
+          />
+        )}
+        {showQuickLoginModal && (
+          <QuickLoginModal
+            isOpen={showQuickLoginModal}
+            onClose={() => setShowQuickLoginModal(false)}
+            currentUser={currentUser}
+            onQuickLogin={handleQuickLogin}
+            onLogout={handleLogout}
+          />
+        )}
+      </React.Suspense>
     </div>
   )
 }

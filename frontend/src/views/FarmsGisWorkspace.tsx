@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { MapPin } from 'lucide-react'
+import { User } from '../services/auth'
+import { gisService } from '../services/gis'
 import {
   Farm,
   Farmer,
@@ -15,6 +17,7 @@ import {
 } from '../components/FarmMap'
 
 interface FarmsGisWorkspaceProps {
+  currentUser?: User | null
   farmers: Farmer[]
   farmerGroups: FarmerGroup[]
   farms: Farm[]
@@ -38,6 +41,7 @@ interface FarmsGisWorkspaceProps {
     area_sqm: number
     primary_commodity: string
     polygon_boundary_geojson?: Record<string, unknown>
+    village?: string
   }
   setFarmForm: React.Dispatch<React.SetStateAction<any>>
   handleCreateQuickFarmerAndFarm: (e: React.FormEvent) => void
@@ -53,7 +57,57 @@ const verticesToPolygonGeoJSON = (vertices: [number, number][]): Record<string, 
   }
 }
 
+const isPointInPolygon = (point: [number, number], ring: [number, number][]): boolean => {
+  const [x, y] = point
+  let inside = false
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0]
+    const yi = ring[i][1]
+    const xj = ring[j][0]
+    const yj = ring[j][1]
+    const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi
+    if (intersect) inside = !inside
+  }
+  return inside
+}
+
+const isPointInsideGeoJSONGeometry = (pt: [number, number], geom: any): boolean => {
+  if (!geom || !geom.coordinates) return true
+  if (geom.type === 'Polygon') {
+    return isPointInPolygon(pt, geom.coordinates[0])
+  }
+  if (geom.type === 'MultiPolygon') {
+    return geom.coordinates.some((poly: any) => isPointInPolygon(pt, poly[0]))
+  }
+  return true
+}
+
+const checkFarmExceedsVillageBoundary = (
+  farm: Farm,
+  villageGeom: any
+): { exceeds: boolean; reason?: string } => {
+  if (!villageGeom) return { exceeds: false }
+  const pt: [number, number] = [farm.longitude, farm.latitude]
+  if (!isPointInsideGeoJSONGeometry(pt, villageGeom)) {
+    return { exceeds: true, reason: 'Titik koordinat berada di luar batas wilayah resmi desa.' }
+  }
+  if (farm.polygon_boundary_geojson && (farm.polygon_boundary_geojson as any).coordinates) {
+    const coords = (farm.polygon_boundary_geojson as any).coordinates[0]
+    if (Array.isArray(coords)) {
+      const outsidePts = coords.filter((c: [number, number]) => !isPointInsideGeoJSONGeometry(c, villageGeom))
+      if (outsidePts.length > 0) {
+        return {
+          exceeds: true,
+          reason: `Sebagian titik sudut batas poligon (${outsidePts.length} titik) memotong / keluar batas resmi desa.`,
+        }
+      }
+    }
+  }
+  return { exceeds: false }
+}
+
 export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
+  currentUser,
   farmers,
   farmerGroups,
   farms,
@@ -79,6 +133,48 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
   const [focusFarmId, setFocusFarmId] = useState<string | null>(null)
   const [showNewFarmerBox, setShowNewFarmerBox] = useState(false)
   const [savingFarmer, setSavingFarmer] = useState(false)
+  const [villagesList, setVillagesList] = useState<any[]>([])
+  const [villageBoundaryGeoJSON, setVillageBoundaryGeoJSON] = useState<Record<string, unknown> | null>(null)
+
+  const activeVillage = currentUser?.village || farmForm.village || undefined
+
+  // Load official village boundary polygons from GIS module
+  useEffect(() => {
+    let isMounted = true
+    gisService
+      .getVillages()
+      .then((data) => {
+        if (isMounted && data?.features) {
+          setVillagesList(data.features)
+        }
+      })
+      .catch((err) => {
+        console.warn('Gagal memuat GeoJSON batas wilayah desa:', err)
+      })
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  // Find geometry for active village
+  useEffect(() => {
+    if (!activeVillage || villagesList.length === 0) {
+      setVillageBoundaryGeoJSON(null)
+      return
+    }
+    const vLower = activeVillage.trim().toLowerCase()
+    const match = villagesList.find((f: any) => {
+      const name = f.properties?.name || f.properties?.village_name || ''
+      const nLower = name.trim().toLowerCase()
+      return nLower === vLower || vLower.includes(nLower) || nLower.includes(vLower)
+    })
+    if (match) {
+      setVillageBoundaryGeoJSON(match.geometry || match)
+    } else {
+      setVillageBoundaryGeoJSON(null)
+    }
+  }, [activeVillage, villagesList])
+
   const [newFarmerForm, setNewFarmerForm] = useState({
     name: '',
     phone: '',
@@ -92,6 +188,19 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
     type: 'success' | 'warning' | 'error'
     text: string
   } | null>(null)
+
+  // Filter farmers & groups scoped to active village
+  const accessibleFarmers = activeVillage
+    ? farmers.filter(
+        (f) => !f.village || f.village.trim().toLowerCase() === activeVillage.trim().toLowerCase()
+      )
+    : farmers
+
+  const accessibleFarmerGroups = activeVillage
+    ? farmerGroups.filter(
+        (g) => !g.village || g.village.trim().toLowerCase() === activeVillage.trim().toLowerCase()
+      )
+    : farmerGroups
 
   const handleCreateFarmerMember = async () => {
     const cleanName = newFarmerForm.name.trim()
@@ -110,14 +219,15 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
         farmer_code: farmerCode,
         name: cleanName,
         phone: newFarmerForm.phone.trim() || undefined,
-        farmer_group_id: newFarmerForm.farmer_group_id || farmerGroups[0]?.id || undefined,
+        farmer_group_id: newFarmerForm.farmer_group_id || accessibleFarmerGroups[0]?.id || undefined,
+        village: activeVillage,
       })
-      setFarmForm((prev: any) => ({ ...prev, farmer_id: created.id }))
+      setFarmForm((prev: any) => ({ ...prev, farmer_id: created.id, village: activeVillage || prev.village }))
       setNewFarmerForm({ name: '', phone: '', farmer_group_id: '' })
       setShowNewFarmerBox(false)
       setNewFarmerMsg({
         type: 'success',
-        text: `✓ Petani ${created.name} (${created.farmer_code}) berhasil didaftarkan ke Kelompok Tani dan dipilih otomatis.`,
+        text: `✓ Petani ${created.name} (${created.farmer_code}) berhasil didaftarkan ke Kelompok Tani ${activeVillage ? `Desa ${activeVillage} ` : ''}dan dipilih otomatis.`,
       })
       fetchFarmingData()
     } catch (err: unknown) {
@@ -215,24 +325,32 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
     try {
       const res = await farmerService.validateBoundary({
         polygon_boundary_geojson: polyGeoJSON,
+        village: activeVillage || undefined,
       })
 
       if (!res.is_valid) {
         setBoundaryCheckMsg({ type: 'error', text: `Format poligon tidak valid: ${res.message}` })
+      } else if (res.is_within_village === false) {
+        setBoundaryCheckMsg({
+          type: 'error',
+          text: `⛔ Batas di Luar Wilayah: ${res.message || `Poligon kebun berada di luar batas administratif Desa ${activeVillage}`}. Harap petakan di dalam wilayah desa.`,
+        })
       } else if (res.has_overlap) {
         setBoundaryCheckMsg({
           type: 'warning',
           text: `Peringatan Tumpang Tindih Batas (PostGIS): ${res.message} Geser sudut atau pin merah pada peta agar tidak menabrak kebun lain.`,
         })
       } else {
+        const villageText = activeVillage ? ` & resmi di dalam wilayah Desa ${activeVillage}` : ''
         setBoundaryCheckMsg({
           type: 'success',
-          text: `✓ Batas poligon bebas tumpang tindih! Luas geodesik PostGIS: ${res.calculated_area_sqm.toLocaleString('id-ID')} m².`,
+          text: `✓ Batas poligon valid${villageText}! Luas geodesik PostGIS: ${res.calculated_area_sqm.toLocaleString('id-ID')} m².`,
         })
         setFarmForm((prev: any) => ({
           ...prev,
           area_sqm: res.calculated_area_sqm,
           polygon_boundary_geojson: polyGeoJSON,
+          village: activeVillage || prev.village,
         }))
       }
     } catch (err: unknown) {
@@ -335,6 +453,15 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+  }
+
+  const onSubmitWithPolygon = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (draftVertices.length >= 3 && !farmForm.polygon_boundary_geojson) {
+      const polyGeo = verticesToPolygonGeoJSON(draftVertices)
+      farmForm.polygon_boundary_geojson = polyGeo
+    }
+    handleCreateQuickFarmerAndFarm(e)
   }
 
   return (
@@ -480,6 +607,48 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
         </div>
       )}
 
+      {activeVillage && (
+        <div
+          style={{
+            marginBottom: '1.25rem',
+            padding: '0.75rem 1rem',
+            background: 'linear-gradient(135deg, rgba(217, 119, 6, 0.08) 0%, rgba(245, 158, 11, 0.04) 100%)',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid #fde68a',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '0.6rem',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <span style={{ fontSize: '1.35rem' }}>🏛️</span>
+            <div>
+              <div style={{ fontSize: '0.86rem', fontWeight: 800, color: '#92400e' }}>
+                Yurisdiksi Wilayah: Desa {activeVillage}
+              </div>
+              <div style={{ fontSize: '0.76rem', color: '#78350f' }}>
+                Akses manajemen data petani, kelompok tani, dan pemetaan poligon kebun dibatasi di dalam batas administratif Desa {activeVillage}.
+              </div>
+            </div>
+          </div>
+          <span
+            style={{
+              padding: '0.2rem 0.6rem',
+              borderRadius: '999px',
+              background: '#fef3c7',
+              border: '1px solid #f59e0b',
+              color: '#92400e',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+            }}
+          >
+            Batas Resmi Aktif
+          </span>
+        </div>
+      )}
+
       {/* Peta Satelit Interaktif Pemetaan Lahan */}
       <div ref={mapSectionRef} style={{ marginBottom: '1.5rem' }}>
         <FarmMap
@@ -490,6 +659,8 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
           draftVertices={draftVertices}
           onDraftChange={handleMapDraftChange}
           focusFarmId={focusFarmId}
+          activeVillageName={activeVillage}
+          villageBoundaryGeoJSON={villageBoundaryGeoJSON}
         />
       </div>
 
@@ -640,7 +811,7 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
           )}
 
           {/* Langkah 2: Identitas Kebun & Petani */}
-          <form onSubmit={handleCreateQuickFarmerAndFarm}>
+          <form onSubmit={onSubmitWithPolygon}>
             <div style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', color: '#0284c7', marginBottom: '0.55rem' }}>
               Langkah 2 · Identitas Kebun &amp; Pemilik Lahan
             </div>
@@ -708,14 +879,14 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label className="form-label">Kelompok Tani</label>
                     <select
-                      value={newFarmerForm.farmer_group_id || (farmerGroups[0]?.id || '')}
+                      value={newFarmerForm.farmer_group_id || (accessibleFarmerGroups[0]?.id || '')}
                       onChange={(e) => setNewFarmerForm({ ...newFarmerForm, farmer_group_id: e.target.value })}
                       className="form-control"
                     >
-                      {farmerGroups.length === 0 && <option value="">-- Kelompok Tani Bawaan --</option>}
-                      {farmerGroups.map((grp) => (
+                      {accessibleFarmerGroups.length === 0 && <option value="">-- Kelompok Tani Bawaan --</option>}
+                      {accessibleFarmerGroups.map((grp) => (
                         <option key={grp.id} value={grp.id}>
-                          {grp.name} ({grp.village})
+                          {grp.name} {grp.village ? `(Desa ${grp.village})` : ''}
                         </option>
                       ))}
                     </select>
@@ -745,7 +916,7 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
               <div className="form-group">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem', gap: '0.4rem' }}>
                   <label className="form-label" style={{ marginBottom: 0 }}>
-                    Petani Pemilik Lahan ({farmers.length})
+                    Petani Pemilik Lahan ({accessibleFarmers.length})
                   </label>
                   <button
                     type="button"
@@ -770,13 +941,13 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                   className="form-control"
                 >
                   <option value="">-- Otomatis / Pilih Petani Anggota Poktan --</option>
-                  {farmers.map((frm) => {
+                  {accessibleFarmers.map((frm) => {
                     const groupName =
                       frm.group?.name ||
                       farmerGroups.find((g) => g.id === frm.farmer_group_id)?.name
                     return (
                       <option key={frm.id} value={frm.id}>
-                        {frm.name} ({frm.farmer_code}){groupName ? ` — ${groupName}` : ''}
+                        {frm.name} ({frm.farmer_code}){frm.village ? ` [Desa ${frm.village}]` : ''}{groupName ? ` — ${groupName}` : ''}
                       </option>
                     )
                   })}
@@ -993,7 +1164,7 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                       <small style={{ color: 'var(--text-muted)' }}>
                         {f.latitude.toFixed(4)}, {f.longitude.toFixed(4)}
                       </small>
-                      <div style={{ marginTop: '0.2rem' }}>
+                      <div style={{ marginTop: '0.2rem', display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
                         <span
                           style={{
                             fontSize: '0.68rem',
@@ -1006,6 +1177,15 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                         >
                           {f.polygon_boundary_geojson ? '📐 Batas Poligon' : '📍 Titik Saja'}
                         </span>
+                        {checkFarmExceedsVillageBoundary(f, villageBoundaryGeoJSON).exceeds && (
+                          <span
+                            className="badge badge-rose"
+                            style={{ fontSize: '0.66rem', padding: '0.12rem 0.4rem' }}
+                            title={checkFarmExceedsVillageBoundary(f, villageBoundaryGeoJSON).reason}
+                          >
+                            ⛔ Melewati Batas Desa
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td>
@@ -1036,26 +1216,35 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                         >
                           <MapPin size={12} /> Lihat di Peta
                         </button>
-                        {isOfficerOrAdmin && f.verification_status === 'pending' && (
-                          <>
-                            <button
-                              type="button"
-                              disabled={verifyingFarmId === f.id}
-                              onClick={() => handleVerifyFarm(f.id, 'verified')}
-                              className="btn btn-xs btn-success"
-                            >
-                              {verifyingFarmId === f.id ? '...' : '✓ Setujui'}
-                            </button>
-                            <button
-                              type="button"
-                              disabled={verifyingFarmId === f.id}
-                              onClick={() => handleVerifyFarm(f.id, 'rejected')}
-                              className="btn btn-xs btn-danger"
-                            >
-                              {verifyingFarmId === f.id ? '...' : '✕ Tolak'}
-                            </button>
-                          </>
-                        )}
+                        {isOfficerOrAdmin && f.verification_status === 'pending' && (() => {
+                          const boundaryCheck = checkFarmExceedsVillageBoundary(f, villageBoundaryGeoJSON)
+                          return (
+                            <>
+                              <button
+                                type="button"
+                                disabled={verifyingFarmId === f.id || boundaryCheck.exceeds}
+                                onClick={() => handleVerifyFarm(f.id, 'verified')}
+                                className="btn btn-xs btn-success"
+                                title={
+                                  boundaryCheck.exceeds
+                                    ? `Tidak dapat disahkan oleh Kepala Desa: ${boundaryCheck.reason}`
+                                    : 'Setujui dan sahkan plot kebun'
+                                }
+                                style={boundaryCheck.exceeds ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+                              >
+                                {verifyingFarmId === f.id ? '...' : '✓ Setujui'}
+                              </button>
+                              <button
+                                type="button"
+                                disabled={verifyingFarmId === f.id}
+                                onClick={() => handleVerifyFarm(f.id, 'rejected')}
+                                className="btn btn-xs btn-danger"
+                              >
+                                {verifyingFarmId === f.id ? '...' : '✕ Tolak'}
+                              </button>
+                            </>
+                          )
+                        })()}
                       </div>
                     </td>
                   </tr>
