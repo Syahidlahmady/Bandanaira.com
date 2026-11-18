@@ -61,6 +61,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 56: Deep Engine Optimization: banda.webp Compression (95% Payload Reduction), RAF Scroll Decoupling, Viewport 3D Culling, and Content-Visibility Acceleration**
 - [x] **Phase 57: Direct /banda.webp Mobile Route, Strict Mobile YouTube Lockout, and Mobile Scroll Distance Tuning**
 - [x] **Phase 58: Ironclad Mobile CSS Display Lockout, Deferred Desktop YouTube Iframe (Instant LCP), and Service Worker Cache Invalidation**
+- [x] **Phase 59: Production Dockerfile (Vite Preview), HTTP/1.1 Waterfall Elimination, Non-Blocking Font Loading, Forced Reflow Batching, and Mobile WebP Delivery**
 
 ---
 
@@ -911,3 +912,23 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Mengaktifkan `autoRaf: true` bawaan Lenis dan menghapus perulangan manual `requestAnimationFrame(raf)` tak terhingga. Lenis hanya menggunakan siklus animasi saat ada event scroll roda mouse desktop dan tidur saat pengguna membaca halaman.
 - [x] 58.6 Verifikasi Build Produksi Vite:
   - Eksekusi `npm --prefix frontend run build` lolos 100% (2.041 modul ditransformasikan dalam 6.87s, exit code 0).
+
+---
+
+## [Phase 59] - Production Dockerfile (Vite Preview), HTTP/1.1 Waterfall Elimination, Non-Blocking Font Loading, Forced Reflow Batching, and Mobile WebP Delivery
+- [x] 59.1 Eliminasi Root Cause Skor Lighthouse Rendah (Vite Dev Server di Docker Produksi VPS):
+  - Mengubah konfigurasi `frontend/Dockerfile` dari `CMD ["npm", "run", "dev", "--", "--host"]` (server pengembangan yang mengirim 200+ modul mentah tak ter-bundle per request) menjadi build produksi dan preview: `RUN npm run build` dan `CMD ["sh", "-c", "npm run build && npm run preview -- --host 0.0.0.0 --port 5175"]`.
+  - Mengeliminasi penundaan antrean HTTP/1.1 sebesar 2.440 ms ("Modern HTTP — Est savings of 2,440 ms"), memangkas FCP dari 3.8s ke <1s dan LCP dari 6.8s ke <1.5s.
+- [x] 59.2 Konfigurasi Host & Proxy Preview Server (`frontend/vite.config.ts`):
+  - Menambahkan blok konfigurasi `preview` pada `vite.config.ts` dengan host `0.0.0.0`, port `5175`, `allowedHosts: ['bandanaira.cloud', 'www.bandanaira.cloud', 'localhost']`, dan routing proxy `/api` ke backend.
+- [x] 59.3 Non-Blocking Asynchronous Google Fonts Loading (`frontend/index.html`):
+  - Mengubah pemuatan font Google dari link stylesheet sinkron yang memblokir rendering menjadi asinkron (`media="print" onload="this.media='all'"` dengan `<noscript>` fallback), menghapus peringatan Lighthouse "Font display — Est savings of 180 ms" dan "Render-blocking requests — Est savings of 40 ms".
+- [x] 59.4 Batching DOM Reads & Writes untuk Menghilangkan Forced Synchronous Reflow (`ScrollExpand.tsx`):
+  - Memisahkan seluruh pembacaan geometri DOM (`window.innerHeight`, `root.clientHeight`, `track.getBoundingClientRect()`, `root.clientWidth`) di awal fungsi `measure()`, baru kemudian melakukan penulisan style (`stage.style.height`, `track.style.height`, `stage.style.setProperty`).
+  - Menghilangkan sepenuhnya audit Lighthouse "Forced reflow".
+- [x] 59.5 Pengiriman Citra Responsif WebP Mobile 47 KB (`frontend/public/banda-mobile.webp` & `index.html`):
+  - Menghasilkan varian gambar WebP mobile sebesar 47.9 KB (800x460) dan menerapkannya melalui `srcSet` serta preload HTML responsif (`imagesrcset` dan `imagesizes`), menghemat payload sebesar 173 KiB pada audit "Improve image delivery".
+- [x] 59.6 Invalidation Cache Service Worker ke Versi 7 (`frontend/public/sw.js`):
+  - Memperbarui `CACHE_NAME` menjadi `banda-digital-v7` dan menambahkan `/banda-mobile.webp` ke dalam cache statis awal sehingga browser klien segera mengosongkan cache lama `v6`/`v5` dan menyajikan aset baru tanpa bentrok IndexedDB/Service Worker.
+- [x] 59.7 Verifikasi Build Produksi:
+  - Menjalankan `npm --prefix frontend run build` sukses 100% (2.041 modul ditransformasikan dalam 7.22s, exit code 0).

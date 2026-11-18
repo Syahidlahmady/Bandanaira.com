@@ -183,17 +183,23 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
 
     const measure = () => {
       const c = propsRef.current
-      stageH = c.useWindowScroll ? window.innerHeight : root.clientHeight
-      if (stageH <= 0) return
-      stage.style.height = `${stageH}px`
-      totalTrackH = stageH * (1 + Math.max(0, c.scrollDistance) + Math.max(0, c.holdDistance))
-      track.style.height = `${totalTrackH}px`
+      const windowH = window.innerHeight
+      const clientH = root.clientHeight
+      const currentStageH = c.useWindowScroll ? windowH : clientH
+      if (currentStageH <= 0) return
 
+      // BATCH ALL DOM READS FIRST (Avoid Forced Synchronous Layout / Forced Reflow)
       const rect = track.getBoundingClientRect()
-      trackTop = rect.top + window.scrollY
+      const clientW = root.clientWidth || currentStageH
 
-      const w = root.clientWidth || stageH
-      stage.style.setProperty('--se-title-size', `${clamp(w * 0.055, 24, 76)}px`)
+      stageH = currentStageH
+      trackTop = rect.top + window.scrollY
+      totalTrackH = currentStageH * (1 + Math.max(0, c.scrollDistance) + Math.max(0, c.holdDistance))
+
+      // BATCH ALL DOM WRITES AFTER
+      stage.style.height = `${currentStageH}px`
+      track.style.height = `${totalTrackH}px`
+      stage.style.setProperty('--se-title-size', `${clamp(clientW * 0.055, 24, 76)}px`)
     }
 
     const readProgress = () => {
@@ -308,6 +314,8 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     >
       <img
         src={poster || src || '/banda.webp'}
+        srcSet="/banda-mobile.webp 800w, /banda.webp 1920w"
+        sizes="(max-width: 768px) 100vw, 1920px"
         alt={alt}
         width={1920}
         height={1106}
@@ -342,6 +350,8 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
       ref={mediaRef as React.RefObject<HTMLImageElement>}
       className="scroll-expand__media"
       src={src || poster || '/banda.webp'}
+      srcSet="/banda-mobile.webp 800w, /banda.webp 1920w"
+      sizes="(max-width: 768px) 100vw, 1920px"
       alt={alt}
       width={1920}
       height={1106}
