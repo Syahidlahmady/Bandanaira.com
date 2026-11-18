@@ -86,20 +86,13 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
     }
 
     const lenis = new Lenis({
-      autoRaf: false,
+      autoRaf: true,
       duration: 1.1,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       wheelMultiplier: 1.0,
       touchMultiplier: 1.0,
     })
-
-    let rafId: number
-    function raf(time: number) {
-      lenis.raf(time)
-      rafId = requestAnimationFrame(raf)
-    }
-    rafId = requestAnimationFrame(raf)
 
     // Smooth anchor link click handling
     const handleAnchorClick = (e: MouseEvent) => {
@@ -117,7 +110,6 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
 
     return () => {
       document.removeEventListener('click', handleAnchorClick)
-      cancelAnimationFrame(rafId)
       lenis.destroy()
     }
   }, [])

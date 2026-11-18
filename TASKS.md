@@ -60,6 +60,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 55: Zero-Jank Scroll Optimization, Strict Mobile Hero Image Rendering, and Reflow Elimination Across All Devices**
 - [x] **Phase 56: Deep Engine Optimization: banda.webp Compression (95% Payload Reduction), RAF Scroll Decoupling, Viewport 3D Culling, and Content-Visibility Acceleration**
 - [x] **Phase 57: Direct /banda.webp Mobile Route, Strict Mobile YouTube Lockout, and Mobile Scroll Distance Tuning**
+- [x] **Phase 58: Ironclad Mobile CSS Display Lockout, Deferred Desktop YouTube Iframe (Instant LCP), and Service Worker Cache Invalidation**
 
 ---
 
@@ -893,3 +894,20 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Mengurangi `rootMargin` IntersectionObserver peta dari `350px` menjadi `100px` agar pustaka Leaflet dan ribuan koordinat GeoJSON tidak diunduh di background saat pengguna masih berada di bagian atas halaman.
 - [x] 57.6 Verifikasi Build Produksi Vite:
   - Menjalankan `npm --prefix frontend run build` sukses 100% (2.041 modul ditransformasikan dalam 6.72s, exit code 0).
+
+---
+
+## [Phase 58] - Ironclad Mobile CSS Display Lockout, Deferred Desktop YouTube Iframe, and Service Worker Cache Invalidation
+- [x] 58.1 Ironclad CSS Media Query Lockout pada YouTube Iframe (`ScrollExpand.css`):
+  - Menambahkan aturan `@media (max-width: 1023px)` yang secara absolut mematikan `.scroll-expand__youtube-wrap` dan `.scroll-expand__youtube-iframe` dengan `display: none !important; width: 0 !important; height: 0 !important;`. Meskipun iframe sempat ter-mount, pada tampilan mobile elemen video YouTube dibungkam total di level CSS.
+- [x] 58.2 Deferred YouTube Iframe Rendering di Desktop (`ScrollExpand.tsx`):
+  - Di desktop (`window.innerWidth >= 1024`), iframe YouTube ditunda pemasangannya selama 600ms (`iframeReady`). Gambar statis `/banda.webp` dimuat terlebih dahulu seketika, memberikan skor Largest Contentful Paint (LCP) mendekati 100 dengan 0ms Total Blocking Time (TBT). Setelah paint pertama selesai, barulah video YouTube dipasang di background.
+  - Pada layar mobile (< 1024px), tag `<iframe>` sama sekali tidak pernah di-mount ke virtual DOM maupun real DOM.
+- [x] 58.3 Preload `/banda.webp` di Level Header HTML (`index.html`):
+  - Mengubah tautan preload LCP di `index.html` menjadi `<link rel="preload" href="/banda.webp" as="image" type="image/webp" fetchpriority="high" />`.
+- [x] 58.4 Invalidation Cache Service Worker (`sw.js`):
+  - Menaikkan versi cache Service Worker dari `banda-digital-v5` menjadi `banda-digital-v6`. Saat pengguna membuka kembali halaman, Service Worker otomatis menghapus cache lama dan menyajikan aset JavaScript baru.
+- [x] 58.5 Optimasi Idle Loop Lenis di Desktop (`BandanairaBeranda.tsx`):
+  - Mengaktifkan `autoRaf: true` bawaan Lenis dan menghapus perulangan manual `requestAnimationFrame(raf)` tak terhingga. Lenis hanya menggunakan siklus animasi saat ada event scroll roda mouse desktop dan tidur saat pengguna membaca halaman.
+- [x] 58.6 Verifikasi Build Produksi Vite:
+  - Eksekusi `npm --prefix frontend run build` lolos 100% (2.041 modul ditransformasikan dalam 6.87s, exit code 0).

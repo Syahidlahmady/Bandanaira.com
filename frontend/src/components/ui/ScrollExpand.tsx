@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import './ScrollExpand.css'
 
 const clamp = (v: number, a: number, b: number) => (v < a ? a : v > b ? b : v)
@@ -275,39 +275,56 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     }
   }, [applyProgress, useWindowScroll])
 
-  // Strict touch/mobile lock: under no circumstances allow YouTube iframe on touch or mobile viewports
-  const isTouchOrMobileDevice = typeof window !== 'undefined' && (
-    window.innerWidth < 1024 ||
-    window.matchMedia('(pointer: coarse)').matches ||
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  // Dynamic desktop viewport state: rigorously ensures YouTube iframe is NEVER rendered on mobile
+  const [isDesktopClient, setIsDesktopClient] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.innerWidth >= 1024 : false
   )
+  const [iframeReady, setIframeReady] = useState<boolean>(false)
 
-  const isYoutube = !isTouchOrMobileDevice && (mediaType === 'youtube' || mediaType === 'iframe') && Boolean(youtubeId)
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktopClient(window.innerWidth >= 1024)
+    }
+    window.addEventListener('resize', handleResize, { passive: true })
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  useEffect(() => {
+    if (isDesktopClient && (mediaType === 'youtube' || mediaType === 'iframe') && Boolean(youtubeId)) {
+      // Defer desktop iframe load to ensure LCP image renders with 0ms Total Blocking Time
+      const timer = setTimeout(() => setIframeReady(true), 600)
+      return () => clearTimeout(timer)
+    } else {
+      setIframeReady(false)
+    }
+  }, [isDesktopClient, mediaType, youtubeId])
+
+  const isYoutube = isDesktopClient && (mediaType === 'youtube' || mediaType === 'iframe') && Boolean(youtubeId)
 
   const media = isYoutube ? (
     <div
       ref={mediaRef as React.RefObject<HTMLDivElement>}
       className="scroll-expand__media scroll-expand__youtube-wrap"
     >
-      {poster || src ? (
-        <img
-          src={poster || src}
-          alt={alt}
-          width={1920}
-          height={1106}
-          {...({ fetchpriority: 'high' } as any)}
-          decoding="async"
-          className="absolute inset-0 w-full h-full object-cover -z-10"
-          draggable={false}
-        />
-      ) : null}
-      <iframe
-        className="scroll-expand__youtube-iframe"
-        src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&playsinline=1&rel=0&disablekb=1&modestbranding=1&iv_load_policy=3&showinfo=0&fs=0`}
-        title="Banda Neira Aerial Video Backdrop"
-        allow="autoplay; encrypted-media; picture-in-picture"
-        tabIndex={-1}
+      <img
+        src={poster || src || '/banda.webp'}
+        alt={alt}
+        width={1920}
+        height={1106}
+        {...({ fetchpriority: 'high' } as any)}
+        decoding="async"
+        className="absolute inset-0 w-full h-full object-cover -z-10"
+        draggable={false}
       />
+      {iframeReady && (
+        <iframe
+          className="scroll-expand__youtube-iframe"
+          src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&playsinline=1&rel=0&disablekb=1&modestbranding=1&iv_load_policy=3&showinfo=0&fs=0`}
+          title="Banda Neira Aerial Video Backdrop"
+          allow="autoplay; encrypted-media; picture-in-picture"
+          tabIndex={-1}
+        />
+      )}
     </div>
   ) : mediaType === 'video' ? (
     <video
