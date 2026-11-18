@@ -64,20 +64,47 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
   }, [])
 
   useEffect(() => {
-    const handleScroll = () => {
+    let sectionTop = 0
+    let totalScrollable = 0
+    let lastProgress = -1
+    let rafId = 0
+
+    const measure = () => {
       if (!sectionRef.current) return
       const rect = sectionRef.current.getBoundingClientRect()
-      const totalScrollable = rect.height - window.innerHeight
-      if (totalScrollable <= 0) return
-
-      const currentScroll = -rect.top
-      const progress = Math.max(0, Math.min(1, currentScroll / totalScrollable))
-      setScrollProgress(progress)
+      sectionTop = rect.top + window.scrollY
+      totalScrollable = rect.height - window.innerHeight
     }
 
+    const handleScroll = () => {
+      if (totalScrollable <= 0) return
+      if (rafId) cancelAnimationFrame(rafId)
+
+      rafId = requestAnimationFrame(() => {
+        const scrollY = window.scrollY
+        // Fast bail-out when offscreen
+        if (scrollY < sectionTop - 600 || scrollY > sectionTop + totalScrollable + 600) {
+          return
+        }
+
+        const currentScroll = scrollY - sectionTop
+        const progress = Math.max(0, Math.min(1, currentScroll / totalScrollable))
+        if (Math.abs(progress - lastProgress) > 0.003) {
+          lastProgress = progress
+          setScrollProgress(progress)
+        }
+      })
+    }
+
+    measure()
+    window.addEventListener('resize', measure, { passive: true })
     window.addEventListener('scroll', handleScroll, { passive: true })
     handleScroll()
-    return () => window.removeEventListener('scroll', handleScroll)
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId)
+      window.removeEventListener('resize', measure)
+      window.removeEventListener('scroll', handleScroll)
+    }
   }, [])
 
   const scrollToStory = (index: number) => {

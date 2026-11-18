@@ -153,12 +153,17 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     let stageH = 0
     let running = false
 
+    let trackTop = 0
+
     const measure = () => {
       const c = propsRef.current
       stageH = c.useWindowScroll ? window.innerHeight : root.clientHeight
       if (stageH <= 0) return
       stage.style.height = `${stageH}px`
       track.style.height = `${stageH * (1 + Math.max(0, c.scrollDistance) + Math.max(0, c.holdDistance))}px`
+
+      const rect = track.getBoundingClientRect()
+      trackTop = rect.top + window.scrollY
 
       const w = root.clientWidth || stageH
       stage.style.setProperty('--se-title-size', `${clamp(w * 0.055, 24, 76)}px`)
@@ -169,7 +174,7 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
       if (!c.enabled) return 1
       const span = stageH * Math.max(0.01, c.scrollDistance)
       if (c.useWindowScroll) {
-        const top = track.getBoundingClientRect().top
+        const top = trackTop - window.scrollY
         return clamp(-top / span, 0, 1)
       }
       return clamp(root.scrollTop / span, 0, 1)
@@ -226,7 +231,7 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     }
   }, [applyProgress, useWindowScroll])
 
-  const isYoutube = mediaType === 'youtube' || mediaType === 'iframe' || Boolean(youtubeId)
+  const isYoutube = (mediaType === 'youtube' || mediaType === 'iframe') && Boolean(youtubeId)
 
   const media = isYoutube ? (
     <div
@@ -247,7 +252,7 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
       ) : null}
       <iframe
         className="scroll-expand__youtube-iframe"
-        src={`https://www.youtube-nocookie.com/embed/${youtubeId || 'bVvv6oNiFnw'}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId || 'bVvv6oNiFnw'}&playsinline=1&rel=0&disablekb=1&modestbranding=1&iv_load_policy=3&showinfo=0&fs=0`}
+        src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&playsinline=1&rel=0&disablekb=1&modestbranding=1&iv_load_policy=3&showinfo=0&fs=0`}
         title="Banda Neira Aerial Video Backdrop"
         allow="autoplay; encrypted-media; picture-in-picture"
         tabIndex={-1}
@@ -268,8 +273,12 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     <img
       ref={mediaRef as React.RefObject<HTMLImageElement>}
       className="scroll-expand__media"
-      src={src}
+      src={src || poster}
       alt={alt}
+      width={1440}
+      height={802}
+      {...({ fetchpriority: 'high' } as any)}
+      decoding="async"
       draggable={false}
     />
   )

@@ -361,6 +361,12 @@ export const Banda3DPhotoGallery: React.FC = () => {
         lastScrollYRef.current = scrollY
 
         const { activeStart, activeEnd, speedMultiplier, isMobileDevice } = cachedBoundsRef.current
+
+        // Fast bail-out when offscreen
+        if (scrollY < activeStart - 500 || scrollY > activeEnd + 500) {
+          return
+        }
+
         const isActive = scrollY >= activeStart && scrollY <= activeEnd
         const progressDist = Math.max(0, scrollY - activeStart)
 
@@ -397,18 +403,12 @@ export const Banda3DPhotoGallery: React.FC = () => {
             }
           }
 
-          // Dynamic depth-of-field blur only on desktop (bypassed on mobile to eliminate GPU repaint lag)
+          // Discrete depth-of-field blur only on desktop (cached texture, eliminates GPU jank)
           if (!isMobileDevice) {
-            if (currentZ < -400) {
-              el.style.filter = 'blur(8px)'
-            } else if (currentZ < -200) {
-              const b = Math.min((Math.abs(currentZ) / 400) * 4, 4)
-              el.style.filter = `blur(${b.toFixed(1)}px)`
-            } else if (currentZ < 0) {
-              const b = Math.min((Math.abs(currentZ) / 200) * 2, 2)
-              el.style.filter = `blur(${b.toFixed(1)}px)`
+            if (currentZ < -350) {
+              el.style.filter = 'blur(4px)'
             } else {
-              el.style.filter = 'blur(0px)'
+              el.style.filter = 'none'
             }
           }
         }

@@ -229,10 +229,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         )}
       </div>
 
-      {/* 2. SCROLL EXPAND COMPONENT INTEGRATION (YouTube for Desktop, Static Poster for Ultra-Fast Mobile) */}
+      {/* 2. SCROLL EXPAND COMPONENT INTEGRATION (YouTube for Desktop, Pure Image for Mobile) */}
       <ScrollExpand
         mediaType={isMobile ? 'image' : 'youtube'}
-        youtubeId={isMobile ? undefined : 'bVvv6oNiFnw'}
+        youtubeId={isMobile ? '' : 'bVvv6oNiFnw'}
         poster={bandaCinematicVideoBackdrop}
         src={bandaCinematicVideoBackdrop}
         alt="Pemandangan Banda Neira dari udara dengan laut dan pulau-pulau di sekitarnya"
@@ -241,10 +241,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         startHeight={isMobile ? 52 : 58}
         startRadius={isMobile ? 18 : 24}
         endRadius={0}
-        mediaZoom={1.22}
-        scrollDistance={0.75}
-        holdDistance={1.6}
-        smoothing={0.1}
+        mediaZoom={isMobile ? 1.05 : 1.22}
+        scrollDistance={isMobile ? 0.45 : 0.75}
+        holdDistance={isMobile ? 0.8 : 1.6}
+        smoothing={isMobile ? 0 : 0.1}
         overlayScrim={0.4}
         onProgressChange={setScrollProgress}
         title={
