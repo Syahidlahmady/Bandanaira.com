@@ -1,8 +1,8 @@
 """create community_contents table for literary content bank, digital literacy modules, and Pokdarwis/UMKM community works
 
-Revision ID: 013_community_contents_table
-Revises: 012_tour_guides_table
-Create Date: 2026-11-17 17:55:00.000000
+Revision ID: 014_community_contents_table
+Revises: 013_user_farm_village_scope
+Create Date: 2026-11-18 15:54:00.000000
 
 """
 from typing import Sequence, Union
@@ -10,8 +10,8 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
-revision: str = '013_community_contents_table'
-down_revision: Union[str, None] = '012_tour_guides_table'
+revision: str = '014_community_contents_table'
+down_revision: Union[str, None] = '013_user_farm_village_scope'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

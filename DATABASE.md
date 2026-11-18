@@ -311,7 +311,7 @@ Documentation of data models, relationships, and constraints for **Banda Digital
   - `migrated_feature_id`: UUID (FK -> spatial_features.id, SET NULL)
   - `created_at`, `updated_at`: TIMESTAMPTZ
 
-### 2.12 Community Content Bank & Digital Literacy CMS (Migration `013_community_contents_table`)
+### 2.12 Community Content Bank & Digital Literacy CMS (Migration `014_community_contents_table`)
 - **`community_contents`**
   - `id`: UUID (PK)
   - `content_code`: VARCHAR(40) (UNIQUE, INDEXED, NOT NULL)
@@ -337,4 +337,4 @@ Documentation of data models, relationships, and constraints for **Banda Digital
 1. Every schema change must be created via Alembic migrations.
 2. Inspect generated migration files before applying with `alembic upgrade head`.
 3. Never drop tables or columns directly in live environments.
-4. All 13 migrations are tracked deterministically in `backend/migrations/versions/`.
+4. All 14 migrations are tracked deterministically in `backend/migrations/versions/`.
