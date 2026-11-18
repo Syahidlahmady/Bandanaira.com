@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import bandaCinematicVideoBackdrop from '../../assets/image.webp'
+import React, { useState, useEffect, useCallback } from 'react'
+import bandaHeroImage from '../../assets/banda.webp'
 import { NutmegLogoIcon, ArrowUpRightIcon } from './LandingIcons'
 import { ScrollExpand } from '../ui/ScrollExpand'
 
@@ -33,20 +33,34 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 }) => {
   const [internalActiveNav, setInternalActiveNav] = useState<string>('#beranda')
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false)
-  const [scrollProgress, setScrollProgress] = useState<number>(0)
-  const [isMobile, setIsMobile] = useState<boolean>(() =>
-    typeof window !== 'undefined' ? window.innerWidth < 768 : false
-  )
+  const [navVisible, setNavVisible] = useState<boolean>(false)
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return (
+      window.innerWidth < 1024 ||
+      window.matchMedia('(pointer: coarse)').matches ||
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    )
+  })
 
   const activeNav = externalActiveNav || internalActiveNav
   const setActiveNav = externalSetActiveNav || setInternalActiveNav
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768)
+      const mobile =
+        window.innerWidth < 1024 ||
+        window.matchMedia('(pointer: coarse)').matches ||
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      setIsMobile(mobile)
     }
-    window.addEventListener('resize', handleResize)
+    window.addEventListener('resize', handleResize, { passive: true })
     return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const handleProgressChange = useCallback((p: number) => {
+    const isVisible = p >= 0.85
+    setNavVisible((prev) => (prev !== isVisible ? isVisible : prev))
   }, [])
 
   return (
@@ -57,10 +71,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     >
       {/* 1. FIXED TOP NAVBAR (Hides during resting/expansion, smoothly emerges once fully expanded) */}
       <div
-        className={`fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 lg:px-12 pt-3 sm:pt-5 transition-all duration-500 ease-out ${scrollProgress >= 0.85
-          ? 'opacity-100 translate-y-0 pointer-events-auto'
-          : 'opacity-0 -translate-y-8 pointer-events-none'
-          }`}
+        className={`fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 lg:px-12 pt-3 sm:pt-5 transition-all duration-500 ease-out ${
+          navVisible
+            ? 'opacity-100 translate-y-0 pointer-events-auto'
+            : 'opacity-0 -translate-y-8 pointer-events-none'
+        }`}
       >
         <header className="flex h-16 sm:h-20 items-center justify-between px-4 sm:px-6 py-0 w-full max-w-7xl mx-auto bg-[#081d35cc] rounded-2xl overflow-hidden border border-solid border-white/20 backdrop-blur-md shadow-2xl pointer-events-auto">
           {/* Brand Logo */}
@@ -233,8 +248,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       <ScrollExpand
         mediaType={isMobile ? 'image' : 'youtube'}
         youtubeId={isMobile ? '' : 'bVvv6oNiFnw'}
-        poster={bandaCinematicVideoBackdrop}
-        src={bandaCinematicVideoBackdrop}
+        poster={bandaHeroImage}
+        src={bandaHeroImage}
         alt="Pemandangan Banda Neira dari udara dengan laut dan pulau-pulau di sekitarnya"
         useWindowScroll
         startWidth={isMobile ? 70 : 44}
@@ -246,7 +261,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         holdDistance={isMobile ? 0.8 : 1.6}
         smoothing={isMobile ? 0 : 0.1}
         overlayScrim={0.4}
-        onProgressChange={setScrollProgress}
+        onProgressChange={handleProgressChange}
         title={
           <div className="w-full flex items-center justify-center text-center pointer-events-none select-none">
             <h2 className="font-sans font-black tracking-[-0.035em] text-white text-[clamp(1.75rem,5.6vw,7.5rem)] leading-none drop-shadow-[0_16px_36px_rgba(0,0,0,0.95)] whitespace-nowrap">

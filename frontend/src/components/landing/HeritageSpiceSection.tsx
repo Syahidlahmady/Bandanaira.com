@@ -67,6 +67,7 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
     let sectionTop = 0
     let totalScrollable = 0
     let lastProgress = -1
+    let lastStoryIndex = -1
     let rafId = 0
 
     const measure = () => {
@@ -89,9 +90,18 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
 
         const currentScroll = scrollY - sectionTop
         const progress = Math.max(0, Math.min(1, currentScroll / totalScrollable))
-        if (Math.abs(progress - lastProgress) > 0.003) {
-          lastProgress = progress
-          setScrollProgress(progress)
+
+        if (isMobile) {
+          const newIdx = Math.min(STORIES.length - 1, Math.floor(progress * STORIES.length))
+          if (newIdx !== lastStoryIndex) {
+            lastStoryIndex = newIdx
+            setActiveIndex(newIdx)
+          }
+        } else {
+          if (Math.abs(progress - lastProgress) > 0.003) {
+            lastProgress = progress
+            setScrollProgress(progress)
+          }
         }
       })
     }
@@ -160,6 +170,7 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
                       activeIndex === idx ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
                     }`}
                     loading="lazy"
+                    decoding="async"
                   />
                 ))}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#081d35]/80 via-transparent to-transparent pointer-events-none" />

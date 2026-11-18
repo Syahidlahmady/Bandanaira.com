@@ -113,29 +113,52 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     const ix = Math.max(0, (100 - w) / 2)
     const iy = Math.max(0, (100 - h) / 2)
     const r = c.startRadius + (c.endRadius - c.startRadius) * e
-    frame.style.clipPath = `inset(${iy}% ${ix}% ${iy}% ${ix}% round ${r}px)`
+
+    if (p >= 0.999) {
+      frame.style.clipPath = 'none'
+    } else {
+      frame.style.clipPath = `inset(${iy}% ${ix}% ${iy}% ${ix}% round ${r}px)`
+    }
 
     media.style.transform = `scale(${c.mediaZoom + (1 - c.mediaZoom) * e})`
 
     if (scrimRef.current) scrimRef.current.style.opacity = `${c.overlayScrim * e}`
 
     if (titleRef.current) {
-      const out = smoothstep(0.2, 0.7, p)
-      titleRef.current.style.opacity = `${1 - out}`
-      titleRef.current.style.transform = `translate3d(0, ${-28 * out}px, 0) scale(${1 + 0.05 * out})`
+      if (p >= 0.75) {
+        if (titleRef.current.style.visibility !== 'hidden') titleRef.current.style.visibility = 'hidden'
+      } else {
+        if (titleRef.current.style.visibility !== 'visible') titleRef.current.style.visibility = 'visible'
+        const out = smoothstep(0.2, 0.7, p)
+        titleRef.current.style.opacity = `${1 - out}`
+        titleRef.current.style.transform = `translate3d(0, ${-28 * out}px, 0) scale(${1 + 0.05 * out})`
+      }
     }
 
     if (hintRef.current) {
-      const gone = smoothstep(0, 0.12, p)
-      hintRef.current.style.opacity = `${1 - gone}`
-      hintRef.current.style.transform = `translate3d(0, ${8 * gone}px, 0)`
+      if (p >= 0.15) {
+        if (hintRef.current.style.visibility !== 'hidden') hintRef.current.style.visibility = 'hidden'
+      } else {
+        if (hintRef.current.style.visibility !== 'visible') hintRef.current.style.visibility = 'visible'
+        const gone = smoothstep(0, 0.12, p)
+        hintRef.current.style.opacity = `${1 - gone}`
+        hintRef.current.style.transform = `translate3d(0, ${8 * gone}px, 0)`
+      }
     }
 
     if (overlayRef.current) {
-      const inn = smoothstep(0.7, 1, p)
-      overlayRef.current.style.opacity = `${inn}`
-      overlayRef.current.style.transform = `translate3d(0, ${18 * (1 - inn)}px, 0)`
-      overlayRef.current.style.pointerEvents = p >= 0.75 ? 'auto' : 'none'
+      if (p <= 0.65) {
+        if (overlayRef.current.style.visibility !== 'hidden') {
+          overlayRef.current.style.visibility = 'hidden'
+          overlayRef.current.style.pointerEvents = 'none'
+        }
+      } else {
+        if (overlayRef.current.style.visibility !== 'visible') overlayRef.current.style.visibility = 'visible'
+        const inn = smoothstep(0.7, 1, p)
+        overlayRef.current.style.opacity = `${inn}`
+        overlayRef.current.style.transform = `translate3d(0, ${18 * (1 - inn)}px, 0)`
+        overlayRef.current.style.pointerEvents = p >= 0.75 ? 'auto' : 'none'
+      }
     }
   }, [])
 
@@ -148,9 +171,12 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     let raf = 0
+    let scrollRaf = 0
+    let lastProgress = -1
     let current = 0
     let target = 0
     let stageH = 0
+    let totalTrackH = 0
     let running = false
 
     let trackTop = 0
@@ -160,7 +186,8 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
       stageH = c.useWindowScroll ? window.innerHeight : root.clientHeight
       if (stageH <= 0) return
       stage.style.height = `${stageH}px`
-      track.style.height = `${stageH * (1 + Math.max(0, c.scrollDistance) + Math.max(0, c.holdDistance))}px`
+      totalTrackH = stageH * (1 + Math.max(0, c.scrollDistance) + Math.max(0, c.holdDistance))
+      track.style.height = `${totalTrackH}px`
 
       const rect = track.getBoundingClientRect()
       trackTop = rect.top + window.scrollY
@@ -199,13 +226,29 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     }
 
     const onScroll = () => {
-      target = readProgress()
-      if (propsRef.current.smoothing <= 0 || reduceMotion) {
-        current = target
-        applyProgress(current)
-        return
-      }
-      kick()
+      if (cRefScrollOffscreen()) return
+      if (scrollRaf) return
+      scrollRaf = requestAnimationFrame(() => {
+        scrollRaf = 0
+        const p = readProgress()
+        target = p
+
+        if (Math.abs(p - lastProgress) < 0.001) return
+        lastProgress = p
+
+        if (propsRef.current.smoothing <= 0 || reduceMotion) {
+          current = target
+          applyProgress(current)
+          return
+        }
+        kick()
+      })
+    }
+
+    const cRefScrollOffscreen = () => {
+      if (!useWindowScroll) return false
+      const sy = window.scrollY
+      return sy > trackTop + totalTrackH + 400
     }
 
     const onResize = () => {
@@ -226,6 +269,7 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
 
     return () => {
       if (raf) cancelAnimationFrame(raf)
+      if (scrollRaf) cancelAnimationFrame(scrollRaf)
       scroller.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onResize)
     }
@@ -242,8 +286,8 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
         <img
           src={poster || src}
           alt={alt}
-          width={1440}
-          height={802}
+          width={1920}
+          height={1106}
           {...({ fetchpriority: 'high' } as any)}
           decoding="async"
           className="absolute inset-0 w-full h-full object-cover -z-10"
@@ -273,10 +317,10 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     <img
       ref={mediaRef as React.RefObject<HTMLImageElement>}
       className="scroll-expand__media"
-      src={src || poster}
+      src={src || poster || '/banda.webp'}
       alt={alt}
-      width={1440}
-      height={802}
+      width={1920}
+      height={1106}
       {...({ fetchpriority: 'high' } as any)}
       decoding="async"
       draggable={false}

@@ -62,7 +62,9 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
   // Smooth scrolling initialization via Lenis (Desktop only; native momentum scrolling for mobile)
   useEffect(() => {
     const isMobileDevice = typeof window !== 'undefined' && (
-      window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches
+      window.innerWidth < 1024 ||
+      window.matchMedia('(pointer: coarse)').matches ||
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
     )
 
     // On mobile devices, bypass Lenis to utilize native 60/120Hz GPU-accelerated momentum scrolling
@@ -138,10 +140,12 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
 
       <Suspense fallback={null}>
         {/* 3. Interactive Spatial Map Section */}
-        <PetaInteractiveSection
-          onNavigate={onNavigate}
-          currentUser={currentUser}
-        />
+        <div className="w-full content-auto">
+          <PetaInteractiveSection
+            onNavigate={onNavigate}
+            currentUser={currentUser}
+          />
+        </div>
 
         {/* 4. Spice Heritage & Cultural Sites Section */}
         <HeritageSpiceSection
@@ -149,51 +153,65 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
         />
 
         {/* 5. Marine & Heritage Tourism with SAW Recommender */}
-        <TourismSawSection
-          onNavigate={onNavigate}
-        />
+        <div className="w-full content-auto">
+          <TourismSawSection
+            onNavigate={onNavigate}
+          />
+        </div>
 
         {/* 6. Island Stays & Eco-Lodges Directory */}
-        <EcoStayCatalogSection
-          onNavigate={onNavigate}
-          onOpenLogin={onOpenLogin}
-          onOpenQuickLogin={onOpenQuickLogin}
-        />
+        <div className="w-full content-auto">
+          <EcoStayCatalogSection
+            onNavigate={onNavigate}
+            onOpenLogin={onOpenLogin}
+            onOpenQuickLogin={onOpenQuickLogin}
+          />
+        </div>
 
         {/* 7. Resident Services & Digital Island Ecosystem */}
-        <EcosystemFeaturesSection
-          onNavigate={onNavigate}
-          onOpenLogin={onOpenLogin}
-          currentUser={currentUser}
-        />
+        <div className="w-full content-auto">
+          <EcosystemFeaturesSection
+            onNavigate={onNavigate}
+            onOpenLogin={onOpenLogin}
+            currentUser={currentUser}
+          />
+        </div>
 
         {/* 8. Verified Blockchain Marketplace & Local UMKM */}
-        <TraceabilityMarketplaceSection
-          onNavigate={onNavigate}
-          onOpenMarketplace={onOpenMarketplace}
-          onPublicVerify={onPublicVerify}
-        />
+        <div className="w-full content-auto">
+          <TraceabilityMarketplaceSection
+            onNavigate={onNavigate}
+            onOpenMarketplace={onOpenMarketplace}
+            onPublicVerify={onPublicVerify}
+          />
+        </div>
 
         {/* 9. Demographics & Island Vitality Stats */}
-        <SustainableTravelSection
-          onNavigate={onNavigate}
-          onOpenLogin={onOpenLogin}
-          currentUser={currentUser}
-        />
+        <div className="w-full content-auto">
+          <SustainableTravelSection
+            onNavigate={onNavigate}
+            onOpenLogin={onOpenLogin}
+            currentUser={currentUser}
+          />
+        </div>
 
         {/* 10. Plan Your Visit CTA */}
-        <PlanYourVisitSection
-          onNavigate={onNavigate}
-        />
+        <div className="w-full content-auto">
+          <PlanYourVisitSection
+            onNavigate={onNavigate}
+          />
+        </div>
 
         {/* 11. Comprehensive Ecosystem Footer */}
-        <LandingFooterSection
-          onNavigate={onNavigate}
-          onOpenLogin={onOpenLogin}
-          onOpenRegister={onOpenRegister}
-          onOpenQuickLogin={onOpenQuickLogin}
-          setActiveNav={setActiveNav}
-        />
+        <div className="w-full content-auto">
+          <LandingFooterSection
+            onNavigate={onNavigate}
+            onOpenLogin={onOpenLogin}
+            onOpenRegister={onOpenRegister}
+            onOpenQuickLogin={onOpenQuickLogin}
+            setActiveNav={setActiveNav}
+          />
+        </div>
 
         {/* 12. Floating Tourism Recommendation Chatbot Bubble */}
         <TourismChatbotBubble onNavigate={onNavigate} />

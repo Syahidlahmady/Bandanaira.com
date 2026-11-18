@@ -250,6 +250,7 @@ const PhotoCard = memo(({ item, breakpoint, registerElement }: PhotoCardProps) =
           height={220}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           loading="lazy"
+          decoding="async"
         />
       </div>
     </div>
@@ -285,6 +286,7 @@ const OrnamentCard = memo(({ item, breakpoint, registerElement }: OrnamentCardPr
         alt={item.alt}
         className="w-full h-full object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.6)]"
         loading="lazy"
+        decoding="async"
       />
     </div>
   )
@@ -364,8 +366,10 @@ export const Banda3DPhotoGallery: React.FC = () => {
 
         // Fast bail-out when offscreen
         if (scrollY < activeStart - 500 || scrollY > activeEnd + 500) {
+          if (section.style.visibility !== 'hidden') section.style.visibility = 'hidden'
           return
         }
+        if (section.style.visibility !== 'visible') section.style.visibility = 'visible'
 
         const isActive = scrollY >= activeStart && scrollY <= activeEnd
         const progressDist = Math.max(0, scrollY - activeStart)
@@ -382,7 +386,16 @@ export const Banda3DPhotoGallery: React.FC = () => {
             currentZ = initialZ + speedMultiplier * (activeEnd - activeStart)
           }
 
-          currentZ = Math.round(currentZ * 100) / 100
+          currentZ = Math.round(currentZ * 10) / 10
+
+          // Viewport depth culling: hide elements past the viewer or far in distance to reduce GPU draw calls
+          const isOutOfView = currentZ > 560 || currentZ < -2600
+          if (isOutOfView) {
+            if (el.style.display !== 'none') el.style.display = 'none'
+            continue
+          } else {
+            if (el.style.display !== '') el.style.display = ''
+          }
 
           // Apply 3D translate (GPU composite property)
           el.style.transform = `translate3d(0, 0, ${currentZ}px)`
