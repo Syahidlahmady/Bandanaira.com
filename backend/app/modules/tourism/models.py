@@ -108,7 +108,7 @@ class CommunityContent(Base, TimestampMixin):
     author_role: Mapped[str] = mapped_column(String(100), default="Pokdarwis / Komunitas Lokal", nullable=False)
     summary: Mapped[str] = mapped_column(Text, nullable=False)
     body_narrative: Mapped[str] = mapped_column(Text, nullable=False)
-    media_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    media_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     longitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     sop_stage: Mapped[str] = mapped_column(String(30), default="PUBLIKASI", nullable=False)

@@ -32,7 +32,9 @@ import {
   Server,
   Activity,
   RefreshCw,
+  BookOpen,
 } from 'lucide-react'
+import { setPreferredTourismSubTab } from '../../services/tourism'
 
 export type DashboardNavTab =
   | 'landing'
@@ -373,8 +375,25 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       keywords: ['koperasi', 'kasir', 'sembako', 'air ro', 'galon', 'bank sampah', 'timbangan', 'tabungan'],
     },
     tourism: {
-      desc: '177 cagar budaya Banda, direktori homestay, dan pemandu HPI',
-      keywords: ['wisata', 'cagar budaya', 'homestay', 'eco-stay', 'kamar', 'benteng', 'belgica', 'hatta', 'pemandu'],
+      desc: '177 cagar budaya, Eco-Stay, pemandu HPI & Bank Konten @neirabasudara',
+      keywords: [
+        'wisata',
+        'cagar budaya',
+        'homestay',
+        'eco-stay',
+        'kamar',
+        'benteng',
+        'belgica',
+        'hatta',
+        'pemandu',
+        'bank konten',
+        'cms',
+        'literasi',
+        'neirabasudara',
+        'modul',
+        'qc',
+        'reels',
+      ],
     },
     gis: {
       desc: 'Peta interaktif 7-layer spasial, kontur, dan jalur evakuasi',
@@ -507,7 +526,34 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         badge: 'Publik',
         action: () => onOpenLanding(),
       },
+      {
+        id: 'act-community-literacy',
+        title: 'Bank Konten & Literasi Komunitas (@neirabasudara)',
+        subtitle: 'Arsip artikel warga, Reels 9:16, 3 modul literasi & peta sinyal 3T',
+        keywords: ['bank konten', 'literasi', 'neirabasudara', 'karya warga', 'modul', 'reels', 'sop', 'sinyal'],
+        icon: BookOpen,
+        badge: 'Komunitas',
+        action: () => {
+          setPreferredTourismSubTab('community_literacy')
+          onSelectTab('tourism')
+        },
+      },
     ]
+
+    if (isOfficerOrAdmin || isSmartTourismAdmin) {
+      quickActions.push({
+        id: 'act-cms-contents',
+        title: 'CMS Bank Konten & Verifikasi 6-Point QC',
+        subtitle: 'Unggah karya warga, atur tahapan SOP & validasi 6 poin mutu',
+        keywords: ['cms', 'qc', 'kurasi', 'unggah artikel', 'validasi adat', '6-point'],
+        icon: ShieldCheck,
+        badge: 'CMS',
+        action: () => {
+          setPreferredTourismSubTab('cms')
+          onSelectTab('tourism')
+        },
+      })
+    }
 
     if (onOpenQuickSwitch) {
       quickActions.push({

@@ -30,7 +30,7 @@ def upgrade() -> None:
         sa.Column('author_role', sa.String(length=100), server_default='Pokdarwis / Komunitas Lokal', nullable=False),
         sa.Column('summary', sa.Text(), nullable=False),
         sa.Column('body_narrative', sa.Text(), nullable=False),
-        sa.Column('media_url', sa.String(length=255), nullable=True),
+        sa.Column('media_url', sa.Text(), nullable=True),
         sa.Column('latitude', sa.Float(), nullable=True),
         sa.Column('longitude', sa.Float(), nullable=True),
         sa.Column('sop_stage', sa.String(length=30), server_default='PUBLIKASI', nullable=False),

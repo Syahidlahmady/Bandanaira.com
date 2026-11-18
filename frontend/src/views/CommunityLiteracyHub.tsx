@@ -59,11 +59,16 @@ const PRIORITY_CATEGORY_LABELS: Record<string, string> = {
   LAYANAN_PUBLIK: 'Panduan Pulau',
 }
 
-// Guard <img src> against untrusted schemes (javascript:, data:) from API/user input
+// Guard <img src> against untrusted schemes (javascript:, data:text/html) from API/user input
+const SAFE_IMAGE_DATA_URL_RE = /^data:image\/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/=]+$/i
 const safeMediaUrl = (url?: string | null): string => {
   if (!url) return '/images/landmarks/belgica.jpg'
   const trimmed = url.trim()
-  if (trimmed.startsWith('/images/') || trimmed.startsWith('https://')) {
+  if (
+    trimmed.startsWith('/images/') ||
+    trimmed.startsWith('https://') ||
+    SAFE_IMAGE_DATA_URL_RE.test(trimmed)
+  ) {
     return trimmed
   }
   return '/images/landmarks/belgica.jpg'
@@ -932,10 +937,14 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                <div className="sm:col-span-2">
-                  <label className="block font-bold mb-1">Pilih Aset Gambar Lokal (Offline-Ready 3T)</label>
+                <div className="sm:col-span-2 flex flex-col gap-1.5">
+                  <label className="block font-bold">Pilih Aset Gambar Lokal atau Unggah Foto (Offline 3T)</label>
                   <select
-                    value={contentForm.media_url || '/images/landmarks/belgica.jpg'}
+                    value={
+                      LOCAL_LANDMARK_OPTIONS.some((opt) => opt.value === contentForm.media_url)
+                        ? contentForm.media_url || '/images/landmarks/belgica.jpg'
+                        : '/images/landmarks/belgica.jpg'
+                    }
                     onChange={(e) => setContentForm({ ...contentForm, media_url: e.target.value })}
                     className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2"
                   >
@@ -945,22 +954,54 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
                       </option>
                     ))}
                   </select>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      if (file.size > 2 * 1024 * 1024) {
+                        alert('Ukuran foto maksimal 2 MB agar hemat kuota sinyal 3T.')
+                        return
+                      }
+                      const reader = new FileReader()
+                      reader.onload = () => {
+                        if (typeof reader.result === 'string') {
+                          setContentForm((prev) => ({ ...prev, media_url: reader.result as string }))
+                        }
+                      }
+                      reader.readAsDataURL(file)
+                    }}
+                    className="w-full rounded-md border border-slate-300 bg-[#f7f5f0] px-2.5 py-1.5 text-[11px]"
+                  />
                 </div>
 
-                <div>
-                  <label className="block font-bold mb-1">Tahap SOP 6-Tahap</label>
-                  <select
-                    value={contentForm.sop_stage}
-                    onChange={(e) => setContentForm({ ...contentForm, sop_stage: e.target.value })}
-                    className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 font-bold"
-                  >
-                    <option value="IDE">1. IDE</option>
-                    <option value="PRODUKSI">2. PRODUKSI</option>
-                    <option value="REVIEW">3. REVIEW</option>
-                    <option value="VALIDASI">4. VALIDASI</option>
-                    <option value="PUBLIKASI">5. PUBLIKASI</option>
-                    <option value="ARSIP">6. ARSIP</option>
-                  </select>
+                <div className="flex flex-col justify-between gap-2">
+                  <div>
+                    <label className="block font-bold mb-1">Tahap SOP 6-Tahap</label>
+                    <select
+                      value={contentForm.sop_stage}
+                      onChange={(e) => setContentForm({ ...contentForm, sop_stage: e.target.value })}
+                      className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 font-bold"
+                    >
+                      <option value="IDE">1. IDE</option>
+                      <option value="PRODUKSI">2. PRODUKSI</option>
+                      <option value="REVIEW">3. REVIEW</option>
+                      <option value="VALIDASI">4. VALIDASI</option>
+                      <option value="PUBLIKASI">5. PUBLIKASI</option>
+                      <option value="ARSIP">6. ARSIP</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2 rounded-md border border-slate-200 bg-[#f7f5f0] p-1.5">
+                    <img
+                      src={safeMediaUrl(contentForm.media_url)}
+                      alt="Pratinjau"
+                      className="h-10 w-14 rounded object-cover shrink-0 bg-[#081d35]"
+                    />
+                    <span className="text-[10px] font-semibold text-slate-600 leading-tight">
+                      Pratinjau Gambar Aktif
+                    </span>
+                  </div>
                 </div>
               </div>
 

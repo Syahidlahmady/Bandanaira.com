@@ -150,7 +150,7 @@ class CommunityContentCreateInput(BaseModel):
     author_role: str = Field(default="Pokdarwis / Komunitas Lokal", max_length=100, description="Peran penulis atau peserta")
     summary: str = Field(..., min_length=5, description="Ringkasan eksekutif atau caption AIDA")
     body_narrative: str = Field(..., min_length=10, description="Isi narasi lengkap artikel, storyboard video, atau cerita karya")
-    media_url: Optional[str] = Field(default="/images/landmarks/belgica.jpg", max_length=255, description="Path gambar/media lokal")
+    media_url: Optional[str] = Field(default="/images/landmarks/belgica.jpg", max_length=3_000_000, description="Path gambar/media lokal atau data URL Base64")
     latitude: Optional[float] = Field(default=None, description="Koordinat lintang GPS (opsional)")
     longitude: Optional[float] = Field(default=None, description="Koordinat bujur GPS (opsional)")
     sop_stage: str = Field(default="PUBLIKASI", max_length=30, description="IDE, PRODUKSI, REVIEW, VALIDASI, PUBLIKASI, ARSIP")
@@ -172,7 +172,7 @@ class CommunityContentUpdateInput(BaseModel):
     author_role: Optional[str] = Field(None, max_length=100)
     summary: Optional[str] = None
     body_narrative: Optional[str] = None
-    media_url: Optional[str] = Field(None, max_length=255)
+    media_url: Optional[str] = Field(None, max_length=3_000_000)
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     sop_stage: Optional[str] = Field(None, max_length=30)

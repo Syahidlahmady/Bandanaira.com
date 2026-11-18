@@ -44,8 +44,10 @@ import {
   Droplets,
   Activity,
   Wheat,
+  BookOpen,
 } from 'lucide-react'
 import { NavTabType } from '../landing/BandanairaBeranda'
+import { setPreferredTourismSubTab } from '../../services/tourism'
 
 export type DashboardNavTab = NavTabType | 'landing' | 'dashboard'
 
@@ -1779,6 +1781,29 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
               <Home size={16} className="text-[#F4B75E] mb-1" />
               <p className="text-xs font-bold text-white">Cagar &amp; Eco-Stay</p>
               <p className="text-[10px] text-slate-400">177 cagar budaya</p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setPreferredTourismSubTab(
+                  isOfficerOrAdmin || activeRoleKey === 'smart_tourism_admin' ? 'cms' : 'community_literacy'
+                )
+                onNavigate('tourism')
+              }}
+              className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-left transition cursor-pointer"
+            >
+              <BookOpen size={16} className="text-[#F4B75E] mb-1" />
+              <p className="text-xs font-bold text-white">
+                {isOfficerOrAdmin || activeRoleKey === 'smart_tourism_admin'
+                  ? 'CMS Bank Konten'
+                  : 'Literasi & Konten'}
+              </p>
+              <p className="text-[10px] text-slate-400">
+                {isOfficerOrAdmin || activeRoleKey === 'smart_tourism_admin'
+                  ? 'Kurasi 6-Point QC'
+                  : 'Karya @neirabasudara'}
+              </p>
             </button>
 
             <button
