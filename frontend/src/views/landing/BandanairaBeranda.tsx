@@ -59,23 +59,40 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
 }) => {
   const [activeNav, setActiveNav] = useState<string>('#beranda')
 
-  // Smooth scrolling initialization via Lenis
+  // Smooth scrolling initialization via Lenis (Desktop only; native momentum scrolling for mobile)
   useEffect(() => {
+    const isMobileDevice = typeof window !== 'undefined' && (
+      window.innerWidth < 1024 ||
+      window.matchMedia('(pointer: coarse)').matches ||
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    )
+
+    // On mobile devices, bypass Lenis to utilize native 60/120Hz GPU-accelerated momentum scrolling
+    if (isMobileDevice) {
+      const handleAnchorClick = (e: MouseEvent) => {
+        const target = (e.target as HTMLElement).closest('a[href^="#"]') as HTMLAnchorElement | null
+        if (target && target.hash) {
+          const targetElement = document.querySelector(target.hash)
+          if (targetElement) {
+            e.preventDefault()
+            targetElement.scrollIntoView({ behavior: 'smooth' })
+          }
+        }
+      }
+      document.addEventListener('click', handleAnchorClick)
+      return () => {
+        document.removeEventListener('click', handleAnchorClick)
+      }
+    }
+
     const lenis = new Lenis({
-      autoRaf: false,
+      autoRaf: true,
       duration: 1.1,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       wheelMultiplier: 1.0,
-      touchMultiplier: 1.2,
+      touchMultiplier: 1.0,
     })
-
-    let rafId: number
-    function raf(time: number) {
-      lenis.raf(time)
-      rafId = requestAnimationFrame(raf)
-    }
-    rafId = requestAnimationFrame(raf)
 
     // Smooth anchor link click handling
     const handleAnchorClick = (e: MouseEvent) => {
@@ -93,7 +110,6 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
 
     return () => {
       document.removeEventListener('click', handleAnchorClick)
-      cancelAnimationFrame(rafId)
       lenis.destroy()
     }
   }, [])
@@ -116,10 +132,12 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
 
       <Suspense fallback={null}>
         {/* 3. Interactive Spatial Map Section */}
-        <PetaInteractiveSection
-          onNavigate={onNavigate}
-          currentUser={currentUser}
-        />
+        <div className="w-full content-auto">
+          <PetaInteractiveSection
+            onNavigate={onNavigate}
+            currentUser={currentUser}
+          />
+        </div>
 
         {/* 4. Spice Heritage & Cultural Sites Section */}
         <HeritageSpiceSection
@@ -127,51 +145,65 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
         />
 
         {/* 5. Marine & Heritage Tourism with SAW Recommender */}
-        <TourismSawSection
-          onNavigate={onNavigate}
-        />
+        <div className="w-full content-auto">
+          <TourismSawSection
+            onNavigate={onNavigate}
+          />
+        </div>
 
         {/* 6. Island Stays & Eco-Lodges Directory */}
-        <EcoStayCatalogSection
-          onNavigate={onNavigate}
-          onOpenLogin={onOpenLogin}
-          onOpenQuickLogin={onOpenQuickLogin}
-        />
+        <div className="w-full content-auto">
+          <EcoStayCatalogSection
+            onNavigate={onNavigate}
+            onOpenLogin={onOpenLogin}
+            onOpenQuickLogin={onOpenQuickLogin}
+          />
+        </div>
 
         {/* 7. Resident Services & Digital Island Ecosystem */}
-        <EcosystemFeaturesSection
-          onNavigate={onNavigate}
-          onOpenLogin={onOpenLogin}
-          currentUser={currentUser}
-        />
+        <div className="w-full content-auto">
+          <EcosystemFeaturesSection
+            onNavigate={onNavigate}
+            onOpenLogin={onOpenLogin}
+            currentUser={currentUser}
+          />
+        </div>
 
         {/* 8. Verified Blockchain Marketplace & Local UMKM */}
-        <TraceabilityMarketplaceSection
-          onNavigate={onNavigate}
-          onOpenMarketplace={onOpenMarketplace}
-          onPublicVerify={onPublicVerify}
-        />
+        <div className="w-full content-auto">
+          <TraceabilityMarketplaceSection
+            onNavigate={onNavigate}
+            onOpenMarketplace={onOpenMarketplace}
+            onPublicVerify={onPublicVerify}
+          />
+        </div>
 
         {/* 9. Demographics & Island Vitality Stats */}
-        <SustainableTravelSection
-          onNavigate={onNavigate}
-          onOpenLogin={onOpenLogin}
-          currentUser={currentUser}
-        />
+        <div className="w-full content-auto">
+          <SustainableTravelSection
+            onNavigate={onNavigate}
+            onOpenLogin={onOpenLogin}
+            currentUser={currentUser}
+          />
+        </div>
 
         {/* 10. Plan Your Visit CTA */}
-        <PlanYourVisitSection
-          onNavigate={onNavigate}
-        />
+        <div className="w-full content-auto">
+          <PlanYourVisitSection
+            onNavigate={onNavigate}
+          />
+        </div>
 
         {/* 11. Comprehensive Ecosystem Footer */}
-        <LandingFooterSection
-          onNavigate={onNavigate}
-          onOpenLogin={onOpenLogin}
-          onOpenRegister={onOpenRegister}
-          onOpenQuickLogin={onOpenQuickLogin}
-          setActiveNav={setActiveNav}
-        />
+        <div className="w-full content-auto">
+          <LandingFooterSection
+            onNavigate={onNavigate}
+            onOpenLogin={onOpenLogin}
+            onOpenRegister={onOpenRegister}
+            onOpenQuickLogin={onOpenQuickLogin}
+            setActiveNav={setActiveNav}
+          />
+        </div>
 
         {/* 12. Floating Tourism Recommendation Chatbot Bubble */}
         <TourismChatbotBubble onNavigate={onNavigate} />

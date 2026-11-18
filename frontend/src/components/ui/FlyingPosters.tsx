@@ -621,7 +621,7 @@ const FlyingPosters: React.FC<FlyingPostersProps> = ({
     const onScroll = () => {
       const factor = settingsRef.current.pageScroll;
       const y = window.scrollY;
-      if (factor) {
+      if (visible && factor) {
         state.target += (y - state.pageY) * factor;
         wake();
       }

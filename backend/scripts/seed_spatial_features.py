@@ -36,9 +36,25 @@ except ImportError:
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("seed_spatial_features")
 
-SEED_JSON_PATH = backend_dir / "app" / "seeds" / "gis_spatial_features.json"
-VILLAGES_JSON_PATH = backend_dir / "app" / "seeds" / "banda_villages.geojson"
-VILLAGE_DETAILS_PATH = backend_dir / "app" / "seeds" / "banda_village_details.json"
+
+def find_seed_file(filename: str) -> Path:
+    candidates = [
+        backend_dir / "app" / "seeds" / filename,
+        root_dir / "backend" / "app" / "seeds" / filename,
+        Path("/app/app/seeds") / filename,
+        Path("/app/seeds") / filename,
+        current_dir.parent / "app" / "seeds" / filename,
+        Path("backend/app/seeds") / filename,
+    ]
+    for c in candidates:
+        if c.exists():
+            return c
+    return candidates[0]
+
+
+SEED_JSON_PATH = find_seed_file("gis_spatial_features.json")
+VILLAGES_JSON_PATH = find_seed_file("banda_villages.geojson")
+VILLAGE_DETAILS_PATH = find_seed_file("banda_village_details.json")
 
 
 async def seed_spatial_features(session: AsyncSession) -> int:
@@ -47,6 +63,8 @@ async def seed_spatial_features(session: AsyncSession) -> int:
     rute maritim, dan 18 poligon batas wilayah desa terkalibrasi ke PostGIS.
     """
     logger.info("Memulai verifikasi dan seeding layer spasial PostGIS Kepulauan Banda...")
+    logger.info(f"Menggunakan berkas seeder titik: {SEED_JSON_PATH}")
+    logger.info(f"Menggunakan berkas seeder desa: {VILLAGES_JSON_PATH}")
 
     # 1. Bersihkan entitas usang / non-desa jika ada
     await session.execute(
@@ -63,6 +81,8 @@ async def seed_spatial_features(session: AsyncSession) -> int:
 
     inserted_count = 0
     updated_count = 0
+    points_count = 0
+    zones_count = 0
 
     # 2. Seeding Titik Spasial, Fasilitas Publik, & Rute Maritim
     if os.path.exists(SEED_JSON_PATH):
@@ -78,6 +98,8 @@ async def seed_spatial_features(session: AsyncSession) -> int:
             # Lewati entri zona wilayah dari berkas ini karena akan dimuat lengkap dari banda_villages.geojson
             if item.get("category") == "zona_wilayah":
                 continue
+
+            points_count += 1
 
             stmt = select(SpatialFeature).where(
                 SpatialFeature.name == name,
@@ -178,6 +200,7 @@ async def seed_spatial_features(session: AsyncSession) -> int:
             )
             existing = (await session.execute(stmt)).scalar_one_or_none()
 
+            zones_count += 1
             if existing:
                 existing.geometry_geojson = geom
                 existing.island_name = v_island
@@ -205,6 +228,7 @@ async def seed_spatial_features(session: AsyncSession) -> int:
 
     await session.commit()
     logger.info(f"Seeding Selesai! {inserted_count} baru ditambahkan, {updated_count} diperbarui.")
+    logger.info(f"Rincian Entitas: {points_count} Titik Spasial (wisata, cagar budaya, fasilitas) + {zones_count} Poligon Batas Desa.")
     return inserted_count + updated_count
 
 
