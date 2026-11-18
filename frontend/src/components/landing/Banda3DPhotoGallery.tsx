@@ -161,6 +161,18 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
       lg: { left: '62%', top: '54%', z: -2050 },
     },
   },
+  {
+    id: 'pohon-sejuta-umat',
+    src: '/images/landmarks/pohon-sejuta-umat.webp',
+    alt: 'Pohon Sejuta Umat & Gunung Api Banda',
+    positions: {
+      xxs: { left: '10%', top: '42%', z: -1950 },
+      xs: { left: '12%', top: '42%', z: -1950 },
+      sm: { left: '14%', top: '42%', z: -2020 },
+      md: { left: '16%', top: '40%', z: -2140 },
+      lg: { left: '18%', top: '38%', z: -2240 },
+    },
+  },
 ]
 
 export const BANDA_3D_ORNAMENTS: OrnamentItem[] = [

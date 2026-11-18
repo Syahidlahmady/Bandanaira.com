@@ -704,7 +704,8 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 46.1 Migrasi Alembic `013_community_contents_table.py`, model SQLAlchemy `CommunityContent`, dan skema Pydantic (`CommunityContentCreateInput`, `CommunityContentUpdateInput`, `CommunityContentItemResponse`, `LiteracyModuleItem`, `SopStageItem`, `LiteracyGovernanceResponse`).
 - [x] 46.2 Data seeder autentik `backend/app/modules/tourism/literacy_content_data.py` (Bank Konten Batch 1 H7 & Karya Peserta Workshop H11 dengan foto lokal `/images/landmarks/*.jpg`, 3 Modul Literasi Digital, SOP 6-Tahap, 6-Point Quality Checklist, dan 4 Zona Sinyal Pulau).
 - [x] 46.3 Endpoint REST API di `backend/app/modules/tourism/router.py` (`GET/POST/PUT/DELETE /api/v1/tourism/community-contents` & `GET /api/v1/tourism/literacy-modules`) serta pengayaan `heritage_data.py` dan `survei/seed_data.py` (`SRV-202611-007` & `SRV-202611-008`).
-- [x] 46.4 Integrasi Frontend Service (`frontend/src/services/tourism.ts`), komponen modular plug-and-play `frontend/src/views/CommunityLiteracyHub.tsx` (`public_hub`, `cms_manager`, `standalone_full`), serta penyematan tab publik `📚 Konten & Literasi Komunitas` dan sub-tab CMS `📝 Konten & Karya Warga` di `TourismEcoStayWorkspace.tsx`.
+- [x] 46.4 Integrasi Frontend Service (`frontend/src/services/tourism.ts`), komponen modular plug-and-play `frontend/src/views/CommunityLiteracyHub.tsx` (`public_hub`, `cms_manager`, `standalone_full`), serta penyematan tab publik `📚 Konten & Literasi Komunitas` dan sub-tab CMS `Konten & Karya Warga` di `TourismEcoStayWorkspace.tsx`.
+- [x] 46.5 Perombakan UI/UX `CommunityLiteracyHub.tsx` berbasis REA + Tailwind Design Tokens serta integrasi aset `.webp` asli Banda Neira (`nirana-logo.webp`, `bst-emblem.webp`, `pohon-sejuta-umat.webp`, `gunung-api-portrait.webp`, dan Reels 9:16 `media/*.webp` dengan optimasi FCP/LCP `IntersectionObserver`).
 
 
 

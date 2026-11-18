@@ -1,15 +1,34 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import {
   BookOpen,
   CheckCircle2,
   MapPin,
   Wifi,
+  WifiOff,
   Plus,
   Edit2,
   Trash2,
   X,
   Eye,
   ShieldCheck,
+  Newspaper,
+  Sparkles,
+  Search,
+  Compass,
+  ShoppingBag,
+  Landmark,
+  Ship,
+  FileText,
+  Camera,
+  Film,
+  Award,
+  Clock,
+  Users,
+  ArrowUpRight,
+  Check,
+  Layers,
+  Radio,
+  SlidersHorizontal,
 } from 'lucide-react'
 import {
   tourismService,
@@ -17,6 +36,7 @@ import {
   CommunityContentCreatePayload,
   LiteracyGovernanceResponse,
 } from '../services/tourism'
+import { BANDA_PORTRAIT_REELS, BandaVisualReelItem } from '../components/landing/TourismSawSection'
 
 export interface CommunityLiteracyHubProps {
   mode?: 'public_hub' | 'cms_manager' | 'standalone_full'
@@ -35,29 +55,73 @@ const LOCAL_LANDMARK_OPTIONS = [
   { label: 'Pulau Rhun (/images/landmarks/pulau-rhun.jpg)', value: '/images/landmarks/pulau-rhun.jpg' },
   { label: 'Pelabuhan Bandanaira (/images/landmarks/pelabuhan.jpg)', value: '/images/landmarks/pelabuhan.jpg' },
   { label: 'Pasar Tradisional Banda (/images/landmarks/pasar-banda.jpg)', value: '/images/landmarks/pasar-banda.jpg' },
+  { label: 'Pohon Sejuta Umat & Gunung Api (/images/landmarks/pohon-sejuta-umat.webp)', value: '/images/landmarks/pohon-sejuta-umat.webp' },
+  { label: 'Potret Gunung Api Banda (/images/landmarks/gunung-api-portrait.webp)', value: '/images/landmarks/gunung-api-portrait.webp' },
+  { label: 'Reels 9:16 Pohon Sejuta Umat (/images/media/pohon-sejuta-umat-motion.webp)', value: '/images/media/pohon-sejuta-umat-motion.webp' },
+  { label: 'Reels 9:16 Sunset Pelabuhan (/images/media/sunset-pelabuhan-gunung-api.webp)', value: '/images/media/sunset-pelabuhan-gunung-api.webp' },
 ]
 
-const CONTENT_TYPE_LABELS: Record<string, string> = {
-  ARTICLE: '📄 Artikel Feature / SEO',
-  PHOTO_GEOTAGGED: '📸 Foto Geotagged GPS',
-  VIDEO_REELS: '🎬 Video Reels @neirabasudara',
-  COMMUNITY_WORK: '🏆 Karya Peserta Workshop',
+const CONTENT_TYPE_META: Record<
+  string,
+  { label: string; shortLabel: string; icon: React.FC<{ className?: string; size?: number }> }
+> = {
+  ARTICLE: { label: 'Artikel Feature & Kisah', shortLabel: 'Artikel Feature', icon: FileText },
+  PHOTO_GEOTAGGED: { label: 'Esai Foto Geotagged GPS', shortLabel: 'Foto Geotagged', icon: Camera },
+  VIDEO_REELS: { label: 'Naskah Reels @neirabasudara', shortLabel: 'Video Reels 9:16', icon: Film },
+  COMMUNITY_WORK: { label: 'Karya Warga & UMKM Lokal', shortLabel: 'Karya Komunitas', icon: Award },
 }
 
-const PRIORITY_CATEGORY_LABELS: Record<string, string> = {
-  DESTINASI: '🏝️ Destinasi Wisata',
-  UMKM: '🛍️ UMKM & Rempah',
-  RELIGI_KULTURAL: '🏛️ Religi & Kultural (Tabea/Sasi)',
-  LAYANAN_PUBLIK: '⛵ Layanan Publik & Transportasi',
+const PRIORITY_CATEGORY_META: Record<
+  string,
+  { label: string; shortLabel: string; icon: React.FC<{ className?: string; size?: number }> }
+> = {
+  DESTINASI: { label: 'Destinasi & Bahari', shortLabel: 'Destinasi', icon: Compass },
+  UMKM: { label: 'UMKM & Olahan Rempah', shortLabel: 'UMKM Rempah', icon: ShoppingBag },
+  RELIGI_KULTURAL: { label: 'Sejarah, Adat & Tabea', shortLabel: 'Adat & Sejarah', icon: Landmark },
+  LAYANAN_PUBLIK: { label: 'Panduan & Transportasi Laut', shortLabel: 'Panduan Pulau', icon: Ship },
 }
 
-const SOP_STAGE_COLORS: Record<string, { bg: string; color: string; border: string }> = {
-  IDE: { bg: '#F1F5F9', color: '#475569', border: '#CBD5E1' },
-  PRODUKSI: { bg: '#E0F2FE', color: '#0369A1', border: '#BAE6FD' },
-  REVIEW: { bg: '#FEF3C7', color: '#B45309', border: '#FDE68A' },
-  VALIDASI: { bg: '#EDE9FE', color: '#6D28D9', border: '#DDD6FE' },
-  PUBLIKASI: { bg: '#DCFCE7', color: '#15803D', border: '#BBF7D0' },
-  ARSIP: { bg: '#F3F4F6', color: '#374151', border: '#D1D5DB' },
+const SOP_STAGE_STYLES: Record<string, { pill: string; dot: string; label: string }> = {
+  IDE: {
+    pill: 'bg-slate-100 text-slate-700 border-slate-300',
+    dot: 'bg-slate-500',
+    label: '01 · Ide & Riset',
+  },
+  PRODUKSI: {
+    pill: 'bg-sky-50 text-sky-800 border-sky-200',
+    dot: 'bg-sky-500',
+    label: '02 · Produksi Lapangan',
+  },
+  REVIEW: {
+    pill: 'bg-amber-50 text-amber-800 border-amber-200',
+    dot: 'bg-amber-500',
+    label: '03 · Kurasi & Review',
+  },
+  VALIDASI: {
+    pill: 'bg-purple-50 text-purple-800 border-purple-200',
+    dot: 'bg-purple-500',
+    label: '04 · Validasi Adat',
+  },
+  PUBLIKASI: {
+    pill: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+    dot: 'bg-emerald-500',
+    label: '05 · Tayang Publik',
+  },
+  ARSIP: {
+    pill: 'bg-stone-100 text-stone-700 border-stone-300',
+    dot: 'bg-stone-500',
+    label: '06 · Arsip Bank Konten',
+  },
+}
+
+const getInitials = (name: string): string => {
+  if (!name) return 'BN'
+  const parts = name
+    .replace(/[^a-zA-Z\s]/g, ' ')
+    .trim()
+    .split(/\s+/)
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
 export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
@@ -71,9 +135,15 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
   const [loading, setLoading] = useState<boolean>(true)
   const [categoryFilter, setCategoryFilter] = useState<string>('')
   const [typeFilter, setTypeFilter] = useState<string>('')
+  const [searchQuery, setSearchQuery] = useState<string>('')
   const [selectedContentModal, setSelectedContentModal] = useState<CommunityContentItem | null>(null)
+  const [selectedReelPreview, setSelectedReelPreview] = useState<BandaVisualReelItem | null>(null)
+  const [reelsInView, setReelsInView] = useState<boolean>(false)
+  const reelsGridRef = useRef<HTMLDivElement>(null)
 
   // CMS States
+  const [cmsSearchQuery, setCmsSearchQuery] = useState<string>('')
+  const [cmsStageFilter, setCmsStageFilter] = useState<string>('')
   const [cmsNotice, setCmsNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [showCmsModal, setShowCmsModal] = useState<boolean>(false)
   const [editingContentId, setEditingContentId] = useState<string | null>(null)
@@ -130,6 +200,52 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
   useEffect(() => {
     loadData()
   }, [mode, categoryFilter, typeFilter])
+
+  useEffect(() => {
+    if (hubSubTab !== 'bank_konten') return
+    const el = reelsGridRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setReelsInView(true)
+      return
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setReelsInView(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '100px', threshold: 0.1 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [hubSubTab])
+
+  const filteredPublicContents = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return contents
+    return contents.filter(
+      (item) =>
+        item.title.toLowerCase().includes(q) ||
+        item.summary.toLowerCase().includes(q) ||
+        item.author_name.toLowerCase().includes(q) ||
+        item.island_name.toLowerCase().includes(q)
+    )
+  }, [contents, searchQuery])
+
+  const filteredCmsContents = useMemo(() => {
+    return contents.filter((item) => {
+      if (cmsStageFilter && item.sop_stage !== cmsStageFilter) return false
+      const q = cmsSearchQuery.trim().toLowerCase()
+      if (!q) return true
+      return (
+        item.title.toLowerCase().includes(q) ||
+        item.content_code.toLowerCase().includes(q) ||
+        item.author_name.toLowerCase().includes(q) ||
+        item.island_name.toLowerCase().includes(q)
+      )
+    })
+  }, [contents, cmsSearchQuery, cmsStageFilter])
 
   const handleOpenAddContent = () => {
     setEditingContentId(null)
@@ -197,7 +313,7 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
         await tourismService.createCommunityContent(contentForm)
         setCmsNotice({
           type: 'success',
-          text: `Karya/konten baru "${contentForm.title}" berhasil diunggah ke Bank Konten BST!`,
+          text: `Karya baru "${contentForm.title}" berhasil disimpan ke Bank Konten Komunitas!`,
         })
       }
       setShowCmsModal(false)
@@ -216,7 +332,9 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
       })
       setCmsNotice({
         type: 'success',
-        text: `Status tayang "${item.title}" diubah menjadi: ${!item.is_published ? 'Tayang Publik (PUBLIKASI)' : 'Draft Review'}.`,
+        text: `Status tayang "${item.title}" diubah menjadi: ${
+          !item.is_published ? 'Tayang Publik (PUBLIKASI)' : 'Draft Review'
+        }.`,
       })
       loadData()
     } catch (err: unknown) {
@@ -247,795 +365,1006 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
   const showPublicSection = mode === 'public_hub' || mode === 'standalone_full'
   const showCmsSection = mode === 'cms_manager' || (mode === 'standalone_full' && canManageCMS)
 
+  // Restricted state for CMS Manager if unauthorized
   if (mode === 'cms_manager' && !canManageCMS) {
     return (
-      <div className="card" style={{ padding: '2.5rem 1.5rem', textAlign: 'center', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px' }}>
-        <h4 style={{ margin: '0 0 0.5rem', fontSize: '1.15rem', fontWeight: 900, color: '#081D35' }}>
-          Akses CMS Bank Konten Terbatas
+      <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm font-sans">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 text-amber-600 border border-amber-200">
+          <ShieldCheck size={24} />
+        </div>
+        <h4 className="text-lg font-bold text-[#081d35] mb-2">
+          Akses Ruang Redaksi &amp; CMS Komunitas Terbatas
         </h4>
-        <p style={{ margin: '0 auto 1.25rem', maxWidth: '520px', fontSize: '0.84rem', color: '#475569' }}>
-          Silakan masuk sebagai <b>Smart Tourism Admin</b>, <b>Petugas Desa</b>, atau <b>Administrator</b> untuk mengunggah karya warga dan memverifikasi 6-Point Quality Checklist SOP.
+        <p className="mx-auto max-w-lg text-sm text-slate-600 mb-6 leading-relaxed">
+          Silakan masuk sebagai <span className="font-semibold text-[#081d35]">Smart Tourism Admin</span>,{' '}
+          <span className="font-semibold text-[#081d35]">Petugas Desa</span>, atau{' '}
+          <span className="font-semibold text-[#081d35]">Administrator</span> untuk mengunggah karya warga dan
+          memverifikasi 6-Point Quality Checklist SOP.
         </p>
         {onOpenQuickLogin && (
           <button
             type="button"
             onClick={onOpenQuickLogin}
-            className="btn btn-primary"
-            style={{
-              padding: '0.65rem 1.25rem',
-              borderRadius: '10px',
-              border: 'none',
-              background: 'linear-gradient(135deg, #F4B75E 0%, #E0A24A 100%)',
-              color: '#081D35',
-              fontWeight: 800,
-              cursor: 'pointer',
-            }}
+            className="inline-flex items-center gap-2 rounded-full bg-[#f4b75e] px-6 py-2.5 text-xs font-bold text-[#081d35] shadow-md transition hover:bg-amber-400"
           >
             Masuk Akun Pengelola CMS
+            <ArrowUpRight size={15} />
           </button>
         )}
       </div>
     )
   }
 
+  const spotlightStory =
+    !categoryFilter && !typeFilter && !searchQuery && filteredPublicContents.length > 0
+      ? filteredPublicContents[0]
+      : null
+  const gridStories = spotlightStory ? filteredPublicContents.slice(1) : filteredPublicContents
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div className="flex flex-col gap-8 font-sans text-[#081d35]">
       {/* =====================================================================
-          MODE 1: PUBLIC HUB (BANK KONTEN, 3 MODUL LITERASI, & 4 ZONA SINYAL)
+          MODE 1: PUBLIC HUB (JURNAL WARGA, 3 MODUL LITERASI & 4 ZONA SINYAL)
+          Kiblat Desain: Wonderful Indonesia (indonesia.travel) + Patagonia Stories
       ===================================================================== */}
       {showPublicSection && (
-        <div>
-          {/* Header Banner Mandat Reyhan Albar Fahryan */}
-          <div
-            className="card"
-            style={{
-              padding: '1.35rem 1.5rem',
-              background: 'linear-gradient(135deg, #081D35 0%, #0F2C59 100%)',
-              color: '#FFFFFF',
-              borderRadius: '18px',
-              marginBottom: '1.25rem',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '1rem',
-              boxShadow: '0 8px 24px rgba(8, 29, 53, 0.14)',
-            }}
-          >
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
-                <span
-                  style={{
-                    background: 'rgba(244, 183, 94, 0.2)',
-                    color: '#F4B75E',
-                    border: '1px solid rgba(244, 183, 94, 0.4)',
-                    padding: '0.2rem 0.65rem',
-                    borderRadius: '999px',
-                    fontSize: '0.72rem',
-                    fontWeight: 800,
-                  }}
-                >
-                  MANDAT CONTENT MANAGER &amp; COMMUNITY ENGAGEMENT
-                </span>
-                <span
-                  style={{
-                    background: 'rgba(16, 185, 129, 0.2)',
-                    color: '#6EE7B7',
-                    padding: '0.2rem 0.65rem',
-                    borderRadius: '999px',
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                  }}
-                >
-                  @neirabasudara · Pokdarwis &amp; UMKM Banda
-                </span>
-              </div>
-              <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 900, color: '#FFFFFF' }}>
-                Pusat Bank Konten Wisata, Karya Komunitas &amp; Literasi Digital BST
-              </h3>
-              <p style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', color: '#CBD5E1', maxWidth: '780px', lineHeight: 1.5 }}>
-                Etalase artikel feature SEO, foto geotagged GPS, storyboard video Reels 9:16, serta karya mandiri peserta
-                Workshop Literasi Digital Pokdarwis &amp; UMKM yang telah lulus kurasi <b>6-Point Quality Checklist SOP</b>.
-              </p>
-            </div>
-
-            {/* Sub-Navigation Pills */}
+        <div className="flex flex-col gap-6">
+          {/* Editorial Hero Spotlight Banner */}
+          <section className="relative overflow-hidden rounded-3xl bg-[#081d35] px-6 py-8 sm:px-10 sm:py-10 text-white shadow-xl border border-white/10">
+            {/* Subtle radial grid & warm ambient glow matching TourismSawSection */}
             <div
-              style={{
-                display: 'flex',
-                gap: '0.4rem',
-                background: 'rgba(255, 255, 255, 0.1)',
-                padding: '0.35rem',
-                borderRadius: '12px',
-                flexWrap: 'wrap',
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => setHubSubTab('bank_konten')}
-                style={{
-                  padding: '0.5rem 0.9rem',
-                  borderRadius: '9px',
-                  border: 'none',
-                  fontSize: '0.78rem',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  background: hubSubTab === 'bank_konten' ? '#F4B75E' : 'transparent',
-                  color: hubSubTab === 'bank_konten' ? '#081D35' : '#E2E8F0',
-                }}
-              >
-                📰 Bank Konten &amp; Karya ({contents.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setHubSubTab('modul_sop')}
-                style={{
-                  padding: '0.5rem 0.9rem',
-                  borderRadius: '9px',
-                  border: 'none',
-                  fontSize: '0.78rem',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  background: hubSubTab === 'modul_sop' ? '#F4B75E' : 'transparent',
-                  color: hubSubTab === 'modul_sop' ? '#081D35' : '#E2E8F0',
-                }}
-              >
-                📚 3 Modul Literasi &amp; SOP 6-Tahap
-              </button>
-              <button
-                type="button"
-                onClick={() => setHubSubTab('zona_sinyal')}
-                style={{
-                  padding: '0.5rem 0.9rem',
-                  borderRadius: '9px',
-                  border: 'none',
-                  fontSize: '0.78rem',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  background: hubSubTab === 'zona_sinyal' ? '#F4B75E' : 'transparent',
-                  color: hubSubTab === 'zona_sinyal' ? '#081D35' : '#E2E8F0',
-                }}
-              >
-                📡 Peta Sinyal 4 Zona &amp; Offline 3T
-              </button>
-            </div>
-          </div>
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 opacity-[0.04] bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:24px_24px]"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -top-24 -right-24 h-80 w-80 rounded-full bg-amber-500/15 blur-3xl"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-sky-500/10 blur-3xl"
+            />
 
-          {/* SUB-TAB 1: BANK KONTEN & KARYA KOMUNITAS */}
-          {hubSubTab === 'bank_konten' && (
-            <div>
-              {/* Filter Bar */}
-              <div
-                className="card"
-                style={{
-                  padding: '1rem 1.25rem',
-                  background: '#FFFFFF',
-                  border: '1px solid #E2E8F0',
-                  borderRadius: '14px',
-                  marginBottom: '1.25rem',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: '0.85rem',
-                }}
-              >
-                <div style={{ display: 'flex', gap: '0.45rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '0.76rem', fontWeight: 800, color: '#081D35', marginRight: '0.25rem' }}>
-                    Kategori Prioritas:
+            <div className="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+              <div className="max-w-2xl">
+                <div className="inline-flex flex-wrap items-center gap-2.5 mb-3">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-amber-400/15 border border-amber-400/30 px-3.5 py-1 text-[11px] font-bold tracking-[0.2em] text-[#f4b75e] uppercase">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#f4b75e] animate-pulse" />
+                    JURNAL KOMUNITAS &amp; LITERASI WARGA
                   </span>
-                  {[
-                    { code: '', label: 'Semua Kategori' },
-                    { code: 'DESTINASI', label: '🏝️ Destinasi' },
-                    { code: 'UMKM', label: '🛍️ UMKM Rempah' },
-                    { code: 'RELIGI_KULTURAL', label: '🏛️ Religi & Adat' },
-                    { code: 'LAYANAN_PUBLIK', label: '⛵ Layanan Publik' },
-                  ].map((cat) => (
-                    <button
-                      key={cat.code}
-                      type="button"
-                      onClick={() => setCategoryFilter(cat.code)}
-                      style={{
-                        padding: '0.38rem 0.75rem',
-                        borderRadius: '8px',
-                        border: '1px solid #CBD5E1',
-                        fontSize: '0.75rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        background: categoryFilter === cat.code ? '#081D35' : '#F8FAFC',
-                        color: categoryFilter === cat.code ? '#F4B75E' : '#475569',
-                      }}
-                    >
-                      {cat.label}
-                    </button>
-                  ))}
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-medium text-amber-100">
+                    @neirabasudara · Pokdarwis &amp; UMKM Banda
+                  </span>
                 </div>
 
-                <div style={{ display: 'flex', gap: '0.45rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '0.76rem', fontWeight: 800, color: '#081D35' }}>Format:</span>
-                  <select
-                    value={typeFilter}
-                    onChange={(e) => setTypeFilter(e.target.value)}
-                    style={{
-                      padding: '0.4rem 0.75rem',
-                      borderRadius: '8px',
-                      border: '1px solid #CBD5E1',
-                      background: '#FFFFFF',
-                      color: '#081D35',
-                      fontSize: '0.78rem',
-                      fontWeight: 700,
-                    }}
-                  >
-                    <option value="">Semua Format Konten</option>
-                    <option value="ARTICLE">📄 Artikel Feature / SEO</option>
-                    <option value="PHOTO_GEOTAGGED">📸 Foto Geotagged GPS</option>
-                    <option value="VIDEO_REELS">🎬 Video Reels 9:16 (@neirabasudara)</option>
-                    <option value="COMMUNITY_WORK">🏆 Karya Peserta Workshop (H11)</option>
-                  </select>
+                <h2 className="font-sans font-bold text-2xl sm:text-4xl lg:text-[40px] leading-[1.15] tracking-tight text-white">
+                  Suara, Kisah &amp; Karya{' '}
+                  <span className="font-script font-normal text-[#f4b75e] text-3xl sm:text-5xl lg:text-[48px] inline-block ml-1">
+                    Warga Kepulauan
+                  </span>
+                </h2>
+
+                <p className="mt-3 text-slate-300 text-xs sm:text-sm leading-relaxed max-w-xl">
+                  Ruang cerita otentik yang ditulis dan dipotret langsung oleh pemuda lokal, pemandu sejarah, serta
+                  pengrajin rempah Banda Neira. Setiap karya telah melalui kurasi etika adat{' '}
+                  <span className="text-amber-200 font-semibold">Tabea &amp; Sasi</span> sebelum dibagikan kepada dunia.
+                </p>
+
+                {/* Quick Ecosystem Micro-Stats */}
+                <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-xl">
+                  <div className="rounded-xl bg-white/[0.06] border border-white/10 px-3.5 py-2.5 backdrop-blur-sm">
+                    <div className="text-lg font-bold text-[#f4b75e]">{contents.length} Karya</div>
+                    <div className="text-[11px] text-slate-300">Terkurasi di Bank Konten</div>
+                  </div>
+                  <div className="rounded-xl bg-white/[0.06] border border-white/10 px-3.5 py-2.5 backdrop-blur-sm">
+                    <div className="text-lg font-bold text-white">3 Modul</div>
+                    <div className="text-[11px] text-slate-300">Kurikulum Literasi Warga</div>
+                  </div>
+                  <div className="rounded-xl bg-white/[0.06] border border-white/10 px-3.5 py-2.5 backdrop-blur-sm">
+                    <div className="text-lg font-bold text-emerald-300">6 Poin QC</div>
+                    <div className="text-[11px] text-slate-300">Standar Validasi Adat</div>
+                  </div>
+                  <div className="rounded-xl bg-white/[0.06] border border-white/10 px-3.5 py-2.5 backdrop-blur-sm">
+                    <div className="text-lg font-bold text-sky-300">4 Zona</div>
+                    <div className="text-[11px] text-slate-300">Adaptasi Sinyal 3T</div>
+                  </div>
                 </div>
               </div>
 
-              {/* Content Cards Grid */}
+              {/* Clean Segmented Sub-Tab Switcher */}
+              <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-2 rounded-2xl bg-white/[0.08] p-1.5 border border-white/10 backdrop-blur-md self-start lg:self-end">
+                <button
+                  type="button"
+                  onClick={() => setHubSubTab('bank_konten')}
+                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all ${
+                    hubSubTab === 'bank_konten'
+                      ? 'bg-[#f4b75e] text-[#081d35] shadow-md'
+                      : 'text-slate-200 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <Newspaper size={15} />
+                  <span>Jurnal &amp; Karya Warga</span>
+                  <span
+                    className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] ${
+                      hubSubTab === 'bank_konten' ? 'bg-[#081d35]/15 text-[#081d35]' : 'bg-white/10 text-slate-200'
+                    }`}
+                  >
+                    {contents.length}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setHubSubTab('modul_sop')}
+                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all ${
+                    hubSubTab === 'modul_sop'
+                      ? 'bg-[#f4b75e] text-[#081d35] shadow-md'
+                      : 'text-slate-200 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <BookOpen size={15} />
+                  <span>Kurikulum &amp; Alur Kurasi</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setHubSubTab('zona_sinyal')}
+                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all ${
+                    hubSubTab === 'zona_sinyal'
+                      ? 'bg-[#f4b75e] text-[#081d35] shadow-md'
+                      : 'text-slate-200 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <Radio size={15} />
+                  <span>Peta Sinyal &amp; Mode 3T</span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* =================================================================
+              SUB-TAB 1: JURNAL & BANK KONTEN KOMUNITAS (PATAGONIA STORIES STYLE)
+          ================================================================= */}
+          {hubSubTab === 'bank_konten' && (
+            <div className="flex flex-col gap-6">
+              {/* Editorial Filter & Search Bar */}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 rounded-2xl bg-white p-4 sm:px-6 border border-slate-200/80 shadow-sm">
+                {/* Category Filter Pills */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-1">
+                    Topik Cerita:
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setCategoryFilter('')}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all ${
+                      categoryFilter === ''
+                        ? 'bg-[#081d35] text-[#f4b75e] shadow-sm'
+                        : 'bg-[#f7f5f0] text-slate-600 hover:bg-slate-200/70'
+                    }`}
+                  >
+                    Semua Topik
+                  </button>
+                  {Object.entries(PRIORITY_CATEGORY_META).map(([code, meta]) => {
+                    const IconComp = meta.icon
+                    const active = categoryFilter === code
+                    return (
+                      <button
+                        key={code}
+                        type="button"
+                        onClick={() => setCategoryFilter(code)}
+                        className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all ${
+                          active
+                            ? 'bg-[#081d35] text-[#f4b75e] shadow-sm'
+                            : 'bg-[#f7f5f0] text-slate-600 hover:bg-slate-200/70'
+                        }`}
+                      >
+                        <IconComp size={13} />
+                        <span>{meta.shortLabel}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* Search & Format Dropdown */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                  <div className="relative flex-1 sm:w-56">
+                    <Search
+                      size={14}
+                      className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Cari kisah, penulis, pulau..."
+                      className="w-full rounded-full border border-slate-200 bg-[#f7f5f0]/60 pl-9 pr-3.5 py-1.5 text-xs font-medium text-[#081d35] placeholder:text-slate-400 focus:border-[#081d35] focus:bg-white focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <SlidersHorizontal size={14} className="text-slate-400 hidden sm:block" />
+                    <select
+                      aria-label="Filter Format Konten"
+                      value={typeFilter}
+                      onChange={(e) => setTypeFilter(e.target.value)}
+                      className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-[#081d35] focus:border-[#081d35] focus:outline-none cursor-pointer"
+                    >
+                      <option value="">Semua Format Karya</option>
+                      <option value="ARTICLE">Artikel Feature &amp; Kisah</option>
+                      <option value="PHOTO_GEOTAGGED">Esai Foto Geotagged GPS</option>
+                      <option value="VIDEO_REELS">Video Reels 9:16 (@neirabasudara)</option>
+                      <option value="COMMUNITY_WORK">Karya Peserta Workshop</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
               {loading ? (
-                <div style={{ textAlign: 'center', padding: '2.5rem', color: '#64748B', fontSize: '0.9rem' }}>
-                  Memuat Bank Konten &amp; Karya Komunitas Banda Neira...
+                <div className="rounded-3xl border border-slate-200 bg-white p-12 text-center shadow-sm">
+                  <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-[#081d35] border-t-[#f4b75e]" />
+                  <p className="text-sm font-semibold text-slate-600">
+                    Menyiapkan jurnal cerita &amp; karya komunitas Banda Neira...
+                  </p>
+                </div>
+              ) : filteredPublicContents.length === 0 ? (
+                <div className="rounded-3xl border border-slate-200 bg-white p-12 text-center shadow-sm">
+                  <p className="text-base font-bold text-[#081d35] mb-1">Belum ada cerita yang cocok</p>
+                  <p className="text-xs text-slate-500 mb-4">
+                    Coba ubah filter topik atau kata kunci pencarian untuk menjelajahi karya warga lainnya.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCategoryFilter('')
+                      setTypeFilter('')
+                      setSearchQuery('')
+                    }}
+                    className="rounded-full bg-[#081d35] px-4 py-2 text-xs font-bold text-[#f4b75e]"
+                  >
+                    Tampilkan Semua Karya
+                  </button>
                 </div>
               ) : (
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))',
-                    gap: '1.25rem',
-                  }}
-                >
-                  {contents.map((item) => (
-                    <div
-                      key={item.id}
-                      className="card"
-                      style={{
-                        background: '#FFFFFF',
-                        border: '1px solid #E2E8F0',
-                        borderRadius: '16px',
-                        overflow: 'hidden',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
-                        boxShadow: '0 4px 14px rgba(8, 29, 53, 0.05)',
-                      }}
+                <>
+                  {/* FEATURED HERO STORY (Editorial Magazine Lead Card) */}
+                  {spotlightStory && (
+                    <article
+                      onClick={() => setSelectedContentModal(spotlightStory)}
+                      className="group cursor-pointer overflow-hidden rounded-3xl bg-white border border-slate-200/90 shadow-md hover:shadow-xl transition-all duration-300 grid grid-cols-1 lg:grid-cols-12"
                     >
-                      <div>
-                        <div style={{ position: 'relative', height: '190px', overflow: 'hidden', background: '#081D35' }}>
-                          <img
-                            src={item.media_url || '/images/landmarks/belgica.jpg'}
-                            alt={item.title}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                          />
-                          <div
-                            style={{
-                              position: 'absolute',
-                              top: '0.65rem',
-                              left: '0.65rem',
-                              display: 'flex',
-                              gap: '0.35rem',
-                              flexWrap: 'wrap',
-                            }}
-                          >
-                            <span
-                              style={{
-                                background: 'rgba(8, 29, 53, 0.88)',
-                                color: '#F4B75E',
-                                padding: '0.22rem 0.55rem',
-                                borderRadius: '6px',
-                                fontSize: '0.68rem',
-                                fontWeight: 800,
-                              }}
-                            >
-                              {CONTENT_TYPE_LABELS[item.content_type] || item.content_type}
-                            </span>
-                            <span
-                              style={{
-                                background: 'rgba(255, 255, 255, 0.94)',
-                                color: '#081D35',
-                                padding: '0.22rem 0.55rem',
-                                borderRadius: '6px',
-                                fontSize: '0.68rem',
-                                fontWeight: 800,
-                              }}
-                            >
-                              {PRIORITY_CATEGORY_LABELS[item.priority_category] || item.priority_category}
-                            </span>
-                          </div>
-                          <div
-                            style={{
-                              position: 'absolute',
-                              bottom: '0.6rem',
-                              right: '0.6rem',
-                              background: '#DCFCE7',
-                              color: '#15803D',
-                              border: '1px solid #86EFAC',
-                              padding: '0.2rem 0.55rem',
-                              borderRadius: '999px',
-                              fontSize: '0.68rem',
-                              fontWeight: 800,
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '0.25rem',
-                            }}
-                          >
-                            <CheckCircle2 size={12} /> {item.qc_passed_count}/6 Checklist Mutu SOP
-                          </div>
+                      <div className="relative min-h-[260px] sm:min-h-[340px] lg:col-span-7 overflow-hidden bg-[#081d35]">
+                        <img
+                          src={spotlightStory.media_url || '/images/landmarks/belgica.jpg'}
+                          alt={spotlightStory.title}
+                          loading="lazy"
+                          decoding="async"
+                          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#081d35]/80 via-transparent to-black/20" />
+
+                        <div className="absolute top-4 left-4 flex flex-wrap items-center gap-2">
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f4b75e] px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-[#081d35] shadow-sm">
+                            <Sparkles size={11} /> SOROTAN UTAMA KOMUNITAS
+                          </span>
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#081d35]/85 backdrop-blur-md px-3 py-1 text-[10px] font-bold text-white border border-white/15">
+                            {CONTENT_TYPE_META[spotlightStory.content_type]?.shortLabel ||
+                              spotlightStory.content_type}
+                          </span>
                         </div>
 
-                        <div style={{ padding: '1.15rem' }}>
-                          <div
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              fontSize: '0.72rem',
-                              color: '#64748B',
-                              marginBottom: '0.4rem',
-                            }}
-                          >
-                            <span style={{ fontWeight: 700, color: '#0369A1', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                              <MapPin size={12} /> {item.island_name}
-                              {item.latitude && item.longitude ? ` (${item.latitude.toFixed(4)}, ${item.longitude.toFixed(4)})` : ''}
+                        <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-2 text-white">
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-black/45 backdrop-blur-md px-3 py-1 text-xs font-semibold text-amber-200">
+                            <MapPin size={13} />
+                            {spotlightStory.island_name}
+                            {spotlightStory.latitude && spotlightStory.longitude
+                              ? ` · ${spotlightStory.latitude.toFixed(4)}, ${spotlightStory.longitude.toFixed(4)}`
+                              : ''}
+                          </span>
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/90 px-3 py-1 text-[11px] font-bold text-white shadow-sm">
+                            <CheckCircle2 size={12} /> Terverifikasi Adat ({spotlightStory.qc_passed_count}/6 QC)
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="lg:col-span-5 flex flex-col justify-between p-6 sm:p-8 bg-white">
+                        <div>
+                          <div className="flex items-center justify-between gap-2 mb-3">
+                            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700">
+                              {PRIORITY_CATEGORY_META[spotlightStory.priority_category]?.label ||
+                                spotlightStory.priority_category}
                             </span>
-                            <code style={{ background: '#F1F5F9', padding: '0.1rem 0.4rem', borderRadius: '4px', color: '#081D35', fontWeight: 700 }}>
-                              {item.content_code}
-                            </code>
+                            <span className="font-mono text-[11px] font-semibold text-slate-400">
+                              {spotlightStory.content_code}
+                            </span>
                           </div>
 
-                          <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', fontWeight: 900, color: '#081D35', lineHeight: 1.35 }}>
-                            {item.title}
-                          </h4>
+                          <h3 className="text-xl sm:text-2xl font-bold text-[#081d35] leading-snug group-hover:text-[#0f2c59] transition-colors">
+                            {spotlightStory.title}
+                          </h3>
 
-                          <p style={{ margin: '0 0 0.85rem', fontSize: '0.8rem', color: '#475569', lineHeight: 1.55 }}>
-                            {item.summary}
+                          <p className="mt-3 text-sm text-slate-600 leading-relaxed line-clamp-4">
+                            {spotlightStory.summary}
                           </p>
                         </div>
-                      </div>
 
-                      <div
-                        style={{
-                          padding: '0.85rem 1.15rem',
-                          borderTop: '1px solid #F1F5F9',
-                          background: '#F8FAFC',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                        }}
-                      >
-                        <div style={{ fontSize: '0.72rem' }}>
-                          <div style={{ fontWeight: 800, color: '#081D35' }}>{item.author_name}</div>
-                          <div style={{ color: '#64748B' }}>{item.author_role}</div>
+                        <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#081d35] text-xs font-bold text-[#f4b75e]">
+                              {getInitials(spotlightStory.author_name)}
+                            </div>
+                            <div>
+                              <div className="text-xs font-bold text-[#081d35]">{spotlightStory.author_name}</div>
+                              <div className="text-[11px] text-slate-500">{spotlightStory.author_role}</div>
+                            </div>
+                          </div>
+
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#081d35] px-4 py-2 text-xs font-bold text-[#f4b75e] transition-transform group-hover:translate-x-0.5">
+                            Baca Cerita
+                            <ArrowUpRight size={14} />
+                          </span>
                         </div>
-
-                        <button
-                          type="button"
-                          onClick={() => setSelectedContentModal(item)}
-                          style={{
-                            padding: '0.45rem 0.8rem',
-                            borderRadius: '8px',
-                            border: '1px solid #081D35',
-                            background: '#081D35',
-                            color: '#F4B75E',
-                            fontSize: '0.74rem',
-                            fontWeight: 800,
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.3rem',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          <Eye size={13} /> Baca Selengkapnya
-                        </button>
                       </div>
+                    </article>
+                  )}
+
+                  {/* EDITORIAL MAGAZINE CARDS GRID */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {gridStories.map((item) => {
+                      const typeMeta = CONTENT_TYPE_META[item.content_type]
+                      const catMeta = PRIORITY_CATEGORY_META[item.priority_category]
+                      const TypeIcon = typeMeta?.icon || FileText
+                      return (
+                        <article
+                          key={item.id}
+                          onClick={() => setSelectedContentModal(item)}
+                          className="group cursor-pointer flex flex-col justify-between overflow-hidden rounded-2xl bg-white border border-slate-200/80 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
+                        >
+                          <div>
+                            {/* Image Header */}
+                            <div className="relative h-52 overflow-hidden bg-[#081d35]">
+                              <img
+                                src={item.media_url || '/images/landmarks/belgica.jpg'}
+                                alt={item.title}
+                                loading="lazy"
+                                decoding="async"
+                                className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-[#081d35]/75 via-transparent to-black/20" />
+
+                              <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#081d35]/85 backdrop-blur-md px-3 py-1 text-[10px] font-bold text-[#f4b75e] border border-white/10">
+                                  <TypeIcon size={11} />
+                                  {typeMeta?.shortLabel || item.content_type}
+                                </span>
+                                <span className="rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-extrabold text-[#081d35] shadow-sm">
+                                  {catMeta?.shortLabel || item.priority_category}
+                                </span>
+                              </div>
+
+                              <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
+                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-200 drop-shadow">
+                                  <MapPin size={12} />
+                                  {item.island_name}
+                                </span>
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/90 backdrop-blur-sm px-2.5 py-0.5 text-[10px] font-bold text-white">
+                                  <CheckCircle2 size={11} /> {item.qc_passed_count}/6 QC
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Card Body */}
+                            <div className="p-5">
+                              <div className="flex items-center justify-between text-[11px] text-slate-400 mb-2">
+                                <span className="font-mono font-semibold text-slate-500">{item.content_code}</span>
+                                {item.latitude && item.longitude && (
+                                  <span className="font-mono text-[10px]">
+                                    {item.latitude.toFixed(3)}, {item.longitude.toFixed(3)}
+                                  </span>
+                                )}
+                              </div>
+
+                              <h4 className="text-base font-bold text-[#081d35] leading-snug mb-2.5 line-clamp-2 group-hover:text-[#0f2c59]">
+                                {item.title}
+                              </h4>
+
+                              <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">{item.summary}</p>
+                            </div>
+                          </div>
+
+                          {/* Contributor Footer */}
+                          <div className="px-5 py-3.5 bg-[#f7f5f0]/70 border-t border-slate-100 flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#081d35] text-[10px] font-bold text-[#f4b75e]">
+                                {getInitials(item.author_name)}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="truncate text-xs font-bold text-[#081d35]">{item.author_name}</div>
+                                <div className="truncate text-[10px] text-slate-500">{item.author_role}</div>
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setSelectedContentModal(item)
+                              }}
+                              className="shrink-0 inline-flex items-center gap-1 rounded-full bg-[#081d35] px-3.5 py-1.5 text-[11px] font-bold text-[#f4b75e] group-hover:bg-[#f4b75e] group-hover:text-[#081d35] transition-colors"
+                            >
+                              <Eye size={12} /> Baca
+                            </button>
+                          </div>
+                        </article>
+                      )
+                    })}
+                  </div>
+
+                  {/* 9:16 VERTICAL REELS & PORTRAIT SHOWCASE (@neirabasudara Motion WebP) */}
+                  <div
+                    ref={reelsGridRef}
+                    className="mt-2 rounded-3xl bg-[#081d35] p-6 sm:p-8 text-white shadow-lg border border-white/10"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
+                      <div>
+                        <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#f4b75e]">
+                          <Film size={13} /> REELS &amp; POTRET VERTIKAL 9:16 · @NEIRABASUDARA
+                        </span>
+                        <h4 className="mt-1 text-xl sm:text-2xl font-bold text-white">
+                          Tangkap Suasana{' '}
+                          <span className="font-script font-normal text-[#f4b75e] text-2xl sm:text-3xl ml-1">
+                            Langsung dari Lapangan
+                          </span>
+                        </h4>
+                      </div>
+                      <p className="text-xs text-slate-300 max-w-md">
+                        Format potret 9:16 &amp; 3:4 hasil dokumentasi ponsel komunitas yang dioptimasi ke format WebP
+                        agar tetap ringan diakses di jaringan kepulauan.
+                      </p>
                     </div>
-                  ))}
-                </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                      {BANDA_PORTRAIT_REELS.map((reel) => (
+                        <div
+                          key={reel.id}
+                          onClick={() => setSelectedReelPreview(reel)}
+                          className="group relative aspect-[9/16] max-h-[440px] w-full mx-auto overflow-hidden rounded-2xl border border-white/15 bg-slate-900 cursor-pointer shadow-md hover:ring-2 hover:ring-[#f4b75e] transition-all"
+                        >
+                          <img
+                            src={reelsInView ? reel.src : reel.posterSrc}
+                            alt={reel.title}
+                            loading="lazy"
+                            decoding="async"
+                            className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#081d35] via-[#081d35]/20 to-black/20" />
+
+                          <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-black/55 backdrop-blur-md px-2.5 py-1 text-[10px] font-extrabold text-[#f4b75e] border border-white/15">
+                              {reel.isAnimatedWebp && (
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                              )}
+                              {reel.aspectLabel}
+                            </span>
+                            <span className="rounded-full bg-white/15 backdrop-blur-md px-2.5 py-0.5 text-[10px] font-semibold text-white">
+                              {reel.location}
+                            </span>
+                          </div>
+
+                          <div className="absolute bottom-4 left-4 right-4">
+                            <div className="text-[10px] font-bold text-amber-300 mb-0.5">{reel.subtitle}</div>
+                            <h5 className="text-base font-bold text-white leading-snug mb-1 group-hover:text-[#f4b75e] transition-colors">
+                              {reel.title}
+                            </h5>
+                            <p className="text-[11px] text-slate-200 line-clamp-2 leading-relaxed">{reel.caption}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
               )}
             </div>
           )}
 
-          {/* SUB-TAB 2: 3 MODUL LITERASI DIGITAL & SOP KONTEN 6-TAHAP */}
+          {/* =================================================================
+              SUB-TAB 2: KURIKULUM 3 MODUL LITERASI & ALUR SOP 6-TAHAP
+              Kiblat Desain: Stripe Press / Notion Guides
+          ================================================================= */}
           {hubSubTab === 'modul_sop' && governance && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              {/* 3 Modul Literasi Digital */}
-              <div>
-                <h4 style={{ margin: '0 0 0.85rem', fontSize: '1.08rem', fontWeight: 900, color: '#081D35', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                  <BookOpen size={18} color="#0284C7" /> Kurikulum 3 Modul Literasi Digital Pokdarwis &amp; UMKM Banda Neira
-                </h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(310px, 1fr))', gap: '1.15rem' }}>
-                  {governance.modules.map((mod) => (
-                    <div
-                      key={mod.module_code}
-                      className="card"
-                      style={{
-                        padding: '1.25rem',
-                        background: '#FFFFFF',
-                        border: mod.validation_status === 'SIAP_UJI_PENUH' ? '2px solid #F4B75E' : '1px solid #E2E8F0',
-                        borderRadius: '16px',
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
-                        <span style={{ fontWeight: 900, fontSize: '0.8rem', color: '#081D35', background: '#F1F5F9', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>
-                          {mod.module_code} · {mod.duration_minutes} Menit
-                        </span>
-                        <span
-                          style={{
-                            fontSize: '0.7rem',
-                            fontWeight: 800,
-                            padding: '0.2rem 0.6rem',
-                            borderRadius: '999px',
-                            background: mod.validation_status === 'SIAP_UJI_PENUH' ? '#DCFCE7' : '#FEF3C7',
-                            color: mod.validation_status === 'SIAP_UJI_PENUH' ? '#15803D' : '#B45309',
-                          }}
-                        >
-                          {mod.validation_status === 'SIAP_UJI_PENUH' ? '✓ SIAP UJI PENUH (H11)' : '✓ DRAFT TERVALIDASI'}
-                        </span>
-                      </div>
-
-                      <h5 style={{ margin: '0 0 0.5rem', fontSize: '1rem', fontWeight: 900, color: '#081D35', lineHeight: 1.35 }}>
-                        {mod.title}
-                      </h5>
-                      <div style={{ fontSize: '0.74rem', color: '#0369A1', fontWeight: 700, marginBottom: '0.75rem' }}>
-                        Sasaran: {mod.target_audience}
-                      </div>
-
-                      <div style={{ fontSize: '0.76rem', color: '#334155', marginBottom: '0.75rem' }}>
-                        <b style={{ display: 'block', marginBottom: '0.25rem', color: '#081D35' }}>Tujuan Pembelajaran:</b>
-                        <ul style={{ margin: 0, paddingLeft: '1.15rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                          {mod.learning_objectives.map((obj, idx) => (
-                            <li key={idx}>{obj}</li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <div
-                        style={{
-                          padding: '0.65rem 0.8rem',
-                          background: '#F8FAFC',
-                          borderRadius: '10px',
-                          border: '1px solid #E2E8F0',
-                          fontSize: '0.74rem',
-                          color: '#081D35',
-                        }}
-                      >
-                        <b>Target Output Praktik:</b> {mod.practical_output}
-                      </div>
-                    </div>
-                  ))}
+            <div className="flex flex-col gap-8">
+              {/* 1. Kurikulum 3 Modul Literasi Digital */}
+              <section className="rounded-3xl bg-white p-6 sm:p-8 border border-slate-200/80 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 pb-5 border-b border-slate-100">
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-600">
+                      KURIKULUM PEMBERDAYAAN KOMUNITAS
+                    </span>
+                    <h3 className="mt-1 text-xl sm:text-2xl font-bold text-[#081d35]">
+                      3 Modul Literasi Digital{' '}
+                      <span className="font-script font-normal text-amber-600 text-2xl sm:text-3xl ml-1">
+                        Pokdarwis &amp; UMKM
+                      </span>
+                    </h3>
+                  </div>
+                  <p className="text-xs text-slate-500 max-w-md">
+                    Disusun khusus untuk kebutuhan praktik lapangan warga Banda Neira agar mandiri memproduksi konten
+                    promosi wisata dan olahan rempah.
+                  </p>
                 </div>
-              </div>
 
-              {/* SOP 6-Tahap Manajemen Konten BST */}
-              <div
-                className="card"
-                style={{
-                  padding: '1.35rem',
-                  background: '#FFFFFF',
-                  border: '1px solid #E2E8F0',
-                  borderRadius: '16px',
-                }}
-              >
-                <h4 style={{ margin: '0 0 0.35rem', fontSize: '1.05rem', fontWeight: 900, color: '#081D35' }}>
-                  Alur Kerja SOP 6-Tahap Manajemen Konten Komunitas BST
-                </h4>
-                <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: '#64748B' }}>
-                  Standar operasional baku dari perencanaan ide liputan warga hingga kurasi adat dan publikasi lintas kanal.
-                </p>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.85rem' }}>
-                  {governance.sop_stages.map((st) => {
-                    const badgeStyle = SOP_STAGE_COLORS[st.stage_code] || SOP_STAGE_COLORS.IDE
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {governance.modules.map((mod, index) => {
+                    const isReady = mod.validation_status === 'SIAP_UJI_PENUH'
                     return (
                       <div
-                        key={st.stage_code}
-                        style={{
-                          padding: '0.95rem',
-                          borderRadius: '12px',
-                          border: `1px solid ${badgeStyle.border}`,
-                          background: '#FAFAFA',
-                        }}
+                        key={mod.module_code}
+                        className={`flex flex-col justify-between rounded-2xl p-6 transition-all ${
+                          isReady
+                            ? 'bg-[#081d35] text-white shadow-lg ring-2 ring-[#f4b75e]'
+                            : 'bg-[#f7f5f0]/70 text-[#081d35] border border-slate-200/90'
+                        }`}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                          <span
-                            style={{
-                              padding: '0.18rem 0.55rem',
-                              borderRadius: '6px',
-                              fontSize: '0.7rem',
-                              fontWeight: 900,
-                              background: badgeStyle.bg,
-                              color: badgeStyle.color,
-                            }}
+                        <div>
+                          <div className="flex items-center justify-between gap-2 mb-4">
+                            <span
+                              className={`font-mono text-xs font-bold px-2.5 py-1 rounded-md ${
+                                isReady ? 'bg-white/10 text-[#f4b75e]' : 'bg-white text-[#081d35] border border-slate-200'
+                              }`}
+                            >
+                              0{index + 1} · {mod.module_code}
+                            </span>
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider ${
+                                isReady
+                                  ? 'bg-emerald-400/20 text-emerald-300 border border-emerald-400/30'
+                                  : 'bg-amber-100 text-amber-800'
+                              }`}
+                            >
+                              <CheckCircle2 size={11} />
+                              {isReady ? 'Siap Uji Penuh' : 'Tervalidasi'}
+                            </span>
+                          </div>
+
+                          <h4 className={`text-lg font-bold leading-snug mb-3 ${isReady ? 'text-white' : 'text-[#081d35]'}`}>
+                            {mod.title}
+                          </h4>
+
+                          <div
+                            className={`flex flex-wrap items-center gap-3 text-xs mb-4 pb-4 border-b ${
+                              isReady ? 'border-white/10 text-slate-300' : 'border-slate-200 text-slate-600'
+                            }`}
                           >
-                            TAHAP {st.stage_order}: {st.stage_code}
+                            <span className="inline-flex items-center gap-1 font-semibold">
+                              <Clock size={13} className={isReady ? 'text-[#f4b75e]' : 'text-amber-600'} />
+                              {mod.duration_minutes} Menit Praktik
+                            </span>
+                            <span className="inline-flex items-center gap-1">
+                              <Users size={13} className={isReady ? 'text-[#f4b75e]' : 'text-sky-700'} />
+                              {mod.target_audience}
+                            </span>
+                          </div>
+
+                          <div className="mb-5">
+                            <div
+                              className={`text-[11px] font-bold uppercase tracking-wider mb-2.5 ${
+                                isReady ? 'text-[#f4b75e]' : 'text-slate-500'
+                              }`}
+                            >
+                              Capaian Pembelajaran:
+                            </div>
+                            <ul className="space-y-2 text-xs leading-relaxed">
+                              {mod.learning_objectives.map((obj, idx) => (
+                                <li key={idx} className="flex items-start gap-2">
+                                  <Check
+                                    size={14}
+                                    className={`mt-0.5 shrink-0 ${isReady ? 'text-emerald-400' : 'text-emerald-600'}`}
+                                  />
+                                  <span className={isReady ? 'text-slate-200' : 'text-slate-700'}>{obj}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+
+                        <div
+                          className={`rounded-xl p-3.5 text-xs ${
+                            isReady
+                              ? 'bg-white/10 border border-white/15 text-amber-100'
+                              : 'bg-white border border-slate-200/80 text-[#081d35]'
+                          }`}
+                        >
+                          <span className="block text-[10px] font-extrabold uppercase tracking-wider opacity-75 mb-0.5">
+                            Target Luaran Praktik:
                           </span>
-                        </div>
-                        <div style={{ fontWeight: 800, fontSize: '0.86rem', color: '#081D35', marginBottom: '0.3rem' }}>
-                          {st.stage_name}
-                        </div>
-                        <div style={{ fontSize: '0.72rem', color: '#0369A1', fontWeight: 700, marginBottom: '0.35rem' }}>
-                          PIC: {st.pic_actor}
-                        </div>
-                        <p style={{ margin: '0 0 0.45rem', fontSize: '0.74rem', color: '#475569', lineHeight: 1.45 }}>
-                          {st.description}
-                        </p>
-                        <div style={{ fontSize: '0.7rem', color: '#15803D', fontWeight: 700 }}>
-                          Luaran: {st.deliverable}
+                          <span className="font-semibold">{mod.practical_output}</span>
                         </div>
                       </div>
                     )
                   })}
                 </div>
-              </div>
+              </section>
 
-              {/* 6-Point Quality Checklist Standards */}
-              <div
-                className="card"
-                style={{
-                  padding: '1.35rem',
-                  background: '#FFFFFF',
-                  border: '1px solid #E2E8F0',
-                  borderRadius: '16px',
-                }}
-              >
-                <h4 style={{ margin: '0 0 0.75rem', fontSize: '1.05rem', fontWeight: 900, color: '#081D35', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                  <ShieldCheck size={18} color="#15803D" /> Standar 6-Point Quality Checklist sebelum Publikasi (H6)
-                </h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '0.75rem' }}>
+              {/* 2. Alur Kerja SOP 6-Tahap Manajemen Konten */}
+              <section className="rounded-3xl bg-white p-6 sm:p-8 border border-slate-200/80 shadow-sm">
+                <div className="mb-6">
+                  <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-sky-700">
+                    TATA KELOLA REDAKSI KOMUNITAS
+                  </span>
+                  <h3 className="mt-1 text-xl font-bold text-[#081d35]">
+                    Alur Kerja SOP 6-Tahap Manajemen Konten BST
+                  </h3>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Memastikan setiap cerita warga melewati proses pendampingan yang rapi dari gagasan lapangan hingga
+                    publikasi dan pengarsipan desa.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {governance.sop_stages.map((st) => {
+                    const style = SOP_STAGE_STYLES[st.stage_code] || SOP_STAGE_STYLES.IDE
+                    return (
+                      <div
+                        key={st.stage_code}
+                        className="relative flex flex-col justify-between rounded-2xl bg-[#f7f5f0]/60 p-5 border border-slate-200/80 hover:bg-white hover:shadow-md transition-all"
+                      >
+                        <div>
+                          <div className="flex items-center justify-between gap-2 mb-3">
+                            <span
+                              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-bold ${style.pill}`}
+                            >
+                              <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
+                              TAHAP 0{st.stage_order} · {st.stage_code}
+                            </span>
+                          </div>
+
+                          <h4 className="text-base font-bold text-[#081d35] mb-1">{st.stage_name}</h4>
+                          <div className="text-[11px] font-semibold text-sky-800 mb-2.5">
+                            Penanggung Jawab: {st.pic_actor}
+                          </div>
+                          <p className="text-xs text-slate-600 leading-relaxed mb-4">{st.description}</p>
+                        </div>
+
+                        <div className="pt-3 border-t border-slate-200/70 flex items-center justify-between text-[11px]">
+                          <span className="font-semibold text-slate-400">Luaran Tahap:</span>
+                          <span className="font-bold text-emerald-700">{st.deliverable}</span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </section>
+
+              {/* 3. Standar 6-Point Quality Checklist (H6) */}
+              <section className="rounded-3xl bg-[#081d35] p-6 sm:p-8 text-white shadow-md">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#f4b75e]">
+                      VERIFIKASI MUTU &amp; ETIKA BUDAYA
+                    </span>
+                    <h3 className="mt-1 text-xl font-bold text-white flex items-center gap-2">
+                      <ShieldCheck size={20} className="text-emerald-400" />
+                      6-Point Quality Checklist sebelum Publikasi
+                    </h3>
+                  </div>
+                  <span className="rounded-full bg-emerald-500/20 border border-emerald-400/30 px-3.5 py-1 text-xs font-bold text-emerald-300 self-start sm:self-auto">
+                    Wajib Lulus 6/6 Poin untuk Tayang Utama
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {governance.quality_checklist_standards.map((qc) => (
                     <div
                       key={qc.code}
-                      style={{
-                        padding: '0.8rem 1rem',
-                        borderRadius: '10px',
-                        border: '1px solid #DCFCE7',
-                        background: '#F0FDF4',
-                      }}
+                      className="rounded-2xl bg-white/[0.06] border border-white/10 p-4 backdrop-blur-sm"
                     >
-                      <div style={{ fontWeight: 800, fontSize: '0.82rem', color: '#15803D', marginBottom: '0.2rem' }}>
-                        ✓ [{qc.code}] {qc.label}
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="rounded-md bg-[#f4b75e] px-2 py-0.5 font-mono text-[11px] font-extrabold text-[#081d35]">
+                          {qc.code}
+                        </span>
+                        <h4 className="text-sm font-bold text-white">{qc.label}</h4>
                       </div>
-                      <div style={{ fontSize: '0.74rem', color: '#334155', lineHeight: 1.45 }}>{qc.criteria}</div>
+                      <p className="text-xs text-slate-300 leading-relaxed">{qc.criteria}</p>
                     </div>
                   ))}
                 </div>
-              </div>
+              </section>
             </div>
           )}
 
-          {/* SUB-TAB 3: PETA SINYAL 4 ZONA PULAU & STRATEGI OFFLINE 3T */}
+          {/* =================================================================
+              SUB-TAB 3: PETA SINYAL 4 ZONA PULAU & STRATEGI OFFLINE 3T
+          ================================================================= */}
           {hubSubTab === 'zona_sinyal' && governance && (
-            <div
-              className="card"
-              style={{
-                padding: '1.35rem',
-                background: '#FFFFFF',
-                border: '1px solid #E2E8F0',
-                borderRadius: '16px',
-              }}
-            >
-              <div style={{ marginBottom: '1rem' }}>
-                <h4 style={{ margin: '0 0 0.3rem', fontSize: '1.08rem', fontWeight: 900, color: '#081D35', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                  <Wifi size={18} color="#0284C7" /> Pemetaan 4 Zona Sinyal Kepulauan Banda &amp; Strategi Konten Offline 3T
-                </h4>
-                <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748B' }}>
-                  Hasil survei kolaborasi Reyhan Albar Fahryan &amp; Syahid (`SRV-202611-007`) sebagai landasan penggunaan aset gambar lokal dan antrean sinkronisasi PWA.
+            <section className="rounded-3xl bg-white p-6 sm:p-8 border border-slate-200/80 shadow-sm">
+              <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-6 pb-5 border-b border-slate-100">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-sky-700">
+                    KETAHANAN DIGITAL KEPULAUAN 3T · SURVEI SRV-202611-007
+                  </span>
+                  <h3 className="mt-1 text-xl sm:text-2xl font-bold text-[#081d35]">
+                    Pemetaan 4 Zona Sinyal &amp; Strategi Konten{' '}
+                    <span className="font-script font-normal text-amber-600 text-2xl sm:text-3xl ml-1">
+                      Offline-First
+                    </span>
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-500 max-w-md">
+                  Panduan teknis bagi kontributor warga saat meliput di pulau luar atau titik tanpa sinyal agar foto dan
+                  naskah tetap tersimpan aman di perangkat.
                 </p>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
-                {governance.signal_zones_mapping.map((z) => (
-                  <div
-                    key={z.zone_code}
-                    style={{
-                      padding: '1.1rem',
-                      borderRadius: '14px',
-                      border: '1px solid #E2E8F0',
-                      background: z.signal_status.includes('BLANKSPOT') ? '#FEF2F2' : '#F8FAFC',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                      <span style={{ fontWeight: 900, fontSize: '0.8rem', color: '#081D35' }}>
-                        {z.zone_code} · {z.avg_download_mbps} Mbps
-                      </span>
-                      <span
-                        style={{
-                          fontSize: '0.68rem',
-                          fontWeight: 800,
-                          padding: '0.2rem 0.55rem',
-                          borderRadius: '999px',
-                          background: z.signal_status.includes('BLANKSPOT')
-                            ? '#FEE2E2'
-                            : z.signal_status.includes('STABIL')
-                            ? '#DCFCE7'
-                            : '#FEF3C7',
-                          color: z.signal_status.includes('BLANKSPOT')
-                            ? '#BE123C'
-                            : z.signal_status.includes('STABIL')
-                            ? '#15803D'
-                            : '#B45309',
-                        }}
-                      >
-                        {z.signal_status}
-                      </span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {governance.signal_zones_mapping.map((z, idx) => {
+                  const isBlankspot = z.signal_status.includes('BLANKSPOT')
+                  const isStable = z.signal_status.includes('STABIL')
+                  return (
+                    <div
+                      key={z.zone_code}
+                      className={`rounded-2xl p-6 border transition-all ${
+                        isBlankspot
+                          ? 'bg-rose-50/40 border-rose-200'
+                          : isStable
+                          ? 'bg-emerald-50/30 border-emerald-200'
+                          : 'bg-[#f7f5f0]/60 border-slate-200'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#081d35] text-[#f4b75e]">
+                            {isBlankspot ? <WifiOff size={15} /> : <Wifi size={15} />}
+                          </span>
+                          <div>
+                            <span className="font-mono text-xs font-bold text-[#081d35]">{z.zone_code}</span>
+                            <span className="mx-1.5 text-slate-300">·</span>
+                            <span className="font-mono text-xs font-bold text-sky-700">
+                              ~{z.avg_download_mbps} Mbps
+                            </span>
+                          </div>
+                        </div>
+
+                        <span
+                          className={`rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider ${
+                            isBlankspot
+                              ? 'bg-rose-100 text-rose-800'
+                              : isStable
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-amber-100 text-amber-800'
+                          }`}
+                        >
+                          {z.signal_status}
+                        </span>
+                      </div>
+
+                      <h4 className="text-base font-bold text-[#081d35] mb-1">{z.zone_name}</h4>
+                      <div className="text-xs font-semibold text-sky-800 mb-3">
+                        Wilayah Kepulauan: {z.islands_covered}
+                      </div>
+
+                      {/* Signal Visual Indicator */}
+                      <div className="flex items-center gap-1.5 mb-4">
+                        {[1, 2, 3, 4].map((bar) => {
+                          const activeBars = 4 - idx
+                          return (
+                            <div
+                              key={bar}
+                              className={`h-1.5 flex-1 rounded-full ${
+                                bar <= activeBars
+                                  ? isBlankspot
+                                    ? 'bg-rose-400'
+                                    : isStable
+                                    ? 'bg-emerald-500'
+                                    : 'bg-amber-500'
+                                  : 'bg-slate-200'
+                              }`}
+                            />
+                          )
+                        })}
+                      </div>
+
+                      <div className="rounded-xl bg-white p-3.5 border border-slate-200/70 text-xs text-slate-700 leading-relaxed">
+                        <span className="font-bold text-[#081d35] block mb-0.5">
+                          Rekomendasi Unggah &amp; Sinkronisasi:
+                        </span>
+                        {z.recommended_sync_strategy}
+                      </div>
                     </div>
-                    <div style={{ fontWeight: 800, fontSize: '0.92rem', color: '#081D35', marginBottom: '0.3rem' }}>
-                      {z.zone_name}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: '#0369A1', fontWeight: 700, marginBottom: '0.5rem' }}>
-                      Cakupan: {z.islands_covered}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: '#334155', lineHeight: 1.45 }}>
-                      <b>Strategi Teknis &amp; Konten:</b> {z.recommended_sync_strategy}
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
-            </div>
+            </section>
           )}
         </div>
       )}
 
       {/* =====================================================================
-          MODE 2: CMS MANAGER (KURASI KONTEN, SOP 6-TAHAP & 6-POINT QC)
+          MODE 2: CMS MANAGER (PANEL REDAKSI, SOP 6-TAHAP & 6-POINT QC)
+          Kiblat Desain: Ghost CMS / Sanity Studio Editorial Workspace
       ===================================================================== */}
       {showCmsSection && (
-        <div>
+        <div className="flex flex-col gap-6">
           {cmsNotice && (
             <div
-              style={{
-                marginBottom: '1rem',
-                padding: '0.75rem 1rem',
-                borderRadius: '10px',
-                background: cmsNotice.type === 'success' ? '#DCFCE7' : '#FEE2E2',
-                border: `1px solid ${cmsNotice.type === 'success' ? '#86EFAC' : '#FECDD3'}`,
-                color: cmsNotice.type === 'success' ? '#15803D' : '#BE123C',
-                fontSize: '0.82rem',
-                fontWeight: 700,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
+              className={`flex items-center justify-between gap-4 rounded-2xl border px-5 py-3.5 text-xs font-bold shadow-sm ${
+                cmsNotice.type === 'success'
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                  : 'bg-rose-50 border-rose-200 text-rose-800'
+              }`}
             >
-              <span>{cmsNotice.text}</span>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 size={16} />
+                <span>{cmsNotice.text}</span>
+              </div>
               <button
                 type="button"
                 onClick={() => setCmsNotice(null)}
-                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'inherit' }}
+                className="rounded-lg p-1 hover:bg-black/5 transition-colors"
               >
-                <X size={16} />
+                <X size={15} />
               </button>
             </div>
           )}
 
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '1rem',
-              flexWrap: 'wrap',
-              gap: '0.75rem',
-            }}
-          >
-            <div>
-              <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 900, color: '#081D35' }}>
-                Panel CMS Bank Konten &amp; Verifikasi 6-Point Quality Checklist SOP
-              </h4>
-              <span style={{ fontSize: '0.76rem', color: '#64748B' }}>
-                Unggah artikel wisata baru, kurasi karya peserta Workshop Pokdarwis/UMKM, dan validasi 6 poin mutu sebelum tayang.
-              </span>
+          {/* CMS Top Header & KPI Summary */}
+          <div className="rounded-3xl bg-[#081d35] p-6 sm:p-8 text-white shadow-lg">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-400/15 border border-amber-400/30 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#f4b75e] mb-2">
+                  <Layers size={12} /> RUANG REDAKSI &amp; KURASI KOMUNITAS
+                </span>
+                <h3 className="text-xl sm:text-2xl font-bold text-white">
+                  Panel CMS Bank Konten &amp; Verifikasi 6-Point QC
+                </h3>
+                <p className="mt-1 text-xs text-slate-300 max-w-2xl">
+                  Kelola naskah artikel SEO, foto geotagged, dan karya peserta Workshop Pokdarwis/UMKM. Pastikan 6 poin
+                  Quality Checklist terpenuhi sebelum ditayangkan ke beranda publik.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleOpenAddContent}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#f4b75e] px-5 py-3 text-xs font-extrabold text-[#081d35] shadow-lg hover:bg-amber-400 transition-all self-start lg:self-auto shrink-0"
+              >
+                <Plus size={16} />
+                <span>+ Unggah Artikel / Karya Warga Baru</span>
+              </button>
             </div>
 
-            <button
-              type="button"
-              onClick={handleOpenAddContent}
-              className="btn btn-primary"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                padding: '0.6rem 1.05rem',
-                fontSize: '0.8rem',
-                fontWeight: 800,
-                background: 'linear-gradient(135deg, #F4B75E 0%, #E0A24A 100%)',
-                color: '#081D35',
-                border: 'none',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 12px rgba(244, 183, 94, 0.35)',
-              }}
-            >
-              <Plus size={15} /> + Unggah Artikel / Karya Warga Baru
-            </button>
+            {/* CMS Quick Metrics */}
+            <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 pt-5 border-t border-white/10">
+              <div className="rounded-xl bg-white/[0.06] px-4 py-2.5">
+                <div className="text-xs text-slate-300">Total Entri CMS</div>
+                <div className="text-lg font-bold text-white">{contents.length} Konten</div>
+              </div>
+              <div className="rounded-xl bg-white/[0.06] px-4 py-2.5">
+                <div className="text-xs text-slate-300">Tayang Publik</div>
+                <div className="text-lg font-bold text-emerald-300">
+                  {contents.filter((c) => c.is_published).length} Tayang
+                </div>
+              </div>
+              <div className="rounded-xl bg-white/[0.06] px-4 py-2.5">
+                <div className="text-xs text-slate-300">Tahap Review / Draft</div>
+                <div className="text-lg font-bold text-amber-300">
+                  {contents.filter((c) => !c.is_published).length} Antrean
+                </div>
+              </div>
+              <div className="rounded-xl bg-white/[0.06] px-4 py-2.5">
+                <div className="text-xs text-slate-300">Lulus Penuh 6/6 QC</div>
+                <div className="text-lg font-bold text-[#f4b75e]">
+                  {contents.filter((c) => c.qc_passed_count === 6).length} Terverifikasi
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            {contents.map((item) => {
-              const stageBadge = SOP_STAGE_COLORS[item.sop_stage] || SOP_STAGE_COLORS.PUBLIKASI
+          {/* CMS Filter & Search Toolbar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl bg-white p-4 border border-slate-200/80 shadow-sm">
+            <div className="relative flex-1 max-w-md">
+              <Search size={14} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={cmsSearchQuery}
+                onChange={(e) => setCmsSearchQuery(e.target.value)}
+                placeholder="Cari kode konten, judul, atau nama kontributor..."
+                className="w-full rounded-full border border-slate-200 bg-[#f7f5f0]/60 pl-9 pr-4 py-2 text-xs font-medium text-[#081d35] focus:border-[#081d35] focus:bg-white focus:outline-none"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-bold text-slate-500">Filter Tahap SOP:</span>
+              <select
+                aria-label="Filter Tahap SOP CMS"
+                value={cmsStageFilter}
+                onChange={(e) => setCmsStageFilter(e.target.value)}
+                className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-[#081d35]"
+              >
+                <option value="">Semua Tahapan SOP</option>
+                <option value="IDE">1. IDE</option>
+                <option value="PRODUKSI">2. PRODUKSI</option>
+                <option value="REVIEW">3. REVIEW</option>
+                <option value="VALIDASI">4. VALIDASI</option>
+                <option value="PUBLIKASI">5. PUBLIKASI</option>
+                <option value="ARSIP">6. ARSIP</option>
+              </select>
+            </div>
+          </div>
+
+          {/* CMS Content List Rows */}
+          <div className="flex flex-col gap-3">
+            {filteredCmsContents.map((item) => {
+              const stageStyle = SOP_STAGE_STYLES[item.sop_stage] || SOP_STAGE_STYLES.PUBLIKASI
+              const catMeta = PRIORITY_CATEGORY_META[item.priority_category]
               return (
                 <div
                   key={item.id}
-                  className="card"
-                  style={{
-                    padding: '1rem 1.25rem',
-                    background: '#FFFFFF',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '14px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    gap: '1rem',
-                  }}
+                  className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 rounded-2xl bg-white p-4 sm:p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition-all"
                 >
-                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', minWidth: '280px', flex: 1 }}>
+                  <div className="flex items-start sm:items-center gap-4 min-w-0 flex-1">
                     <img
                       src={item.media_url || '/images/landmarks/belgica.jpg'}
                       alt={item.title}
-                      style={{ width: '68px', height: '68px', borderRadius: '12px', objectFit: 'cover', flexShrink: 0 }}
+                      className="h-16 w-20 sm:h-20 sm:w-24 rounded-xl object-cover shrink-0 bg-[#081d35]"
                     />
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
-                        <code style={{ fontSize: '0.7rem', fontWeight: 800, background: '#F1F5F9', padding: '0.1rem 0.4rem', borderRadius: '4px', color: '#081D35' }}>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                        <code className="rounded bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-bold text-[#081d35]">
                           {item.content_code}
                         </code>
                         <span
-                          style={{
-                            fontSize: '0.68rem',
-                            fontWeight: 800,
-                            padding: '0.15rem 0.5rem',
-                            borderRadius: '6px',
-                            background: stageBadge.bg,
-                            color: stageBadge.color,
-                            border: `1px solid ${stageBadge.border}`,
-                          }}
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${stageStyle.pill}`}
                         >
+                          <span className={`h-1.5 w-1.5 rounded-full ${stageStyle.dot}`} />
                           SOP: {item.sop_stage}
                         </span>
                         <span
-                          style={{
-                            fontSize: '0.68rem',
-                            fontWeight: 800,
-                            padding: '0.15rem 0.5rem',
-                            borderRadius: '6px',
-                            background: item.qc_passed_count === 6 ? '#DCFCE7' : '#FEF3C7',
-                            color: item.qc_passed_count === 6 ? '#15803D' : '#B45309',
-                          }}
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                            item.qc_passed_count === 6
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : 'bg-amber-50 text-amber-700 border border-amber-200'
+                          }`}
                         >
-                          ✓ QC: {item.qc_passed_count}/6 Poin Lulus
+                          <CheckCircle2 size={11} /> QC: {item.qc_passed_count}/6 Poin Lulus
                         </span>
-                        <span className="badge badge-blue" style={{ fontSize: '0.65rem' }}>
-                          { item.priority_category }
+                        <span className="rounded-full bg-[#f7f5f0] px-2.5 py-0.5 text-[10px] font-bold text-slate-600">
+                          {catMeta?.shortLabel || item.priority_category}
                         </span>
                       </div>
 
-                      <div style={{ fontWeight: 800, fontSize: '0.94rem', color: '#081D35' }}>{item.title}</div>
-                      <div style={{ fontSize: '0.74rem', color: '#64748B', marginTop: '0.2rem' }}>
-                        Penulis: <b style={{ color: '#081D35' }}>{item.author_name}</b> ({item.author_role}) · {item.island_name}
+                      <h4 className="text-sm sm:text-base font-bold text-[#081d35] truncate">{item.title}</h4>
+
+                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+                        <span>
+                          Penulis: <strong className="text-[#081d35]">{item.author_name}</strong> ({item.author_role})
+                        </span>
+                        <span>·</span>
+                        <span className="inline-flex items-center gap-1 text-sky-700 font-semibold">
+                          <MapPin size={12} /> {item.island_name}
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '0.45rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                  {/* CMS Row Action Buttons */}
+                  <div className="flex items-center gap-2 flex-wrap shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedContentModal(item)}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                    >
+                      <Eye size={13} /> Pratinjau
+                    </button>
+
                     <button
                       type="button"
                       onClick={() => handleTogglePublish(item)}
-                      style={{
-                        padding: '0.45rem 0.75rem',
-                        borderRadius: '8px',
-                        border: '1px solid #E2E8F0',
-                        background: item.is_published ? '#FEF3C7' : '#DCFCE7',
-                        color: item.is_published ? '#B45309' : '#15803D',
-                        fontSize: '0.74rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                      }}
+                      className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-colors ${
+                        item.is_published
+                          ? 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
+                          : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
+                      }`}
                     >
                       {item.is_published ? 'Tarik ke Review' : 'Tayangkan Publik'}
                     </button>
@@ -1043,19 +1372,7 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
                     <button
                       type="button"
                       onClick={() => handleOpenEditContent(item)}
-                      style={{
-                        padding: '0.45rem 0.75rem',
-                        borderRadius: '8px',
-                        border: '1px solid #E2E8F0',
-                        background: '#F8FAFC',
-                        color: '#081D35',
-                        fontSize: '0.74rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.3rem',
-                      }}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#081d35] px-3.5 py-2 text-xs font-bold text-[#f4b75e] hover:bg-[#0f2c59]"
                     >
                       <Edit2 size={13} /> Edit &amp; Cek 6-QC
                     </button>
@@ -1063,19 +1380,7 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
                     <button
                       type="button"
                       onClick={() => handleDeleteContent(item.id, item.title)}
-                      style={{
-                        padding: '0.45rem 0.75rem',
-                        borderRadius: '8px',
-                        border: '1px solid #FECDD3',
-                        background: '#FEE2E2',
-                        color: '#BE123C',
-                        fontSize: '0.74rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.3rem',
-                      }}
+                      className="inline-flex items-center gap-1 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100"
                     >
                       <Trash2 size={13} /> Hapus
                     </button>
@@ -1088,137 +1393,200 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
       )}
 
       {/* =====================================================================
-          MODAL 1: BACA SELENGKAPNYA (NARASI LENGKAP, STORYBOARD & 6-POINT QC)
+          MODAL 1: READER VIEW (EDITORIAL STORY & STORYBOARD + 6-POINT QC SEAL)
+          Kiblat Desain: Airbnb Community Stories / Substack Reader
       ===================================================================== */}
       {selectedContentModal && (
         <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(8, 29, 53, 0.68)',
-            backdropFilter: 'blur(6px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1100,
-            padding: '1rem',
-          }}
+          onClick={() => setSelectedContentModal(null)}
+          className="fixed inset-0 z-[1100] flex items-center justify-center bg-[#081d35]/75 p-4 backdrop-blur-md animate-fade-in"
         >
           <div
-            className="card"
-            style={{
-              maxWidth: '660px',
-              width: '100%',
-              background: '#FFFFFF',
-              borderRadius: '20px',
-              overflow: 'hidden',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              color: '#081D35',
-              boxShadow: '0 24px 60px rgba(8, 29, 53, 0.28)',
-            }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white text-[#081d35] shadow-2xl border border-white/20"
           >
-            <div style={{ position: 'relative', height: '240px', background: '#081D35' }}>
+            {/* Cover Photo Header */}
+            <div className="relative h-64 sm:h-80 w-full bg-[#081d35]">
               <img
                 src={selectedContentModal.media_url || '/images/landmarks/belgica.jpg'}
                 alt={selectedContentModal.title}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                className="h-full w-full object-cover"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#081d35] via-[#081d35]/30 to-transparent" />
+
               <button
                 type="button"
                 onClick={() => setSelectedContentModal(null)}
-                style={{
-                  position: 'absolute',
-                  top: '0.85rem',
-                  right: '0.85rem',
-                  background: 'rgba(8, 29, 53, 0.8)',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  borderRadius: '999px',
-                  width: '34px',
-                  height: '34px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                }}
+                aria-label="Tutup artikel"
+                className="absolute top-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-[#081d35]/80 text-white backdrop-blur-md hover:bg-[#f4b75e] hover:text-[#081d35] transition-colors"
               >
                 <X size={18} />
               </button>
+
+              <div className="absolute bottom-5 left-6 right-6 text-white">
+                <div className="flex flex-wrap items-center gap-2 mb-2.5">
+                  <span className="rounded-full bg-[#f4b75e] px-3 py-0.5 font-mono text-[11px] font-extrabold text-[#081d35]">
+                    {selectedContentModal.content_code}
+                  </span>
+                  <span className="rounded-full bg-white/15 backdrop-blur-md px-3 py-0.5 text-[11px] font-bold text-white">
+                    {CONTENT_TYPE_META[selectedContentModal.content_type]?.label ||
+                      selectedContentModal.content_type}
+                  </span>
+                  <span className="rounded-full bg-emerald-500/90 px-3 py-0.5 text-[11px] font-bold text-white">
+                    SOP: {selectedContentModal.sop_stage} ({selectedContentModal.qc_passed_count}/6 QC Lulus)
+                  </span>
+                </div>
+
+                <h2 className="text-xl sm:text-3xl font-bold leading-tight text-white drop-shadow-sm">
+                  {selectedContentModal.title}
+                </h2>
+              </div>
             </div>
 
-            <div style={{ padding: '1.5rem' }}>
-              <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap', marginBottom: '0.6rem' }}>
-                <span className="badge badge-amber">{selectedContentModal.content_code}</span>
-                <span className="badge badge-blue">
-                  {CONTENT_TYPE_LABELS[selectedContentModal.content_type] || selectedContentModal.content_type}
-                </span>
-                <span className="badge badge-emerald">
-                  SOP: {selectedContentModal.sop_stage} ({selectedContentModal.qc_passed_count}/6 QC Lulus)
-                </span>
+            {/* Reader Content Body */}
+            <div className="p-6 sm:p-8">
+              {/* Contributor & Location Bar */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-6 border-b border-slate-200">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#081d35] text-sm font-bold text-[#f4b75e]">
+                    {getInitials(selectedContentModal.author_name)}
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-[#081d35]">{selectedContentModal.author_name}</div>
+                    <div className="text-xs text-slate-500">{selectedContentModal.author_role}</div>
+                  </div>
+                </div>
+
+                <div className="inline-flex items-center gap-2 rounded-full bg-[#f7f5f0] px-4 py-2 text-xs font-bold text-[#081d35] border border-slate-200/80 self-start sm:self-auto">
+                  <MapPin size={14} className="text-amber-600" />
+                  <span>{selectedContentModal.island_name}</span>
+                  {selectedContentModal.latitude && selectedContentModal.longitude && (
+                    <span className="font-mono text-[11px] text-slate-500">
+                      ({selectedContentModal.latitude.toFixed(4)}, {selectedContentModal.longitude.toFixed(4)})
+                    </span>
+                  )}
+                </div>
               </div>
 
-              <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.3rem', fontWeight: 900, color: '#081D35' }}>
-                {selectedContentModal.title}
-              </h3>
+              {/* Editorial Lead Hook / AIDA Summary */}
+              <blockquote className="rounded-2xl bg-[#f7f5f0] border-l-4 border-[#f4b75e] p-5 text-sm sm:text-base font-semibold text-[#081d35] leading-relaxed mb-6">
+                “{selectedContentModal.summary}”
+              </blockquote>
 
-              <div style={{ fontSize: '0.78rem', color: '#475569', marginBottom: '1rem' }}>
-                Oleh <b>{selectedContentModal.author_name}</b> ({selectedContentModal.author_role}) · Lokasi:{' '}
-                <b>{selectedContentModal.island_name}</b>
-                {selectedContentModal.latitude && selectedContentModal.longitude
-                  ? ` · GPS: ${selectedContentModal.latitude}, ${selectedContentModal.longitude}`
-                  : ''}
-              </div>
-
-              <div
-                style={{
-                  padding: '0.85rem 1rem',
-                  background: '#F8FAFC',
-                  borderLeft: '4px solid #F4B75E',
-                  borderRadius: '8px',
-                  fontSize: '0.84rem',
-                  fontWeight: 600,
-                  color: '#1E293B',
-                  marginBottom: '1rem',
-                }}
-              >
-                {selectedContentModal.summary}
-              </div>
-
-              <div
-                style={{
-                  fontSize: '0.88rem',
-                  color: '#334155',
-                  lineHeight: 1.7,
-                  whiteSpace: 'pre-line',
-                  marginBottom: '1.25rem',
-                }}
-              >
+              {/* Full Narrative / Storyboard Text */}
+              <div className="text-sm sm:text-[15px] text-slate-700 leading-[1.8] whitespace-pre-line mb-8">
                 {selectedContentModal.body_narrative}
               </div>
 
-              {/* 6-Point Quality Checklist Verification Box */}
-              <div
-                style={{
-                  padding: '1rem',
-                  background: '#F0FDF4',
-                  border: '1px solid #BBF7D0',
-                  borderRadius: '12px',
-                  fontSize: '0.76rem',
-                }}
-              >
-                <div style={{ fontWeight: 800, color: '#15803D', marginBottom: '0.45rem' }}>
-                  ✓ Bukti Verifikasi 6-Point Quality Checklist SOP BST:
+              {/* 6-Point Quality Checklist Verification Seal */}
+              <div className="rounded-2xl bg-emerald-50/70 border border-emerald-200 p-5">
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-emerald-900">
+                    <ShieldCheck size={16} className="text-emerald-600" />
+                    Bukti Verifikasi 6-Point Quality Checklist SOP BST
+                  </div>
+                  <span className="rounded-full bg-emerald-600 px-2.5 py-0.5 text-[10px] font-bold text-white">
+                    {selectedContentModal.qc_passed_count}/6 Terverifikasi
+                  </span>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.35rem', color: '#166534' }}>
-                  <div>{selectedContentModal.qc_accuracy ? '✅' : '⬜'} 1. Akurasi Fakta Sejarah &amp; Data</div>
-                  <div>{selectedContentModal.qc_language ? '✅' : '⬜'} 2. Kerapian Bahasa &amp; Struktur AIDA</div>
-                  <div>{selectedContentModal.qc_visual ? '✅' : '⬜'} 3. Kualitas Visual &amp; Optimasi 3T</div>
-                  <div>{selectedContentModal.qc_adat_ethics ? '✅' : '⬜'} 4. Etika Adat Tabea &amp; Hukum Sasi</div>
-                  <div>{selectedContentModal.qc_source_validated ? '✅' : '⬜'} 5. Validasi Narasumber Lokal</div>
-                  <div>{selectedContentModal.qc_consent_copyright ? '✅' : '⬜'} 6. Izin Publikasi &amp; Kredit Warga</div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs font-medium text-emerald-950">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2
+                      size={14}
+                      className={selectedContentModal.qc_accuracy ? 'text-emerald-600' : 'text-slate-300'}
+                    />
+                    <span>1. Akurasi Fakta Sejarah &amp; Data Lapangan</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2
+                      size={14}
+                      className={selectedContentModal.qc_language ? 'text-emerald-600' : 'text-slate-300'}
+                    />
+                    <span>2. Kerapian Bahasa &amp; Struktur Cerita AIDA</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2
+                      size={14}
+                      className={selectedContentModal.qc_visual ? 'text-emerald-600' : 'text-slate-300'}
+                    />
+                    <span>3. Kualitas Visual &amp; Optimasi Sinyal 3T</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2
+                      size={14}
+                      className={selectedContentModal.qc_adat_ethics ? 'text-emerald-600' : 'text-slate-300'}
+                    />
+                    <span>4. Etika Adat Tabea &amp; Hukum Sasi</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2
+                      size={14}
+                      className={selectedContentModal.qc_source_validated ? 'text-emerald-600' : 'text-slate-300'}
+                    />
+                    <span>5. Validasi Narasumber Lokal / Tetua Adat</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2
+                      size={14}
+                      className={selectedContentModal.qc_consent_copyright ? 'text-emerald-600' : 'text-slate-300'}
+                    />
+                    <span>6. Izin Publikasi &amp; Atribusi Kredit Warga</span>
+                  </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL PRATINJAU REELS 9:16 */}
+      {selectedReelPreview && (
+        <div
+          onClick={() => setSelectedReelPreview(null)}
+          className="fixed inset-0 z-[1150] flex items-center justify-center bg-[#081d35]/80 p-4 backdrop-blur-md animate-fade-in"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative flex flex-col sm:flex-row max-w-2xl w-full max-h-[90vh] overflow-hidden rounded-3xl bg-[#081d35] border border-white/20 text-white shadow-2xl"
+          >
+            <div className="relative w-full sm:w-[290px] aspect-[9/16] max-h-[75vh] sm:max-h-[84vh] shrink-0 bg-black mx-auto">
+              <img
+                src={selectedReelPreview.src}
+                alt={selectedReelPreview.title}
+                loading="lazy"
+                decoding="async"
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <div className="flex flex-col justify-between p-6 flex-1 overflow-y-auto">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <span className="rounded-full bg-amber-400/20 border border-amber-400/40 px-3 py-1 text-[10px] font-extrabold text-[#f4b75e]">
+                    {selectedReelPreview.aspectLabel}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedReelPreview(null)}
+                    aria-label="Tutup pratinjau"
+                    className="rounded-full bg-white/10 p-1.5 text-white hover:bg-[#f4b75e] hover:text-[#081d35] transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-1">{selectedReelPreview.title}</h3>
+                <div className="text-xs font-semibold text-amber-300 mb-4">
+                  {selectedReelPreview.location} · {selectedReelPreview.subtitle}
+                </div>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">{selectedReelPreview.caption}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedReelPreview(null)}
+                className="mt-6 rounded-full bg-[#f4b75e] px-5 py-2.5 text-xs font-extrabold text-[#081d35] hover:bg-amber-400 transition-colors self-start"
+              >
+                Tutup Pratinjau
+              </button>
             </div>
           </div>
         </div>
@@ -1229,53 +1597,35 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
       ===================================================================== */}
       {showCmsModal && (
         <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(8, 29, 53, 0.68)',
-            backdropFilter: 'blur(6px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1100,
-            padding: '1rem',
-          }}
+          onClick={() => setShowCmsModal(false)}
+          className="fixed inset-0 z-[1100] flex items-center justify-center bg-[#081d35]/75 p-4 backdrop-blur-md"
         >
           <div
-            className="card"
-            style={{
-              maxWidth: '640px',
-              width: '100%',
-              padding: '1.5rem',
-              background: '#FFFFFF',
-              borderRadius: '20px',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              color: '#081D35',
-            }}
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-6 sm:p-8 text-[#081d35] shadow-2xl"
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div className="flex items-start justify-between gap-4 pb-4 mb-6 border-b border-slate-200">
               <div>
-                <span className="badge badge-amber" style={{ fontSize: '0.68rem' }}>
+                <span className="inline-block rounded-full bg-amber-100 px-3 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-amber-800 mb-1">
                   CMS BANK KONTEN &amp; KARYA KOMUNITAS
                 </span>
-                <h3 style={{ margin: '0.2rem 0 0', fontSize: '1.2rem', fontWeight: 900, color: '#081D35' }}>
+                <h3 className="text-xl font-bold text-[#081d35]">
                   {editingContentId ? 'Edit Konten & Verifikasi 6-Point QC' : 'Unggah Artikel / Karya Warga Baru'}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowCmsModal(false)}
-                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748B' }}
+                className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleSaveContent} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            <form onSubmit={handleSaveContent} className="flex flex-col gap-4">
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.25rem' }}>
-                  Judul Artikel / Karya Komunitas:
+                <label className="block text-xs font-bold text-[#081d35] mb-1.5">
+                  Judul Artikel / Karya Komunitas
                 </label>
                 <input
                   type="text"
@@ -1283,19 +1633,17 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
                   value={contentForm.title}
                   onChange={(e) => setContentForm({ ...contentForm, title: e.target.value })}
                   placeholder="Contoh: Kisah Pengrajin Manisan Pala Dapur Mama Halimah"
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.84rem' }}
+                  className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-medium text-[#081d35] focus:border-[#081d35] focus:outline-none"
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.65rem' }}>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 700, marginBottom: '0.25rem' }}>
-                    Format Konten:
-                  </label>
+                  <label className="block text-xs font-bold text-[#081d35] mb-1.5">Format Konten</label>
                   <select
                     value={contentForm.content_type}
                     onChange={(e) => setContentForm({ ...contentForm, content_type: e.target.value })}
-                    style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.8rem' }}
+                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-xs font-bold text-[#081d35]"
                   >
                     <option value="ARTICLE">ARTICLE (Artikel SEO)</option>
                     <option value="PHOTO_GEOTAGGED">PHOTO_GEOTAGGED</option>
@@ -1305,13 +1653,11 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 700, marginBottom: '0.25rem' }}>
-                    Kategori Prioritas:
-                  </label>
+                  <label className="block text-xs font-bold text-[#081d35] mb-1.5">Kategori Prioritas</label>
                   <select
                     value={contentForm.priority_category}
                     onChange={(e) => setContentForm({ ...contentForm, priority_category: e.target.value })}
-                    style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.8rem' }}
+                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-xs font-bold text-[#081d35]"
                   >
                     <option value="DESTINASI">DESTINASI</option>
                     <option value="UMKM">UMKM</option>
@@ -1321,13 +1667,11 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 700, marginBottom: '0.25rem' }}>
-                    Pulau Lokasi:
-                  </label>
+                  <label className="block text-xs font-bold text-[#081d35] mb-1.5">Pulau Lokasi</label>
                   <select
                     value={contentForm.island_name}
                     onChange={(e) => setContentForm({ ...contentForm, island_name: e.target.value })}
-                    style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.8rem' }}
+                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-xs font-bold text-[#081d35]"
                   >
                     <option value="Pulau Neira">Pulau Neira</option>
                     <option value="Pulau Banda Besar">Pulau Banda Besar</option>
@@ -1339,42 +1683,40 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 700, marginBottom: '0.25rem' }}>
-                    Nama Penulis / Peserta Workshop:
+                  <label className="block text-xs font-bold text-[#081d35] mb-1.5">
+                    Nama Penulis / Peserta Workshop
                   </label>
                   <input
                     type="text"
                     required
                     value={contentForm.author_name}
                     onChange={(e) => setContentForm({ ...contentForm, author_name: e.target.value })}
-                    style={{ width: '100%', padding: '0.5rem 0.7rem', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.82rem' }}
+                    className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-xs font-medium text-[#081d35]"
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 700, marginBottom: '0.25rem' }}>
-                    Peran / Komunitas:
-                  </label>
+                  <label className="block text-xs font-bold text-[#081d35] mb-1.5">Peran / Komunitas</label>
                   <input
                     type="text"
                     required
                     value={contentForm.author_role}
                     onChange={(e) => setContentForm({ ...contentForm, author_role: e.target.value })}
-                    style={{ width: '100%', padding: '0.5rem 0.7rem', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.82rem' }}
+                    className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-xs font-medium text-[#081d35]"
                   />
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.65rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 700, marginBottom: '0.25rem' }}>
-                    Pilih Aset Gambar Lokal (Offline-Ready 3T):
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-[#081d35] mb-1.5">
+                    Pilih Aset Gambar Lokal (Offline-Ready 3T)
                   </label>
                   <select
                     value={contentForm.media_url || '/images/landmarks/belgica.jpg'}
                     onChange={(e) => setContentForm({ ...contentForm, media_url: e.target.value })}
-                    style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.8rem' }}
+                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-[#081d35]"
                   >
                     {LOCAL_LANDMARK_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>
@@ -1385,13 +1727,11 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 700, marginBottom: '0.25rem' }}>
-                    Tahap SOP 6-Tahap:
-                  </label>
+                  <label className="block text-xs font-bold text-[#081d35] mb-1.5">Tahap SOP 6-Tahap</label>
                   <select
                     value={contentForm.sop_stage}
                     onChange={(e) => setContentForm({ ...contentForm, sop_stage: e.target.value })}
-                    style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.8rem', fontWeight: 700 }}
+                    className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-[#081d35]"
                   >
                     <option value="IDE">1. IDE</option>
                     <option value="PRODUKSI">2. PRODUKSI</option>
@@ -1404,140 +1744,116 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 700, marginBottom: '0.25rem' }}>
-                  Ringkasan Konten / Hook Caption AIDA:
+                <label className="block text-xs font-bold text-[#081d35] mb-1.5">
+                  Ringkasan Konten / Hook Caption AIDA
                 </label>
                 <textarea
                   rows={2}
                   required
                   value={contentForm.summary}
                   onChange={(e) => setContentForm({ ...contentForm, summary: e.target.value })}
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.82rem' }}
+                  className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-xs leading-relaxed text-[#081d35]"
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.74rem', fontWeight: 700, marginBottom: '0.25rem' }}>
-                  Isi Narasi Lengkap / Naskah Storyboard AIDA:
+                <label className="block text-xs font-bold text-[#081d35] mb-1.5">
+                  Isi Narasi Lengkap / Naskah Storyboard AIDA
                 </label>
                 <textarea
                   rows={4}
                   required
                   value={contentForm.body_narrative}
                   onChange={(e) => setContentForm({ ...contentForm, body_narrative: e.target.value })}
-                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.82rem' }}
+                  className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-xs leading-relaxed text-[#081d35]"
                 />
               </div>
 
-              {/* 6-Point Quality Checklist SOP H6 */}
-              <div
-                style={{
-                  padding: '0.9rem 1rem',
-                  background: '#F8FAFC',
-                  border: '1px solid #CBD5E1',
-                  borderRadius: '12px',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <span style={{ fontWeight: 800, fontSize: '0.8rem', color: '#081D35' }}>
-                    Verifikasi 6-Point Quality Checklist SOP H6:
+              {/* Interactive 6-Point Quality Checklist SOP Card */}
+              <div className="rounded-2xl bg-[#f7f5f0] p-4 border border-slate-200">
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <span className="text-xs font-extrabold text-[#081d35] flex items-center gap-1.5">
+                    <ShieldCheck size={16} className="text-emerald-600" />
+                    Verifikasi 6-Point Quality Checklist SOP H6
                   </span>
-                  <span className="badge badge-emerald" style={{ fontSize: '0.7rem' }}>
+                  <span
+                    className={`rounded-full px-3 py-0.5 text-[11px] font-bold ${
+                      formQcPassedCount === 6 ? 'bg-emerald-600 text-white' : 'bg-amber-200 text-amber-900'
+                    }`}
+                  >
                     Skor: {formQcPassedCount}/6 Lulus
                   </span>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.45rem', fontSize: '0.76rem' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={contentForm.qc_accuracy}
-                      onChange={(e) => setContentForm({ ...contentForm, qc_accuracy: e.target.checked })}
-                    />
-                    1. Akurasi Fakta Sejarah &amp; Data
-                  </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={contentForm.qc_language}
-                      onChange={(e) => setContentForm({ ...contentForm, qc_language: e.target.checked })}
-                    />
-                    2. Kerapian Bahasa &amp; Caption AIDA
-                  </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={contentForm.qc_visual}
-                      onChange={(e) => setContentForm({ ...contentForm, qc_visual: e.target.checked })}
-                    />
-                    3. Kualitas Visual &amp; Optimasi 3T
-                  </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={contentForm.qc_adat_ethics}
-                      onChange={(e) => setContentForm({ ...contentForm, qc_adat_ethics: e.target.checked })}
-                    />
-                    4. Etika Adat Tabea &amp; Hukum Sasi
-                  </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={contentForm.qc_source_validated}
-                      onChange={(e) => setContentForm({ ...contentForm, qc_source_validated: e.target.checked })}
-                    />
-                    5. Validasi Narasumber / Tokoh
-                  </label>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={contentForm.qc_consent_copyright}
-                      onChange={(e) => setContentForm({ ...contentForm, qc_consent_copyright: e.target.checked })}
-                    />
-                    6. Consent Form &amp; Kredit Warga
-                  </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  {[
+                    {
+                      key: 'qc_accuracy' as const,
+                      label: '1. Akurasi Fakta Sejarah & Data',
+                    },
+                    {
+                      key: 'qc_language' as const,
+                      label: '2. Kerapian Bahasa & Caption AIDA',
+                    },
+                    {
+                      key: 'qc_visual' as const,
+                      label: '3. Kualitas Visual & Optimasi 3T',
+                    },
+                    {
+                      key: 'qc_adat_ethics' as const,
+                      label: '4. Etika Adat Tabea & Hukum Sasi',
+                    },
+                    {
+                      key: 'qc_source_validated' as const,
+                      label: '5. Validasi Narasumber / Tokoh',
+                    },
+                    {
+                      key: 'qc_consent_copyright' as const,
+                      label: '6. Consent Form & Kredit Warga',
+                    },
+                  ].map((item) => (
+                    <label
+                      key={item.key}
+                      className={`flex items-center gap-2.5 rounded-xl border p-2.5 cursor-pointer transition-colors ${
+                        contentForm[item.key]
+                          ? 'bg-white border-emerald-300 text-[#081d35] font-semibold'
+                          : 'bg-white/50 border-slate-200 text-slate-500'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={contentForm[item.key]}
+                        onChange={(e) => setContentForm({ ...contentForm, [item.key]: e.target.checked })}
+                        className="h-4 w-4 accent-emerald-600 rounded"
+                      />
+                      <span>{item.label}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.25rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-3 border-t border-slate-200">
+                <label className="flex items-center gap-2 text-xs font-bold text-[#081d35] cursor-pointer">
                   <input
                     type="checkbox"
                     checked={contentForm.is_published}
                     onChange={(e) => setContentForm({ ...contentForm, is_published: e.target.checked })}
+                    className="h-4 w-4 accent-[#081d35] rounded"
                   />
                   Tayangkan Langsung di Portal Publik BST
                 </label>
 
-                <div style={{ display: 'flex', gap: '0.6rem' }}>
+                <div className="flex items-center gap-2.5 self-end sm:self-auto">
                   <button
                     type="button"
                     onClick={() => setShowCmsModal(false)}
-                    style={{
-                      padding: '0.55rem 1rem',
-                      borderRadius: '10px',
-                      border: '1px solid #CBD5E1',
-                      background: '#FFFFFF',
-                      color: '#475569',
-                      fontSize: '0.8rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                    }}
+                    className="rounded-full border border-slate-300 bg-white px-5 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
-                    style={{
-                      padding: '0.55rem 1.2rem',
-                      borderRadius: '10px',
-                      border: 'none',
-                      background: 'linear-gradient(135deg, #F4B75E 0%, #E0A24A 100%)',
-                      color: '#081D35',
-                      fontSize: '0.8rem',
-                      fontWeight: 800,
-                      cursor: 'pointer',
-                    }}
+                    className="rounded-full bg-[#f4b75e] px-6 py-2.5 text-xs font-extrabold text-[#081d35] shadow-md hover:bg-amber-400 transition-colors"
                   >
                     Simpan ke Bank Konten CMS
                   </button>

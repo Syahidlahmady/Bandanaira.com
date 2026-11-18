@@ -1,6 +1,57 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { ArrowUpRightIcon } from './LandingIcons'
 import { setPreferredTourismSubTab, TourismSubTab } from '../../services/tourism'
+
+export interface BandaVisualReelItem {
+  id: string
+  title: string
+  subtitle: string
+  location: string
+  aspectLabel: string
+  isAnimatedWebp: boolean
+  src: string
+  posterSrc: string
+  caption: string
+}
+
+export const BANDA_PORTRAIT_REELS: BandaVisualReelItem[] = [
+  {
+    id: 'reel-pohon-sejuta-umat',
+    title: 'Teduhnya Pohon Sejuta Umat',
+    subtitle: 'Reels 9:16 · 15fps Motion WebP',
+    location: 'Benteng Lonthoir, Banda Besar',
+    aspectLabel: '9:16 LIVE MOTION',
+    isAnimatedWebp: true,
+    src: '/images/media/pohon-sejuta-umat-motion.webp',
+    posterSrc: '/images/landmarks/pohon-sejuta-umat.webp',
+    caption:
+      'Suasana angin sepoi di bawah naungan Pohon Sejuta Umat menghadap langsung ke kerucut Gunung Api Banda dan perairan hijau turkois Selat Zonnegat.',
+  },
+  {
+    id: 'reel-sunset-pelabuhan',
+    title: 'Senja Keemasan Pelabuhan Neira',
+    subtitle: 'Reels 9:16 · 15fps Motion WebP',
+    location: 'Pelabuhan Bandanaira',
+    aspectLabel: '9:16 LIVE MOTION',
+    isAnimatedWebp: true,
+    src: '/images/media/sunset-pelabuhan-gunung-api.webp',
+    posterSrc: '/images/landmarks/pelabuhan.jpg',
+    caption:
+      'Momen matahari terbenam di balik siluet megah Gunung Api Banda yang memantulkan cahaya keemasan di sepanjang dermaga Pelabuhan Bandanaira.',
+  },
+  {
+    id: 'portrait-gunung-api',
+    title: 'Siluet Agung Gunung Banda Api',
+    subtitle: 'Potret Vertikal · 3024×4032',
+    location: 'Selat Neira (656 mdpl)',
+    aspectLabel: '3:4 PORTRAIT',
+    isAnimatedWebp: false,
+    src: '/images/landmarks/gunung-api-portrait.webp',
+    posterSrc: '/images/landmarks/gunung-api-portrait.webp',
+    caption:
+      'Bingkai alami dedaunan pesisir memagari kemegahan Gunung Api Banda dari seberang selat yang tenang.',
+  },
+]
 
 export interface PublicSawDestination {
   id: string
@@ -94,8 +145,7 @@ export const PUBLIC_SAW_DESTINATIONS: PublicSawDestination[] = [
     description:
       'Jalur pendakian memacu adrenalin menuju bibir kawah aktif dengan panorama 360 derajat seluruh gugusan Kepulauan Banda.',
     highlights: ['Trekking Sunrise', 'Kawah Vulkanik Aktif', 'Pemandu Resmi'],
-    image:
-      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=85',
+    image: '/images/landmarks/gunung-api-portrait.webp',
     guideWhatsapp: '6281234567894',
   },
   {
@@ -154,9 +204,31 @@ export interface TourismSawSectionProps {
 
 export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate }) => {
   const [activeIndex, setActiveIndex] = useState(0)
+  const [reelsInView, setReelsInView] = useState(false)
+  const [selectedReelModal, setSelectedReelModal] = useState<BandaVisualReelItem | null>(null)
   const carouselRef = useRef<HTMLDivElement>(null)
+  const reelsSectionRef = useRef<HTMLDivElement>(null)
 
   const activeDest = PUBLIC_SAW_DESTINATIONS[activeIndex]
+
+  // Viewport gating for 11-14MB animated WebP reels so FCP/LCP on initial load is never blocked
+  useEffect(() => {
+    const el = reelsSectionRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      return
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setReelsInView(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '80px', threshold: 0.15 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   const openTourismSubTab = (subTab: TourismSubTab) => {
     setPreferredTourismSubTab(subTab)
@@ -338,6 +410,7 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
                     alt={dest.name}
                     className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                     loading="lazy"
+                    decoding="async"
                   />
 
                   {/* Bottom Gradient Scrim & Typography */}
@@ -369,6 +442,143 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
           </div>
         </div>
       </div>
+
+      {/* 9:16 Visual Reels & Portrait Moments Strip (Viewport-Gated for FCP/LCP Protection) */}
+      <div
+        ref={reelsSectionRef}
+        className="relative max-w-7xl mx-auto mt-16 pt-12 border-t border-white/10"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+          <div>
+            <div className="inline-flex items-center gap-2 mb-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+              <span className="font-sans text-[11px] font-bold tracking-[0.22em] text-amber-400 uppercase">
+                REELS &amp; POTRET VERTIKAL 9:16 · @NEIRABASUDARA
+              </span>
+            </div>
+            <h3 className="font-sans font-bold text-2xl sm:text-3xl text-white">
+              Momen Hidup dari{' '}
+              <span className="font-script font-normal text-amber-300 text-3xl sm:text-4xl ml-1">
+                Sudut Kepulauan
+              </span>
+            </h3>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => openTourismSubTab('community_literacy')}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/20 bg-white/5 hover:bg-amber-400 hover:text-[#071322] hover:border-amber-400 text-xs font-semibold text-slate-200 transition-all self-start sm:self-auto"
+          >
+            <span>Buka Galeri &amp; Jurnal Komunitas</span>
+            <ArrowUpRightIcon className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {BANDA_PORTRAIT_REELS.map((reel) => (
+            <div
+              key={reel.id}
+              onClick={() => setSelectedReelModal(reel)}
+              className="group relative aspect-[9/16] max-h-[480px] w-full mx-auto rounded-3xl overflow-hidden cursor-pointer border border-white/15 bg-[#081d35] shadow-xl hover:ring-2 hover:ring-amber-400 transition-all duration-300"
+            >
+              <img
+                src={reelsInView ? reel.src : reel.posterSrc}
+                alt={reel.title}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#071322] via-[#071322]/25 to-black/20" />
+
+              <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-black/55 backdrop-blur-md border border-white/15 px-3 py-1 text-[10px] font-extrabold tracking-wider text-amber-300 uppercase">
+                  {reel.isAnimatedWebp && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  )}
+                  {reel.aspectLabel}
+                </span>
+                <span className="rounded-full bg-white/15 backdrop-blur-md px-2.5 py-1 text-[10px] font-semibold text-white">
+                  {reel.location}
+                </span>
+              </div>
+
+              <div className="absolute bottom-5 left-5 right-5 text-white">
+                <span className="block text-[11px] font-semibold text-amber-300 mb-1">
+                  {reel.subtitle}
+                </span>
+                <h4 className="font-sans font-bold text-lg text-white leading-snug mb-1.5 group-hover:text-amber-300 transition-colors">
+                  {reel.title}
+                </h4>
+                <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
+                  {reel.caption}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 9:16 Portrait Lightbox Modal */}
+      {selectedReelModal && (
+        <div
+          onClick={() => setSelectedReelModal(null)}
+          className="fixed inset-0 z-[1200] flex items-center justify-center bg-[#071322]/85 p-4 backdrop-blur-md"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative flex flex-col sm:flex-row max-w-3xl w-full max-h-[90vh] overflow-hidden rounded-3xl bg-[#081d35] border border-white/20 shadow-2xl text-white"
+          >
+            <div className="relative w-full sm:w-[320px] aspect-[9/16] max-h-[75vh] sm:max-h-[85vh] shrink-0 bg-black mx-auto">
+              <img
+                src={selectedReelModal.src}
+                alt={selectedReelModal.title}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="flex flex-col justify-between p-6 sm:p-8 flex-1 overflow-y-auto">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-4">
+                  <span className="rounded-full bg-amber-400/20 border border-amber-400/40 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-amber-300">
+                    {selectedReelModal.aspectLabel}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedReelModal(null)}
+                    aria-label="Tutup pratinjau"
+                    className="rounded-full bg-white/10 hover:bg-amber-400 hover:text-[#071322] p-2 text-white transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-1">
+                  {selectedReelModal.title}
+                </h3>
+                <p className="text-xs font-semibold text-amber-300 mb-4">
+                  {selectedReelModal.location} · {selectedReelModal.subtitle}
+                </p>
+                <p className="text-sm text-slate-300 leading-relaxed mb-6">
+                  {selectedReelModal.caption}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedReelModal(null)
+                  openTourismSubTab('community_literacy')
+                }}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#f4b75e] px-5 py-3 text-xs font-extrabold text-[#081d35] hover:bg-amber-400 transition-colors"
+              >
+                <span>Jelajahi Seluruh Karya di Jurnal Komunitas</span>
+                <ArrowUpRightIcon className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }

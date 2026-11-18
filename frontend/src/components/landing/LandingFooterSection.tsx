@@ -89,6 +89,22 @@ export const LandingFooterSection: React.FC<LandingFooterSectionProps> = ({
               Kepulauan Banda, Maluku, Indonesia
             </span>
           </address>
+          <div className="flex items-center gap-3 pt-1">
+            <img
+              src="/images/branding/nirana-logo.webp"
+              alt="NIRANA - Banda Neira Living Labs"
+              className="h-12 w-12 object-contain rounded-lg bg-white/5 p-1"
+              loading="lazy"
+              decoding="async"
+            />
+            <img
+              src="/images/branding/bst-emblem.webp"
+              alt="Banda Smart Tourism Emblem"
+              className="h-11 w-11 object-contain rounded-lg bg-white/95 p-0.5"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 flex-1 w-full">

@@ -1811,7 +1811,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   boxShadow: cmsSubTab === 'community_contents' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
                 }}
               >
-                <BookOpen size={14} /> 📝 Konten &amp; Karya Warga
+                <BookOpen size={14} /> Konten &amp; Karya Warga
               </button>
             </div>
           </div>
