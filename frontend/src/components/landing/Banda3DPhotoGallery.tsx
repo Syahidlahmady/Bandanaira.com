@@ -336,11 +336,11 @@ export const Banda3DPhotoGallery: React.FC = () => {
       const sectionTop = rect.top + scrollY
       const isMobile = window.innerWidth < 1024
       const isMobileDevice = window.innerWidth < 768
-      const travelPadding = isMobile ? 250 : 200
+      const travelPadding = isMobile ? 150 : 200
       const activeStart = sectionTop - travelPadding
       const totalHeight = sectionRef.current.offsetHeight
-      const activeEnd = sectionTop + totalHeight - (isMobile ? 1000 : 900)
-      const speedMultiplier = isMobile ? 1.6 : 1.2
+      const activeEnd = sectionTop + totalHeight - (isMobile ? 550 : 900)
+      const speedMultiplier = isMobile ? 2.8 : 1.2
       cachedBoundsRef.current = { activeStart, activeEnd, speedMultiplier, isMobileDevice }
     }
 
@@ -463,8 +463,8 @@ export const Banda3DPhotoGallery: React.FC = () => {
       aria-label="Kompilasi Galeri Foto Banda Neira"
       className="relative z-10 w-full bg-[#081d35]"
     >
-      {/* Scroll track with generous height for smooth 3D perspective flythrough */}
-      <div className="relative z-10 h-[2600px] w-full lg:h-[3500px]">
+      {/* Scroll track with generous height on desktop and mobile-optimized height */}
+      <div className="relative z-10 h-[1350px] w-full lg:h-[3500px]">
         {/* Sticky viewport stage with true 3D perspective */}
         <div
           className="sticky top-0 h-[100dvh] min-h-[100dvh] w-full overflow-hidden flex items-center justify-center"

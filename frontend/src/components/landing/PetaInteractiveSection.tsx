@@ -20,11 +20,14 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
   const [shouldLoadMap, setShouldLoadMap] = useState<boolean>(false)
   const [mapUnlockedOnMobile, setMapUnlockedOnMobile] = useState<boolean>(false)
   const [isMobile, setIsMobile] = useState<boolean>(() =>
-    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+    typeof window !== 'undefined'
+      ? window.innerWidth < 1024 || window.matchMedia('(pointer: coarse)').matches
+      : false
   )
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768)
+    const handleResize = () =>
+      setIsMobile(window.innerWidth < 1024 || window.matchMedia('(pointer: coarse)').matches)
     window.addEventListener('resize', handleResize, { passive: true })
     return () => window.removeEventListener('resize', handleResize)
   }, [])
@@ -42,7 +45,7 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
           observer.disconnect()
         }
       },
-      { rootMargin: '350px' }
+      { rootMargin: '100px' }
     )
 
     if (containerRef.current) {

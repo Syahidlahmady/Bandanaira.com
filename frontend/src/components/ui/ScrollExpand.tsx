@@ -275,7 +275,14 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     }
   }, [applyProgress, useWindowScroll])
 
-  const isYoutube = (mediaType === 'youtube' || mediaType === 'iframe') && Boolean(youtubeId)
+  // Strict touch/mobile lock: under no circumstances allow YouTube iframe on touch or mobile viewports
+  const isTouchOrMobileDevice = typeof window !== 'undefined' && (
+    window.innerWidth < 1024 ||
+    window.matchMedia('(pointer: coarse)').matches ||
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  )
+
+  const isYoutube = !isTouchOrMobileDevice && (mediaType === 'youtube' || mediaType === 'iframe') && Boolean(youtubeId)
 
   const media = isYoutube ? (
     <div

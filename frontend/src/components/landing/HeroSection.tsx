@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import bandaHeroImage from '../../assets/banda.webp'
 import { NutmegLogoIcon, ArrowUpRightIcon } from './LandingIcons'
 import { ScrollExpand } from '../ui/ScrollExpand'
+
+const HERO_IMAGE_URL = '/banda.webp'
 
 export const defaultNavigationItems = [
   { label: 'Beranda', href: '#beranda' },
@@ -248,8 +249,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       <ScrollExpand
         mediaType={isMobile ? 'image' : 'youtube'}
         youtubeId={isMobile ? '' : 'bVvv6oNiFnw'}
-        poster={bandaHeroImage}
-        src={bandaHeroImage}
+        poster={HERO_IMAGE_URL}
+        src={HERO_IMAGE_URL}
         alt="Pemandangan Banda Neira dari udara dengan laut dan pulau-pulau di sekitarnya"
         useWindowScroll
         startWidth={isMobile ? 70 : 44}
@@ -257,8 +258,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         startRadius={isMobile ? 18 : 24}
         endRadius={0}
         mediaZoom={isMobile ? 1.05 : 1.22}
-        scrollDistance={isMobile ? 0.45 : 0.75}
-        holdDistance={isMobile ? 0.8 : 1.6}
+        scrollDistance={isMobile ? 0.28 : 0.75}
+        holdDistance={isMobile ? 0.05 : 1.6}
         smoothing={isMobile ? 0 : 0.1}
         overlayScrim={0.4}
         onProgressChange={handleProgressChange}

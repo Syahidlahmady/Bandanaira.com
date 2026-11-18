@@ -59,6 +59,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 54: Comprehensive Mobile Performance & Responsiveness Optimization**
 - [x] **Phase 55: Zero-Jank Scroll Optimization, Strict Mobile Hero Image Rendering, and Reflow Elimination Across All Devices**
 - [x] **Phase 56: Deep Engine Optimization: banda.webp Compression (95% Payload Reduction), RAF Scroll Decoupling, Viewport 3D Culling, and Content-Visibility Acceleration**
+- [x] **Phase 57: Direct /banda.webp Mobile Route, Strict Mobile YouTube Lockout, and Mobile Scroll Distance Tuning**
 
 ---
 
@@ -875,3 +876,20 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Browser (Chrome Android/Desktop, Safari) menunda kalkulasi layout, style, dan paint untuk section bawah hingga pengguna menggulir mendekatinya, menurunkan beban komputasi awal hingga >60%.
 - [x] 56.6 Verifikasi Build Produksi Vite:
   - Menjalankan `npm --prefix frontend run build` lolos 100% (2.042 modul ditransformasikan dalam 7.68s, exit code 0).
+
+---
+
+## [Phase 57] - Direct /banda.webp Mobile Route, Strict Mobile YouTube Lockout, and Mobile Scroll Distance Tuning
+- [x] 57.1 Penerapan Rute Langsung `/banda.webp` Tanpa Hash Bundler:
+  - Mengubah import aset di `HeroSection.tsx` dari import module Vite (yang menghasilkan nama acak seperti `/assets/banda-DZpgqXy0.webp`) menjadi rute publik statis `/banda.webp` sehingga browser secara harfiah merequest `GET /banda.webp 200 OK` dan inspect element menampilkan `<img src="/banda.webp" />`.
+  - Berkas `frontend/public/banda.webp` dioptimasi ulang menjadi 211 KB (1920x1106).
+- [x] 57.2 Strict Lockout YouTube Iframe di Layar Sentuh (`ScrollExpand.tsx`):
+  - Menambahkan pengecekan hardware touch dan viewport mobile langsung di level inti `ScrollExpand.tsx` (`!isTouchOrMobileDevice && ...`). Jika terdeteksi layar sentuh atau lebar < 1024px, kondisi `isYoutube` dipaksa 100% `false` tanpa terkecuali, mencegah iframe termuat dalam kondisi apa pun.
+- [x] 57.3 Eliminasi Efek "Layar Macet" pada Scroll Mobile (`HeroSection.tsx`):
+  - Memangkas `holdDistance` pada mobile dari `0.8` menjadi `0.05` dan `scrollDistance` dari `0.45` menjadi `0.28`. Begitu kartu hero selesai mengembang, layar langsung mengalir mulus ke section berikutnya tanpa menahan atau membekukan scroll pengguna selama ratusan pixel.
+- [x] 57.4 Pemangkasan Ketinggian Galeri 3D Mobile (`Banda3DPhotoGallery.tsx`):
+  - Memangkas ketinggian scroll galeri 3D pada mobile dari `2600px` menjadi `1350px` dan menaikkan `speedMultiplier` menjadi `2.8`. Seluruh 17 kartu foto dapat dijelajahi hanya dalam 2-3 usapan jari yang ringan tanpa membebani GPU ponsel.
+- [x] 57.5 Pengurangan Radius Interseksi Peta (`PetaInteractiveSection.tsx`):
+  - Mengurangi `rootMargin` IntersectionObserver peta dari `350px` menjadi `100px` agar pustaka Leaflet dan ribuan koordinat GeoJSON tidak diunduh di background saat pengguna masih berada di bagian atas halaman.
+- [x] 57.6 Verifikasi Build Produksi Vite:
+  - Menjalankan `npm --prefix frontend run build` sukses 100% (2.041 modul ditransformasikan dalam 6.72s, exit code 0).
