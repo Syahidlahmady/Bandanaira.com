@@ -264,16 +264,19 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
       applyProgress(current)
     }
 
-    measure()
-    target = readProgress()
-    current = target
-    applyProgress(current)
+    const initRaf = requestAnimationFrame(() => {
+      measure()
+      target = readProgress()
+      current = target
+      applyProgress(current)
+    })
 
     const scroller = useWindowScroll ? window : root
     scroller.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onResize)
 
     return () => {
+      cancelAnimationFrame(initRaf)
       if (raf) cancelAnimationFrame(raf)
       if (scrollRaf) cancelAnimationFrame(scrollRaf)
       scroller.removeEventListener('scroll', onScroll)
@@ -314,12 +317,12 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     >
       <img
         src={poster || src || '/banda.webp'}
-        srcSet="/banda-mobile.webp 800w, /banda.webp 1920w"
-        sizes="(max-width: 768px) 100vw, 1920px"
+        srcSet="/banda-480.webp 480w, /banda-960.webp 960w, /banda-1440.webp 1440w, /banda.webp 1920w"
+        sizes="(max-width: 1024px) 100vw, 1920px"
         alt={alt}
         width={1920}
         height={1106}
-        {...({ fetchpriority: 'high' } as any)}
+        fetchPriority="high"
         decoding="async"
         className="absolute inset-0 w-full h-full object-cover -z-10"
         draggable={false}
@@ -350,12 +353,12 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
       ref={mediaRef as React.RefObject<HTMLImageElement>}
       className="scroll-expand__media"
       src={src || poster || '/banda.webp'}
-      srcSet="/banda-mobile.webp 800w, /banda.webp 1920w"
-      sizes="(max-width: 768px) 100vw, 1920px"
+      srcSet="/banda-480.webp 480w, /banda-960.webp 960w, /banda-1440.webp 1440w, /banda.webp 1920w"
+      sizes="(max-width: 1024px) 100vw, 1920px"
       alt={alt}
       width={1920}
       height={1106}
-      {...({ fetchpriority: 'high' } as any)}
+      fetchPriority="high"
       decoding="async"
       draggable={false}
     />

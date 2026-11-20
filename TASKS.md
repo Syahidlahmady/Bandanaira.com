@@ -1021,3 +1021,35 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Memperbarui `CACHE_NAME` menjadi `banda-digital-v7` dan menambahkan `/banda-mobile.webp` ke dalam cache statis awal sehingga browser klien segera mengosongkan cache lama `v6`/`v5` dan menyajikan aset baru tanpa bentrok IndexedDB/Service Worker.
 - [x] 59.7 Verifikasi Build Produksi:
   - Menjalankan `npm --prefix frontend run build` sukses 100% (2.041 modul ditransformasikan dalam 7.22s, exit code 0).
+
+---
+
+## FASE 60: OPTIMASI PERFORMA MENDALAM, ELIMINASI WATERFALL 404 FONT, DAN CITRA BERTAHAP RESPONSISF
+- [x] 60.1 Eliminasi 12 Permintaan 404 Font yang Memblokir Soket HTTP/1.1 (`frontend/src/styles/global.css`):
+  - Menghapus referensi `url('/fonts/...')` pada `@font-face` untuk font kustom yang belum memiliki berkas fisik lokal di folder `/fonts/`.
+  - Mengubah `@font-face` untuk hanya mendeteksi font terinstal di OS via `local()` dan langsung beralih ke fallback geometris webfont harmonis (`Style Script` dan `Montserrat`).
+  - Menghilangkan 12 permintaan blocking HTTP 404 yang sebelumnya menyebabkan saturasi koneksi HTTP/1.1 (penyebab utama est savings 2.440 ms pada Lighthouse).
+- [x] 60.2 Pemangkasan Variasi Google Fonts & Preconnect Tak Perlu (`frontend/index.html`):
+  - Mengurangi muatan Google Fonts dari 23 varian menjadi 10 varian esensial (`Montserrat:wght@400;500;600;700`, `Cormorant+Garamond:wght@400;600;700`, `Style+Script`, `JetBrains+Mono:wght@400;500`) dengan parameter `display=swap`.
+  - Menghapus keluarga `Plus Jakarta Sans` yang redundant di belakang `Montserrat` pada font stack sans-serif.
+  - Menghapus tag `preconnect` ke `youtube-nocookie.com` yang sebelumnya mencuri slot koneksi TCP/TLS pada perangkat seluler.
+- [x] 60.3 Generasi 4-Tier Citra Hero Responsif LCP (`frontend/public/banda-*.webp` & `ScrollExpand.tsx`):
+  - Membuat varian resolusi optimal: `banda-480.webp` (24 KB), `banda-960.webp` (68 KB), `banda-1440.webp` (120 KB), dan `banda.webp` (207 KB).
+  - Memperbarui tag preload `index.html` dan `ScrollExpand.tsx` dengan `imagesrcset` dan `imagesizes` presisi sehingga perangkat seluler mengunduh varian 24-68 KB (menghemat hingga 140+ KB dibanding gambar desktop 207 KB).
+  - Menggunakan atribut `fetchPriority="high"` native React.
+- [x] 60.4 Penghapusan Dynamic GPU Blur & Viewport-Gating Listener 3D Gallery (`Banda3DPhotoGallery.tsx`):
+  - Menghilangkan kalkulasi dinamis `filter: blur(4px)` pada 23 kartu 3D saat scrolling, mempertahankan GPU rendering 60/120fps murni dengan `will-change: transform`.
+  - Mengintegrasikan `IntersectionObserver` pada `Banda3DPhotoGallery` (`rootMargin: '400px 0px'`) untuk melepaskan listener scroll saat galeri berada di luar viewport.
+- [x] 60.5 Pemisahan State React dari Render Loop WebGL & Viewport Gating (`FlyingPosters.tsx` & `HeritageSpiceSection.tsx`):
+  - Mengintegrasikan `useImperativeHandle` dan `forwardRef` pada `FlyingPosters.tsx` (`FlyingPostersHandle`).
+  - Mengganti state `scrollProgress` pada `HeritageSpiceSection.tsx` dengan pemanggilan langsung `postersRef.current?.applyProgress(progress)`, mengeliminasi 60 re-render React per detik selama scroll.
+  - Menambahkan `IntersectionObserver` pada `HeritageSpiceSection` untuk mengaktifkan scroll listener hanya saat mendekati viewport.
+- [x] 60.6 Pencegahan Ledakan Alokasi VRAM WebP Bergerak (`TourismSawSection.tsx`):
+  - Menggunakan poster gambar statis ringan pada grid kartu destinasi reel.
+  - Memuat media animasi bergerak hanya saat pengguna membuka modal pratinjau (`selectedReelModal`), menghemat 800 MB - 1,6 GB alokasi bitmap frame di memori perangkat mobile.
+  - Menghapus variabel dan efek tak terpakai (`reelsInView`, `useEffect`).
+- [x] 60.7 Defer Inisialisasi Peta Spasial (`PetaInteractiveSection.tsx`):
+  - Menjadwalkan pemuatan Leaflet via `requestIdleCallback` dengan timeout 1500ms agar rendering peta tidak memotong frame gulir pengguna.
+- [x] 60.8 Verifikasi dan Pengujian Menyeluruh:
+  - Frontend: `npm --prefix frontend run build` sukses (2045 modul, 0 error).
+  - Backend: `PYTHONPATH=. .venv/bin/pytest backend/tests` lolos 93/93 tes otomatis (100% passing).

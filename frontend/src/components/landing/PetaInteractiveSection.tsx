@@ -43,11 +43,15 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) {
-          setShouldLoadMap(true)
+          if ('requestIdleCallback' in window) {
+            (window as any).requestIdleCallback(() => setShouldLoadMap(true), { timeout: 1500 })
+          } else {
+            setTimeout(() => setShouldLoadMap(true), 250)
+          }
           observer.disconnect()
         }
       },
-      { rootMargin: '100px' }
+      { rootMargin: '150px' }
     )
 
     if (containerRef.current) {

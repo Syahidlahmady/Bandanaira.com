@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef } from 'react'
 import { ArrowUpRightIcon } from './LandingIcons'
 import { setPreferredTourismSubTab, TourismSubTab } from '../../services/tourism'
 import { useLanguage } from '../../context/LanguageContext'
@@ -206,31 +206,11 @@ export interface TourismSawSectionProps {
 export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate }) => {
   const { t } = useLanguage()
   const [activeIndex, setActiveIndex] = useState(0)
-  const [reelsInView, setReelsInView] = useState(false)
   const [selectedReelModal, setSelectedReelModal] = useState<BandaVisualReelItem | null>(null)
   const carouselRef = useRef<HTMLDivElement>(null)
   const reelsSectionRef = useRef<HTMLDivElement>(null)
 
   const activeDest = PUBLIC_SAW_DESTINATIONS[activeIndex]
-
-  // Viewport gating for 11-14MB animated WebP reels so FCP/LCP on initial load is never blocked
-  useEffect(() => {
-    const el = reelsSectionRef.current
-    if (!el || typeof IntersectionObserver === 'undefined') {
-      return
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          setReelsInView(true)
-          observer.disconnect()
-        }
-      },
-      { rootMargin: '80px', threshold: 0.15 }
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
 
   const openTourismSubTab = (subTab: TourismSubTab) => {
     setPreferredTourismSubTab(subTab)
@@ -484,13 +464,24 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
               className="group relative aspect-[9/16] max-h-[480px] w-full mx-auto rounded-3xl overflow-hidden cursor-pointer border border-white/15 bg-[#081d35] shadow-xl hover:ring-2 hover:ring-amber-400 transition-all duration-300"
             >
               <img
-                src={reelsInView ? reel.src : reel.posterSrc}
+                src={reel.posterSrc}
                 alt={reel.title}
                 loading="lazy"
                 decoding="async"
                 className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#071322] via-[#071322]/25 to-black/20" />
+
+              {/* Play / Live Motion overlay button */}
+              {reel.isAnimatedWebp && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-12 h-12 rounded-full bg-black/55 backdrop-blur-md border border-white/25 flex items-center justify-center text-white shadow-xl transform transition-transform duration-300 group-hover:scale-115 group-hover:bg-amber-400 group-hover:text-[#071322] group-hover:border-amber-300">
+                    <svg className="w-5 h-5 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
+                      <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
+                  </div>
+                </div>
+              )}
 
               <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-black/55 backdrop-blur-md border border-white/15 px-3 py-1 text-[10px] font-extrabold tracking-wider text-amber-300 uppercase">
