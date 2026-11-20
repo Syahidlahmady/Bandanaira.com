@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   LineChart,
   Line,
@@ -1035,12 +1035,31 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
   const activeRoleKey: RoleKey = isAdmin ? selectedRoleKey : detectInitialRoleKey()
   const profile = ROLE_PROFILES[activeRoleKey] || ROLE_PROFILES.resident
 
-  const getUserInitials = () => {
-    const name = currentUser?.full_name || currentUser?.username || 'Warga Banda'
-    const parts = name.trim().split(' ')
-    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
-    return name.slice(0, 2).toUpperCase()
-  }
+  // Waktu Real-Time Sinkron WIT (Waktu Indonesia Timur / UTC+9)
+  const [currentDateTime, setCurrentDateTime] = useState<Date>(() => new Date())
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentDateTime(new Date())
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const formattedDate = currentDateTime.toLocaleDateString('id-ID', {
+    timeZone: 'Asia/Jayapura',
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+
+  const formattedTime = currentDateTime.toLocaleTimeString('id-ID', {
+    timeZone: 'Asia/Jayapura',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  })
 
   const handleVerifySubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -1109,44 +1128,13 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
           </h1>
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap self-start lg:self-center">
-          {/* Tanggal & Waktu Terkini */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#E2E8F0] text-xs font-medium text-slate-600 shadow-xs">
+        <div className="flex items-center gap-3 self-start lg:self-center">
+          {/* Tanggal & Waktu Real-Time Sinkron WIT */}
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white border border-[#E2E8F0] text-xs font-medium text-slate-600 shadow-xs">
             <Clock size={14} className="text-[#D97706]" />
-            <span>
-              {new Date().toLocaleDateString('id-ID', {
-                weekday: 'short',
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-              })}{' '}
-              • Waktu Banda (WIT)
-            </span>
-          </div>
-
-          {/* Profil Singkat & Role Badge */}
-          <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200">
-            <div className="size-8 rounded-lg bg-[#081D35] text-[#F4B75E] font-bold text-xs flex items-center justify-center shadow-xs">
-              {getUserInitials()}
-            </div>
-            <div className="hidden sm:flex flex-col text-left">
-              <span className="text-xs font-bold text-[#081D35] leading-tight truncate max-w-[130px]">
-                {currentUser?.full_name || currentUser?.username || 'Warga Banda'}
-              </span>
-              <span className="text-[10px] text-[#D97706] font-medium leading-tight">
-                {profile.shortBadge}
-              </span>
-            </div>
-            {onLogout && (
-              <button
-                type="button"
-                onClick={onLogout}
-                className="hidden sm:inline-flex px-2 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-lg border border-rose-200 transition cursor-pointer"
-                title="Keluar Akun"
-              >
-                Keluar
-              </button>
-            )}
+            <span>{formattedDate}</span>
+            <span className="text-slate-300">•</span>
+            <span className="font-mono tabular-nums font-bold text-[#081D35]">{formattedTime} WIT</span>
           </div>
         </div>
       </header>
