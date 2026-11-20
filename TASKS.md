@@ -1072,3 +1072,23 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Pengujian Chromium headless CDP memverifikasi nihil exception atau runtime error saat logout.
   - 15 pengujian `pytest tests/test_auth.py` dan 93 pengujian backend keseluruhan lulus 100%.
   - Build produksi frontend Vite sukses 100% (2.045 modul, exit code 0).
+
+---
+
+## [Phase 62] - Alternatif Statis & Ringan Hero Section dan Galeri 3D Khusus Mobile
+- [x] 62.1 Alternatif Statis Hero Section pada Layar Seluler (`frontend/src/components/landing/HeroSection.tsx`):
+  - Mengganti pembungkus berat `ScrollExpand` (133vh sticky track dan perhitungan clip-path dinamis) dengan layout Hero statis murni (`min-h-[100dvh]`) khusus mobile (`isMobile` / `< 1024px`).
+  - Menggunakan citra latar WebP 4-tier responsif langsung (`fetchPriority="high"`, decoding asinkron) dengan scrim gradien kontras tinggi.
+  - Navbar seluler selalu terpasang rapi di puncak tanpa jeda animasi scroll 85%, lengkap dengan logo, tombol masuk/daftar, pemilihan bahasa, dan menu navigasi.
+  - Tipografi headline, kartu narasi bertekstur kaca, dan tombol aksi ganda langsung tampil tajam tanpa ketergantungan scroll.
+  - Pengguliran layar ponsel berjalan dengan akselerasi perangkat keras native 60/120Hz tanpa intervensi listener JavaScript.
+- [x] 62.2 Alternatif Galeri Foto Statis Ringan pada Layar Seluler (`frontend/src/components/landing/Banda3DPhotoGallery.tsx`):
+  - Mengganti container track 3D sticky 1350px dan manipulasi koordinat Z pada 23 kartu dengan tampilan galeri seluler statis horizontal snap rail (`scroll-snap-type: x mandatory`).
+  - Menyajikan seluruh 12 foto pusaka dan benteng Banda Neira dengan kartu berdimensi 4:3, border elegan, dan label pusaka.
+  - Mematikan sepenuhnya registrasi listener scroll `window.addEventListener('scroll')` dan `IntersectionObserver` 3D pada perangkat seluler (`breakpoint !== 'lg'`).
+  - Memangkas tinggi vertikal seksi galeri dari 1350px menjadi ~450px yang ringkas dan ramah sentuhan.
+- [x] 62.3 Pertahankan Pengalaman Sinematik Kaya pada Desktop (`>= 1024px`):
+  - Tampilan desktop tetap mempertahankan `ScrollExpand` dengan video YouTube latar dan penjelajahan galeri perspektif 3D lengkap.
+- [x] 62.4 Verifikasi Build Produksi & Pengujian:
+  - Build frontend `npm --prefix frontend run build` sukses 100% (2.045 modul, exit code 0).
+  - Pengujian backend `test_health`, `test_tourism`, dan `test_auth` lulus 100% (31 passed).

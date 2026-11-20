@@ -339,31 +339,35 @@ export const Banda3DPhotoGallery: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
+  const isMobile = breakpoint !== 'lg'
+
   // Scroll effect driving 3D Z-flythrough and Depth-of-Field Blur (Reflow-free)
   const cachedBoundsRef = useRef({ activeStart: 0, activeEnd: 0, speedMultiplier: 1.2, isMobileDevice: false })
 
   useEffect(() => {
+    if (isMobile) return
+
     const measureBounds = () => {
       if (!sectionRef.current) return
       const rect = sectionRef.current.getBoundingClientRect()
       const scrollY = window.scrollY
       const sectionTop = rect.top + scrollY
-      const isMobile = window.innerWidth < 1024
-      const isMobileDevice = window.innerWidth < 768
-      const travelPadding = isMobile ? 150 : 200
+      const travelPadding = 200
       const activeStart = sectionTop - travelPadding
       const totalHeight = sectionRef.current.offsetHeight
-      const activeEnd = sectionTop + totalHeight - (isMobile ? 550 : 900)
-      const speedMultiplier = isMobile ? 2.8 : 1.2
-      cachedBoundsRef.current = { activeStart, activeEnd, speedMultiplier, isMobileDevice }
+      const activeEnd = sectionTop + totalHeight - 900
+      const speedMultiplier = 1.2
+      cachedBoundsRef.current = { activeStart, activeEnd, speedMultiplier, isMobileDevice: false }
     }
 
     measureBounds()
     window.addEventListener('resize', measureBounds, { passive: true })
     return () => window.removeEventListener('resize', measureBounds)
-  }, [])
+  }, [isMobile])
 
   useEffect(() => {
+    if (isMobile) return
+
     const section = sectionRef.current
     if (!section) return
 
@@ -486,7 +490,97 @@ export const Banda3DPhotoGallery: React.FC = () => {
       observer.disconnect()
       detach()
     }
-  }, [])
+  }, [isMobile])
+
+  if (isMobile) {
+    return (
+      <section
+        id="galeri-neira"
+        aria-label="Kompilasi Galeri Foto Banda Neira"
+        className="relative z-10 w-full bg-[#081d35] py-12 px-4 sm:px-6 overflow-hidden"
+      >
+        {/* Background Radial Glow */}
+        <div className="absolute inset-0 bg-[#081d35] bg-[radial-gradient(circle_at_50%_25%,#113a68_0%,#0c2b4e_50%,#081d35_90%)] pointer-events-none" />
+
+        {/* Cultural Header Plate */}
+        <div className="relative z-20 flex flex-col items-center justify-center text-center w-full max-w-xl mx-auto mb-8 px-2">
+          <div className="relative flex flex-col items-center gap-2 px-6 py-6 rounded-3xl bg-[#081d35]/90 border border-amber-400/30 backdrop-blur-md shadow-2xl w-full">
+            {/* Nutmeg Ornament Top-Left */}
+            <img
+              src="/images/ornaments/motif-pala.png"
+              alt="Motif Buah Pala"
+              width={64}
+              height={64}
+              className="absolute -top-7 -left-5 w-14 h-14 object-contain -rotate-12 drop-shadow-md pointer-events-none"
+              loading="lazy"
+            />
+
+            {/* Fish Ornament Bottom-Right */}
+            <img
+              src="/images/ornaments/motif-ikan.png"
+              alt="Motif Ikan Banda"
+              width={72}
+              height={48}
+              className="absolute -bottom-6 -right-6 w-16 h-12 object-contain rotate-6 drop-shadow-md pointer-events-none"
+              loading="lazy"
+            />
+
+            <span className="font-sans text-[11px] font-bold tracking-[0.22em] text-amber-300 uppercase">
+              {t.gallery.tagline}
+            </span>
+
+            <h2 className="text-3xl sm:text-4xl font-script font-normal text-white tracking-wide leading-tight drop-shadow-md">
+              {t.gallery.title}
+            </h2>
+
+            <p className="text-xs text-white/80 font-sans max-w-sm mt-1">
+              Pusaka sejarah kolonial dan panorama bahari otentik Kepulauan Banda.
+            </p>
+          </div>
+        </div>
+
+        {/* Horizontal Touch Snap Rail */}
+        <div className="relative z-20 w-full max-w-6xl mx-auto">
+          <div
+            className="flex gap-3.5 overflow-x-auto pb-4 pt-1 px-1 snap-x snap-mandatory scroll-smooth no-scrollbar"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
+            {BANDA_3D_PHOTOS.map((item, index) => (
+              <div
+                key={item.id}
+                className="group relative shrink-0 snap-center w-[260px] sm:w-[290px] aspect-[4/3] rounded-2xl overflow-hidden border border-white/20 bg-slate-900/60 shadow-xl transition-transform active:scale-[0.98]"
+              >
+                <img
+                  src={item.src}
+                  alt={item.alt}
+                  width={300}
+                  height={225}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                {/* Bottom Vignette with Landmark Name */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent flex flex-col justify-end p-3.5 pointer-events-none">
+                  <span className="text-[10px] font-sans font-semibold tracking-wider text-amber-300 uppercase">
+                    Pusaka #{index + 1}
+                  </span>
+                  <span className="text-sm font-sans font-bold text-white tracking-tight drop-shadow">
+                    {item.alt}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Swipe Guidance Hint */}
+          <div className="flex items-center justify-between px-2 pt-2 text-[11px] font-sans text-amber-200/70">
+            <span>Geser untuk menjelajahi 12 pusaka & panorama</span>
+            <span className="text-white/60">12 Destinasi</span>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section
