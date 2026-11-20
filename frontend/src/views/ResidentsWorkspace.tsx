@@ -11,9 +11,11 @@ import {
   Clock,
 } from 'lucide-react'
 import { Resident, ResidentCreateInput, PopulationStatistics } from '../services/population'
+import { User } from '../services/auth'
 import { BANDA_OCCUPATIONS, getOccupationBadge } from '../components/OccupationBadge'
 
 interface ResidentsWorkspaceProps {
+  currentUser?: User | null
   residents: Resident[]
   popStats: PopulationStatistics | null
   loadingPop: boolean
@@ -30,6 +32,7 @@ interface ResidentsWorkspaceProps {
 }
 
 export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
+  currentUser,
   residents,
   popStats,
   loadingPop,
@@ -44,6 +47,12 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
   handleCreateResident,
   handleVerifyResident,
 }) => {
+  // Sync village with currentUser.village for village officers
+  useEffect(() => {
+    if (currentUser?.village && popForm.village !== currentUser.village) {
+      setPopForm((prev) => ({ ...prev, village: currentUser.village || prev.village || 'Lonthoir' }))
+    }
+  }, [currentUser?.village])
   // Auto-save form draft in localStorage
   useEffect(() => {
     try {
@@ -138,6 +147,29 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
             <p style={{ fontSize: '0.825rem', color: '#94a3b8', margin: '0.2rem 0 0' }}>
               Pengelolaan profil identitas warga, penataan profesi khas Banda, verifikasi berkas, &amp; audit mutasi data.
             </p>
+            {currentUser?.village && (
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  marginTop: '0.5rem',
+                  padding: '0.25rem 0.65rem',
+                  background: 'rgba(56, 189, 248, 0.12)',
+                  border: '1px solid rgba(56, 189, 248, 0.35)',
+                  borderRadius: '6px',
+                  fontSize: '0.75rem',
+                  color: '#38bdf8',
+                  fontWeight: 700,
+                }}
+              >
+                <ShieldCheck size={14} />
+                <span>Wilayah Tugas: Desa {currentUser.village}</span>
+                <span style={{ fontWeight: 400, color: '#94a3b8', fontSize: '0.7rem' }}>
+                  (Data kependudukan terpisah &amp; tersaring khusus desa ini)
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -294,6 +326,22 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
                 </option>
               ))}
             </select>
+          </div>
+          <div>
+            <label className="form-label">Desa Domisili</label>
+            <input
+              type="text"
+              value={currentUser?.village || popForm.village || 'Lonthoir'}
+              readOnly={Boolean(currentUser?.village)}
+              onChange={(e) => setPopForm({ ...popForm, village: e.target.value })}
+              className="form-control"
+              style={{
+                background: currentUser?.village ? 'rgba(255, 255, 255, 0.05)' : undefined,
+                color: currentUser?.village ? '#38bdf8' : undefined,
+                fontWeight: currentUser?.village ? 700 : undefined,
+              }}
+              placeholder="Contoh: Lonthoir, Selamon, Banda Neira..."
+            />
           </div>
           <div style={{ gridColumn: '1 / -1', marginTop: '0.25rem' }}>
             <button

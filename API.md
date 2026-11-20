@@ -55,21 +55,24 @@ RESTful API specification for **Banda Digital Ecosystem**.
 ### 2.3 Population Management (`/api/v1/population`)
 | Method | Endpoint | Roles Allowed | Description |
 |---|---|---|---|
-| `GET` | `/api/v1/population/residents` | `admin`, `village_officer` | List residents with pagination & filtering |
-| `POST` | `/api/v1/population/residents` | `admin`, `village_officer` | Register new resident profile (synthetic data) |
-| `GET` | `/api/v1/population/residents/{id}` | `admin`, `village_officer` | Get resident detail |
-| `PUT` | `/api/v1/population/residents/{id}` | `admin`, `village_officer` | Update resident data |
-| `GET` | `/api/v1/population/statistics` | `admin`, `village_officer` | Aggregate demographic statistics |
-| `GET` | `/api/v1/population/requests` | `admin`, `village_officer` | List resident letter/administrative requests with status filter |
+| `GET` | `/api/v1/population/residents` | `admin`, `village_officer`, `farmer_group_admin` | List residents with pagination & filtering (scoped to `current_user.village` for non-admins) |
+| `POST` | `/api/v1/population/residents` | `admin`, `village_officer` | Register new resident profile (scoped to user's village for village officers) |
+| `GET` | `/api/v1/population/residents/{id}` | `admin`, `village_officer`, `farmer_group_admin` | Get resident detail (scoped to user's village) |
+| `PUT` | `/api/v1/population/residents/{id}` | `admin`, `village_officer` | Update resident data (scoped to user's village) |
+| `POST` | `/api/v1/population/residents/{id}/verify` | `admin`, `village_officer` | Verify (`verified`) or reject (`rejected`) resident identity data |
+| `GET` | `/api/v1/population/statistics` | `admin`, `village_officer`, `farmer_group_admin` | Aggregate demographic statistics (scoped to user's village for non-admins) |
+| `GET` | `/api/v1/population/requests` | `admin`, `village_officer` | List resident letter/administrative requests with status filter (scoped to user's village) |
 | `POST` | `/api/v1/population/requests` | Authenticated | Submit new administrative letter request (SKU, etc.) |
 | `PATCH` | `/api/v1/population/requests/{id}/status` | `admin`, `village_officer` | Approve or reject resident administrative request |
 
 ### 2.4 Farmers & Farm Mapping (`/api/v1/farmers` & `/api/v1/farms`)
 | Method | Endpoint | Roles Allowed | Description |
 |---|---|---|---|
-| `GET` | `/api/v1/farmers` | Authenticated | List registered farmers |
-| `POST` | `/api/v1/farmers` | `admin`, `village_officer`, `farmer_group_admin` | Register new farmer |
-| `GET` | `/api/v1/farmers/groups` | Authenticated | List farmer groups |
+| `GET` | `/api/v1/farmers` | Authenticated | List registered farmers (scoped to `current_user.village` for non-admins) |
+| `POST` | `/api/v1/farmers` | `admin`, `village_officer`, `farmer_group_admin` | Register new farmer (Poktan must link to verified resident NIK in their village, with duplicate check & auto-code) |
+| `GET` | `/api/v1/farmers/candidate-residents` | `admin`, `village_officer`, `farmer_group_admin` | Retrieve verified citizens in the target village eligible for farmer membership |
+| `GET` | `/api/v1/farmers/groups` | Authenticated | List farmer groups (scoped to user's village for non-admins) |
+| `POST` | `/api/v1/farmers/groups` | `admin`, `village_officer`, `farmer_group_admin` | Create new farmer group (scoped to user's village for non-admins) |
 | `GET` | `/api/v1/farms` | Authenticated | List farms with GeoJSON boundaries and verification filter |
 | `POST` | `/api/v1/farms` | `admin`, `village_officer`, `farmer_group_admin` | Register/propose farm plot with coordinates, geodesic area calculation, and boundary overlap prevention |
 | `POST` | `/api/v1/farms/validate-boundary` | Authenticated | Pre-check polygon geometry validity and real-time boundary overlap detection |

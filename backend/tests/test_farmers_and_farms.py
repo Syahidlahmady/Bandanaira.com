@@ -536,3 +536,163 @@ async def test_village_boundary_enforcement_and_territorial_scoping(client: Asyn
     assert "melewati batas wilayah resmi" in approve_fail.json()["detail"].lower()
 
 
+@pytest.mark.asyncio
+async def test_poktan_add_farmer_from_verified_resident_nik_happy_path(client: AsyncClient):
+    admin_token = await get_admin_token(client)
+    ketua_token = await get_user_token(client, "ketua_kelompok", "Ketua123!")
+
+    # 1. Kepala Desa / Admin daftarkan warga Lonthoir
+    res_payload = {
+        "nik": "8171010101900099",
+        "full_name": "Mansur Walalayo",
+        "gender": "L",
+        "village": "Lonthoir",
+        "occupation": "Wiraswasta Pengolah Rempah",
+        "phone_number": "081299887766",
+    }
+    res_create = await client.post(
+        "/api/v1/population/residents",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json=res_payload,
+    )
+    assert res_create.status_code == 201
+    resident_id = res_create.json()["id"]
+
+    # 2. Kepala Desa verifikasi warga
+    ver_res = await client.post(
+        f"/api/v1/population/residents/{resident_id}/verify",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"verification_status": "verified"},
+    )
+    assert ver_res.status_code == 200
+
+    # 3. Poktan Lonthoir ambil daftar kelompok taninya
+    grp_res = await client.get(
+        "/api/v1/farmers/groups",
+        headers={"Authorization": f"Bearer {ketua_token}"},
+    )
+    assert grp_res.status_code == 200
+    groups = grp_res.json()
+    assert len(groups) > 0
+    target_group = groups[0]
+
+    # 4. Poktan ambil daftar kandidat warga terverifikasi
+    candidates_res = await client.get(
+        f"/api/v1/farmers/candidate-residents?farmer_group_id={target_group['id']}",
+        headers={"Authorization": f"Bearer {ketua_token}"},
+    )
+    assert candidates_res.status_code == 200
+    candidates = candidates_res.json()
+    matched = [c for c in candidates if c["id"] == resident_id]
+    assert len(matched) == 1
+    assert matched[0]["nik"] == "8171010101900099"
+    assert matched[0]["already_member"] is False
+
+    # 5. Poktan daftarkan warga tersebut sebagai anggota kelompok tani
+    add_farmer_res = await client.post(
+        "/api/v1/farmers",
+        headers={"Authorization": f"Bearer {ketua_token}"},
+        json={
+            "resident_id": resident_id,
+            "farmer_group_id": target_group["id"],
+        },
+    )
+    assert add_farmer_res.status_code == 201
+    farmer_data = add_farmer_res.json()
+    assert farmer_data["name"] == "Mansur Walalayo"
+    assert farmer_data["phone"] == "081299887766"
+    assert farmer_data["resident_id"] == resident_id
+    assert farmer_data["farmer_code"].startswith("BN-PKT-")
+
+    # 6. Periksa kandidat warga kembali -> now already_member is True
+    candidates_res2 = await client.get(
+        f"/api/v1/farmers/candidate-residents?farmer_group_id={target_group['id']}",
+        headers={"Authorization": f"Bearer {ketua_token}"},
+    )
+    matched2 = [c for c in candidates_res2.json() if c["id"] == resident_id]
+    assert len(matched2) == 1
+    assert matched2[0]["already_member"] is True
+
+
+@pytest.mark.asyncio
+async def test_poktan_add_farmer_unverified_and_cross_village_and_duplicate_rejected(client: AsyncClient):
+    admin_token = await get_admin_token(client)
+    ketua_token = await get_user_token(client, "ketua_kelompok", "Ketua123!")
+
+    # 1. Warga Lonthoir masih status 'pending' (belum diverifikasi Kepala Desa)
+    p_unverified = await client.post(
+        "/api/v1/population/residents",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={
+            "nik": "8171010101900077",
+            "full_name": "Pending Resident",
+            "gender": "L",
+            "village": "Lonthoir",
+            "occupation": "Wiraswasta Rempah",
+        },
+    )
+    unverified_id = p_unverified.json()["id"]
+
+    # Poktan Lonthoir mencoba menambahkan warga pending -> 400 Bad Request!
+    grp_res = await client.get("/api/v1/farmers/groups", headers={"Authorization": f"Bearer {ketua_token}"})
+    group_id = grp_res.json()[0]["id"]
+
+    fail_unverified = await client.post(
+        "/api/v1/farmers",
+        headers={"Authorization": f"Bearer {ketua_token}"},
+        json={"resident_id": unverified_id, "farmer_group_id": group_id},
+    )
+    assert fail_unverified.status_code == 400
+    assert "harus diverifikasi oleh kepala desa" in fail_unverified.json()["detail"].lower()
+
+    # 2. Warga Desa Selamon (Luar Lonthoir) diverifikasi
+    p_selamon = await client.post(
+        "/api/v1/population/residents",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={
+            "nik": "8171010101900066",
+            "full_name": "Warga Selamon Asli",
+            "gender": "L",
+            "village": "Selamon",
+            "occupation": "Petani",
+        },
+    )
+    selamon_id = p_selamon.json()["id"]
+    await client.post(
+        f"/api/v1/population/residents/{selamon_id}/verify",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"verification_status": "verified"},
+    )
+
+    # Poktan Lonthoir mencoba menambahkan warga desa Selamon -> 403 Forbidden!
+    fail_cross_village = await client.post(
+        "/api/v1/farmers",
+        headers={"Authorization": f"Bearer {ketua_token}"},
+        json={"resident_id": selamon_id, "farmer_group_id": group_id},
+    )
+    assert fail_cross_village.status_code == 403
+    assert "hanya berwenang menambahkan petani dari desa lonthoir" in fail_cross_village.json()["detail"].lower()
+
+    # 3. Verifikasi warga Lonthoir yang valid, tambahkan sekali -> Berhasil
+    await client.post(
+        f"/api/v1/population/residents/{unverified_id}/verify",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"verification_status": "verified"},
+    )
+    ok_res = await client.post(
+        "/api/v1/farmers",
+        headers={"Authorization": f"Bearer {ketua_token}"},
+        json={"resident_id": unverified_id, "farmer_group_id": group_id},
+    )
+    assert ok_res.status_code == 201
+
+    # Coba tambahkan lagi warga yang sama ke kelompok yang sama -> 409 Conflict!
+    fail_dup = await client.post(
+        "/api/v1/farmers",
+        headers={"Authorization": f"Bearer {ketua_token}"},
+        json={"resident_id": unverified_id, "farmer_group_id": group_id},
+    )
+    assert fail_dup.status_code == 409
+    assert "sudah terdaftar sebagai petani" in fail_dup.json()["detail"].lower()
+
+

@@ -1,6 +1,7 @@
 from typing import List, Optional
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,6 +17,7 @@ from backend.app.modules.audit.service import log_audit_event
 from backend.app.modules.auth.models import User
 from backend.app.modules.farmers.models import Farmer, FarmerGroup
 from backend.app.modules.farmers.schemas import (
+    CandidateResidentResponse,
     FarmerCreate,
     FarmerGroupCreate,
     FarmerGroupResponse,
@@ -246,6 +248,75 @@ async def list_farmers(
     )
 
 
+@router.get("/candidate-residents", response_model=List[CandidateResidentResponse])
+async def list_candidate_residents(
+    farmer_group_id: Optional[uuid.UUID] = None,
+    village: Optional[str] = None,
+    search: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(FARMER_MANAGERS),
+):
+    await ensure_default_farmers_seeded(db)
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+
+    target_village = None
+    if not is_admin and current_user.village:
+        target_village = current_user.village
+    elif village:
+        target_village = village
+    elif farmer_group_id:
+        grp = (await db.execute(select(FarmerGroup).where(FarmerGroup.id == farmer_group_id))).scalar_one_or_none()
+        if grp:
+            target_village = grp.village
+
+    query = select(Resident).where(Resident.verification_status == "verified")
+
+    if target_village:
+        query = query.where(Resident.village.ilike(f"%{target_village}%"))
+
+    if search:
+        search_fmt = f"%{search}%"
+        query = query.where(
+            or_(
+                Resident.full_name.ilike(search_fmt),
+                Resident.nik.ilike(search_fmt),
+                Resident.occupation.ilike(search_fmt),
+            )
+        )
+
+    residents = (await db.execute(query.order_by(Resident.full_name.asc()))).scalars().all()
+
+    existing_member_resident_ids = set()
+    if farmer_group_id:
+        existing_stmt = select(Farmer.resident_id).where(
+            Farmer.farmer_group_id == farmer_group_id,
+            Farmer.resident_id.is_not(None),
+        )
+        existing_member_resident_ids = set((await db.execute(existing_stmt)).scalars().all())
+
+    items = []
+    for r in residents:
+        is_mem = r.id in existing_member_resident_ids
+        items.append(
+            CandidateResidentResponse(
+                id=r.id,
+                nik=r.nik,
+                full_name=r.full_name,
+                gender=r.gender,
+                phone_number=r.phone_number,
+                village=r.village,
+                occupation=r.occupation,
+                address=r.address,
+                verification_status=r.verification_status,
+                already_member=is_mem,
+            )
+        )
+
+    items.sort(key=lambda x: (x.already_member, x.full_name.lower()))
+    return items
+
+
 @router.post("", response_model=FarmerResponse, status_code=status.HTTP_201_CREATED)
 async def create_farmer(
     farmer_in: FarmerCreate,
@@ -254,25 +325,102 @@ async def create_farmer(
 ):
     user_role_names = {r.name for r in current_user.roles}
     is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+    is_poktan = ROLE_FARMER_GROUP_ADMIN in user_role_names and not is_admin
 
-    if not is_admin and current_user.village and farmer_in.farmer_group_id:
+    target_group = None
+    if farmer_in.farmer_group_id:
         grp_stmt = select(FarmerGroup).where(FarmerGroup.id == farmer_in.farmer_group_id)
-        grp = (await db.execute(grp_stmt)).scalar_one_or_none()
-        if grp and grp.village.lower() != current_user.village.lower():
+        target_group = (await db.execute(grp_stmt)).scalar_one_or_none()
+        if not target_group:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Kelompok tani '{grp.name}' berada di Desa {grp.village}. Anda hanya berwenang mengelola petani di Desa {current_user.village}."
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Kelompok tani yang dipilih tidak ditemukan.",
             )
 
-    check_stmt = select(Farmer).where(Farmer.farmer_code == farmer_in.farmer_code)
-    existing = (await db.execute(check_stmt)).scalar_one_or_none()
-    if existing:
+    if not is_admin and current_user.village and target_group:
+        if target_group.village.lower() != current_user.village.lower():
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Kelompok tani '{target_group.name}' berada di Desa {target_group.village}. Anda hanya berwenang mengelola petani di Desa {current_user.village}.",
+            )
+
+    # Poktan MUST register farmers from verified residents registered by Kepala Desa (or provide name in compat mode)
+    if is_poktan and not farmer_in.resident_id and not farmer_in.name:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="A farmer with this code already exists",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Ketua Kelompok Tani (Poktan) wajib memilih petani dari NIK warga yang sudah terdaftar dan terverifikasi oleh Desa.",
         )
 
-    farmer = Farmer(**farmer_in.model_dump())
+    resident = None
+    if farmer_in.resident_id:
+        res_stmt = select(Resident).where(Resident.id == farmer_in.resident_id)
+        resident = (await db.execute(res_stmt)).scalar_one_or_none()
+        if not resident:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Data warga dengan ID tersebut tidak ditemukan.",
+            )
+        if resident.verification_status != "verified":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Warga '{resident.full_name}' berstatus '{resident.verification_status}'. Warga harus diverifikasi oleh Kepala Desa terlebih dahulu.",
+            )
+        if not is_admin and current_user.village and resident.village.lower() != current_user.village.lower():
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Warga '{resident.full_name}' terdaftar di Desa {resident.village}. Anda hanya berwenang menambahkan petani dari Desa {current_user.village}.",
+            )
+        if target_group and resident.village.lower() != target_group.village.lower():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Desa domisili warga ({resident.village}) tidak sesuai dengan wilayah kelompok tani ({target_group.village}).",
+            )
+        if target_group:
+            dup_member_stmt = select(Farmer).where(
+                Farmer.resident_id == resident.id,
+                Farmer.farmer_group_id == target_group.id,
+            )
+            dup_member = (await db.execute(dup_member_stmt)).scalar_one_or_none()
+            if dup_member:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=f"Warga '{resident.full_name}' (NIK: {resident.nik}) sudah terdaftar sebagai petani di '{target_group.name}'.",
+                )
+
+    farmer_name = farmer_in.name or (resident.full_name if resident else None)
+    if not farmer_name:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nama petani tidak boleh kosong.",
+        )
+
+    farmer_phone = farmer_in.phone or (resident.phone_number if resident else None)
+
+    farmer_code = farmer_in.farmer_code
+    if not farmer_code:
+        if resident:
+            clean_nik = resident.nik[-4:]
+            farmer_code = f"BN-PKT-{clean_nik}-{str(uuid.uuid4())[:4].upper()}"
+        else:
+            farmer_code = f"BN-FRM-{str(uuid.uuid4())[:8].upper()}"
+
+    # Check duplicate farmer_code
+    check_stmt = select(Farmer).where(Farmer.farmer_code == farmer_code)
+    existing = (await db.execute(check_stmt)).scalar_one_or_none()
+    if existing:
+        if farmer_in.farmer_code:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="A farmer with this code already exists",
+            )
+        farmer_code = f"{farmer_code}-{str(uuid.uuid4())[:3].upper()}"
+
+    farmer_dict = farmer_in.model_dump()
+    farmer_dict["farmer_code"] = farmer_code
+    farmer_dict["name"] = farmer_name
+    farmer_dict["phone"] = farmer_phone
+
+    farmer = Farmer(**farmer_dict)
     db.add(farmer)
     await db.flush()
 
@@ -282,7 +430,7 @@ async def create_farmer(
         entity_name="farmers",
         entity_id=farmer.id,
         user_id=current_user.id,
-        changes=farmer_in.model_dump(mode="json"),
+        changes=jsonable_encoder(farmer_dict),
     )
 
     await db.commit()

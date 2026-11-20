@@ -18,9 +18,23 @@ export interface Farmer {
   phone?: string
   status: string
   village?: string
+  resident_id?: string
   farmer_group_id?: string
   group?: FarmerGroup
   created_at: string
+}
+
+export interface CandidateResident {
+  id: string
+  nik: string
+  full_name: string
+  gender: string
+  phone_number?: string
+  village: string
+  occupation?: string
+  address?: string
+  verification_status: string
+  already_member: boolean
 }
 
 export interface Farm {
@@ -153,7 +167,29 @@ export const farmerService = {
     return res.json()
   },
 
-  async createFarmer(data: { farmer_code: string; name: string; phone?: string; farmer_group_id?: string; village?: string }): Promise<Farmer> {
+  async getCandidateResidents(params?: {
+    farmer_group_id?: string
+    village?: string
+    search?: string
+  }): Promise<CandidateResident[]> {
+    const sp = new URLSearchParams()
+    if (params?.farmer_group_id) sp.append('farmer_group_id', params.farmer_group_id)
+    if (params?.village) sp.append('village', params.village)
+    if (params?.search) sp.append('search', params.search)
+    const qs = sp.toString() ? `?${sp.toString()}` : ''
+    const res = await this.requestWithAuth(`/farmers/candidate-residents${qs}`)
+    if (!res.ok) throw new Error(`Gagal memuat kandidat warga (${res.status})`)
+    return res.json()
+  },
+
+  async createFarmer(data: {
+    farmer_code?: string
+    name?: string
+    phone?: string
+    farmer_group_id?: string
+    resident_id?: string
+    village?: string
+  }): Promise<Farmer> {
     const res = await this.requestWithAuth('/farmers', {
       method: 'POST',
       body: JSON.stringify({ ...data, status: 'active' }),

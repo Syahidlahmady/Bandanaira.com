@@ -2,10 +2,12 @@ from datetime import datetime, timezone
 from typing import Optional
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.app.core.permissions import (
     ROLE_ADMIN,
+    ROLE_FARMER_GROUP_ADMIN,
     ROLE_VILLAGE_OFFICER,
     get_current_active_user,
     require_roles,
@@ -31,6 +33,7 @@ from backend.app.modules.population.schemas import (
 router = APIRouter(prefix="/population", tags=["Population Management"])
 
 OFFICER_ROLES = require_roles(ROLE_ADMIN, ROLE_VILLAGE_OFFICER)
+POPULATION_READ_ROLES = require_roles(ROLE_ADMIN, ROLE_VILLAGE_OFFICER, ROLE_FARMER_GROUP_ADMIN)
 
 
 @router.get("/residents", response_model=ResidentListResponse)
@@ -42,10 +45,18 @@ async def list_residents(
     rt: Optional[str] = None,
     rw: Optional[str] = None,
     occupation: Optional[str] = None,
+    village: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(OFFICER_ROLES),
+    current_user: User = Depends(POPULATION_READ_ROLES),
 ):
     query = select(Resident)
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+
+    if not is_admin and current_user.village:
+        query = query.where(Resident.village.ilike(f"%{current_user.village}%"))
+    elif village:
+        query = query.where(Resident.village.ilike(f"%{village}%"))
 
     if search:
         search_fmt = f"%{search}%"
@@ -89,6 +100,18 @@ async def create_resident(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(OFFICER_ROLES),
 ):
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+
+    data = resident_in.model_dump()
+    if not is_admin and current_user.village:
+        if resident_in.village and resident_in.village.lower() != current_user.village.lower():
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Anda hanya berwenang mendaftarkan warga untuk Desa {current_user.village}."
+            )
+        data["village"] = current_user.village
+
     # Check duplicate NIK
     stmt = select(Resident).where(Resident.nik == resident_in.nik)
     existing = (await db.execute(stmt)).scalar_one_or_none()
@@ -98,7 +121,7 @@ async def create_resident(
             detail="A resident with this NIK already exists",
         )
 
-    resident = Resident(**resident_in.model_dump())
+    resident = Resident(**data)
     resident.sync_crypto_nik()
     db.add(resident)
     await db.flush()
@@ -110,7 +133,7 @@ async def create_resident(
         entity_name="residents",
         entity_id=resident.id,
         user_id=current_user.id,
-        changes=resident_in.model_dump(mode="json"),
+        changes=jsonable_encoder(data),
     )
 
     await db.commit()
@@ -122,7 +145,7 @@ async def create_resident(
 async def get_resident(
     id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(OFFICER_ROLES),
+    current_user: User = Depends(POPULATION_READ_ROLES),
 ):
     stmt = select(Resident).where(Resident.id == id)
     resident = (await db.execute(stmt)).scalar_one_or_none()
@@ -130,6 +153,13 @@ async def get_resident(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Resident record not found",
+        )
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+    if not is_admin and current_user.village and resident.village.lower() != current_user.village.lower():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Anda hanya berwenang mengakses data warga Desa {current_user.village}."
         )
     return resident
 
@@ -148,8 +178,22 @@ async def update_resident(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Resident record not found",
         )
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+    if not is_admin and current_user.village and resident.village.lower() != current_user.village.lower():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Anda hanya berwenang mengubah data warga Desa {current_user.village}."
+        )
 
     update_data = update_in.model_dump(exclude_unset=True)
+    if not is_admin and current_user.village and "village" in update_data:
+        if update_data["village"] and update_data["village"].lower() != current_user.village.lower():
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Anda tidak dapat memindahkan domisili ke luar Desa {current_user.village}."
+            )
+
     for field, value in update_data.items():
         setattr(resident, field, value)
 
@@ -177,6 +221,42 @@ async def verify_resident(
 ):
     stmt = select(Resident).where(Resident.id == id)
     resident = (await db.execute(stmt)).scalar_one_or_none()
+    if not resident:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Resident record not found",
+        )
+
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+    if not is_admin and current_user.village and resident.village.lower() != current_user.village.lower():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Anda hanya berwenang memverifikasi data warga Desa {current_user.village}."
+        )
+
+    previous_status = resident.verification_status
+    resident.verification_status = verification.verification_status
+    resident.verified_by = current_user.id
+    resident.verified_at = datetime.now(timezone.utc)
+
+    # Log audit event
+    await log_audit_event(
+        db=db,
+        action="VERIFY_RESIDENT",
+        entity_name="residents",
+        entity_id=resident.id,
+        user_id=current_user.id,
+        changes={
+            "previous_status": previous_status,
+            "new_status": verification.verification_status,
+            "notes": verification.notes,
+        },
+    )
+
+    await db.commit()
+    await db.refresh(resident)
+    return resident
     if not resident:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -269,13 +349,21 @@ async def list_administrative_requests(
     status_filter: Optional[str] = Query(None, alias="status"),
     resident_id: Optional[uuid.UUID] = None,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(OFFICER_ROLES),
+    current_user: User = Depends(OFFICER_ROLES),
 ):
     query = (
         select(AdministrativeRequest, Resident)
         .join(Resident, AdministrativeRequest.resident_id == Resident.id)
     )
-    count_query = select(func.count(AdministrativeRequest.id))
+    count_query = select(func.count(AdministrativeRequest.id)).join(
+        Resident, AdministrativeRequest.resident_id == Resident.id
+    )
+
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+    if not is_admin and current_user.village:
+        query = query.where(Resident.village.ilike(f"%{current_user.village}%"))
+        count_query = count_query.where(Resident.village.ilike(f"%{current_user.village}%"))
 
     if status_filter:
         query = query.where(AdministrativeRequest.status == status_filter)
@@ -321,12 +409,25 @@ async def update_administrative_request_status(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(OFFICER_ROLES),
 ):
-    stmt = select(AdministrativeRequest).where(AdministrativeRequest.id == request_id)
-    admin_req = (await db.execute(stmt)).scalar_one_or_none()
-    if not admin_req:
+    stmt = (
+        select(AdministrativeRequest, Resident)
+        .join(Resident, AdministrativeRequest.resident_id == Resident.id)
+        .where(AdministrativeRequest.id == request_id)
+    )
+    row = (await db.execute(stmt)).first()
+    if not row:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Administrative request not found",
+        )
+    admin_req, resident = row
+
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+    if not is_admin and current_user.village and resident.village.lower() != current_user.village.lower():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Anda hanya berwenang memproses permohonan warga Desa {current_user.village}."
         )
 
     old_status = admin_req.status
@@ -354,25 +455,43 @@ async def update_administrative_request_status(
 
 @router.get("/statistics", response_model=PopulationStatisticsResponse)
 async def get_population_statistics(
+    village: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(OFFICER_ROLES),
+    current_user: User = Depends(POPULATION_READ_ROLES),
 ):
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+
+    base_filter = []
+    if not is_admin and current_user.village:
+        base_filter.append(Resident.village.ilike(f"%{current_user.village}%"))
+    elif village:
+        base_filter.append(Resident.village.ilike(f"%{village}%"))
+
     # Total residents
-    total = (await db.execute(select(func.count(Resident.id)))).scalar_one()
+    total_query = select(func.count(Resident.id))
+    if base_filter:
+        total_query = total_query.where(*base_filter)
+    total = (await db.execute(total_query)).scalar_one()
 
     # Status counts
-    verified = (
-        await db.execute(select(func.count(Resident.id)).where(Resident.verification_status == "verified"))
-    ).scalar_one()
-    pending = (
-        await db.execute(select(func.count(Resident.id)).where(Resident.verification_status == "pending"))
-    ).scalar_one()
-    rejected = (
-        await db.execute(select(func.count(Resident.id)).where(Resident.verification_status == "rejected"))
-    ).scalar_one()
+    verified_query = select(func.count(Resident.id)).where(Resident.verification_status == "verified")
+    pending_query = select(func.count(Resident.id)).where(Resident.verification_status == "pending")
+    rejected_query = select(func.count(Resident.id)).where(Resident.verification_status == "rejected")
+    if base_filter:
+        verified_query = verified_query.where(*base_filter)
+        pending_query = pending_query.where(*base_filter)
+        rejected_query = rejected_query.where(*base_filter)
+
+    verified = (await db.execute(verified_query)).scalar_one()
+    pending = (await db.execute(pending_query)).scalar_one()
+    rejected = (await db.execute(rejected_query)).scalar_one()
 
     # Gender distribution
-    gender_stmt = select(Resident.gender, func.count(Resident.id)).group_by(Resident.gender)
+    gender_stmt = select(Resident.gender, func.count(Resident.id))
+    if base_filter:
+        gender_stmt = gender_stmt.where(*base_filter)
+    gender_stmt = gender_stmt.group_by(Resident.gender)
     gender_rows = (await db.execute(gender_stmt)).all()
     gender_dist = {str(row[0]): int(row[1]) for row in gender_rows if row[0] is not None}
 
@@ -380,10 +499,10 @@ async def get_population_statistics(
     occ_stmt = (
         select(Resident.occupation, func.count(Resident.id))
         .where(Resident.occupation.isnot(None))
-        .group_by(Resident.occupation)
-        .order_by(func.count(Resident.id).desc())
-        .limit(10)
     )
+    if base_filter:
+        occ_stmt = occ_stmt.where(*base_filter)
+    occ_stmt = occ_stmt.group_by(Resident.occupation).order_by(func.count(Resident.id).desc()).limit(10)
     occ_rows = (await db.execute(occ_stmt)).all()
     top_occupations = {str(row[0]): int(row[1]) for row in occ_rows}
 

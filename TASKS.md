@@ -63,6 +63,8 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 58: Direct /banda.webp Mobile Route, Strict Mobile YouTube Lockout, and Mobile Scroll Distance Tuning**
 - [x] **Phase 59: Production Dockerfile (Vite Preview), HTTP/1.1 Waterfall Elimination, Non-Blocking Font Loading, Forced Reflow Batching, and Mobile WebP Delivery**
 - [x] **Phase 60: Multilingual Language Switcher (ID/EN), Peta Interaktif Dwibahasa & Dual-Language Heritage Audio Subtitles (Mandat Branch Subtitle)**
+- [x] **Phase 61: Anti-Blank Screen Logout Hardening & Backend Logout Endpoint Integration**
+- [x] **Phase 62: Optimasi Pemetaan Aktor: Kepala Desa, Poktan, Petani, dan Warga Berbasis NIK Terdaftar & Territorial Scoping**
 ---
 
 ## Detailed Task Checklist
@@ -1072,3 +1074,27 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Pengujian Chromium headless CDP memverifikasi nihil exception atau runtime error saat logout.
   - 15 pengujian `pytest tests/test_auth.py` dan 93 pengujian backend keseluruhan lulus 100%.
   - Build produksi frontend Vite sukses 100% (2.045 modul, exit code 0).
+
+---
+
+## [Phase 62] - Optimasi Pemetaan Aktor: Kepala Desa, Poktan, Petani, dan Warga Berbasis NIK Terdaftar & Territorial Scoping
+- [x] 62.1 Endpoint Kandidat Warga Desa Terverifikasi (`GET /api/v1/farmers/candidate-residents`):
+  - Menyediakan endpoint bagi Poktan dan Kepala Desa untuk mengambil daftar warga (`Resident`) terverifikasi (`verification_status == "verified"`) di desa yang bersangkutan.
+  - Menghitung status keanggotaan kelompok tani (`already_member: bool`) untuk mencegah pendaftaran anggota ganda dalam kelompok tani yang sama.
+- [x] 62.2 Pendaftaran Petani Poktan Wajib Berbasis NIK Terverifikasi (`POST /api/v1/farmers`):
+  - Memvalidasi keterikatan `resident_id` ke data kependudukan resmi yang sudah diverifikasi Kepala Desa.
+  - Menolak pendaftaran jika warga berstatus `pending` (400 Bad Request) atau berasal dari desa lain di luar wilayah Poktan (403 Forbidden).
+  - Menolak pendaftaran ganda anggota warga yang sama pada kelompok tani yang sama (409 Conflict).
+  - Melakukan auto-fill nama lengkap dan nomor kontak dari data kependudukan serta meng-autogenerate kode petani unik (`BN-PKT-...`).
+- [x] 62.3 Pemisahan Warga Sesuai Wilayah Desa (Territorial Scoping):
+  - Mengunci akses kependudukan (`GET /api/v1/population/residents`, `GET /api/v1/population/statistics`, `GET /api/v1/population/requests`) sesuai wilayah desa pengguna login non-admin (`current_user.village`).
+  - Memvalidasi hak mutasi dan verifikasi data warga (`POST /population/residents`, `PUT /population/residents/{id}`, `POST /population/residents/{id}/verify`) hanya untuk warga di desa yang bersangkutan (403 Forbidden jika lintas desa).
+- [x] 62.4 Integrasi UI Antarmuka Poktan & Petani (`FarmsGisWorkspace.tsx`):
+  - Mengganti input nama manual dengan komponen dropdown / searchable select NIK warga terdaftar desa.
+  - Menampilkan badge desa kerja, auto-fill nama & kontak, serta informasi peringatan jika belum ada warga desa terverifikasi.
+- [x] 62.5 Integrasi UI Antarmuka Kepala Desa / Petugas Desa (`ResidentsWorkspace.tsx` & `App.tsx`):
+  - Menampilkan badge resmi wilayah kerja administrasi desa pada header kependudukan.
+  - Mengunci field desa domisili saat pendaftaran warga baru sesuai desa petugas desa yang login.
+- [x] 62.6 Pengujian Unit & Verifikasi Menyeluruh:
+  - Menambahkan pengujian di `backend/tests/test_farmers_and_farms.py` dan `backend/tests/test_population.py`.
+  - 100% tes backend (97 passed) dan build frontend `npm run build` sukses 100% (2.045 modul, exit code 0).

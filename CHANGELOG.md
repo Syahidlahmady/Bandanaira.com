@@ -8,6 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## [Unreleased]
+### Added
+- **Optimasi Pemetaan Aktor: Kepala Desa, Poktan, Petani, dan Warga Berbasis NIK Terdaftar & Territorial Scoping (Phase 62)**:
+  - **Pendaftaran Petani Poktan Wajib Berbasis NIK Terdaftar**:
+    - Poktan (`farmer_group_admin`) kini tidak perlu lagi mengetik nama lengkap manual atau bingung memilih warga. Form pendaftaran petani anggota Poktan kini terintegrasi langsung dengan data kependudukan desa terverifikasi (`Resident` berstatus `verified`).
+    - Penyediaan endpoint baru `GET /api/v1/farmers/candidate-residents` yang menyaring warga desa terverifikasi yang siap direkrut ke dalam Poktan dengan status keanggotaan `already_member`.
+    - Validasi ketat pada backend `POST /api/v1/farmers`: memastikan `resident_id` valid, berstatus `verified`, berdomisili di desa yang sama dengan Poktan, dan belum terdaftar di kelompok tani tersebut (mencegah keanggotaan ganda/409 Conflict).
+    - Auto-fill otomatis nama lengkap dan nomor telepon dari data kependudukan, serta auto-generate kode petani unik (`BN-PKT-...`).
+  - **Pemisahan Warga Menyesuaikan Wilayah Desa (Territorial Scoping)**:
+    - Kepala Desa / Petugas Desa (`village_officer`) dan Poktan (`farmer_group_admin`) kini terikat ketat dengan wilayah desanya masing-masing (`current_user.village`).
+    - Endpoint kependudukan (`GET /api/v1/population/residents`, `GET /api/v1/population/residents/{id}`, `GET /api/v1/population/statistics`, `GET /api/v1/population/requests`) otomatis menyaring data warga sesuai desa pengguna login.
+    - Operasi mutasi data kependudukan (`POST /population/residents`, `PUT /population/residents/{id}`, `POST /population/residents/{id}/verify`, `PATCH /population/requests/{id}/status`) memverifikasi kesesuaian wilayah desa dan mencegah manipulasi data warga lintas desa (403 Forbidden).
+  - **Integrasi UI Frontend**:
+    - Pembaruan `FarmsGisWorkspace.tsx`: Kotak dialog "Tambah Petani Anggota Poktan" dilengkapi pemilih NIK warga desa terverifikasi, kartu status wilayah desa, auto-fill nama dan kontak, serta peringatan informatif jika belum ada warga terverifikasi di desa tersebut.
+    - Pembaruan `ResidentsWorkspace.tsx`: Penambahan badge wilayah tugas administrasi desa resmi pada header kependudukan dan field penguncian otomatis desa domisili saat mendaftarkan warga baru.
+    - Pembaruan `App.tsx`: Menghubungkan konteks pengguna login `currentUser` ke `ResidentsWorkspace`.
+  - **Verifikasi Mutu & Pengujian Menyeluruh**:
+    - Penambahan 3 pengujian unit komprehensif di `backend/tests/test_farmers_and_farms.py` dan `backend/tests/test_population.py`.
+    - 100% tes suite backend (97 passed) dan build produksi frontend (`npm run build`) berhasil tanpa error.
+
 ### Fixed
 - **Perbaikan Blank Putih Saat Logout & Pematangan Endpoint Sesi (`/auth/logout`) (Phase 61)**:
   - **Akar Masalah**: Transisi sinkronus `handleLogout` memicu pemuatan ulang komponen malas (*lazy loaded components*) di Landing Portal tanpa concurrent transition (`React.startTransition`), yang menyebabkan React melempar error tak tertangkap `A component suspended while responding to synchronous input`. Ketiadaan `<ErrorBoundary>` dan `<React.Suspense>` di tingkat terluar `LandingPortalWorkspace` menyebabkan seluruh pohon render React ter-unmount seketika (layar menjadi putih polos/blank).

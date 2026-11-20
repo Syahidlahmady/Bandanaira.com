@@ -301,3 +301,74 @@ async def test_population_unauthorized_access(client: AsyncClient):
     )
     assert farmer_access_res.status_code == 403
     assert "Operation not permitted" in farmer_access_res.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_village_officer_territorial_scoping_residents_and_stats(client: AsyncClient):
+    admin_token = await get_admin_token(client)
+    # Petugas Desa Lonthoir
+    petugas_res = await client.post(
+        "/api/v1/auth/login",
+        json={"username_or_email": "petugas", "password": "Petugas123!"},
+    )
+    petugas_token = petugas_res.json()["access_token"]
+
+    # 1. Admin daftarkan 1 warga Lonthoir dan 1 warga Selamon
+    r_lonthoir = await client.post(
+        "/api/v1/population/residents",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={
+            "nik": "8171010101900111",
+            "full_name": "Warga Asli Lonthoir",
+            "gender": "L",
+            "village": "Lonthoir",
+        },
+    )
+    assert r_lonthoir.status_code == 201
+
+    r_selamon = await client.post(
+        "/api/v1/population/residents",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={
+            "nik": "8171010101900222",
+            "full_name": "Warga Asli Selamon",
+            "gender": "P",
+            "village": "Selamon",
+        },
+    )
+    assert r_selamon.status_code == 201
+    selamon_resident_id = r_selamon.json()["id"]
+
+    # 2. Petugas Lonthoir memanggil daftar warga -> Hanya melihat warga Lonthoir
+    list_res = await client.get(
+        "/api/v1/population/residents",
+        headers={"Authorization": f"Bearer {petugas_token}"},
+    )
+    assert list_res.status_code == 200
+    items = list_res.json()["items"]
+    names = [i["full_name"] for i in items]
+    assert "Warga Asli Lonthoir" in names
+    assert "Warga Asli Selamon" not in names
+
+    # 3. Petugas Lonthoir mencoba mendaftarkan warga ke Desa Selamon -> Ditolak 403!
+    fail_create = await client.post(
+        "/api/v1/population/residents",
+        headers={"Authorization": f"Bearer {petugas_token}"},
+        json={
+            "nik": "8171010101900333",
+            "full_name": "Warga Campur",
+            "gender": "L",
+            "village": "Selamon",
+        },
+    )
+    assert fail_create.status_code == 403
+    assert "hanya berwenang mendaftarkan warga untuk desa lonthoir" in fail_create.json()["detail"].lower()
+
+    # 4. Petugas Lonthoir mencoba memverifikasi warga Selamon -> Ditolak 403!
+    fail_verify = await client.post(
+        f"/api/v1/population/residents/{selamon_resident_id}/verify",
+        headers={"Authorization": f"Bearer {petugas_token}"},
+        json={"verification_status": "verified"},
+    )
+    assert fail_verify.status_code == 403
+    assert "hanya berwenang memverifikasi data warga desa lonthoir" in fail_verify.json()["detail"].lower()
