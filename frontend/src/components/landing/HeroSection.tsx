@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import bandaCinematicVideoBackdrop from '../../assets/image.webp'
 import { NutmegLogoIcon, ArrowUpRightIcon } from './LandingIcons'
 import { ScrollExpand } from '../ui/ScrollExpand'
+import { useLanguage } from '../../context/LanguageContext'
+import LanguageSwitcher from '../common/LanguageSwitcher'
 
 export const defaultNavigationItems = [
   { label: 'Beranda', href: '#beranda' },
@@ -31,12 +33,22 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   activeNav: externalActiveNav,
   setActiveNav: externalSetActiveNav,
 }) => {
+  const { t } = useLanguage()
   const [internalActiveNav, setInternalActiveNav] = useState<string>('#beranda')
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false)
   const [scrollProgress, setScrollProgress] = useState<number>(0)
   const [isMobile, setIsMobile] = useState<boolean>(() =>
     typeof window !== 'undefined' ? window.innerWidth < 768 : false
   )
+
+  const navigationItems = [
+    { label: t.navbar.navHome, href: '#beranda' },
+    { label: t.navbar.navMap, href: '#peta' },
+    { label: t.navbar.navDestinations, href: '#wisata' },
+    { label: t.navbar.navAccommodations, href: '#eco-stay' },
+    { label: t.navbar.navMarketplace, href: '#layanan-umkm' },
+    { label: t.navbar.navHistory, href: '#sejarah' },
+  ]
 
   const activeNav = externalActiveNav || internalActiveNav
   const setActiveNav = externalSetActiveNav || setInternalActiveNav
@@ -57,12 +69,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     >
       {/* 1. FIXED TOP NAVBAR (Hides during resting/expansion, smoothly emerges once fully expanded) */}
       <div
-        className={`fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 lg:px-12 pt-3 sm:pt-5 transition-all duration-500 ease-out ${scrollProgress >= 0.85
-          ? 'opacity-100 translate-y-0 pointer-events-auto'
-          : 'opacity-0 -translate-y-8 pointer-events-none'
-          }`}
+        className={`fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 lg:px-12 pt-3 sm:pt-5 transition-all duration-500 ease-out ${
+          scrollProgress >= 0.85
+            ? 'opacity-100 translate-y-0 pointer-events-auto'
+            : 'opacity-0 -translate-y-8 pointer-events-none'
+        }`}
       >
-        <header className="flex h-16 sm:h-20 items-center justify-between px-4 sm:px-6 py-0 w-full max-w-7xl mx-auto bg-[#081d35cc] rounded-2xl overflow-hidden border border-solid border-white/20 backdrop-blur-md shadow-2xl pointer-events-auto">
+        <header
+          className="flex h-16 sm:h-20 items-center justify-between px-4 sm:px-6 py-0 w-full max-w-7xl mx-auto rounded-2xl overflow-visible border border-solid border-white/20 transition-all duration-300 backdrop-blur-md shadow-2xl pointer-events-auto bg-[#081d35cc]"
+        >
           {/* Brand Logo */}
           <a
             href="#beranda"
@@ -81,7 +96,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             aria-label="Navigasi utama"
             className="hidden lg:inline-flex items-center gap-[25px] relative flex-[0_0_auto]"
           >
-            {defaultNavigationItems.map((item) => {
+            {navigationItems.map((item) => {
               const isActive = activeNav === item.href
               return (
                 <div
@@ -108,7 +123,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </nav>
 
           {/* Right Action Buttons */}
-          <div className="inline-flex items-center gap-2.5 relative flex-[0_0_auto]">
+          <div className="inline-flex items-center gap-2 sm:gap-3 relative flex-[0_0_auto]">
             {currentUser ? (
               <div className="inline-flex items-center gap-2">
                 <button
@@ -124,10 +139,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   <button
                     type="button"
                     onClick={onLogout}
-                    className="inline-flex h-[38px] sm:h-[42px] items-center px-3 py-0 bg-rose-500/20 hover:bg-rose-500/35 rounded-lg border border-solid border-rose-400/50 text-white text-xs font-semibold transition-colors"
+                    className="inline-flex h-[38px] sm:h-[42px] items-center px-3 py-0 bg-rose-500/20 hover:bg-rose-500/35 rounded-lg border border-solid border-rose-400/50 text-white text-xs font-semibold transition-colors cursor-pointer"
                     title="Keluar dari Akun"
                   >
-                    Keluar
+                    {t.navbar.signOut}
                   </button>
                 )}
               </div>
@@ -137,24 +152,30 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   <button
                     type="button"
                     onClick={onOpenRegister}
-                    className="hidden sm:inline-flex h-[38px] sm:h-[42px] items-center px-4 py-0 bg-amber-600 hover:bg-amber-500 rounded-lg border border-solid border-[#f4b75e] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e]"
+                    className="hidden sm:inline-flex h-[38px] sm:h-[42px] items-center px-4 py-0 bg-amber-600 hover:bg-amber-500 rounded-lg border border-solid border-[#f4b75e] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e] cursor-pointer"
                   >
                     <span className="font-semibold text-white text-xs tracking-[0] relative w-fit leading-[normal]">
-                      Daftar
+                      {t.navbar.register}
                     </span>
                   </button>
                 )}
                 <button
                   type="button"
                   onClick={onOpenLogin}
-                  className="inline-flex h-[38px] sm:h-[42px] items-center px-4 sm:px-5 py-0 bg-[#d9770626] hover:bg-[#d9770640] rounded-lg border border-solid border-[#f4b75e] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e]"
+                  className="inline-flex h-[38px] sm:h-[42px] items-center px-4 sm:px-5 py-0 bg-[#d9770626] hover:bg-[#d9770640] rounded-lg border border-solid border-[#f4b75e] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e] cursor-pointer"
                 >
                   <span className="font-semibold text-white text-xs tracking-[0] relative w-fit leading-[normal]">
-                    Masuk
+                    {t.navbar.signIn}
                   </span>
                 </button>
               </div>
             )}
+
+            {/* Divider vertikal pemisah rapi */}
+            <div className="hidden sm:block w-px h-6 bg-white/20" />
+
+            {/* Dropdown Pemilihan Bahasa (Paling kanan, tidak menutupi tombol login) */}
+            <LanguageSwitcher variant="dropdown" />
 
             {/* Mobile Menu Hamburger */}
             <button
@@ -162,7 +183,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               onClick={() => setMobileMenuOpen((prev) => !prev)}
               aria-label={mobileMenuOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
               aria-expanded={mobileMenuOpen}
-              className="inline-flex lg:hidden h-[38px] w-[38px] items-center justify-center rounded-lg border border-solid border-white/20 bg-slate-900/60 text-white"
+              className="inline-flex lg:hidden h-[38px] w-[38px] items-center justify-center rounded-lg border border-solid border-white/20 bg-slate-900/60 text-white cursor-pointer"
             >
               {mobileMenuOpen ? (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
@@ -181,7 +202,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         {mobileMenuOpen && (
           <div className="relative z-50 w-full max-w-7xl mx-auto mt-2 rounded-2xl bg-[#081d35f2] border border-solid border-white/20 backdrop-blur-xl p-5 lg:hidden pointer-events-auto shadow-2xl">
             <nav aria-label="Navigasi seluler" className="flex flex-col gap-3">
-              {defaultNavigationItems.map((item) => (
+              {/* Mobile Language Switcher */}
+              <LanguageSwitcher variant="mobile" />
+
+              {navigationItems.map((item) => (
                 <a
                   key={item.label}
                   href={item.href}
@@ -208,7 +232,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         }}
                         className="h-10 px-4 rounded-lg bg-amber-600 border border-[#f4b75e] text-white text-xs font-semibold"
                       >
-                        Daftar Akun
+                        {t.navbar.register}
                       </button>
                     )}
                     <button
@@ -219,7 +243,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                       }}
                       className="h-10 px-4 rounded-lg bg-[#d9770626] border border-[#f4b75e] text-white text-xs font-semibold"
                     >
-                      Masuk / Login
+                      {t.navbar.signIn}
                     </button>
                   </div>
                 </>
@@ -250,7 +274,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         title={
           <div className="w-full flex items-center justify-center text-center pointer-events-none select-none">
             <h2 className="font-sans font-black tracking-[-0.035em] text-white text-[clamp(1.75rem,5.6vw,7.5rem)] leading-none drop-shadow-[0_16px_36px_rgba(0,0,0,0.95)] whitespace-nowrap">
-              Di jantung rempah dunia
+              {t.hero.centerTitle}
             </h2>
           </div>
         }
@@ -264,18 +288,17 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               id="banda-hero-title"
               className="text-white text-3xl sm:text-5xl lg:text-7xl font-sans font-bold tracking-tight leading-[1.08] drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)]"
             >
-              <span>Di jantung rempah dunia,</span>
+              <span>{t.hero.headlineLine1}</span>
               <br />
               <span className="font-script font-normal text-amber-200 text-4xl sm:text-6xl lg:text-8xl leading-[1.05] drop-shadow-[0_4px_28px_rgba(0,0,0,0.9)]">
-                temukan Banda.
+                {t.hero.headlineLine2}
               </span>
             </h1>
 
             {/* Narrative Paragraph with Frosted Glass Plate for Crisp Readability */}
             <div className="max-w-[580px] p-4 sm:p-5 rounded-2xl bg-black/55 backdrop-blur-md border border-white/15 shadow-2xl">
               <p className="text-white/95 text-sm sm:text-base lg:text-[17px] leading-relaxed font-sans font-normal antialiased">
-                Laut yang menyimpan keajaiban karang purba. Jejak benteng kolonial yang hidup.
-                Satu pintu digital untuk menjelajah ekosistem pulau, pemetaan cagar budaya, dan kearifan masyarakat Banda.
+                {t.hero.description}
               </p>
             </div>
 
@@ -286,7 +309,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 onClick={() => setActiveNav('#wisata')}
                 className="inline-flex h-[46px] sm:h-[52px] items-center gap-3 px-5 sm:px-6 bg-amber-600 hover:bg-amber-500 transition-colors rounded-xl border border-amber-400 font-semibold text-white text-xs sm:text-sm tracking-wide shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
-                <span>Mulai jelajahi Banda</span>
+                <span>{t.hero.ctaExplore}</span>
                 <ArrowUpRightIcon className="w-4 h-4 text-white" />
               </a>
 
@@ -295,7 +318,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 onClick={() => onNavigate('gis')}
                 className="inline-flex h-[46px] sm:h-[52px] items-center gap-3 px-5 sm:px-6 bg-white/10 hover:bg-white/20 transition-colors rounded-xl border border-white/25 backdrop-blur-md font-semibold text-white text-xs sm:text-sm tracking-wide focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
-                <span>Lihat peta interaktif</span>
+                <span>{t.hero.ctaMap}</span>
                 <ArrowUpRightIcon className="w-4 h-4 text-white" />
               </button>
             </div>

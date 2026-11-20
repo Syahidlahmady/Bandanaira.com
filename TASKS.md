@@ -56,6 +56,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 51: Restorasi Tata Letak Dashboard Kanvas Utama (Grid 3-Bagian Sesuai Peran & Perspektif Role Switcher)**
 - [x] **Phase 52: Pengetatan Hak Akses RBAC & Diferensiasi Fitur Berbasis Peran Pengguna (Admin Super Control vs Non-Admin)**
 - [x] **Phase 53: Redesain Minimalis Telemetri Infrastruktur Kepulauan (Ikon Header & Popover 21st.dev Khusus Admin)**
+- [x] **Phase 54: Multilingual Language Switcher (ID/EN) & Dual-Language Heritage Audio Subtitles (Mandat Branch Subtitle)**
 ---
 
 ## Detailed Task Checklist
@@ -840,6 +841,54 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
     - Menutup otomatis saat pengguna mengeklik di luar area (*click-outside listener*).
 - [x] 53.4 Verifikasi Build & Kestabilan:
   - Menjalankan `npm --prefix frontend run build` lolos 100% tanpa error TypeScript (2.042 modul ditransformasikan, exit code 0).
+
+### Phase 54: Multilingual Language Switcher (ID/EN) & Dual-Language Heritage Audio Subtitles
+- [x] 54.1 Kamus Terjemahan Lengkap Dwibahasa (`frontend/src/services/i18n/translations.ts`):
+  - Definisi tipe `Language = 'id' | 'en'` dan struktur antarmuka `TranslationDictionary`.
+  - Terjemahan komprehensif untuk navigasi portal, hero section (center title, headline baris 1 & 2, deskripsi, CTA buttons), narasi sejarah 4 babak rempah (`STORIES`: Pala, Belgica, Rhun, Bung Hatta), serta katalog cagar budaya dan audio guide.
+- [x] 54.2 State Management Bahasa Reaktif (`frontend/src/context/LanguageContext.tsx`):
+  - `LanguageProvider` dan custom hook `useLanguage()` dengan persistensi otomatis ke `localStorage` (`banda_language`).
+  - Sinkronisasi atribut HTML `document.documentElement.lang`.
+  - Fungsi `toggleLanguage()`, `setLanguage()`, boolean flag `isEnglish`, dan objek kamus aktif `t`.
+- [x] 54.3 Komponen UI Switcher Dropdown Elegan (`frontend/src/components/common/LanguageSwitcher.tsx`):
+  - Selector dropdown interaktif dengan ikon globe, bendera negara (`🇮🇩 / 🇬🇧`), label bahasa, indikator panah rotasi `ChevronDown`, dan tanda centang aktif `Check`.
+  - Popover flyout modern berlatar navy emas pala `#081D35` / `#F4B75E` dengan backdrop blur dan *click-outside listener*.
+  - Dukungan varian: `'dropdown'` (navbar & floating hero), `'topbar'` (dashboard admin & warga), serta `'mobile'` (drawer menu navigasi).
+- [x] 54.4 Integrasi Dropdown di Landing Page Depan & Seluruh Titik Akses (`HeroSection.tsx`):
+  - Menempatkan **Floating Language Dropdown** di pojok kanan atas halaman depan (`fixed top-4 right-4 sm:top-6 sm:right-8 z-40`) sehingga langsung terlihat oleh pengunjung pulau dan turis mancanegara saat pertama kali membuka website (resting state).
+  - Mengintegrasikan dropdown pemilih bahasa di fixed top navbar `HeroSection.tsx` dan `BandaUnifiedNavbar.tsx`, serta drawer menu seluler.
+  - Mengintegrasikan dropdown pemilih bahasa di floating topbar header dashboard `DashboardLayout.tsx`.
+- [x] 54.5 Tampilan Subtitle & Narasi Sejarah Dwibahasa:
+  - Hubungan dinamis di `HeritageSpiceSection.tsx`: judul cerita, subtitle periode sejarah, deskripsi naratif, dan heading seksi otomatis bertransisi mulus saat pengguna memilih Bahasa Indonesia atau English.
+  - Hubungan dinamis di `TourismEcoStayWorkspace.tsx`: label status pemutaran audio guide dan periode cagar budaya dwibahasa.
+  - Sinkronisasi judul utama dan deskripsi editorial di `HeroSection.tsx`.
+- [x] 54.6 Translasi Menyeluruh Seluruh Seksi Landing Page Beranda:
+  - `Banda3DPhotoGallery.tsx`: Tagline dan judul kompilasi foto dwibahasa.
+  - `PetaInteractiveSection.tsx`: Tagline, judul seksi, deskripsi, status muat, dan tombol CTA peta layar penuh.
+  - `TourismSawSection.tsx`: Tagline kurasi spotlight, heading, tombol jelajah, tombol smart planner, navigasi destinasi, dan tombol hubungi pemandu.
+  - `EcoStayCatalogSection.tsx`: Tagline direktori penginapan, heading, deskripsi, filter pulau, fasilitas air RO, listrik surya, per malam, dan pemesanan WhatsApp.
+  - `EcosystemFeaturesSection.tsx`: 4 metrik wisata (wisata sejarah, wisata alam, total destinasi, penginapan).
+  - `TraceabilityMarketplaceSection.tsx`: Tagline marketplace rempah UMKM, heading, deskripsi, tombol selengkapnya, dan verifikasi QR batch.
+  - `SustainableTravelSection.tsx`: 4 metrik demografi kepulauan (pulau berpenghuni, desa kepulauan, total penduduk, ekosistem terpadu).
+  - `PlanYourVisitSection.tsx`: Atribusi Sutan Sjahrir, kutipan legendaris, tombol jelajah Banda, dan tombol peta interaktif.
+  - `LandingFooterSection.tsx`: Deskripsi ekosistem brand, lokasi, seluruh grup navigasi (Jelajahi Banda, Layanan & Wisata, Akses Akun), hak cipta, tagline quote, kebijakan privasi, dan syarat penggunaan.
+  - `TourismChatbotBubble.tsx`: Tombol pemicu, header modal, pesan sambutan, persentase kecocokan SAW, tarif destinasi, chip filter cepat, dan input placeholder dwibahasa.
+- [x] 54.7 Solusi Navbar Sinematik & Dropdown Bahasa Melayang Bebas:
+  - Mengubah `<header>` di `HeroSection.tsx` menjadi `overflow-visible` sehingga menu popover melayang bebas tanpa terpotong garis bawah navbar.
+  - Memulihkan visibilitas navbar agar tidak langsung muncul di awal (`opacity-0`), melainkan bertransisi mulus (`opacity-100`) saat scroll melewati intro video (`scrollProgress >= 0.85`).
+  - Menghilangkan container terpisah yang bertubrukan dengan tombol Masuk; menata tombol secara rapi di dalam navbar: `[ Daftar ]` `[ Masuk ]` `[ | ]` `[ Dropdown Bahasa ]`.
+- [x] 54.8 Translasi Menyeluruh Peta Interaktif Spasial GIS (`InteractiveMapWorkspace.tsx`):
+  - Inkorporasi kamus `gisMap` ke `translations.ts` (ID & EN).
+  - Terjemahan input pencarian (`searchPlaceholder`) dan filter pulau dinamis (`allIslands`, `neiraIsland`, `greatBanda`, `hattaIsland`, `ayIsland`, `rhunIsland`).
+  - Terjemahan kontrol peta: fullscreen, keluar fullscreen, re-center ke Banda, menu gaya peta dan layer.
+  - Terjemahan popup gaya peta (Peta Dasar: Standar, Satelit, Topografi; Overlay: Wilayah Desa, Heatmap Kepadatan, Jalur Laut).
+  - Terjemahan Legenda Kartografi: 7 kategori layer spasial (Wisata & Bahari, Cagar Budaya, Penginapan, Sentra UMKM, Fasilitas Umum, Air Bersih, Energi & Lingkungan), pemilih semua/kosongkan, dan 4 tingkat kepadatan penduduk.
+  - Terjemahan Drawer Rincian Objek (POI): tombol aksi (Fokus Peta, Panorama 360°, Salin Koordinat, Kontak WA, Audio Guide), informasi jam operasional, status cagar budaya, panjang rute & waktu tempuh laut, mutu air TDS, kapasitas PLTS, tarif eco-stay, dan daftar UMKM binaan.
+  - Terjemahan Kartu Profil Desa: pulau, populasi, luas wilayah, kepadatan, komoditas, daya tarik, statistik resmi 2026, komposisi gender & KK, profesi utama, dan unit UMKM binaan aktif.
+- [x] 54.9 Verifikasi Mutu & Kestabilan:
+  - Build frontend Vite lolos 100% tanpa error (`tsc && vite build`, 2.044 modul ditransformasikan).
+  - 10 pengujian backend `pytest tests/test_tourism.py` dan 8 pengujian `pytest tests/test_gis.py` lulus 100%.
+
 
 
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useLanguage } from '../context/LanguageContext'
 import {
   Compass,
   Home,
@@ -46,6 +47,7 @@ export interface TourismEcoStayWorkspaceProps {
 }
 
 export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = ({ currentUser, onOpenQuickLogin }) => {
+  const { t } = useLanguage()
   const [activeTab, setActiveTab] = useState<TourismSubTab>(() => getPreferredTourismSubTab())
   const [destIslandFilter, setDestIslandFilter] = useState<string>('')
   const [destCategoryFilter, setDestCategoryFilter] = useState<string>('')
@@ -1107,7 +1109,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
 
                 <div style={{ padding: '1.15rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
                   <div style={{ fontSize: '0.72rem', color: '#B45309', fontWeight: 700, marginBottom: '0.2rem' }}>
-                    {h.island} • Periode: {h.historical_period}
+                    {h.island} • {t.cagarBudaya.periodLabel}: {h.historical_period}
                   </div>
 
                   <h3 style={{ margin: '0 0 0.45rem', fontSize: '1.05rem', fontWeight: 800, color: '#081D35' }}>
@@ -1123,7 +1125,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                       <Volume2 size={16} color="#D97706" />
                       <span style={{ fontSize: '0.75rem', color: '#081D35', fontWeight: 700 }}>
-                        {activeAudioSlug === h.slug ? 'Sedang Memutar Audio...' : 'Audio Guide Sejarah'}
+                        {activeAudioSlug === h.slug ? t.cagarBudaya.audioGuidePlaying : t.cagarBudaya.audioGuideLabel}
                       </span>
                     </div>
 

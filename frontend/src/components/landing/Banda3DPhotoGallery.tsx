@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback, memo } from 'react'
 import './Banda3DPhotoGallery.css'
+import { useLanguage } from '../../context/LanguageContext'
 
 export interface PhotoItem {
   id: string
@@ -293,6 +294,7 @@ const OrnamentCard = memo(({ item, breakpoint, registerElement }: OrnamentCardPr
 OrnamentCard.displayName = 'OrnamentCard'
 
 export const Banda3DPhotoGallery: React.FC = () => {
+  const { t } = useLanguage()
   const sectionRef = useRef<HTMLElement>(null)
   const elementsRef = useRef<HTMLDivElement[]>([])
   const titleRef = useRef<HTMLDivElement>(null)
@@ -500,12 +502,12 @@ export const Banda3DPhotoGallery: React.FC = () => {
 
               {/* Top Subtitle in Nexa Sans */}
               <span className="font-sans text-xs sm:text-sm font-semibold tracking-[0.24em] text-amber-300 uppercase">
-                Jelajahi Keindahan
+                {t.gallery.tagline}
               </span>
 
               {/* Main Headline in Intro Script */}
               <h2 className="text-4xl sm:text-6xl font-script font-normal text-white tracking-wide leading-tight drop-shadow-lg">
-                Banda Neira
+                {t.gallery.title}
               </h2>
 
             </div>

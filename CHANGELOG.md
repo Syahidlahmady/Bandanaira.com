@@ -9,6 +9,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Translasi Menyeluruh Peta Interaktif Spasial GIS (Phase 54 — Branch `subtitle`)**:
+  - **Kamus Dwibahasa Peta Spasial (`gisMap` di `translations.ts`)**:
+    - Mendefinisikan terjemahan lengkap untuk pencarian peta (`searchPlaceholder`), pemilih pulau (`allIslands`, `neiraIsland`, `greatBanda`, `hattaIsland`, `ayIsland`, `rhunIsland`), tombol kontrol (`recenterMap`, `fullscreen`, `exitFullscreen`), gaya peta & peta dasar (`mapStyles`, `baseMap`, `standard`, `satellite`, `terrain`), overlay spasial (`placeAndStreetNames`, `mapOverlays`, `villageTerritories`, `villagesCount`, `densityHeatmap`, `maritimeRoutes`), serta status (`active`, `off`, `empty`).
+    - Mendefinisikan legenda kartografi (`mapLegend`, `selectAll`, `clearAll`, `spatialProjection`, `densityLegendTitle`, 4 tingkat kepadatan `densitySparse`, `densityMedium`, `densityDense`, `densityHigh`).
+    - Mendefinisikan 7 kategori layer spasial: Wisata & Bahari, Cagar Budaya, Penginapan, Sentra UMKM, Fasilitas Umum, Air Bersih, Energi & Lingkungan.
+    - Mendefinisikan rincian drawer objek (POI inspection drawer): aksi fokus peta, panorama 360°, salin koordinat, kontak WA, audio guide, rincian rute maritim, kualitas air TDS, tandon komunal, tarif eco-stay, air bersih RO, listrik surya, kapasitas PLTS, dan daftar UMKM binaan.
+    - Mendefinisikan kartu profil desa (`villageCard`): pulau, populasi, luas wilayah, kepadatan penduduk, komoditas, daya tarik, statistik resmi 2026, komposisi gender & keluarga, profesi utama, dan unit UMKM binaan aktif.
+  - **Penyelarasan Dinamis Komponen Peta (`InteractiveMapWorkspace.tsx`)**:
+    - Mengintegrasikan hook `useLanguage()` reaktif ke kanvas peta Leaflet interaktif, sehingga saat bahasa diubah antara ID dan EN, seluruh chip filter pulau, search bar, tooltip tombol, menu layers, legenda peta, drawer inspeksi POI, dan kartu profil desa langsung berganti bahasa secara seketika tanpa perlu memuat ulang halaman.
+  - **Verifikasi Mutu & Kestabilan**:
+    - Build produksi frontend Vite `tsc && vite build` lolos 100% (2.044 modul ditransformasikan, exit code 0).
+    - 8 pengujian backend `pytest tests/test_gis.py` lulus 100%.
+
+- **Penyelarasan Translasi Menyeluruh Landing Page & Solusi Dropdown Melayang (Phase 54 — Branch `subtitle`)**:
+  - **Translasi Menyeluruh Seluruh Seksi Landing Page (`frontend/src/services/i18n/translations.ts`)**:
+    - Memperluas kamus terjemahan dwibahasa (`id` dan `en`) mencakup 100% komponen di landing page: `navbar`, `hero`, `gallery`, `mapSection`, `tourismSaw`, `ecoStay`, `stats`, `traceability`, `demographics`, `planYourVisit`, `heritage`, `cagarBudaya`, `footer`, dan `chatbot`.
+    - Mengintegrasikan translasi ke `Banda3DPhotoGallery.tsx`, `PetaInteractiveSection.tsx`, `TourismSawSection.tsx`, `EcoStayCatalogSection.tsx`, `EcosystemFeaturesSection.tsx`, `TraceabilityMarketplaceSection.tsx`, `SustainableTravelSection.tsx`, `PlanYourVisitSection.tsx`, `LandingFooterSection.tsx`, dan `TourismChatbotBubble.tsx`.
+  - **Perbaikan Dropdown Bahasa & Tampilan Navbar Sinematik (`HeroSection.tsx` & `LanguageSwitcher.tsx`)**:
+    - **Solusi Dropdown Melayang Bebas**: Menghilangkan batas `overflow-hidden` pada elemen `<header>` di `HeroSection.tsx` menjadi `overflow-visible`, serta menambahkan z-index tinggi (`z-[100]`) dan bayangan kontras pada popover menu dropdown bahasa agar mengambang bebas di atas navbar tanpa tertutup atau terpotong garis bawah navbar.
+    - **Penyelesaian Benturan Tombol Login**: Menghilangkan container floating terpisah di luar navbar yang sebelumnya bertubrukan koordinat dengan tombol login; menata tombol aksi di dalam navbar terpadu secara harmonis: `[ Daftar ]` `[ Masuk ]` `[ garis pembatas w-px ]` `[ Dropdown Pilihan Bahasa ]`.
+    - **Pemulihan Perilaku Navbar Awal**: Mengembalikan visibilitas navbar agar tidak langsung muncul di awal (`opacity-0`), melainkan bertransisi mulus (`opacity-100`) hanya setelah pengguna menggulir melewati intro video (`scrollProgress >= 0.85`).
+  - **Asisten Rekomendasi Wisata Cerdas Dwibahasa (`TourismChatbotBubble.tsx`)**:
+    - Mengintegrasikan pesan sambutan, status pencocokan kriteria SAW, tarif estimasi, chip filter cepat (Bahari, Sejarah, Anggaran), dan alasan kurasi dalam Bahasa Indonesia dan English secara dinamis.
+  - **Verifikasi Mutu & Kestabilan**:
+    - Build produksi frontend Vite `tsc && vite build` lolos 100% tanpa error (2.044 modul ditransformasikan, exit code 0).
+    - 10 pengujian backend `pytest tests/test_tourism.py` lulus 100%.
+
+- **Multilingual Language Switcher (ID/EN) & Dual-Language Heritage Audio Subtitles (Phase 54 — Branch `subtitle`)**:
+  - **Kamus Dwibahasa Komprehensif (`frontend/src/services/i18n/translations.ts`)**: Menyusun kamus terjemahan dwibahasa terstruktur (`Language = 'id' | 'en'`) untuk navigasi bar (`BandaUnifiedNavbar`), hero section, narasi sejarah 4 babak rempah (`STORIES`: Pala, Belgica, Rhun, Bung Hatta), serta katalog cagar budaya dan audio guide.
+  - **State Management & Hook Reaktif (`frontend/src/context/LanguageContext.tsx`)**: Menyediakan `LanguageProvider` dan `useLanguage()` dengan persistensi ke `localStorage` (`banda_language`), sinkronisasi otomatis ke `document.documentElement.lang`, fungsi `toggleLanguage()`, boolean `isEnglish`, dan objek kamus aktif `t`.
+  - **Komponen Switcher Dropdown Elegan (`frontend/src/components/common/LanguageSwitcher.tsx`)**: Menerapkan selector dropdown dwibahasa `🇮🇩 Bahasa Indonesia` dan `🇬🇧 English` lengkap dengan chevron panah rotasi, indikator centang aktif, latar navy gelap emas pala `#081D35` / `#F4B75E`, backdrop blur, dan *click-outside listener*.
+  - **Penempatan di Landing Page Depan & Hero Section (`HeroSection.tsx`)**: Menampilkan **Floating Language Dropdown** di pojok kanan atas halaman depan landing page (`fixed top-4 right-4 sm:top-6 sm:right-8 z-40`) agar langsung tampak jelas bagi pengunjung internasional saat pertama kali mendarat di website (resting state). Selain itu, dropdown bahasa juga terpasang di fixed top navbar saat di-scroll, drawer navigasi mobile, dan floating topbar dashboard (`DashboardLayout.tsx`).
+  - **Sinkronisasi Judul & Konten Beranda Dwibahasa**: Menyelaraskan teks judul tengah hero, display headline, deskripsi, tautan navigasi, tombol CTA jelajah, serta tombol login/daftar di `HeroSection.tsx` secara dinamis sesuai pilihan bahasa yang dipilih.
+  - **Narasi & Subtitle Sejarah Dinamis (`HeritageSpiceSection.tsx`)**: Menghubungkan 4 babak linimasa sejarah dengan data dwibahasa dinamis (`activeStories`), menampilkan subtitle periode sejarah di bawah judul dengan tipografi mono emas pala, serta mendukung heading dwibahasa (`Tales from the Heart of Spice` vs `Cerita dari Jantung Rempah`).
+  - **Penyelarasan Workspace Cagar Budaya (`TourismEcoStayWorkspace.tsx`)**: Menghubungkan label status audio guide dan periode sejarah dengan kamus aktif (`t.cagarBudaya.audioGuidePlaying` / `audioGuideLabel`).
+  - **Verifikasi Mutu & Kestabilan**: Memverifikasi `tsc && vite build` lolos 100% (2.044 modul ditransformasikan, exit code 0) dan 90 pengujian backend `pytest` lulus 100%.
+
 - **Territorial Jurisdiction Scoping & Official GIS Village Boundary Enforcement (Phase 46)**:
   - **Database Migration & Scoping Model**: Membuat migrasi Alembic `013_user_farm_village_scope.py` yang menambahkan kolom `village` (VARCHAR/String) dengan indeks pencarian pada tabel `users` dan `farms`. Memperbarui model SQLAlchemy `User` dan `Farm`, serta skema Pydantic `User`, `FarmCreate`, `FarmResponse`, `FarmStatisticsResponse`, `FarmBoundaryValidationRequest`, dan `FarmBoundaryValidationResponse`.
   - **Auto-Seed Demo Actors & Scoping**: Mengonfigurasi penetapan desa autentik pada `backend/scripts/demo_seed.py` (`petugas` -> Lonthoir, `petugas_nusantara` -> Nusantara, `ketua_kelompok` -> Lonthoir, `petani` -> Lonthoir, `warga` -> Lonthoir, `admin` -> Lintas Desa).

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { ArrowUpRightIcon } from './LandingIcons'
 import { setPreferredTourismSubTab, TourismSubTab } from '../../services/tourism'
+import { useLanguage } from '../../context/LanguageContext'
 
 export interface PublicSawDestination {
   id: string
@@ -153,6 +154,7 @@ export interface TourismSawSectionProps {
 }
 
 export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate }) => {
+  const { t } = useLanguage()
   const [activeIndex, setActiveIndex] = useState(0)
   const carouselRef = useRef<HTMLDivElement>(null)
 
@@ -213,7 +215,7 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
             <div className="inline-flex items-center gap-2 mb-4">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
               <p className="font-sans text-[11px] font-bold tracking-[0.25em] text-amber-400 uppercase">
-                SPOTLIGHT KURASI BANDA
+                {t.tourismSaw.tagline}
               </p>
             </div>
 
@@ -222,11 +224,11 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
               id="tourism-routes-heading"
               className="font-sans font-bold text-3xl sm:text-4xl lg:text-[44px] leading-[1.12] tracking-tight text-white mb-5"
             >
-              Jelajahi Permata{' '}
+              {t.tourismSaw.headingPrefix}{' '}
               <span className="font-script text-amber-300 font-normal text-4xl sm:text-5xl lg:text-[52px] inline-block tracking-normal ml-1">
-                Ikonik
+                {t.tourismSaw.headingScript}
               </span>{' '}
-              Banda Neira
+              {t.tourismSaw.headingSuffix}
             </h2>
 
             {/* Dynamic Editorial Paragraph for the currently highlighted destination */}
@@ -241,18 +243,18 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
               <button
                 type="button"
                 onClick={() => openTourismSubTab('destinations')}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/30 bg-white/10 hover:bg-white hover:text-[#071322] text-white text-xs font-semibold tracking-wide transition-all duration-200 group"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/30 bg-white/10 hover:bg-white hover:text-[#071322] text-white text-xs font-semibold tracking-wide transition-all duration-200 group cursor-pointer"
               >
-                <span>Jelajahi Semua Destinasi</span>
+                <span>{t.tourismSaw.exploreAllBtn}</span>
                 <ArrowUpRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </button>
 
               <button
                 type="button"
                 onClick={() => onNavigate('smart_planner')}
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-amber-400/40 bg-amber-400/10 hover:bg-amber-400 hover:text-slate-950 text-amber-300 text-xs font-semibold transition-all duration-200"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-amber-400/40 bg-amber-400/10 hover:bg-amber-400 hover:text-slate-950 text-amber-300 text-xs font-semibold transition-all duration-200 cursor-pointer"
               >
-                <span>Panduan Wisata Cerdas</span>
+                <span>{t.tourismSaw.smartPlannerBtn}</span>
               </button>
             </div>
           </div>
@@ -287,8 +289,8 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
                 <button
                   type="button"
                   onClick={handlePrev}
-                  aria-label="Destinasi Sebelumnya"
-                  className="w-10 h-10 rounded-full border border-white/20 bg-white/5 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+                  aria-label={t.tourismSaw.prevDest}
+                  className="w-10 h-10 rounded-full border border-white/20 bg-white/5 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <polyline points="15 18 9 12 15 6" />
@@ -297,8 +299,8 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
                 <button
                   type="button"
                   onClick={handleNext}
-                  aria-label="Destinasi Berikutnya"
-                  className="w-10 h-10 rounded-full border border-white/20 bg-white/5 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+                  aria-label={t.tourismSaw.nextDest}
+                  className="w-10 h-10 rounded-full border border-white/20 bg-white/5 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <polyline points="9 18 15 12 9 6" />

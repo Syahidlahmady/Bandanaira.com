@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { ArrowUpRightIcon } from './LandingIcons'
+import { useLanguage } from '../../context/LanguageContext'
 
 export interface MarketplaceProductItem {
   id: string
@@ -112,6 +113,7 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
   onOpenMarketplace,
   onPublicVerify,
 }) => {
+  const { t } = useLanguage()
   const [selectedFilter, setSelectedFilter] = useState<'ALL' | 'REMPAH' | 'OLAHAN' | 'LAUT'>('ALL')
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -172,7 +174,7 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
             <div className="inline-flex items-center gap-2 mb-3">
               <span className="w-5 h-px bg-amber-600" />
               <p className="font-sans text-[11px] font-bold tracking-[0.2em] text-amber-600 uppercase">
-                MARKETPLACE UMKM &amp; REMPAH BANDA
+                {t.traceability.tagline}
               </p>
             </div>
 
@@ -180,14 +182,14 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
               id="local-cuisine-heading"
               className="font-sans font-bold text-3xl sm:text-4xl lg:text-[42px] leading-tight tracking-tight text-[#0f2c59]"
             >
-              Hasil Bumi &amp;{' '}
+              {t.traceability.headingPrefix}{' '}
               <span className="font-script text-amber-600 font-normal text-4xl sm:text-5xl lg:text-[50px] inline-block tracking-normal ml-1">
-                Rempah Pilihan
+                {t.traceability.headingScript}
               </span>{' '}
-              Warga Banda
+              {t.traceability.headingSuffix}
             </h2>
             <p className="font-sans text-sm sm:text-base text-slate-600 max-w-xl mt-2 leading-relaxed">
-              Komoditas asli langsung dari petani kebun dan nelayan pulau dengan jaminan keaslian serta catatan asal panen.
+              {t.traceability.description}
             </p>
           </div>
 
@@ -199,7 +201,7 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
                 type="button"
                 onClick={() => scroll('left')}
                 disabled={!canScrollLeft}
-                aria-label="Geser ke kiri"
+                aria-label={t.ecoStay.prev}
                 className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors duration-200 ${
                   canScrollLeft
                     ? 'border-slate-300 text-slate-800 hover:border-[#0f2c59] hover:bg-[#0f2c59] hover:text-white cursor-pointer shadow-sm'
@@ -215,7 +217,7 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
                 type="button"
                 onClick={() => scroll('right')}
                 disabled={!canScrollRight}
-                aria-label="Geser ke kanan"
+                aria-label={t.ecoStay.next}
                 className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors duration-200 ${
                   canScrollRight
                     ? 'border-slate-300 text-slate-800 hover:border-[#0f2c59] hover:bg-[#0f2c59] hover:text-white cursor-pointer shadow-sm'
@@ -233,7 +235,7 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
               onClick={onOpenMarketplace}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#0f2c59] text-white hover:bg-[#183d75] text-xs font-semibold tracking-wide transition-all duration-200 shadow-sm group cursor-pointer"
             >
-              <span>Selengkapnya</span>
+              <span>{t.traceability.viewMore}</span>
               <ArrowUpRightIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </button>
 
@@ -246,7 +248,7 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
                 <rect x="3" y="3" width="18" height="18" rx="2" />
                 <path d="M7 7h.01M7 17h.01M17 7h.01M17 17h.01M7 12h10M12 7v10" />
               </svg>
-              <span>Cek QR Batch</span>
+              <span>{t.traceability.checkQrBatch}</span>
             </button>
           </div>
         </div>

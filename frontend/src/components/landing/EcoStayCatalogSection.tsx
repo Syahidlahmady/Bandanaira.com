@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { AccommodationItem, setPreferredTourismSubTab } from '../../services/tourism'
 import { ArrowUpRightIcon } from './LandingIcons'
+import { useLanguage } from '../../context/LanguageContext'
 
 export const FALLBACK_ACCOMMODATIONS: AccommodationItem[] = [
   {
@@ -128,13 +129,14 @@ export interface EcoStayCatalogSectionProps {
 export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
   onNavigate,
 }) => {
+  const { t } = useLanguage()
   const [selectedFilter, setSelectedFilter] = useState<'ALL' | 'BOUTIQUE' | 'HOMESTAY' | 'BUNGALOW'>('ALL')
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
 
   const filterOptions = [
-    { key: 'ALL', label: 'Semua Penginapan' },
+    { key: 'ALL', label: t.ecoStay.filterAll },
     { key: 'BOUTIQUE', label: 'Boutique Eco-Hotel' },
     { key: 'HOMESTAY', label: 'Homestay Warga' },
     { key: 'BUNGALOW', label: 'Beach Bungalow' },
@@ -193,7 +195,7 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
             <div className="inline-flex items-center gap-2 mb-3">
               <span className="w-5 h-px bg-amber-600" />
               <p className="font-sans text-[11px] font-bold tracking-[0.2em] text-amber-600 uppercase">
-                DIREKTORI PENGINAPAN &amp; ECO-STAY
+                {t.ecoStay.tagline}
               </p>
             </div>
 
@@ -201,13 +203,13 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
               id="island-stays-heading"
               className="font-sans font-bold text-3xl sm:text-4xl lg:text-[42px] leading-tight tracking-tight text-[#0f2c59]"
             >
-              Peraduan Nyaman di{' '}
+              {t.ecoStay.headingPrefix}{' '}
               <span className="font-script text-amber-600 font-normal text-4xl sm:text-5xl lg:text-[50px] inline-block tracking-normal ml-1">
-                Pulau Rempah
+                {t.ecoStay.headingScript}
               </span>
             </h2>
             <p className="font-sans text-sm sm:text-base text-slate-600 max-w-xl mt-2 leading-relaxed">
-              Dikelola langsung oleh warga pulau dengan jaminan air minum RO dan cadangan listrik ramah lingkungan.
+              {t.ecoStay.description}
             </p>
           </div>
 
@@ -219,7 +221,7 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
                 type="button"
                 onClick={() => scroll('left')}
                 disabled={!canScrollLeft}
-                aria-label="Geser ke kiri"
+                aria-label={t.ecoStay.prev}
                 className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors duration-200 ${
                   canScrollLeft
                     ? 'border-slate-300 text-slate-800 hover:border-[#0f2c59] hover:bg-[#0f2c59] hover:text-white cursor-pointer shadow-sm'
@@ -235,7 +237,7 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
                 type="button"
                 onClick={() => scroll('right')}
                 disabled={!canScrollRight}
-                aria-label="Geser ke kanan"
+                aria-label={t.ecoStay.next}
                 className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors duration-200 ${
                   canScrollRight
                     ? 'border-slate-300 text-slate-800 hover:border-[#0f2c59] hover:bg-[#0f2c59] hover:text-white cursor-pointer shadow-sm'
@@ -253,7 +255,7 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
               onClick={openAccommodations}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#0f2c59] text-[#0f2c59] hover:bg-[#0f2c59] hover:text-white text-xs font-semibold tracking-wide transition-all duration-200 group cursor-pointer"
             >
-              <span>Selengkapnya</span>
+              <span>{t.ecoStay.viewMore}</span>
               <ArrowUpRightIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </button>
           </div>
@@ -317,7 +319,7 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
                   {/* Price info */}
                   <div className="flex items-center gap-2 mb-2 font-mono text-sm text-amber-300 font-bold">
                     <span>{formattedPrice}</span>
-                    <span className="text-xs font-normal text-slate-300 font-sans">/ malam</span>
+                    <span className="text-xs font-normal text-slate-300 font-sans">/ {t.ecoStay.night}</span>
                   </div>
 
                   {/* Island & Address Pin */}
@@ -335,13 +337,13 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
                       href={`https://wa.me/${stay.contact_whatsapp}?text=Halo%2C%20saya%20ingin%20reservasi%20di%20${encodeURIComponent(stay.name)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={`Reservasi Penginapan ${stay.name}`}
+                      aria-label={`${t.ecoStay.bookWhatsapp} ${stay.name}`}
                       className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-300 hover:text-white transition-colors"
                     >
                       <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                       </svg>
-                      <span>Reservasi Penginapan</span>
+                      <span>{t.ecoStay.bookWhatsapp}</span>
                     </a>
 
                     <span className="text-[11px] text-slate-400 font-sans">

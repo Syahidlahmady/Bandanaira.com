@@ -52,6 +52,7 @@ import {
 } from '../services/gis'
 import { Panorama360Modal } from '../components/modals/Panorama360Modal'
 import { authService } from '../services/auth'
+import { useLanguage } from '../context/LanguageContext'
 import {
   BANDA_VILLAGES_GEOJSON,
   VILLAGE_DETAILS,
@@ -626,12 +627,45 @@ export const getFeatureMedia = (feat: GeoJSONFeature): LandmarkMediaInfo => {
 }
 
 export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = ({ currentUser }) => {
+  const { t, isEnglish } = useLanguage()
   const workspaceContainerRef = useRef<HTMLDivElement | null>(null)
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
   const layerGroupRef = useRef<L.LayerGroup | null>(null)
   const draftMarkerRef = useRef<L.Marker | null>(null)
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false)
+
+  const getLayerLabel = (layerType: string): string => {
+    switch (layerType) {
+      case 'LAYER_TOURISM_4A':
+        return t.gisMap.layers.tourism
+      case 'LAYER_HERITAGE':
+        return t.gisMap.layers.heritage
+      case 'LAYER_ACCOMMODATION':
+        return t.gisMap.layers.accommodation
+      case 'LAYER_KOPERASI_UMKM':
+        return t.gisMap.layers.smes
+      case 'LAYER_PUBLIC_SAFETY':
+      case 'LAYER_DESA_ADMIN':
+        return t.gisMap.layers.publicSafety
+      case 'LAYER_WATER_INFRA':
+        return t.gisMap.layers.waterInfra
+      case 'LAYER_ENERGY_WASTE':
+        return t.gisMap.layers.energyWaste
+      default:
+        return LAYER_LABELS[layerType] || layerType
+    }
+  }
+
+  const getIslandChipLabel = (isl: string): string => {
+    if (!isl) return t.gisMap.allIslands
+    if (isl === 'Pulau Neira') return t.gisMap.neiraIsland
+    if (isl === 'Banda Besar') return t.gisMap.greatBanda
+    if (isl === 'Pulau Hatta') return t.gisMap.hattaIsland
+    if (isl === 'Pulau Ay') return t.gisMap.ayIsland
+    if (isl === 'Pulau Rhun') return t.gisMap.rhunIsland
+    return isl
+  }
 
   // Basemap Tile Layers Management (Google Maps Style Layer Switcher)
   const baseTileLayerRef = useRef<L.TileLayer | null>(null)
@@ -4125,7 +4159,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               )}
               <input
                 type="text"
-                placeholder="Cari tempat..."
+                placeholder={t.gisMap.searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
@@ -4201,7 +4235,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {isl || 'Semua Pulau'}
+                    {getIslandChipLabel(isl)}
                   </button>
                 )
               })}
@@ -4284,7 +4318,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               color: isFullscreen ? '#ffffff' : '#334155',
               transition: 'all 0.15s ease',
             }}
-            title={isFullscreen ? 'Keluar dari Layar Penuh (Esc)' : 'Layar Penuh Peta (Fullscreen)'}
+            title={isFullscreen ? t.gisMap.exitFullscreen : t.gisMap.fullscreen}
             aria-label="Toggle Fullscreen"
           >
             {isFullscreen ? <Minimize2 size={isMobile ? 14 : 16} /> : <Maximize2 size={isMobile ? 14 : 16} />}
@@ -4312,7 +4346,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               color: '#334155',
               transition: 'all 0.15s ease',
             }}
-            title="Pusatkan kembali ke Kepulauan Banda"
+            title={t.gisMap.recenterMap}
           >
             <Compass size={isMobile ? 14 : 16} />
           </button>
@@ -4377,7 +4411,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
-                  title="Tutup Profil Desa"
+                  title={t.gisMap.villageCard.close}
                 >
                   <X size={13} />
                 </button>
@@ -4389,36 +4423,36 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', borderTop: '1px solid #f1f5f9', paddingTop: '0.65rem', fontSize: '0.73rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: '#64748b' }}>Pulau:</span>
+                  <span style={{ color: '#64748b' }}>{t.gisMap.villageCard.island}:</span>
                   <span style={{ fontWeight: 700, color: '#0f2c59' }}>{selectedVillage.island}</span>
                 </div>
                 {selectedVillage.population && (
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#64748b' }}>Populasi:</span>
+                    <span style={{ color: '#64748b' }}>{t.gisMap.villageCard.population}:</span>
                     <span style={{ fontWeight: 700, color: '#0f2c59' }}>{selectedVillage.population}</span>
                   </div>
                 )}
                 {selectedVillage.area_km2 && (
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#64748b' }}>Luas Wilayah:</span>
+                    <span style={{ color: '#64748b' }}>{t.gisMap.villageCard.area}:</span>
                     <span style={{ fontWeight: 700, color: '#0f2c59' }}>{selectedVillage.area_km2} km²</span>
                   </div>
                 )}
                 {selectedVillage.density && (
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#64748b' }}>Kepadatan Penduduk:</span>
-                    <span style={{ fontWeight: 700, color: '#0f766e' }}>{selectedVillage.density} jiwa/km²</span>
+                    <span style={{ color: '#64748b' }}>{t.gisMap.villageCard.density}:</span>
+                    <span style={{ fontWeight: 700, color: '#0f766e' }}>{selectedVillage.density} {isEnglish ? 'people/km²' : 'jiwa/km²'}</span>
                   </div>
                 )}
                 {selectedVillage.main_commodity && (
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: '#64748b' }}>Komoditas / Potensi:</span>
+                    <span style={{ color: '#64748b' }}>{t.gisMap.villageCard.commodityPotential}:</span>
                     <span style={{ fontWeight: 600, color: '#059669', textAlign: 'right', maxWidth: '170px' }}>{selectedVillage.main_commodity}</span>
                   </div>
                 )}
                 {selectedVillage.highlights && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed #e2e8f0', paddingTop: '0.3rem' }}>
-                    <span style={{ color: '#64748b' }}>Daya Tarik:</span>
+                    <span style={{ color: '#64748b' }}>{t.gisMap.villageCard.highlights}:</span>
                     <span style={{ fontWeight: 600, color: '#0284c7', textAlign: 'right', maxWidth: '170px' }}>{selectedVillage.highlights}</span>
                   </div>
                 )}
@@ -4445,8 +4479,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                         justifyContent: 'space-between',
                       }}
                     >
-                      <span>Statistik Resmi Desa (2026)</span>
-                      <span style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 600 }}>Tercatat</span>
+                      <span>{t.gisMap.villageCard.officialStats}</span>
+                      <span style={{ fontSize: '0.6rem', color: '#64748b', fontWeight: 600 }}>{t.gisMap.villageCard.recorded}</span>
                     </div>
 
                     <div
@@ -4459,28 +4493,30 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                       }}
                     >
                       <div style={{ background: '#ffffff', padding: '0.3rem 0.2rem', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
-                        <div style={{ fontSize: '0.6rem', color: '#64748b' }}>Laki-laki</div>
+                        <div style={{ fontSize: '0.6rem', color: '#64748b' }}>{t.gisMap.villageCard.male}</div>
                         <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0f2c59' }}>{selectedVillage.demographics.male}</div>
                       </div>
                       <div style={{ background: '#ffffff', padding: '0.3rem 0.2rem', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
-                        <div style={{ fontSize: '0.6rem', color: '#64748b' }}>Perempuan</div>
+                        <div style={{ fontSize: '0.6rem', color: '#64748b' }}>{t.gisMap.villageCard.female}</div>
                         <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0f2c59' }}>{selectedVillage.demographics.female}</div>
                       </div>
                       <div style={{ background: '#ffffff', padding: '0.3rem 0.2rem', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
-                        <div style={{ fontSize: '0.6rem', color: '#64748b' }}>Keluarga</div>
-                        <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0f2c59' }}>{selectedVillage.demographics.households} KK</div>
+                        <div style={{ fontSize: '0.6rem', color: '#64748b' }}>{t.gisMap.villageCard.households}</div>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0f2c59' }}>{selectedVillage.demographics.households} {isEnglish ? 'HH' : 'KK'}</div>
                       </div>
                     </div>
 
                     {selectedVillage.demographics.top_occupations && (
                       <div style={{ fontSize: '0.66rem', color: '#475569', lineHeight: 1.4, borderTop: '1px dashed #cbd5e1', paddingTop: '0.3rem' }}>
-                        <span style={{ fontWeight: 600, color: '#0f2c59' }}>Profesi Utama: </span>
+                        <span style={{ fontWeight: 600, color: '#0f2c59' }}>{t.gisMap.villageCard.mainOccupation}: </span>
                         {selectedVillage.demographics.top_occupations}
                       </div>
                     )}
                     {selectedVillage.demographics.umkm_count && (
                       <div style={{ fontSize: '0.66rem', color: '#7c3aed', fontWeight: 700, marginTop: '0.25rem' }}>
-                        Terdata {selectedVillage.demographics.umkm_count} Unit UMKM Binaan Aktif
+                        {isEnglish
+                          ? `Recorded ${selectedVillage.demographics.umkm_count} Active Registered SMEs`
+                          : `Terdata ${selectedVillage.demographics.umkm_count} Unit UMKM Binaan Aktif`}
                       </div>
                     )}
                   </div>
@@ -4508,7 +4544,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                   }}
                 >
                   <Compass size={12} />
-                  Fokuskan
+                  {t.gisMap.villageCard.focus}
                 </button>
                 {isOfficerOrAdmin && (
                   <button
@@ -4547,7 +4583,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     cursor: 'pointer',
                   }}
                 >
-                  Tutup
+                  {t.gisMap.closeDetails}
                 </button>
               </div>
             </div>
@@ -4575,7 +4611,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px', gap: '8px' }}>
                 <span style={{ fontWeight: 800, color: '#0f2c59', fontSize: '0.66rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  Kepadatan Penduduk (jiwa/km²)
+                  {t.gisMap.densityLegendTitle}
                 </span>
                 <button
                   type="button"
@@ -4613,28 +4649,28 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                   <span style={{ fontSize: '0.62rem', color: '#475569', fontWeight: 600, display: 'block', lineHeight: 1.1 }}>
                     &lt; 100
                   </span>
-                  <span style={{ fontSize: '0.58rem', color: '#94a3b8' }}>Renggang</span>
+                  <span style={{ fontSize: '0.58rem', color: '#94a3b8' }}>{t.gisMap.densitySparse}</span>
                 </div>
                 <div>
                   <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#0d9488', margin: '0 auto 2px' }} />
                   <span style={{ fontSize: '0.62rem', color: '#475569', fontWeight: 600, display: 'block', lineHeight: 1.1 }}>
                     100-199
                   </span>
-                  <span style={{ fontSize: '0.58rem', color: '#94a3b8' }}>Sedang</span>
+                  <span style={{ fontSize: '0.58rem', color: '#94a3b8' }}>{t.gisMap.densityMedium}</span>
                 </div>
                 <div>
                   <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#f59e0b', margin: '0 auto 2px' }} />
                   <span style={{ fontSize: '0.62rem', color: '#475569', fontWeight: 600, display: 'block', lineHeight: 1.1 }}>
                     200-299
                   </span>
-                  <span style={{ fontSize: '0.58rem', color: '#94a3b8' }}>Padat</span>
+                  <span style={{ fontSize: '0.58rem', color: '#94a3b8' }}>{t.gisMap.densityDense}</span>
                 </div>
                 <div>
                   <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#e11d48', margin: '0 auto 2px' }} />
                   <span style={{ fontSize: '0.62rem', color: '#475569', fontWeight: 600, display: 'block', lineHeight: 1.1 }}>
                     ≥ 300
                   </span>
-                  <span style={{ fontSize: '0.58rem', color: '#94a3b8' }}>Tinggi</span>
+                  <span style={{ fontSize: '0.58rem', color: '#94a3b8' }}>{t.gisMap.densityHigh}</span>
                 </div>
               </div>
             </div>
@@ -4672,7 +4708,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                 transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                 transform: isLayerMenuOpen ? 'scale(1.04)' : 'scale(1)',
               }}
-              title="Pilih gaya peta dan lapisan"
+              title={t.gisMap.mapStyles}
             >
               {/* Dark subtle overlay for contrast */}
               <div
@@ -4742,7 +4778,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Layers size={15} color="#0284c7" />
                     <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#0f2c59' }}>
-                      Gaya Peta
+                      {t.gisMap.mapStyles}
                     </span>
                   </div>
                   <button
@@ -4760,7 +4796,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                       cursor: 'pointer',
                       color: '#64748b',
                     }}
-                    title="Tutup menu"
+                    title={t.gisMap.closeDetails}
                   >
                     <X size={13} />
                   </button>
@@ -4778,7 +4814,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                       marginBottom: '8px',
                     }}
                   >
-                    Peta Dasar
+                    {t.gisMap.baseMap}
                   </div>
 
                   <div
@@ -4791,6 +4827,12 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     {(Object.keys(BASEMAP_CONFIGS) as BasemapId[]).map((bId) => {
                       const cfg = BASEMAP_CONFIGS[bId]
                       const isSelected = activeBasemap === bId
+                      const basemapLabel =
+                        bId === 'satellite'
+                          ? t.gisMap.satellite
+                          : bId === 'terrain'
+                          ? t.gisMap.terrain
+                          : t.gisMap.standard
                       return (
                         <div
                           key={bId}
@@ -4858,7 +4900,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                               color: isSelected ? '#0284c7' : '#334155',
                             }}
                           >
-                            {cfg.label}
+                            {basemapLabel}
                           </span>
                         </div>
                       )
@@ -4885,7 +4927,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Eye size={13} color="#15803d" />
                       <span style={{ fontSize: '0.72rem', fontWeight: 600, color: '#166534' }}>
-                        Nama Tempat &amp; Jalan
+                        {t.gisMap.placeAndStreetNames}
                       </span>
                     </div>
                     <div
@@ -4917,7 +4959,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                       marginBottom: '8px',
                     }}
                   >
-                    Informasi Peta
+                    {t.gisMap.mapOverlays}
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -4947,7 +4989,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           }}
                         />
                         <span style={{ fontSize: '0.73rem', fontWeight: 600, color: '#0f2c59' }}>
-                          Wilayah Desa
+                          {t.gisMap.villageTerritories}
                         </span>
                       </div>
                       <span
@@ -4957,7 +4999,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           color: showVillageBoundaries ? '#059669' : '#94a3b8',
                         }}
                       >
-                        17 Desa
+                        {t.gisMap.villagesCount}
                       </span>
                     </div>
 
@@ -4994,7 +5036,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           }}
                         />
                         <span style={{ fontSize: '0.73rem', fontWeight: 600, color: '#0f2c59' }}>
-                          Heatmap Kepadatan
+                          {t.gisMap.densityHeatmap}
                         </span>
                       </div>
                       <span
@@ -5004,7 +5046,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           color: showDensityHeatmap ? '#e11d48' : '#94a3b8',
                         }}
                       >
-                        {showDensityHeatmap ? 'Aktif' : 'Mati'}
+                        {showDensityHeatmap ? t.gisMap.active : t.gisMap.off}
                       </span>
                     </div>
 
@@ -5026,7 +5068,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <div style={{ width: '12px', height: '2.5px', borderTop: '2px dashed #0284c7' }} />
                         <span style={{ fontSize: '0.73rem', fontWeight: 600, color: '#0f2c59' }}>
-                          Jalur Laut
+                          {t.gisMap.maritimeRoutes}
                         </span>
                       </div>
                       <span
@@ -5036,7 +5078,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           color: showRoutes ? '#0284c7' : '#94a3b8',
                         }}
                       >
-                        {filteredFeatures.filter((f) => f.geometry?.type === 'LineString').length > 0 ? 'Aktif' : 'Kosong'}
+                        {filteredFeatures.filter((f) => f.geometry?.type === 'LineString').length > 0 ? t.gisMap.active : t.gisMap.empty}
                       </span>
                     </div>
 
@@ -5059,9 +5101,9 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                         cursor: 'pointer',
                       }}
                     >
-                      <span>Legenda Lokasi</span>
+                      <span>{t.gisMap.openLegend}</span>
                       <span style={{ color: '#0284c7', fontWeight: 700 }}>
-                        {atlasLegendOpen ? 'Tutup' : 'Buka'}
+                        {atlasLegendOpen ? t.gisMap.closeDetails : 'Buka'}
                       </span>
                     </button>
                   </div>
@@ -5115,7 +5157,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     color: '#0f2c59',
                   }}
                 >
-                  Legenda Peta
+                  {t.gisMap.mapLegend}
                 </span>
               </div>
               <button
@@ -5153,19 +5195,19 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     onClick={selectAllLayers}
                     style={{ background: 'none', border: 'none', color: '#0369a1', fontSize: '0.675rem', fontWeight: 700, cursor: 'pointer', padding: 0 }}
                   >
-                    Pilih Semua
+                    {t.gisMap.selectAll}
                   </button>
                   <button
                     type="button"
                     onClick={clearAllLayers}
                     style={{ background: 'none', border: 'none', color: '#dc2626', fontSize: '0.675rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}
                   >
-                    Kosongkan
+                    {t.gisMap.clearAll}
                   </button>
                 </div>
                 {Object.entries(LAYER_COLORS).map(([lyr, col]) => {
                   const isActive = selectedLayers.has(lyr)
-                  const label = LAYER_LABELS[lyr] || lyr
+                  const label = getLayerLabel(lyr)
                   const count = filteredFeatures.filter((f) => f.properties.layer_type === lyr).length
                   return (
                     <div
@@ -5252,7 +5294,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                         lineHeight: 1.2,
                       }}
                     >
-                      Jalur Laut
+                      {t.gisMap.maritimeRoutes}
                     </span>
                   </div>
                   <span
@@ -5299,7 +5341,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                         lineHeight: 1.2,
                       }}
                     >
-                      Wilayah Desa
+                      {t.gisMap.villageTerritories}
                     </span>
                   </div>
                   <span
@@ -5394,7 +5436,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     color: '#94a3b8',
                   }}
                 >
-                  <span>Proyeksi Spasial</span>
+                  <span>{t.gisMap.spatialProjection}</span>
                   <span style={{ fontWeight: 600, color: '#64748b' }}>WGS 84 · RFC 7946</span>
                 </div>
               </div>
@@ -5571,7 +5613,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                         }}
                       >
                         {LAYER_ICONS[selectedFeature.properties.layer_type]}
-                        {LAYER_LABELS[selectedFeature.properties.layer_type] || selectedFeature.properties.layer_type}
+                        {getLayerLabel(selectedFeature.properties.layer_type)}
                       </span>
 
                       <button
@@ -5591,7 +5633,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           justifyContent: 'center',
                           transition: 'background 0.15s ease',
                         }}
-                        title="Tutup rincian"
+                        title={t.gisMap.closeDetails}
                       >
                         <X size={15} />
                       </button>
@@ -5625,10 +5667,10 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.35)',
                           transition: 'all 0.15s ease',
                         }}
-                        title="Buka tampilan panorama 360 derajat interaktif"
+                        title={t.gisMap.view360Panorama}
                       >
                         <Eye size={13} color="#38bdf8" />
-                        <span>Lihat Panorama 360°</span>
+                        <span>{t.gisMap.view360Panorama}</span>
                       </button>
                     </div>
                   </div>
@@ -5712,7 +5754,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                         }}
                       >
                         <Navigation2 size={13} fill="#ffffff" />
-                        <span>Fokuskan Peta</span>
+                        <span>{t.gisMap.focusMap}</span>
                       </button>
 
                       {/* Action 2: 360 Viewer */}
@@ -5760,7 +5802,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                         }}
                       >
                         {copiedCoord ? <Check size={13} /> : <Copy size={13} />}
-                        <span>{copiedCoord ? 'Tersalin!' : 'Salin Koordinat'}</span>
+                        <span>{copiedCoord ? t.gisMap.coordsCopied : t.gisMap.copyCoords}</span>
                       </button>
 
                       {/* Action 4: WhatsApp (if available) */}
@@ -5787,7 +5829,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           }}
                         >
                           <Phone size={13} />
-                          <span>Kontak WA</span>
+                          <span>{t.gisMap.waContact}</span>
                         </a>
                       )}
 
@@ -5813,7 +5855,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           }}
                         >
                           <Volume2 size={13} />
-                          <span>Audio Guide</span>
+                          <span>{t.gisMap.audioGuide}</span>
                         </a>
                       )}
                     </div>
@@ -5869,7 +5911,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           </div>
                           {selectedFeature.properties.built_year && (
                             <div style={{ color: '#64748b', fontSize: '0.72rem', marginTop: '1px' }}>
-                              Didirikan: Tahun {selectedFeature.properties.built_year} (Cagar Budaya Nasional)
+                              {isEnglish ? `Founded: Year ${selectedFeature.properties.built_year} (${t.gisMap.nationalHeritage})` : `Didirikan: Tahun ${selectedFeature.properties.built_year} (${t.gisMap.nationalHeritage})`}
                             </div>
                           )}
                         </div>
@@ -5881,7 +5923,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span style={{ fontSize: '0.75rem', color: '#0369a1', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                               <Route size={13} />
-                              Panjang Lintasan:
+                              {t.gisMap.routeLength}:
                             </span>
                             <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#0284c7' }}>
                               {selectedFeature.properties.properties_meta?.total_distance_km || 0} km
@@ -5892,21 +5934,21 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           </div>
                           {selectedFeature.properties.properties_meta?.travel_time && (
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.73rem' }}>
-                              <span style={{ color: '#64748b' }}>Waktu Tempuh:</span>
+                              <span style={{ color: '#64748b' }}>{t.gisMap.travelTime}:</span>
                               <span style={{ fontWeight: 700, color: '#0f2c59' }}>{selectedFeature.properties.properties_meta.travel_time}</span>
                             </div>
                           )}
                           {selectedFeature.properties.properties_meta?.transport_mode && (
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.73rem' }}>
-                              <span style={{ color: '#64748b' }}>Moda:</span>
+                              <span style={{ color: '#64748b' }}>{t.gisMap.transportMode}:</span>
                               <span style={{ fontWeight: 600, color: '#0f2c59' }}>{selectedFeature.properties.properties_meta.transport_mode}</span>
                             </div>
                           )}
                           {(selectedFeature.properties.properties_meta?.origin || selectedFeature.properties.properties_meta?.destination) && (
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', borderTop: '1px dashed #cbd5e1', paddingTop: '0.3rem' }}>
-                              <span style={{ color: '#64748b' }}>Rute:</span>
+                              <span style={{ color: '#64748b' }}>{t.gisMap.routePath}:</span>
                               <span style={{ fontWeight: 600, color: '#0f2c59' }}>
-                                {selectedFeature.properties.properties_meta?.origin || 'Awal'} &rarr; {selectedFeature.properties.properties_meta?.destination || 'Tujuan'}
+                                {selectedFeature.properties.properties_meta?.origin || (isEnglish ? 'Start' : 'Awal')} &rarr; {selectedFeature.properties.properties_meta?.destination || (isEnglish ? 'Destination' : 'Tujuan')}
                               </span>
                             </div>
                           )}
@@ -5918,7 +5960,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                         <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', padding: '0.6rem 0.75rem', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                           {selectedFeature.properties.live_tds_ppm !== undefined && (
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span style={{ fontSize: '0.75rem', color: '#0369a1', fontWeight: 600 }}>Kualitas Air (TDS):</span>
+                              <span style={{ fontSize: '0.75rem', color: '#0369a1', fontWeight: 600 }}>{t.gisMap.waterQuality}:</span>
                               <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0284c7' }}>
                                 {selectedFeature.properties.live_tds_ppm} ppm
                               </span>
@@ -5926,8 +5968,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           )}
                           {selectedFeature.properties.tank_level_pct !== undefined && (
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.73rem' }}>
-                              <span style={{ color: '#64748b' }}>Tandon Komunal:</span>
-                              <span style={{ color: '#0284c7', fontWeight: 700 }}>{selectedFeature.properties.tank_level_pct}% Penuh</span>
+                              <span style={{ color: '#64748b' }}>{t.gisMap.communalTank}:</span>
+                              <span style={{ color: '#0284c7', fontWeight: 700 }}>{selectedFeature.properties.tank_level_pct}% {t.gisMap.full}</span>
                             </div>
                           )}
                         </div>
@@ -5938,21 +5980,21 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                           {selectedFeature.properties.price_per_night_rp && (
                             <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '0.5rem 0.75rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span style={{ fontSize: '0.75rem', color: '#065f46', fontWeight: 600 }}>Tarif Menginap:</span>
+                              <span style={{ fontSize: '0.75rem', color: '#065f46', fontWeight: 600 }}>{t.gisMap.stayRate}:</span>
                               <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#059669' }}>
-                                Rp {selectedFeature.properties.price_per_night_rp.toLocaleString('id-ID')} / malam
+                                Rp {selectedFeature.properties.price_per_night_rp.toLocaleString('id-ID')} / {t.gisMap.perNight}
                               </span>
                             </div>
                           )}
                           <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                             {selectedFeature.properties.has_clean_ro_water && (
                               <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', background: '#ecfdf5', color: '#065f46', borderRadius: '6px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                                <Droplets size={10} /> Air Bersih RO
+                                <Droplets size={10} /> {t.gisMap.cleanWaterRO}
                               </span>
                             )}
                             {selectedFeature.properties.has_solar_backup && (
                               <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', background: '#fffbeb', color: '#92400e', borderRadius: '6px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                                <Zap size={10} /> Listrik Surya
+                                <Zap size={10} /> {t.gisMap.solarElectricity}
                               </span>
                             )}
                           </div>
@@ -5964,7 +6006,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                         <div style={{ background: '#fff1f2', border: '1px solid #fecdd3', padding: '0.5rem 0.75rem', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                           {selectedFeature.properties.capacity_kwp && (
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span style={{ fontSize: '0.75rem', color: '#9f1239', fontWeight: 600 }}>Kapasitas PLTS:</span>
+                              <span style={{ fontSize: '0.75rem', color: '#9f1239', fontWeight: 600 }}>{t.gisMap.solarCapacity}:</span>
                               <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#e11d48' }}>
                                 {selectedFeature.properties.capacity_kwp} kWp
                               </span>
@@ -5972,7 +6014,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           )}
                           {selectedFeature.properties.plastic_conversion_rule && (
                             <div style={{ fontSize: '0.72rem', color: '#059669', fontWeight: 600 }}>
-                              Program: {selectedFeature.properties.plastic_conversion_rule}
+                              {t.gisMap.program}: {selectedFeature.properties.plastic_conversion_rule}
                             </div>
                           )}
                         </div>
@@ -5984,7 +6026,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           {selectedFeature.properties.commodities_accepted && (
                             <div style={{ background: '#f5f3ff', border: '1px solid #ddd6fe', padding: '0.5rem 0.75rem', borderRadius: '8px' }}>
                               <span style={{ fontSize: '0.7rem', color: '#6d28d9', display: 'block', marginBottom: '0.2rem', fontWeight: 600 }}>
-                                Komoditas / Fokus Produk:
+                                {t.gisMap.commoditiesFocus}:
                               </span>
                               <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#7c3aed' }}>
                                 {selectedFeature.properties.commodities_accepted}
@@ -6020,7 +6062,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                                   }}
                                 >
                                   <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#6b21a8' }}>
-                                    Daftar Pelaku Usaha Binaan
+                                    {t.gisMap.assistedSMEsList}
                                   </span>
                                   <span
                                     style={{
@@ -6032,7 +6074,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                                       borderRadius: '4px',
                                     }}
                                   >
-                                    {umkmUnits.length} UMKM Terdaftar
+                                    {umkmUnits.length} {t.gisMap.registeredSMEs}
                                   </span>
                                 </div>
 
@@ -6068,8 +6110,8 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                                         </span>
                                       </div>
                                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.67rem', color: '#64748b' }}>
-                                        <span>Pemilik: <strong style={{ color: '#334155' }}>{u.name}</strong></span>
-                                        {u.year && <span>Berdiri {u.year} · {u.workforce || 1} Tenaga Kerja</span>}
+                                        <span>{isEnglish ? 'Owner: ' : 'Pemilik: '}<strong style={{ color: '#334155' }}>{u.name}</strong></span>
+                                        {u.year && <span>{t.gisMap.establishedYear} {u.year} · {u.workforce || 1} {t.gisMap.workforce}</span>}
                                       </div>
                                     </div>
                                   ))}
@@ -6085,7 +6127,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     {selectedFeature.properties.description && (
                       <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '0.75rem' }}>
                         <h4 style={{ margin: '0 0 0.35rem', fontSize: '0.75rem', fontWeight: 800, color: '#0f2c59', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                          Tentang Destinasi Ini
+                          {t.gisMap.aboutThisDestination}
                         </h4>
                         <p style={{ margin: 0, fontSize: '0.78rem', color: '#475569', lineHeight: 1.6 }}>
                           {selectedFeature.properties.description}

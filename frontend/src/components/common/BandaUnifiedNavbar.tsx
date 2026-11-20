@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { useLanguage } from '../../context/LanguageContext'
+import { LanguageSwitcher } from './LanguageSwitcher'
 
 export interface BandaUnifiedNavbarProps {
   currentUser?: any
@@ -20,6 +22,7 @@ export const BandaUnifiedNavbar: React.FC<BandaUnifiedNavbarProps> = ({
   onLogout,
 }) => {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { t } = useLanguage()
 
   // Roles
   const roles: string[] = currentUser
@@ -29,12 +32,12 @@ export const BandaUnifiedNavbar: React.FC<BandaUnifiedNavbarProps> = ({
   const isOfficerOrAdmin = isSuperuser || roles.some((r) => ['admin', 'village_officer'].includes(r))
 
   const navLinks = [
-    { label: 'Beranda', id: 'landing', isHash: false },
-    { label: 'Peta Spasial', id: 'gis', isHash: false },
-    { label: 'Wisata (SAW)', id: 'smart_planner', isHash: false },
-    { label: 'Eco-Stay', id: 'tourism', isHash: false },
-    { label: 'Koperasi & UMKM', id: 'koperasi', isHash: false },
-    { label: 'Layanan Warga', id: isOfficerOrAdmin ? 'population' : 'letters', isHash: false },
+    { label: t.navbar.home, id: 'landing', isHash: false },
+    { label: t.navbar.spatialMap, id: 'gis', isHash: false },
+    { label: t.navbar.tourismSaw, id: 'smart_planner', isHash: false },
+    { label: t.navbar.ecoStay, id: 'tourism', isHash: false },
+    { label: t.navbar.cooperative, id: 'koperasi', isHash: false },
+    { label: t.navbar.citizenServices, id: isOfficerOrAdmin ? 'population' : 'letters', isHash: false },
   ]
 
   return (
@@ -88,7 +91,7 @@ export const BandaUnifiedNavbar: React.FC<BandaUnifiedNavbarProps> = ({
                   : 'text-[#c1ced8] border-transparent hover:text-white'
               }`}
             >
-              📊 Dasbor Ekosistem
+              📊 {t.navbar.dashboard}
             </button>
           )}
 
@@ -112,13 +115,13 @@ export const BandaUnifiedNavbar: React.FC<BandaUnifiedNavbarProps> = ({
         </nav>
 
         {/* Right User State & Actions */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           {currentUser ? (
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => onNavigateTab('dashboard')}
-                className="px-3.5 py-1.5 rounded-lg bg-amber-500/20 border border-amber-400/50 hover:bg-amber-500/30 text-amber-300 text-xs font-bold transition-all flex items-center gap-1.5"
+                className="px-3.5 py-1.5 rounded-lg bg-amber-500/20 border border-amber-400/50 hover:bg-amber-500/30 text-amber-300 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                 <span>{currentUser.full_name || currentUser.username}</span>
@@ -128,10 +131,10 @@ export const BandaUnifiedNavbar: React.FC<BandaUnifiedNavbarProps> = ({
                 <button
                   type="button"
                   onClick={onLogout}
-                  className="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/35 border border-rose-400/40 text-rose-200 text-xs font-semibold transition-colors"
+                  className="px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/35 border border-rose-400/40 text-rose-200 text-xs font-semibold transition-colors cursor-pointer"
                   title="Keluar dari Akun"
                 >
-                  Keluar
+                  {t.navbar.signOut}
                 </button>
               )}
             </div>
@@ -141,22 +144,28 @@ export const BandaUnifiedNavbar: React.FC<BandaUnifiedNavbarProps> = ({
                 <button
                   type="button"
                   onClick={onOpenRegister}
-                  className="hidden sm:inline-flex px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition-colors shadow-sm"
+                  className="hidden sm:inline-flex px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition-colors shadow-sm cursor-pointer"
                 >
-                  Daftar
+                  {t.navbar.register}
                 </button>
               )}
               {onOpenLogin && (
                 <button
                   type="button"
                   onClick={onOpenLogin}
-                  className="px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-semibold transition-colors"
+                  className="px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-semibold transition-colors cursor-pointer"
                 >
-                  Masuk / Login
+                  {t.navbar.signIn}
                 </button>
               )}
             </div>
           )}
+
+          {/* Divider vertikal pemisah */}
+          <div className="hidden sm:block w-px h-6 bg-white/20" />
+
+          {/* Switcher Bahasa Global Dropdown (Paling kanan sebelum drawer) */}
+          <LanguageSwitcher variant="dropdown" className="hidden sm:inline-flex" />
 
           {/* Mobile Menu Button */}
           <button
@@ -182,7 +191,7 @@ export const BandaUnifiedNavbar: React.FC<BandaUnifiedNavbarProps> = ({
               }}
               className="text-left py-1 text-sm font-bold text-amber-400"
             >
-              📊 Dasbor Ekosistem Saya
+              📊 {t.navbar.myDashboard}
             </button>
           )}
 
@@ -202,6 +211,9 @@ export const BandaUnifiedNavbar: React.FC<BandaUnifiedNavbarProps> = ({
             </button>
           ))}
 
+          {/* Mobile Language Switcher */}
+          <LanguageSwitcher variant="mobile" className="mt-1 mb-1" />
+
           {!currentUser && onOpenRegister && (
             <button
               type="button"
@@ -211,7 +223,7 @@ export const BandaUnifiedNavbar: React.FC<BandaUnifiedNavbarProps> = ({
               }}
               className="mt-2 py-2 text-center rounded-lg bg-amber-600 text-white text-xs font-bold"
             >
-              Daftar Akun Baru
+              {t.navbar.register}
             </button>
           )}
         </div>

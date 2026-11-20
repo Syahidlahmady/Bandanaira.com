@@ -1,5 +1,6 @@
 import React from 'react'
 import AnimatedNumber from '../ui/AnimatedNumber'
+import { useLanguage } from '../../context/LanguageContext'
 
 export interface SustainableTravelSectionProps {
   onNavigate?: (tab: any) => void
@@ -8,6 +9,8 @@ export interface SustainableTravelSectionProps {
 }
 
 export const SustainableTravelSection: React.FC<SustainableTravelSectionProps> = () => {
+  const { t } = useLanguage()
+
   return (
     <section
       id="penduduk-fasilitas"
@@ -21,7 +24,7 @@ export const SustainableTravelSection: React.FC<SustainableTravelSectionProps> =
               <AnimatedNumber value={7} />
             </div>
             <p className="font-sans text-xs sm:text-sm font-semibold tracking-wider text-slate-400 uppercase">
-              Pulau Berpenghuni
+              {t.demographics.inhabitedIslands}
             </p>
           </div>
 
@@ -30,7 +33,7 @@ export const SustainableTravelSection: React.FC<SustainableTravelSectionProps> =
               <AnimatedNumber value={11} />
             </div>
             <p className="font-sans text-xs sm:text-sm font-semibold tracking-wider text-slate-400 uppercase">
-              Desa Kepulauan
+              {t.demographics.archipelagoVillages}
             </p>
           </div>
 
@@ -39,7 +42,7 @@ export const SustainableTravelSection: React.FC<SustainableTravelSectionProps> =
               <AnimatedNumber value={21000} suffix="+" />
             </div>
             <p className="font-sans text-xs sm:text-sm font-semibold tracking-wider text-slate-400 uppercase">
-              Total Penduduk
+              {t.demographics.totalPopulation}
             </p>
           </div>
 
@@ -48,7 +51,7 @@ export const SustainableTravelSection: React.FC<SustainableTravelSectionProps> =
               <AnimatedNumber value={1} />
             </div>
             <p className="font-sans text-xs sm:text-sm font-semibold tracking-wider text-slate-400 uppercase">
-              Ekosistem Terpadu
+              {t.demographics.integratedEcosystem}
             </p>
           </div>
         </div>

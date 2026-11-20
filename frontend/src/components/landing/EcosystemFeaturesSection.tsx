@@ -1,5 +1,6 @@
 import React from 'react'
 import AnimatedNumber from '../ui/AnimatedNumber'
+import { useLanguage } from '../../context/LanguageContext'
 
 export interface EcosystemFeaturesSectionProps {
   onNavigate?: (tab: any) => void
@@ -8,6 +9,8 @@ export interface EcosystemFeaturesSectionProps {
 }
 
 export const EcosystemFeaturesSection: React.FC<EcosystemFeaturesSectionProps> = () => {
+  const { t } = useLanguage()
+
   return (
     <section
       id="infografis-wisata"
@@ -21,7 +24,7 @@ export const EcosystemFeaturesSection: React.FC<EcosystemFeaturesSectionProps> =
               <AnimatedNumber value={22} />
             </div>
             <p className="font-sans text-xs sm:text-sm font-semibold tracking-wider text-slate-400 uppercase">
-              Wisata Sejarah
+              {t.stats.historicalTourism}
             </p>
           </div>
 
@@ -30,7 +33,7 @@ export const EcosystemFeaturesSection: React.FC<EcosystemFeaturesSectionProps> =
               <AnimatedNumber value={20} />
             </div>
             <p className="font-sans text-xs sm:text-sm font-semibold tracking-wider text-slate-400 uppercase">
-              Wisata Alam
+              {t.stats.natureTourism}
             </p>
           </div>
 
@@ -39,7 +42,7 @@ export const EcosystemFeaturesSection: React.FC<EcosystemFeaturesSectionProps> =
               <AnimatedNumber value={42} />
             </div>
             <p className="font-sans text-xs sm:text-sm font-semibold tracking-wider text-slate-400 uppercase">
-              Total Destinasi
+              {t.stats.totalDestinations}
             </p>
           </div>
 
@@ -48,7 +51,7 @@ export const EcosystemFeaturesSection: React.FC<EcosystemFeaturesSectionProps> =
               <AnimatedNumber value={30} suffix="+" />
             </div>
             <p className="font-sans text-xs sm:text-sm font-semibold tracking-wider text-slate-400 uppercase">
-              Penginapan
+              {t.stats.accommodations}
             </p>
           </div>
         </div>

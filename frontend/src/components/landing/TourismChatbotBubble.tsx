@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { PUBLIC_SAW_DESTINATIONS, PublicSawDestination } from './TourismSawSection'
 import { setPreferredTourismSubTab } from '../../services/tourism'
+import { useLanguage } from '../../context/LanguageContext'
 
 export interface ChatMessage {
   id: string
@@ -25,7 +26,8 @@ export interface TourismChatbotBubbleProps {
 function runSawRecommendation(
   query: string,
   categoryFilter?: 'Bahari & Selam' | 'Sejarah & Benteng' | 'Alam & Rempah' | 'ALL',
-  budgetLimit?: number
+  budgetLimit?: number,
+  isEnglish?: boolean
 ) {
   let candidates = [...PUBLIC_SAW_DESTINATIONS]
 
@@ -49,11 +51,11 @@ function runSawRecommendation(
   }
 
   const q = query.toLowerCase()
-  if (q.includes('budget') || q.includes('murah') || q.includes('biaya') || q.includes('hemat') || q.includes('harga')) {
+  if (q.includes('budget') || q.includes('murah') || q.includes('biaya') || q.includes('hemat') || q.includes('harga') || q.includes('cheap') || q.includes('cost')) {
     weights = { attraction: 0.25, facility: 0.15, cost: 0.45, time: 0.15 }
-  } else if (q.includes('waktu') || q.includes('cepat') || q.includes('dekat') || q.includes('singkat')) {
+  } else if (q.includes('waktu') || q.includes('cepat') || q.includes('dekat') || q.includes('singkat') || q.includes('time') || q.includes('fast') || q.includes('near')) {
     weights = { attraction: 0.25, facility: 0.15, cost: 0.15, time: 0.45 }
-  } else if (q.includes('fasilitas') || q.includes('lengkap') || q.includes('nyaman')) {
+  } else if (q.includes('fasilitas') || q.includes('lengkap') || q.includes('nyaman') || q.includes('facility') || q.includes('amenities')) {
     weights = { attraction: 0.3, facility: 0.45, cost: 0.15, time: 0.1 }
   }
 
@@ -76,13 +78,21 @@ function runSawRecommendation(
       weights.cost * normCost +
       weights.time * normTime
 
-    let reason = 'Kombinasi nilai daya tarik dan aksesibilitas tertinggi.'
+    let reason = isEnglish
+      ? 'Top-tier combination of natural appeal and convenient accessibility.'
+      : 'Kombinasi nilai daya tarik dan aksesibilitas tertinggi.'
     if (d.category === 'Bahari & Selam') {
-      reason = 'Keanekaragaman terumbu karang dan kejernihan air laut terbaik.'
+      reason = isEnglish
+        ? 'Superb coral reef biodiversity and crystal-clear marine waters.'
+        : 'Keanekaragaman terumbu karang dan kejernihan air laut terbaik.'
     } else if (d.category === 'Sejarah & Benteng') {
-      reason = 'Nilai sejarah cagar budaya tinggi dan fasilitas terawat baik.'
+      reason = isEnglish
+        ? 'Deep historic cultural heritage value and well-preserved facilities.'
+        : 'Nilai sejarah cagar budaya tinggi dan fasilitas terawat baik.'
     } else if (d.category === 'Alam & Rempah') {
-      reason = 'Petualangan alam otentik dengan lanskap kepulauan spektakuler.'
+      reason = isEnglish
+        ? 'Authentic nature exploration with breathtaking volcanic archipelago vistas.'
+        : 'Petualangan alam otentik dengan lanskap kepulauan spektakuler.'
     }
 
     return {
@@ -96,16 +106,34 @@ function runSawRecommendation(
 }
 
 export const TourismChatbotBubble: React.FC<TourismChatbotBubbleProps> = ({ onNavigate }) => {
+  const { t, isEnglish } = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
   const [inputText, setInputText] = useState('')
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome-1',
       sender: 'bot',
-      text: 'Halo! Saya Pemandu Cerdas Banda Neira. Ada yang bisa saya bantu untuk merencanakan liburan impian Anda di Kepulauan Banda?',
-      timestamp: 'Baru saja',
+      text: t.chatbot.welcomeMsg,
+      timestamp: t.chatbot.justNow,
     },
   ])
+
+  // Update initial welcome message when language changes if user has not interacted
+  useEffect(() => {
+    setMessages((prev) => {
+      if (prev.length === 1 && prev[0].id === 'welcome-1') {
+        return [
+          {
+            id: 'welcome-1',
+            sender: 'bot',
+            text: t.chatbot.welcomeMsg,
+            timestamp: t.chatbot.justNow,
+          },
+        ]
+      }
+      return prev
+    })
+  }, [t.chatbot.welcomeMsg, t.chatbot.justNow])
 
   const chatEndRef = useRef<HTMLDivElement>(null)
 
@@ -123,7 +151,7 @@ export const TourismChatbotBubble: React.FC<TourismChatbotBubbleProps> = ({ onNa
       id: `user-${Date.now()}`,
       sender: 'user',
       text,
-      timestamp: 'Baru saja',
+      timestamp: t.chatbot.justNow,
     }
 
     setMessages((prev) => [...prev, userMsg])
@@ -135,30 +163,69 @@ export const TourismChatbotBubble: React.FC<TourismChatbotBubbleProps> = ({ onNa
       let categoryFilter: 'Bahari & Selam' | 'Sejarah & Benteng' | 'Alam & Rempah' | 'ALL' = 'ALL'
       let budgetLimit: number | undefined = undefined
 
-      if (q.includes('bahari') || q.includes('selam') || q.includes('snorkeling') || q.includes('diving') || q.includes('pantai') || q.includes('penyu') || q.includes('laut')) {
+      if (
+        q.includes('bahari') ||
+        q.includes('selam') ||
+        q.includes('snorkeling') ||
+        q.includes('diving') ||
+        q.includes('pantai') ||
+        q.includes('penyu') ||
+        q.includes('laut') ||
+        q.includes('marine') ||
+        q.includes('beach') ||
+        q.includes('coral') ||
+        q.includes('sea')
+      ) {
         categoryFilter = 'Bahari & Selam'
-      } else if (q.includes('sejarah') || q.includes('benteng') || q.includes('museum') || q.includes('hatta') || q.includes('sjahrir') || q.includes('rhun') || q.includes('belgica')) {
+      } else if (
+        q.includes('sejarah') ||
+        q.includes('benteng') ||
+        q.includes('museum') ||
+        q.includes('hatta') ||
+        q.includes('sjahrir') ||
+        q.includes('rhun') ||
+        q.includes('belgica') ||
+        q.includes('fort') ||
+        q.includes('history') ||
+        q.includes('heritage')
+      ) {
         categoryFilter = 'Sejarah & Benteng'
-      } else if (q.includes('gunung') || q.includes('trekking') || q.includes('pala') || q.includes('kebun') || q.includes('alam') || q.includes('lonthoir') || q.includes('kawah')) {
+      } else if (
+        q.includes('gunung') ||
+        q.includes('trekking') ||
+        q.includes('pala') ||
+        q.includes('kebun') ||
+        q.includes('alam') ||
+        q.includes('lonthoir') ||
+        q.includes('kawah') ||
+        q.includes('mountain') ||
+        q.includes('volcano') ||
+        q.includes('nature') ||
+        q.includes('spice')
+      ) {
         categoryFilter = 'Alam & Rempah'
       }
 
-      if (q.includes('50') || q.includes('50.000') || q.includes('50rb') || q.includes('murah') || q.includes('hemat')) {
+      if (q.includes('50') || q.includes('50.000') || q.includes('50rb') || q.includes('murah') || q.includes('hemat') || q.includes('budget') || q.includes('cheap')) {
         budgetLimit = 50000
       }
 
-      const results = runSawRecommendation(text, categoryFilter, budgetLimit)
+      const results = runSawRecommendation(text, categoryFilter, budgetLimit, isEnglish)
 
-      let replyText = `Berdasarkan preferensi ${categoryFilter !== 'ALL' ? `kategori ${categoryFilter}` : 'pilihan Anda'}, berikut adalah rekomendasi destinasi dengan tingkat kecocokan tertinggi:`
+      let replyText = isEnglish
+        ? `Based on your preference ${categoryFilter !== 'ALL' ? `for ${categoryFilter}` : 'selections'}, here are the top matching destination recommendations:`
+        : `Berdasarkan preferensi ${categoryFilter !== 'ALL' ? `kategori ${categoryFilter}` : 'pilihan Anda'}, berikut adalah rekomendasi destinasi dengan tingkat kecocokan tertinggi:`
       if (budgetLimit) {
-        replyText = 'Berikut destinasi paling hemat dan ramah anggaran dengan fasilitas serta daya tarik optimal:'
+        replyText = isEnglish
+          ? 'Here are the most affordable and budget-friendly destinations with optimal attractions and facilities:'
+          : 'Berikut destinasi paling hemat dan ramah anggaran dengan fasilitas serta daya tarik optimal:'
       }
 
       const botMsg: ChatMessage = {
         id: `bot-${Date.now()}`,
         sender: 'bot',
         text: replyText,
-        timestamp: 'Baru saja',
+        timestamp: t.chatbot.justNow,
         recommendations: results,
       }
 
@@ -183,7 +250,7 @@ export const TourismChatbotBubble: React.FC<TourismChatbotBubbleProps> = ({ onNa
           type="button"
           onClick={() => setIsOpen(true)}
           className="group relative flex items-center gap-3 bg-[#0f2c59] hover:bg-[#183d75] text-white p-3.5 sm:px-5 sm:py-3.5 rounded-full shadow-[0_10px_30px_rgba(15,44,89,0.35)] border border-white/20 transition-all duration-300 hover:scale-105 focus:outline-none"
-          aria-label="Buka Chatbot Rekomendasi Wisata"
+          aria-label={t.chatbot.triggerLabel}
         >
           {/* Compass / Chat Icon */}
           <div className="relative flex items-center justify-center">
@@ -194,7 +261,7 @@ export const TourismChatbotBubble: React.FC<TourismChatbotBubbleProps> = ({ onNa
 
           {/* Label (Visible on desktop) */}
           <span className="hidden sm:inline font-sans text-xs font-semibold tracking-wide text-white">
-            Tanya Rekomendasi Wisata
+            {t.chatbot.triggerLabel}
           </span>
         </button>
       )}
@@ -218,10 +285,10 @@ export const TourismChatbotBubble: React.FC<TourismChatbotBubbleProps> = ({ onNa
 
               <div>
                 <h3 className="font-sans font-bold text-sm text-white leading-tight">
-                  Pemandu Wisata Banda
+                  {t.chatbot.headerTitle}
                 </h3>
                 <p className="font-sans text-[11px] text-amber-300/90 leading-tight">
-                  Rekomendasi Cerdas Destinasi
+                  {t.chatbot.headerSubtitle}
                 </p>
               </div>
             </div>
@@ -229,7 +296,7 @@ export const TourismChatbotBubble: React.FC<TourismChatbotBubbleProps> = ({ onNa
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              aria-label="Tutup Chat"
+              aria-label={t.chatbot.closeChat}
               className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -272,7 +339,7 @@ export const TourismChatbotBubble: React.FC<TourismChatbotBubbleProps> = ({ onNa
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between gap-1 mb-0.5">
                                 <span className="font-mono text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
-                                  Kecocokan {scorePercent}%
+                                  {t.chatbot.matchPercent} {scorePercent}%
                                 </span>
                                 <span className="text-[10px] text-slate-500 font-sans truncate">
                                   {destination.island}
@@ -289,14 +356,14 @@ export const TourismChatbotBubble: React.FC<TourismChatbotBubbleProps> = ({ onNa
 
                           <div className="flex items-center justify-between pt-1.5 border-t border-slate-200/70 text-[10px] text-slate-500">
                             <span>
-                              Tarif: Rp {destination.costRp.toLocaleString('id-ID')}
+                              {t.chatbot.tariff}: Rp {destination.costRp.toLocaleString('id-ID')}
                             </span>
                             <button
                               type="button"
                               onClick={() => handleViewDestination(destination)}
                               className="font-semibold text-amber-700 hover:text-amber-900 inline-flex items-center gap-0.5"
                             >
-                              <span>Lihat Tempat</span>
+                              <span>{t.chatbot.viewPlace}</span>
                               <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                                 <polyline points="9 18 15 12 9 6" />
                               </svg>
@@ -316,31 +383,31 @@ export const TourismChatbotBubble: React.FC<TourismChatbotBubbleProps> = ({ onNa
           <div className="px-3 py-2 bg-white border-t border-slate-100 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
             <button
               type="button"
-              onClick={() => handleQuickOption('Rekomendasi Terbaik', 'Berikan rekomendasi destinasi terbaik di Banda Neira')}
+              onClick={() => handleQuickOption(t.chatbot.quickTopRec, t.chatbot.quickTopQuery)}
               className="text-[11px] whitespace-nowrap bg-slate-100 hover:bg-amber-100 hover:text-amber-900 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition-colors"
             >
-              Rekomendasi Utama
+              {t.chatbot.quickTopRec}
             </button>
             <button
               type="button"
-              onClick={() => handleQuickOption('Wisata Bahari', 'Saya ingin snorkeling dan melihat terumbu karang di laut')}
+              onClick={() => handleQuickOption(t.chatbot.quickMarine, t.chatbot.quickMarineQuery)}
               className="text-[11px] whitespace-nowrap bg-slate-100 hover:bg-amber-100 hover:text-amber-900 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition-colors"
             >
-              Wisata Bahari
+              {t.chatbot.quickMarine}
             </button>
             <button
               type="button"
-              onClick={() => handleQuickOption('Benteng & Sejarah', 'Rekomendasikan benteng bersejarah dan cagar budaya')}
+              onClick={() => handleQuickOption(t.chatbot.quickHeritage, t.chatbot.quickHeritageQuery)}
               className="text-[11px] whitespace-nowrap bg-slate-100 hover:bg-amber-100 hover:text-amber-900 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition-colors"
             >
-              Benteng Sejarah
+              {t.chatbot.quickHeritage}
             </button>
             <button
               type="button"
-              onClick={() => handleQuickOption('Ramah Anggaran', 'Destinasi yang ramah anggaran di bawah Rp 50.000')}
+              onClick={() => handleQuickOption(t.chatbot.quickBudget, t.chatbot.quickBudgetQuery)}
               className="text-[11px] whitespace-nowrap bg-slate-100 hover:bg-amber-100 hover:text-amber-900 text-slate-700 px-3 py-1.5 rounded-full border border-slate-200 transition-colors"
             >
-              Ramah Anggaran
+              {t.chatbot.quickBudget}
             </button>
           </div>
 
@@ -356,14 +423,14 @@ export const TourismChatbotBubble: React.FC<TourismChatbotBubbleProps> = ({ onNa
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Tanya wisata, budget, atau preferensi..."
+              placeholder={t.chatbot.inputPlaceholder}
               className="flex-1 bg-slate-100 border border-slate-200 rounded-full px-4 py-2 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#0f2c59]"
             />
             <button
               type="submit"
               disabled={!inputText.trim()}
               className="w-8 h-8 rounded-full bg-[#0f2c59] hover:bg-[#183d75] disabled:opacity-40 text-white flex items-center justify-center transition-colors flex-shrink-0"
-              aria-label="Kirim Pesan"
+              aria-label={t.chatbot.sendBtn}
             >
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <line x1="22" y1="2" x2="11" y2="13" />
