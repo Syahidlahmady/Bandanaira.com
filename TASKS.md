@@ -1104,3 +1104,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 62.7 Verifikasi Build Produksi & Pengujian:
   - Build frontend `npm --prefix frontend run build` sukses 100% (2.045 modul, exit code 0 dalam 6.42s).
   - Pengujian backend `test_health`, `test_tourism`, dan `test_auth` lulus 100% (31 passed).
+- [x] 62.8 Perbaikan Gap Kosong Antara Hero Section dan Seksi Galeri:
+  - Mengeliminasi `min-height: 335vh;` hardcoded pada `.scroll-expand__track` di `ScrollExpand.css` (mengubahnya menjadi `min-height: 100vh;`), membuang ~1.500px dead zone scroll kosong.
+  - Menghapus pembungkus `content-auto` pada `Banda3DPhotoGallery` di `BandanairaBeranda.tsx` yang sebelumnya memicu `contain: paint layout` dan merusak `position: sticky` serta menahan rendering konten dengan placeholder 700px.
+  - Menghapus manipulasi `section.style.visibility = 'hidden'` pada `Banda3DPhotoGallery.tsx` agar Seksi 2 selalu tampil mulus saat pengguna menggulir mendekatinya.

@@ -396,10 +396,10 @@ export const Banda3DPhotoGallery: React.FC = () => {
       const rect = sectionRef.current.getBoundingClientRect()
       const scrollY = window.scrollY
       const sectionTop = rect.top + scrollY
-      const travelPadding = 150
-      const activeStart = sectionTop - travelPadding
+      const activeStart = sectionTop
       const totalHeight = sectionRef.current.offsetHeight
-      const activeEnd = sectionTop + totalHeight - 650
+      const windowH = typeof window !== 'undefined' ? window.innerHeight : 900
+      const activeEnd = sectionTop + totalHeight - windowH
       const speedMultiplier = 1.6
       cachedBoundsRef.current = { activeStart, activeEnd, speedMultiplier, isMobileDevice: false }
     }
@@ -426,12 +426,10 @@ export const Banda3DPhotoGallery: React.FC = () => {
 
         const { activeStart, activeEnd, speedMultiplier } = cachedBoundsRef.current
 
-        // Fast bail-out when offscreen
-        if (scrollY < activeStart - 500 || scrollY > activeEnd + 500) {
-          if (section.style.visibility !== 'hidden') section.style.visibility = 'hidden'
+        // Fast bail-out when completely offscreen
+        if (scrollY < activeStart - 800 || scrollY > activeEnd + 800) {
           return
         }
-        if (section.style.visibility !== 'visible') section.style.visibility = 'visible'
 
         const isActive = scrollY >= activeStart && scrollY <= activeEnd
         const progressDist = Math.max(0, scrollY - activeStart)

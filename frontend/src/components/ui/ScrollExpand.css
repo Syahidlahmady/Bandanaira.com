@@ -19,7 +19,7 @@
 .scroll-expand__track {
   position: relative;
   width: 100%;
-  min-height: 335vh;
+  min-height: 100vh;
 }
 
 .scroll-expand__stage {
