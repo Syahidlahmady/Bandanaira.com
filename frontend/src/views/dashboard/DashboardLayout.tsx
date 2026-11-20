@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import logoImg from '../../assets/logo.png'
+import LanguageSwitcher from '../../components/common/LanguageSwitcher'
 import {
   LayoutDashboard,
   Users,
@@ -1222,6 +1223,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
           {/* Sisi Kanan: Deretan Tombol Ikon Utilitas Rapi */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {/* Language Switcher Dwibahasa ID / EN */}
+            <LanguageSwitcher variant="topbar" />
+
             {/* Minimalist Telemetry Icon (Khusus Admin Sistem - 21st.dev Style) */}
             {isAdmin && (
               <div className="relative" ref={telemetryPopoverRef}>

@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef } from 'react'
 import { ArrowUpRightIcon } from './LandingIcons'
 import { setPreferredTourismSubTab, TourismSubTab } from '../../services/tourism'
+import { useLanguage } from '../../context/LanguageContext'
 
 export interface BandaVisualReelItem {
   id: string
@@ -203,32 +204,13 @@ export interface TourismSawSectionProps {
 }
 
 export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate }) => {
+  const { t } = useLanguage()
   const [activeIndex, setActiveIndex] = useState(0)
-  const [reelsInView, setReelsInView] = useState(false)
   const [selectedReelModal, setSelectedReelModal] = useState<BandaVisualReelItem | null>(null)
   const carouselRef = useRef<HTMLDivElement>(null)
   const reelsSectionRef = useRef<HTMLDivElement>(null)
 
   const activeDest = PUBLIC_SAW_DESTINATIONS[activeIndex]
-
-  // Viewport gating for 11-14MB animated WebP reels so FCP/LCP on initial load is never blocked
-  useEffect(() => {
-    const el = reelsSectionRef.current
-    if (!el || typeof IntersectionObserver === 'undefined') {
-      return
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          setReelsInView(true)
-          observer.disconnect()
-        }
-      },
-      { rootMargin: '80px', threshold: 0.15 }
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
 
   const openTourismSubTab = (subTab: TourismSubTab) => {
     setPreferredTourismSubTab(subTab)
@@ -285,7 +267,7 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
             <div className="inline-flex items-center gap-2 mb-4">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
               <p className="font-sans text-[11px] font-bold tracking-[0.25em] text-amber-400 uppercase">
-                SPOTLIGHT KURASI BANDA
+                {t.tourismSaw.tagline}
               </p>
             </div>
 
@@ -294,11 +276,11 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
               id="tourism-routes-heading"
               className="font-sans font-bold text-3xl sm:text-4xl lg:text-[44px] leading-[1.12] tracking-tight text-white mb-5"
             >
-              Jelajahi Permata{' '}
+              {t.tourismSaw.headingPrefix}{' '}
               <span className="font-script text-amber-300 font-normal text-4xl sm:text-5xl lg:text-[52px] inline-block tracking-normal ml-1">
-                Ikonik
+                {t.tourismSaw.headingScript}
               </span>{' '}
-              Banda Neira
+              {t.tourismSaw.headingSuffix}
             </h2>
 
             {/* Dynamic Editorial Paragraph for the currently highlighted destination */}
@@ -313,18 +295,18 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
               <button
                 type="button"
                 onClick={() => openTourismSubTab('destinations')}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/30 bg-white/10 hover:bg-white hover:text-[#071322] text-white text-xs font-semibold tracking-wide transition-all duration-200 group"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/30 bg-white/10 hover:bg-white hover:text-[#071322] text-white text-xs font-semibold tracking-wide transition-all duration-200 group cursor-pointer"
               >
-                <span>Jelajahi Semua Destinasi</span>
+                <span>{t.tourismSaw.exploreAllBtn}</span>
                 <ArrowUpRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </button>
 
               <button
                 type="button"
                 onClick={() => onNavigate('smart_planner')}
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-amber-400/40 bg-amber-400/10 hover:bg-amber-400 hover:text-slate-950 text-amber-300 text-xs font-semibold transition-all duration-200"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-amber-400/40 bg-amber-400/10 hover:bg-amber-400 hover:text-slate-950 text-amber-300 text-xs font-semibold transition-all duration-200 cursor-pointer"
               >
-                <span>Panduan Wisata Cerdas</span>
+                <span>{t.tourismSaw.smartPlannerBtn}</span>
               </button>
             </div>
           </div>
@@ -359,8 +341,8 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
                 <button
                   type="button"
                   onClick={handlePrev}
-                  aria-label="Destinasi Sebelumnya"
-                  className="w-10 h-10 rounded-full border border-white/20 bg-white/5 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+                  aria-label={t.tourismSaw.prevDest}
+                  className="w-10 h-10 rounded-full border border-white/20 bg-white/5 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <polyline points="15 18 9 12 15 6" />
@@ -369,8 +351,8 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
                 <button
                   type="button"
                   onClick={handleNext}
-                  aria-label="Destinasi Berikutnya"
-                  className="w-10 h-10 rounded-full border border-white/20 bg-white/5 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+                  aria-label={t.tourismSaw.nextDest}
+                  className="w-10 h-10 rounded-full border border-white/20 bg-white/5 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <polyline points="9 18 15 12 9 6" />
@@ -482,13 +464,24 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
               className="group relative aspect-[9/16] max-h-[480px] w-full mx-auto rounded-3xl overflow-hidden cursor-pointer border border-white/15 bg-[#081d35] shadow-xl hover:ring-2 hover:ring-amber-400 transition-all duration-300"
             >
               <img
-                src={reelsInView ? reel.src : reel.posterSrc}
+                src={reel.posterSrc}
                 alt={reel.title}
                 loading="lazy"
                 decoding="async"
                 className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#071322] via-[#071322]/25 to-black/20" />
+
+              {/* Play / Live Motion overlay button */}
+              {reel.isAnimatedWebp && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-12 h-12 rounded-full bg-black/55 backdrop-blur-md border border-white/25 flex items-center justify-center text-white shadow-xl transform transition-transform duration-300 group-hover:scale-115 group-hover:bg-amber-400 group-hover:text-[#071322] group-hover:border-amber-300">
+                    <svg className="w-5 h-5 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
+                      <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
+                  </div>
+                </div>
+              )}
 
               <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-black/55 backdrop-blur-md border border-white/15 px-3 py-1 text-[10px] font-extrabold tracking-wider text-amber-300 uppercase">

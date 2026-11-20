@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { ArrowUpRightIcon } from './LandingIcons'
+import { useLanguage } from '../../context/LanguageContext'
 
 const InteractiveMapWorkspace = lazy(() =>
   import('../../views/InteractiveMapWorkspace').then((m) => ({
@@ -16,6 +17,7 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
   onNavigate,
   currentUser,
 }) => {
+  const { t } = useLanguage()
   const containerRef = useRef<HTMLDivElement>(null)
   const [shouldLoadMap, setShouldLoadMap] = useState<boolean>(false)
   const [mapUnlockedOnMobile, setMapUnlockedOnMobile] = useState<boolean>(false)
@@ -41,11 +43,15 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) {
-          setShouldLoadMap(true)
+          if ('requestIdleCallback' in window) {
+            (window as any).requestIdleCallback(() => setShouldLoadMap(true), { timeout: 1500 })
+          } else {
+            setTimeout(() => setShouldLoadMap(true), 250)
+          }
           observer.disconnect()
         }
       },
-      { rootMargin: '100px' }
+      { rootMargin: '150px' }
     )
 
     if (containerRef.current) {
@@ -64,7 +70,7 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
       <div className="relative max-w-7xl mx-auto flex flex-col items-center">
         {/* Top Tracking Subtitle (Ala indonesia.travel) */}
         <p className="font-sans text-[11px] sm:text-xs font-bold tracking-[0.25em] text-[#0f2c59]/75 uppercase text-center mb-3">
-          DISCOVER TOP DESTINATIONS AND ATTRACTIONS
+          {t.mapSection.tagline}
         </p>
 
         {/* The Signature Split Divider Header: ──── Visit Banda Neira ──── */}
@@ -74,7 +80,7 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
             id="peta-heading"
             className="font-sans font-bold text-2xl sm:text-4xl lg:text-[46px] text-[#0f2c59] tracking-tight whitespace-nowrap"
           >
-            Visit Banda Neira
+            {t.mapSection.heading}
           </h2>
           <div className="flex-1 h-[1.5px] bg-[#0f2c59]/60 min-w-[16px]" />
         </div>
@@ -106,7 +112,7 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
                 <div className="w-full h-[480px] sm:h-[600px] lg:h-[640px] flex flex-col items-center justify-center gap-3 bg-sky-50">
                   <div className="w-8 h-8 rounded-full border-2 border-[#0f2c59] border-t-transparent animate-spin" />
                   <span className="text-xs font-semibold text-slate-600">
-                    Menyiapkan Peta Spasial Banda Neira...
+                    {t.mapSection.loading}
                   </span>
                 </div>
               }
@@ -117,7 +123,7 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
             <div className="w-full h-[480px] sm:h-[600px] lg:h-[640px] flex flex-col items-center justify-center gap-3 bg-sky-50/50">
               <div className="w-8 h-8 rounded-full border-2 border-[#0f2c59] border-t-transparent animate-spin" />
               <span className="text-xs font-semibold text-slate-600">
-                Menyiapkan Peta Spasial Banda Neira...
+                {t.mapSection.loading}
               </span>
             </div>
           )}
@@ -126,7 +132,7 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
         {/* Aksi Buka Peta Layar Penuh di Bawah */}
         <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 px-2">
           <p className="text-xs text-slate-500 font-sans">
-            Eksplorasi spasial cagar budaya, potensi bahari, penginapan warga, dan fasilitas pulau.
+            {t.mapSection.description}
           </p>
 
           <button
@@ -134,7 +140,7 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
             onClick={() => onNavigate('gis')}
             className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg bg-[#0f2c59] hover:bg-[#183e75] text-white text-xs font-semibold transition-colors shadow-sm self-start sm:self-auto cursor-pointer"
           >
-            <span>Buka Peta Layar Penuh</span>
+            <span>{t.mapSection.openFullMap}</span>
             <ArrowUpRightIcon className="w-3.5 h-3.5" />
           </button>
         </div>

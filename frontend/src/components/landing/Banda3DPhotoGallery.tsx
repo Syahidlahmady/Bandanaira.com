@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback, memo } from 'react'
 import './Banda3DPhotoGallery.css'
+import { useLanguage } from '../../context/LanguageContext'
 
 export interface PhotoItem {
   id: string
@@ -249,7 +250,7 @@ const PhotoCard = memo(({ item, breakpoint, registerElement }: PhotoCardProps) =
         left: pos.left,
         top: pos.top,
         transform: `translate3d(0, 0, ${pos.z}px)`,
-        willChange: 'transform, filter',
+        willChange: 'transform',
         zIndex: Math.round((pos.z + 3000) / 10),
       }}
       data-zinit={pos.z}
@@ -288,7 +289,7 @@ const OrnamentCard = memo(({ item, breakpoint, registerElement }: OrnamentCardPr
         left: pos.left,
         top: pos.top,
         transform: `translate3d(0, 0, ${pos.z}px)`,
-        willChange: 'transform, filter',
+        willChange: 'transform',
         zIndex: Math.round((pos.z + 3000) / 10),
       }}
       data-zinit={pos.z}
@@ -307,6 +308,7 @@ const OrnamentCard = memo(({ item, breakpoint, registerElement }: OrnamentCardPr
 OrnamentCard.displayName = 'OrnamentCard'
 
 export const Banda3DPhotoGallery: React.FC = () => {
+  const { t } = useLanguage()
   const sectionRef = useRef<HTMLElement>(null)
   const elementsRef = useRef<HTMLDivElement[]>([])
   const titleRef = useRef<HTMLDivElement>(null)
@@ -374,7 +376,7 @@ export const Banda3DPhotoGallery: React.FC = () => {
         if (Math.abs(scrollY - lastScrollYRef.current) < 0.5) return
         lastScrollYRef.current = scrollY
 
-        const { activeStart, activeEnd, speedMultiplier, isMobileDevice } = cachedBoundsRef.current
+        const { activeStart, activeEnd, speedMultiplier } = cachedBoundsRef.current
 
         // Fast bail-out when offscreen
         if (scrollY < activeStart - 500 || scrollY > activeEnd + 500) {
@@ -427,15 +429,6 @@ export const Banda3DPhotoGallery: React.FC = () => {
               el.style.opacity = '1'
             }
           }
-
-          // Discrete depth-of-field blur only on desktop (cached texture, eliminates GPU jank)
-          if (!isMobileDevice) {
-            if (currentZ < -350) {
-              el.style.filter = 'blur(4px)'
-            } else {
-              el.style.filter = 'none'
-            }
-          }
         }
 
         // Animate central hero title plate
@@ -459,12 +452,39 @@ export const Banda3DPhotoGallery: React.FC = () => {
       })
     }
 
-    window.addEventListener('scroll', onScroll, { passive: true })
-    onScroll()
+    // Viewport-gated scroll listening: only attach scroll listener when section is near viewport
+    let isAttached = false
+    const attach = () => {
+      if (!isAttached) {
+        window.addEventListener('scroll', onScroll, { passive: true })
+        isAttached = true
+        onScroll()
+      }
+    }
+    const detach = () => {
+      if (isAttached) {
+        window.removeEventListener('scroll', onScroll)
+        isAttached = false
+        if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      }
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          attach()
+        } else {
+          detach()
+        }
+      },
+      { rootMargin: '400px 0px' }
+    )
+
+    observer.observe(section)
 
     return () => {
-      window.removeEventListener('scroll', onScroll)
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      observer.disconnect()
+      detach()
     }
   }, [])
 
@@ -534,12 +554,12 @@ export const Banda3DPhotoGallery: React.FC = () => {
 
               {/* Top Subtitle in Nexa Sans */}
               <span className="font-sans text-xs sm:text-sm font-semibold tracking-[0.24em] text-amber-300 uppercase">
-                Jelajahi Keindahan
+                {t.gallery.tagline}
               </span>
 
               {/* Main Headline in Intro Script */}
               <h2 className="text-4xl sm:text-6xl font-script font-normal text-white tracking-wide leading-tight drop-shadow-lg">
-                Banda Neira
+                {t.gallery.title}
               </h2>
 
             </div>

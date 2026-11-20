@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
-import FlyingPosters from '../ui/FlyingPosters'
+import FlyingPosters, { FlyingPostersHandle } from '../ui/FlyingPosters'
+import { useLanguage } from '../../context/LanguageContext'
 
 const ITEMS = [
   '/images/landmarks/kebun-pala.jpg',
@@ -11,6 +12,7 @@ const ITEMS = [
 export interface StoryItem {
   id: string
   title: string
+  subtitle?: string
   description: string
   align: 'left' | 'right'
 }
@@ -51,10 +53,42 @@ export interface HeritageSpiceSectionProps {
 }
 
 export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
+  const { t, isEnglish } = useLanguage()
   const sectionRef = useRef<HTMLElement>(null)
-  const [scrollProgress, setScrollProgress] = useState(0)
+  const postersRef = useRef<FlyingPostersHandle | null>(null)
   const [activeIndex, setActiveIndex] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
+
+  const activeStories: StoryItem[] = [
+    {
+      id: 'pala',
+      title: t.heritage.stories.pala.title,
+      subtitle: t.heritage.stories.pala.subtitle,
+      description: t.heritage.stories.pala.desc,
+      align: 'right',
+    },
+    {
+      id: 'belgica',
+      title: t.heritage.stories.belgica.title,
+      subtitle: t.heritage.stories.belgica.subtitle,
+      description: t.heritage.stories.belgica.desc,
+      align: 'left',
+    },
+    {
+      id: 'rhun',
+      title: t.heritage.stories.rhun.title,
+      subtitle: t.heritage.stories.rhun.subtitle,
+      description: t.heritage.stories.rhun.desc,
+      align: 'right',
+    },
+    {
+      id: 'hatta',
+      title: t.heritage.stories.hatta.title,
+      subtitle: t.heritage.stories.hatta.subtitle,
+      description: t.heritage.stories.hatta.desc,
+      align: 'left',
+    },
+  ]
 
   useEffect(() => {
     const checkMobile = () =>
@@ -69,11 +103,14 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
   }, [])
 
   useEffect(() => {
+    const section = sectionRef.current
+    if (!section) return
+
     let sectionTop = 0
     let totalScrollable = 0
-    let lastProgress = -1
     let lastStoryIndex = -1
     let rafId = 0
+    let isAttached = false
 
     const measure = () => {
       if (!sectionRef.current) return
@@ -88,8 +125,7 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
 
       rafId = requestAnimationFrame(() => {
         const scrollY = window.scrollY
-        // Fast bail-out when offscreen
-        if (scrollY < sectionTop - 600 || scrollY > sectionTop + totalScrollable + 600) {
+        if (scrollY < sectionTop - 400 || scrollY > sectionTop + totalScrollable + 400) {
           return
         }
 
@@ -103,35 +139,60 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
             setActiveIndex(newIdx)
           }
         } else {
-          if (Math.abs(progress - lastProgress) > 0.003) {
-            lastProgress = progress
-            setScrollProgress(progress)
-          }
+          postersRef.current?.applyProgress(progress)
         }
       })
     }
 
+    const attach = () => {
+      if (!isAttached) {
+        window.addEventListener('scroll', handleScroll, { passive: true })
+        isAttached = true
+        handleScroll()
+      }
+    }
+
+    const detach = () => {
+      if (isAttached) {
+        window.removeEventListener('scroll', handleScroll)
+        isAttached = false
+        if (rafId) cancelAnimationFrame(rafId)
+      }
+    }
+
     measure()
     window.addEventListener('resize', measure, { passive: true })
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    handleScroll()
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          measure()
+          attach()
+        } else {
+          detach()
+        }
+      },
+      { rootMargin: '400px 0px' }
+    )
+    observer.observe(section)
+
     return () => {
-      if (rafId) cancelAnimationFrame(rafId)
+      observer.disconnect()
+      detach()
       window.removeEventListener('resize', measure)
-      window.removeEventListener('scroll', handleScroll)
     }
-  }, [])
+  }, [isMobile])
 
   const scrollToStory = (index: number) => {
     if (!sectionRef.current) return
     const rect = sectionRef.current.getBoundingClientRect()
     const sectionTop = window.scrollY + rect.top
     const totalScrollable = rect.height - window.innerHeight
-    const targetY = sectionTop + (index / (STORIES.length - 1)) * totalScrollable
+    const targetY = sectionTop + (index / (activeStories.length - 1)) * totalScrollable
     window.scrollTo({ top: targetY, behavior: 'smooth' })
   }
 
-  const currentStory = STORIES[activeIndex]
+  const currentStory = activeStories[activeIndex] || activeStories[0]
 
   return (
     <section
@@ -150,6 +211,7 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
         <div className="absolute inset-0 z-0">
           {!isMobile ? (
             <FlyingPosters
+              ref={postersRef}
               items={ITEMS}
               planeWidth={380}
               planeHeight={285}
@@ -158,7 +220,6 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
               scrollEase={0.06}
               cameraFov={45}
               cameraZ={20}
-              progress={scrollProgress}
               onActiveIndexChange={(idx) => setActiveIndex(idx)}
               onItemClick={(_, idx) => scrollToStory(idx)}
               className="w-full h-full"
@@ -187,19 +248,32 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
         {/* SECTION HEADER: Placed safely below the fixed navbar */}
         <header className="relative z-10 flex flex-col items-center text-center max-w-2xl mx-auto pt-20 sm:pt-28 lg:pt-32 px-4 shrink-0 pointer-events-none">
           <span className="font-sans text-xs font-semibold tracking-widest text-[#f4b75e] uppercase mb-2">
-            SEJARAH BANDA NEIRA
+            {t.heritage.sectionBadge}
           </span>
           <h2
             id="heritage-heading"
             className="text-3xl sm:text-5xl font-sans font-bold tracking-tight text-white leading-tight drop-shadow-lg"
           >
-            Cerita dari{' '}
-            <span className="font-script font-normal text-amber-200 text-4xl sm:text-6xl inline-block ml-1">
-              Jantung Rempah
-            </span>
+            {isEnglish ? (
+              <>
+                Tales from the{' '}
+                <span className="font-script font-normal text-amber-200 text-4xl sm:text-6xl inline-block ml-1">
+                  Heart of Spice
+                </span>
+              </>
+            ) : (
+              <>
+                Cerita dari{' '}
+                <span className="font-script font-normal text-amber-200 text-4xl sm:text-6xl inline-block ml-1">
+                  Jantung Rempah
+                </span>
+              </>
+            )}
           </h2>
           <p className="mt-2 text-slate-300 text-xs sm:text-sm max-w-md hidden sm:block drop-shadow">
-            Gulir ke bawah untuk menelusuri linimasa perjalanan sejarah Banda Neira
+            {isEnglish
+              ? 'Scroll down to trace the historical timeline of Banda Neira'
+              : 'Gulir ke bawah untuk menelusuri linimasa perjalanan sejarah Banda Neira'}
           </p>
         </header>
 
@@ -231,7 +305,7 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
         <div className="hidden md:block absolute inset-0 pointer-events-none z-10">
           {/* Left Slot (stories with align === 'left') */}
           <div className="absolute right-[calc(50%+250px)] lg:right-[calc(50%+285px)] xl:right-[calc(50%+320px)] top-1/2 -translate-y-1/2 w-[280px] lg:w-[340px] xl:w-[390px] max-w-[calc(50vw-48px)] min-h-[220px] flex items-center text-right">
-            {STORIES.map((story, i) => {
+            {activeStories.map((story, i) => {
               if (story.align !== 'left') return null
               const isActive = activeIndex === i
               return (
@@ -243,9 +317,14 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
                       : 'opacity-0 -translate-x-8 pointer-events-none'
                   }`}
                 >
-                  <h3 className="font-script font-normal text-4xl sm:text-5xl lg:text-6xl text-amber-200 drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)] leading-[1.18] mb-2.5">
+                  <h3 className="font-script font-normal text-4xl sm:text-5xl lg:text-6xl text-amber-200 drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)] leading-[1.18] mb-1">
                     {story.title}
                   </h3>
+                  {story.subtitle && (
+                    <p className="text-[11px] sm:text-xs font-mono font-medium tracking-wide text-[#f4b75e] uppercase mb-2.5 drop-shadow-sm">
+                      {story.subtitle}
+                    </p>
+                  )}
                   <p className="font-sans text-slate-100 text-sm sm:text-base leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
                     {story.description}
                   </p>
@@ -256,7 +335,7 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
 
           {/* Right Slot (stories with align === 'right') */}
           <div className="absolute left-[calc(50%+250px)] lg:left-[calc(50%+285px)] xl:left-[calc(50%+320px)] top-1/2 -translate-y-1/2 w-[280px] lg:w-[340px] xl:w-[390px] max-w-[calc(50vw-48px)] min-h-[220px] flex items-center text-left">
-            {STORIES.map((story, i) => {
+            {activeStories.map((story, i) => {
               if (story.align !== 'right') return null
               const isActive = activeIndex === i
               return (
@@ -268,9 +347,14 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
                       : 'opacity-0 translate-x-8 pointer-events-none'
                   }`}
                 >
-                  <h3 className="font-script font-normal text-4xl sm:text-5xl lg:text-6xl text-amber-200 drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)] leading-[1.18] mb-2.5">
+                  <h3 className="font-script font-normal text-4xl sm:text-5xl lg:text-6xl text-amber-200 drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)] leading-[1.18] mb-1">
                     {story.title}
                   </h3>
+                  {story.subtitle && (
+                    <p className="text-[11px] sm:text-xs font-mono font-medium tracking-wide text-[#f4b75e] uppercase mb-2.5 drop-shadow-sm">
+                      {story.subtitle}
+                    </p>
+                  )}
                   <p className="font-sans text-slate-100 text-sm sm:text-base leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
                     {story.description}
                   </p>
@@ -286,9 +370,14 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
             <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
           </div>
           <div className="w-[1.5px] h-4 bg-amber-400/80 mb-2" />
-          <h3 className="font-script font-normal text-3xl sm:text-4xl text-amber-200 drop-shadow-lg leading-tight mb-1.5">
+          <h3 className="font-script font-normal text-3xl sm:text-4xl text-amber-200 drop-shadow-lg leading-tight mb-1">
             {currentStory.title}
           </h3>
+          {currentStory.subtitle && (
+            <p className="text-[10px] font-mono font-medium tracking-wide text-[#f4b75e] uppercase mb-1.5 drop-shadow-sm max-w-xs">
+              {currentStory.subtitle}
+            </p>
+          )}
           <p className="font-sans text-slate-100 text-xs leading-relaxed max-w-xs drop-shadow-md">
             {currentStory.description}
           </p>
@@ -297,12 +386,12 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
         {/* BOTTOM CONTROLS: Clean Minimal Timeline Progress Bar (Button Removed) */}
         <footer className="relative z-10 w-full max-w-7xl mx-auto px-6 pb-8 sm:pb-12 flex items-center justify-center shrink-0">
           <div className="flex items-center gap-2.5 bg-slate-950/60 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/10 shadow-lg">
-            {STORIES.map((story, i) => (
+            {activeStories.map((story, i) => (
               <button
                 key={story.id}
                 type="button"
                 onClick={() => scrollToStory(i)}
-                aria-label={`Lihat cerita ${story.title}`}
+                aria-label={isEnglish ? `View story: ${story.title}` : `Lihat cerita: ${story.title}`}
                 className="h-8 px-1 flex items-center justify-center cursor-pointer"
               >
                 <span

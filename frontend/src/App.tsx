@@ -43,7 +43,7 @@ const IslandTelemetryWorkspace = React.lazy(() => import('./views/IslandTelemetr
 const TourismEcoStayWorkspace = React.lazy(() => import('./views/TourismEcoStayWorkspace.tsx').then(m => ({ default: m.TourismEcoStayWorkspace })))
 const InteractiveMapWorkspace = React.lazy(() => import('./views/InteractiveMapWorkspace.tsx').then(m => ({ default: m.InteractiveMapWorkspace })))
 const SurveyEtlWorkspace = React.lazy(() => import('./views/SurveyEtlWorkspace.tsx').then(m => ({ default: m.SurveyEtlWorkspace })))
-const LandingPortalWorkspace = React.lazy(() => import('./views/LandingPortalWorkspace.tsx').then(m => ({ default: m.LandingPortalWorkspace })))
+import { LandingPortalWorkspace } from './views/LandingPortalWorkspace.tsx'
 const UserEcosystemDashboard = React.lazy(() => import('./views/dashboard/UserEcosystemDashboard.tsx').then(m => ({ default: m.UserEcosystemDashboard })))
 import { DashboardLayout } from './views/dashboard/DashboardLayout.tsx'
 import { BandaUnifiedFooter } from './components/common/BandaUnifiedFooter.tsx'
@@ -733,14 +733,21 @@ export const App: React.FC = () => {
     } catch {
       // ignore
     }
-    setCurrentUser(null)
-    setActiveTab('landing')
-    setResidents([])
-    setFarmers([])
-    setFarms([])
-    setHarvests([])
-    setBatches([])
-    setSelectedBatch(null)
+    try {
+      window.scrollTo({ top: 0, behavior: 'instant' })
+    } catch {
+      // ignore
+    }
+    React.startTransition(() => {
+      setCurrentUser(null)
+      setActiveTab('landing')
+      setResidents([])
+      setFarmers([])
+      setFarms([])
+      setHarvests([])
+      setBatches([])
+      setSelectedBatch(null)
+    })
   }
 
   const handleManualSync = async () => {
@@ -1266,21 +1273,36 @@ export const App: React.FC = () => {
 
       {/* 1. LANDING PORTAL UTAMA (SATU PINTU UTAMA EKOSISTEM - HANYA 1 LANDING PAGE) */}
       {activeTab === 'landing' && (
-        <LandingPortalWorkspace
-          onNavigate={(tab) =>
-            setActiveTab(
-              tab === 'population' && currentUser ? getRoleDefaultTab(currentUser) : tab
-            )
-          }
-          onOpenLogin={() => setActiveTab('population')}
-          onOpenRegister={() => setActiveTab('register')}
-          onOpenMarketplace={() => setShowMarketplaceModal(true)}
-          onPublicVerify={(token) => handlePublicVerify(token)}
-          currentUser={currentUser}
-          isOnline={isOnline}
-          onLogout={handleLogout}
-          onOpenQuickLogin={() => setShowQuickLoginModal(true)}
-        />
+        <ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Beranda Utama">
+          <React.Suspense
+            fallback={
+              <div className="min-h-screen bg-[#081D35] flex items-center justify-center text-white">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-10 h-10 border-3 border-[#F4B75E] border-t-transparent rounded-full animate-spin" />
+                  <span className="text-sm font-medium tracking-wide text-[#F4B75E]">
+                    Memuat Ekosistem Banda Neira...
+                  </span>
+                </div>
+              </div>
+            }
+          >
+            <LandingPortalWorkspace
+              onNavigate={(tab) =>
+                setActiveTab(
+                  tab === 'population' && currentUser ? getRoleDefaultTab(currentUser) : tab
+                )
+              }
+              onOpenLogin={() => setActiveTab('population')}
+              onOpenRegister={() => setActiveTab('register')}
+              onOpenMarketplace={() => setShowMarketplaceModal(true)}
+              onPublicVerify={(token) => handlePublicVerify(token)}
+              currentUser={currentUser}
+              isOnline={isOnline}
+              onLogout={handleLogout}
+              onOpenQuickLogin={() => setShowQuickLoginModal(true)}
+            />
+          </React.Suspense>
+        </ErrorBoundary>
       )}
 
       {/* 1B. REGISTER DESKTOP SPLIT-SCREEN PAGE (Sesuai desainsaatini/register-dekstop) */}

@@ -128,9 +128,20 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
       />
 
       {/* 2. 3D Perspective Photo Gallery (Kompilasi Foto Banda Neira) */}
-      <Banda3DPhotoGallery />
+      <div className="w-full content-auto">
+        <Banda3DPhotoGallery />
+      </div>
 
-      <Suspense fallback={null}>
+      <Suspense
+        fallback={
+          <div className="w-full py-16 flex flex-col items-center justify-center gap-3 bg-[#f7f5f0]">
+            <div className="w-8 h-8 rounded-full border-2 border-[#0f2c59] border-t-transparent animate-spin" />
+            <span className="text-xs font-semibold text-slate-600">
+              Memuat bagian penjelajahan pulau...
+            </span>
+          </div>
+        }
+      >
         {/* 3. Interactive Spatial Map Section */}
         <div className="w-full content-auto">
           <PetaInteractiveSection

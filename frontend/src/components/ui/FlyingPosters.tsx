@@ -1,9 +1,14 @@
 // @ts-nocheck
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 
 import './FlyingPosters.css';
+
+export interface FlyingPostersHandle {
+  applyProgress: (progress: number) => void;
+  wake: () => void;
+}
 
 const VERTEX = `#version 300 es
 in vec2 aPosition;
@@ -163,7 +168,7 @@ export interface FlyingPostersProps {
   style?: React.CSSProperties;
 }
 
-const FlyingPosters: React.FC<FlyingPostersProps> = ({
+const FlyingPosters = forwardRef<FlyingPostersHandle, FlyingPostersProps>(({
   items = [],
   planeWidth = 320,
   planeHeight = 320,
@@ -190,7 +195,7 @@ const FlyingPosters: React.FC<FlyingPostersProps> = ({
   onActiveIndexChange,
   className = '',
   style
-}) => {
+}, ref) => {
   const rootRef = useRef(null);
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
@@ -707,6 +712,15 @@ const FlyingPosters: React.FC<FlyingPostersProps> = ({
     }
   }, [progress]);
 
+  useImperativeHandle(ref, () => ({
+    applyProgress: (p: number) => {
+      engineRef.current?.applyProgress(p);
+    },
+    wake: () => {
+      engineRef.current?.wake();
+    },
+  }));
+
   return (
     <div ref={rootRef} className={`flying-posters${className ? ` ${className}` : ''}`} style={style}>
       <canvas
@@ -716,6 +730,8 @@ const FlyingPosters: React.FC<FlyingPostersProps> = ({
       />
     </div>
   );
-};
+});
+
+FlyingPosters.displayName = 'FlyingPosters';
 
 export default FlyingPosters;
