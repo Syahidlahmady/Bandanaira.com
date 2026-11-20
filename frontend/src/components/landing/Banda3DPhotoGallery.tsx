@@ -5,6 +5,7 @@ import { useLanguage } from '../../context/LanguageContext'
 export interface PhotoItem {
   id: string
   src: string
+  cardSrc?: string
   alt: string
   positions: {
     xxs: { left: string; top: string; z: number }
@@ -33,6 +34,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'belgica',
     src: '/images/landmarks/belgica.jpg',
+    cardSrc: '/images/landmarks/belgica-card.webp',
     alt: 'Benteng Belgica',
     positions: {
       xxs: { left: '-5%', top: '18%', z: -80 },
@@ -45,6 +47,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'gunung-api',
     src: '/images/landmarks/gunung-api.jpg',
+    cardSrc: '/images/landmarks/gunung-api-card.webp',
     alt: 'Gunung Api Banda',
     positions: {
       xxs: { left: '66%', top: '22%', z: -160 },
@@ -57,6 +60,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'istana-mini',
     src: '/images/landmarks/istana-mini.jpg',
+    cardSrc: '/images/landmarks/istana-mini-card.webp',
     alt: 'Istana Mini VOC',
     positions: {
       xxs: { left: '68%', top: '65%', z: -360 },
@@ -69,6 +73,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'lava-flow',
     src: '/images/landmarks/lava-flow.jpg',
+    cardSrc: '/images/landmarks/lava-flow-card.webp',
     alt: 'Lava Flow Coral Reef',
     positions: {
       xxs: { left: '-8%', top: '62%', z: -480 },
@@ -81,6 +86,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'pulau-rhun',
     src: '/images/landmarks/pulau-rhun.jpg',
+    cardSrc: '/images/landmarks/pulau-rhun-card.webp',
     alt: 'Pulau Rhun',
     positions: {
       xxs: { left: '-10%', top: '30%', z: -680 },
@@ -93,6 +99,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'pulau-hatta',
     src: '/images/landmarks/pulau-hatta.jpg',
+    cardSrc: '/images/landmarks/pulau-hatta-card.webp',
     alt: 'Pulau Hatta',
     positions: {
       xxs: { left: '76%', top: '38%', z: -840 },
@@ -105,6 +112,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'kebun-pala',
     src: '/images/landmarks/kebun-pala.jpg',
+    cardSrc: '/images/landmarks/kebun-pala-card.webp',
     alt: 'Perkebunan Pala Kuno',
     positions: {
       xxs: { left: '60%', top: '74%', z: -980 },
@@ -117,6 +125,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'nassau',
     src: '/images/landmarks/nassau.jpg',
+    cardSrc: '/images/landmarks/nassau-card.webp',
     alt: 'Benteng Nassau',
     positions: {
       xxs: { left: '-2%', top: '20%', z: -1150 },
@@ -129,6 +138,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'bung-hatta',
     src: '/images/landmarks/bung-hatta.jpg',
+    cardSrc: '/images/landmarks/bung-hatta-card.webp',
     alt: 'Rumah Pengasingan Bung Hatta',
     positions: {
       xxs: { left: '72%', top: '24%', z: -1380 },
@@ -141,6 +151,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'pulau-ay',
     src: '/images/landmarks/pulau-ay.jpg',
+    cardSrc: '/images/landmarks/pulau-ay-card.webp',
     alt: 'Pulau Ay',
     positions: {
       xxs: { left: '-10%', top: '34%', z: -1550 },
@@ -153,6 +164,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'pelabuhan',
     src: '/images/landmarks/pelabuhan.jpg',
+    cardSrc: '/images/landmarks/pelabuhan-card.webp',
     alt: 'Pelabuhan Banda Neira',
     positions: {
       xxs: { left: '55%', top: '58%', z: -1800 },
@@ -165,6 +177,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'pohon-sejuta-umat',
     src: '/images/landmarks/pohon-sejuta-umat.webp',
+    cardSrc: '/images/landmarks/pohon-sejuta-umat-card.webp',
     alt: 'Pohon Sejuta Umat & Gunung Api Banda',
     positions: {
       xxs: { left: '10%', top: '42%', z: -1950 },
@@ -257,7 +270,7 @@ const PhotoCard = memo(({ item, breakpoint, registerElement }: PhotoCardProps) =
     >
       <div className="relative w-full h-full overflow-hidden shadow-[0_20px_45px_rgba(0,0,0,0.65)] rounded-2xl border border-white/25 bg-slate-900/40 group">
         <img
-          src={item.src}
+          src={item.cardSrc || item.src}
           alt={item.alt}
           width={350}
           height={220}
@@ -314,7 +327,37 @@ export const Banda3DPhotoGallery: React.FC = () => {
   const titleRef = useRef<HTMLDivElement>(null)
   const rafRef = useRef<number | null>(null)
   const lastScrollYRef = useRef<number>(0)
-  const [breakpoint, setBreakpoint] = useState<BreakpointKey>('lg')
+  const [breakpoint, setBreakpoint] = useState<BreakpointKey>(() => {
+    if (typeof window === 'undefined') return 'lg'
+    const w = window.innerWidth
+    if (w >= 1024) return 'lg'
+    if (w >= 768) return 'md'
+    if (w >= 640) return 'sm'
+    if (w >= 480) return 'xs'
+    return 'xxs'
+  })
+  const [galleryMode, setGalleryMode] = useState<'3d' | 'static'>(() => {
+    if (typeof window === 'undefined') return 'static'
+    if (window.innerWidth < 1024) return 'static'
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return 'static'
+    try {
+      const saved = localStorage.getItem('banda_gallery_mode')
+      if (saved === 'static' || saved === '3d') return saved
+    } catch {
+      // ignore
+    }
+    return '3d'
+  })
+  const [mobileLayout, setMobileLayout] = useState<'rail' | 'grid'>('rail')
+
+  const handleToggleMode = (mode: '3d' | 'static') => {
+    setGalleryMode(mode)
+    try {
+      localStorage.setItem('banda_gallery_mode', mode)
+    } catch {
+      // ignore
+    }
+  }
 
   // Register card and ornament elements for 3D coordinate manipulation
   const registerElement = useCallback((el: HTMLDivElement | null) => {
@@ -340,33 +383,34 @@ export const Banda3DPhotoGallery: React.FC = () => {
   }, [])
 
   const isMobile = breakpoint !== 'lg'
+  const is3DActive = !isMobile && galleryMode === '3d'
 
-  // Scroll effect driving 3D Z-flythrough and Depth-of-Field Blur (Reflow-free)
-  const cachedBoundsRef = useRef({ activeStart: 0, activeEnd: 0, speedMultiplier: 1.2, isMobileDevice: false })
+  // Scroll effect driving 3D Z-flythrough (Reflow-free)
+  const cachedBoundsRef = useRef({ activeStart: 0, activeEnd: 0, speedMultiplier: 1.6, isMobileDevice: false })
 
   useEffect(() => {
-    if (isMobile) return
+    if (!is3DActive) return
 
     const measureBounds = () => {
       if (!sectionRef.current) return
       const rect = sectionRef.current.getBoundingClientRect()
       const scrollY = window.scrollY
       const sectionTop = rect.top + scrollY
-      const travelPadding = 200
+      const travelPadding = 150
       const activeStart = sectionTop - travelPadding
       const totalHeight = sectionRef.current.offsetHeight
-      const activeEnd = sectionTop + totalHeight - 900
-      const speedMultiplier = 1.2
+      const activeEnd = sectionTop + totalHeight - 650
+      const speedMultiplier = 1.6
       cachedBoundsRef.current = { activeStart, activeEnd, speedMultiplier, isMobileDevice: false }
     }
 
     measureBounds()
     window.addEventListener('resize', measureBounds, { passive: true })
     return () => window.removeEventListener('resize', measureBounds)
-  }, [isMobile])
+  }, [is3DActive])
 
   useEffect(() => {
-    if (isMobile) return
+    if (!is3DActive) return
 
     const section = sectionRef.current
     if (!section) return
@@ -490,28 +534,28 @@ export const Banda3DPhotoGallery: React.FC = () => {
       observer.disconnect()
       detach()
     }
-  }, [isMobile])
+  }, [is3DActive])
 
   if (isMobile) {
     return (
       <section
         id="galeri-neira"
         aria-label="Kompilasi Galeri Foto Banda Neira"
-        className="relative z-10 w-full bg-[#081d35] py-12 px-4 sm:px-6 overflow-hidden"
+        className="relative z-10 w-full bg-[#081d35] py-10 px-3.5 sm:px-6 overflow-hidden"
       >
         {/* Background Radial Glow */}
         <div className="absolute inset-0 bg-[#081d35] bg-[radial-gradient(circle_at_50%_25%,#113a68_0%,#0c2b4e_50%,#081d35_90%)] pointer-events-none" />
 
         {/* Cultural Header Plate */}
-        <div className="relative z-20 flex flex-col items-center justify-center text-center w-full max-w-xl mx-auto mb-8 px-2">
-          <div className="relative flex flex-col items-center gap-2 px-6 py-6 rounded-3xl bg-[#081d35]/90 border border-amber-400/30 backdrop-blur-md shadow-2xl w-full">
+        <div className="relative z-20 flex flex-col items-center justify-center text-center w-full max-w-xl mx-auto mb-6 px-2">
+          <div className="relative flex flex-col items-center gap-2 px-6 py-6 rounded-3xl bg-[#081d35]/95 border border-amber-400/30 shadow-2xl w-full">
             {/* Nutmeg Ornament Top-Left */}
             <img
               src="/images/ornaments/motif-pala.png"
               alt="Motif Buah Pala"
-              width={64}
-              height={64}
-              className="absolute -top-7 -left-5 w-14 h-14 object-contain -rotate-12 drop-shadow-md pointer-events-none"
+              width={56}
+              height={56}
+              className="absolute -top-6 -left-4 w-12 h-12 object-contain -rotate-12 drop-shadow-md pointer-events-none"
               loading="lazy"
             />
 
@@ -519,9 +563,9 @@ export const Banda3DPhotoGallery: React.FC = () => {
             <img
               src="/images/ornaments/motif-ikan.png"
               alt="Motif Ikan Banda"
-              width={72}
-              height={48}
-              className="absolute -bottom-6 -right-6 w-16 h-12 object-contain rotate-6 drop-shadow-md pointer-events-none"
+              width={64}
+              height={42}
+              className="absolute -bottom-5 -right-4 w-14 h-10 object-contain rotate-6 drop-shadow-md pointer-events-none"
               loading="lazy"
             />
 
@@ -533,50 +577,205 @@ export const Banda3DPhotoGallery: React.FC = () => {
               {t.gallery.title}
             </h2>
 
-            <p className="text-xs text-white/80 font-sans max-w-sm mt-1">
+            <p className="text-xs text-white/80 font-sans max-w-sm mt-0.5">
               Pusaka sejarah kolonial dan panorama bahari otentik Kepulauan Banda.
             </p>
+
+            {/* Mobile View Toggle Pills */}
+            <div className="flex items-center gap-1.5 p-1 mt-2 rounded-xl bg-slate-900/70 border border-white/10 text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setMobileLayout('rail')}
+                className={`px-3 py-1 rounded-lg transition-colors cursor-pointer ${
+                  mobileLayout === 'rail'
+                    ? 'bg-amber-500 text-slate-950 shadow-sm'
+                    : 'text-white/70 hover:text-white'
+                }`}
+              >
+                Rel Geser
+              </button>
+              <button
+                type="button"
+                onClick={() => setMobileLayout('grid')}
+                className={`px-3 py-1 rounded-lg transition-colors cursor-pointer ${
+                  mobileLayout === 'grid'
+                    ? 'bg-amber-500 text-slate-950 shadow-sm'
+                    : 'text-white/70 hover:text-white'
+                }`}
+              >
+                Kisi Foto
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Horizontal Touch Snap Rail */}
-        <div className="relative z-20 w-full max-w-6xl mx-auto">
-          <div
-            className="flex gap-3.5 overflow-x-auto pb-4 pt-1 px-1 snap-x snap-mandatory scroll-smooth no-scrollbar"
-            style={{ WebkitOverflowScrolling: 'touch' }}
-          >
+        {/* Content based on layout */}
+        {mobileLayout === 'rail' ? (
+          /* Horizontal Touch Snap Rail */
+          <div className="relative z-20 w-full max-w-6xl mx-auto">
+            <div
+              className="flex gap-3 overflow-x-auto pb-3 pt-1 px-1 snap-x snap-mandatory scroll-smooth no-scrollbar"
+              style={{ WebkitOverflowScrolling: 'touch' }}
+            >
+              {BANDA_3D_PHOTOS.map((item, index) => (
+                <div
+                  key={item.id}
+                  className="group relative shrink-0 snap-center w-[250px] sm:w-[280px] aspect-[4/3] rounded-2xl overflow-hidden border border-white/20 bg-slate-900/60 shadow-xl transition-transform active:scale-[0.98]"
+                >
+                  <img
+                    src={item.cardSrc || item.src}
+                    alt={item.alt}
+                    width={300}
+                    height={225}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Bottom Vignette with Landmark Name */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent flex flex-col justify-end p-3 pointer-events-none">
+                    <span className="text-[10px] font-sans font-semibold tracking-wider text-amber-300 uppercase">
+                      Pusaka #{index + 1}
+                    </span>
+                    <span className="text-sm font-sans font-bold text-white tracking-tight drop-shadow">
+                      {item.alt}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Swipe Guidance Hint */}
+            <div className="flex items-center justify-between px-2 pt-2 text-[11px] font-sans text-amber-200/70">
+              <span>Geser untuk menjelajahi 12 pusaka & panorama</span>
+              <span className="text-white/60">12 Destinasi</span>
+            </div>
+          </div>
+        ) : (
+          /* 2-Column Responsive Grid */
+          <div className="relative z-20 w-full max-w-4xl mx-auto grid grid-cols-2 gap-2.5 sm:gap-3.5">
             {BANDA_3D_PHOTOS.map((item, index) => (
               <div
                 key={item.id}
-                className="group relative shrink-0 snap-center w-[260px] sm:w-[290px] aspect-[4/3] rounded-2xl overflow-hidden border border-white/20 bg-slate-900/60 shadow-xl transition-transform active:scale-[0.98]"
+                className="group relative aspect-[4/3] rounded-2xl overflow-hidden border border-white/20 bg-slate-900/60 shadow-lg"
               >
                 <img
-                  src={item.src}
+                  src={item.cardSrc || item.src}
                   alt={item.alt}
                   width={300}
                   height={225}
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="w-full h-full object-cover"
                 />
-                {/* Bottom Vignette with Landmark Name */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent flex flex-col justify-end p-3.5 pointer-events-none">
-                  <span className="text-[10px] font-sans font-semibold tracking-wider text-amber-300 uppercase">
-                    Pusaka #{index + 1}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent flex flex-col justify-end p-2.5 pointer-events-none">
+                  <span className="text-[9px] font-sans font-semibold tracking-wider text-amber-300 uppercase">
+                    #{index + 1}
                   </span>
-                  <span className="text-sm font-sans font-bold text-white tracking-tight drop-shadow">
+                  <span className="text-xs sm:text-sm font-sans font-bold text-white tracking-tight drop-shadow line-clamp-1">
                     {item.alt}
                   </span>
                 </div>
               </div>
             ))}
           </div>
+        )}
+      </section>
+    )
+  }
 
-          {/* Swipe Guidance Hint */}
-          <div className="flex items-center justify-between px-2 pt-2 text-[11px] font-sans text-amber-200/70">
-            <span>Geser untuk menjelajahi 12 pusaka & panorama</span>
-            <span className="text-white/60">12 Destinasi</span>
+  if (galleryMode === 'static') {
+    return (
+      <section
+        id="galeri-neira"
+        aria-label="Kompilasi Galeri Foto Banda Neira"
+        className="relative z-10 w-full bg-[#081d35] py-16 px-4 sm:px-6 lg:px-8 overflow-hidden"
+      >
+        {/* Background Radial Glow */}
+        <div className="absolute inset-0 bg-[#081d35] bg-[radial-gradient(circle_at_50%_25%,#113a68_0%,#0c2b4e_50%,#081d35_90%)] pointer-events-none" />
+
+        {/* Cultural Header Plate */}
+        <div className="relative z-20 flex flex-col items-center justify-center text-center w-full max-w-2xl mx-auto mb-10 px-2">
+          <div className="relative flex flex-col items-center gap-3 px-8 sm:px-12 py-8 rounded-3xl bg-[#081d35]/95 border-2 border-amber-400/35 shadow-2xl w-full">
+            {/* Corner Nutmeg Ornament Top-Left */}
+            <img
+              src="/images/ornaments/motif-pala.png"
+              alt="Motif Buah Pala"
+              width={72}
+              height={72}
+              className="absolute -top-8 -left-6 w-16 h-16 object-contain -rotate-12 drop-shadow-md pointer-events-none"
+              loading="lazy"
+            />
+
+            {/* Corner Fish Ornament Bottom-Right */}
+            <img
+              src="/images/ornaments/motif-ikan.png"
+              alt="Motif Ikan Banda"
+              width={80}
+              height={54}
+              className="absolute -bottom-7 -right-6 w-20 h-14 object-contain rotate-6 drop-shadow-md pointer-events-none"
+              loading="lazy"
+            />
+
+            <span className="font-sans text-xs font-semibold tracking-[0.24em] text-amber-300 uppercase">
+              {t.gallery.tagline}
+            </span>
+
+            <h2 className="text-4xl sm:text-5xl font-script font-normal text-white tracking-wide leading-tight drop-shadow-lg">
+              {t.gallery.title}
+            </h2>
+
+            <p className="text-sm text-white/85 font-sans max-w-md mt-1">
+              Koleksi fotografi pusaka bersejarah kolonial dan panorama alam bahari Kepulauan Banda.
+            </p>
+
+            {/* Desktop Mode Switcher */}
+            <div className="flex items-center gap-2 mt-3 p-1 rounded-xl bg-slate-900/80 border border-white/15 text-xs font-semibold">
+              <span className="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold shadow-sm">
+                Galeri Statis Ringan
+              </span>
+              <button
+                type="button"
+                onClick={() => handleToggleMode('3d')}
+                className="px-3 py-1.5 rounded-lg text-white/80 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                title="Beralih ke mode penerbangan 3D sinematik"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                  <line x1="12" y1="22.08" x2="12" y2="12" />
+                </svg>
+                <span>Beralih ke Mode 3D</span>
+              </button>
+            </div>
           </div>
+        </div>
+
+        {/* 4-Column Responsive Grid */}
+        <div className="relative z-20 w-full max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          {BANDA_3D_PHOTOS.map((item, index) => (
+            <div
+              key={item.id}
+              className="group relative aspect-[4/3] rounded-2xl overflow-hidden border border-white/20 bg-slate-900/60 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-amber-400/50 hover:shadow-2xl"
+            >
+              <img
+                src={item.cardSrc || item.src}
+                alt={item.alt}
+                width={350}
+                height={262}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-4 pointer-events-none">
+                <span className="text-[10px] font-sans font-semibold tracking-wider text-amber-300 uppercase">
+                  Pusaka #{index + 1}
+                </span>
+                <span className="text-base font-sans font-bold text-white tracking-tight drop-shadow line-clamp-1">
+                  {item.alt}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
     )
@@ -589,17 +788,35 @@ export const Banda3DPhotoGallery: React.FC = () => {
       aria-label="Kompilasi Galeri Foto Banda Neira"
       className="relative z-10 w-full bg-[#081d35]"
     >
-      {/* Scroll track with generous height on desktop and mobile-optimized height */}
-      <div className="relative z-10 h-[1350px] w-full lg:h-[3500px]">
+      {/* Scroll track: shortened from 3500px to 2200px for a punchy, lightweight flight */}
+      <div className="relative z-10 h-[2200px] w-full">
         {/* Sticky viewport stage with true 3D perspective */}
         <div
           className="sticky top-0 h-[100dvh] min-h-[100dvh] w-full overflow-hidden flex items-center justify-center"
           style={{ perspective: 600 }}
         >
-          {/* Luminous oceanic navy radial glow (Biru Dongker Laut Banda) */}
+          {/* Luminous oceanic navy radial glow */}
           <div className="absolute inset-0 bg-[#081d35] bg-[radial-gradient(circle_at_50%_40%,#113a68_0%,#0c2b4e_50%,#081d35_90%)] pointer-events-none" />
 
-          {/* Render all 3D floating photo cards (Clean, pure images) */}
+          {/* Floating Mode Switcher Button on Desktop (Top-Right) */}
+          <div className="absolute top-5 right-5 z-40">
+            <button
+              type="button"
+              onClick={() => handleToggleMode('static')}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-900 border border-white/20 text-white/90 hover:text-white text-xs font-semibold backdrop-blur-md shadow-xl transition-all cursor-pointer"
+              title="Ganti ke tampilan galeri statis yang lebih ringan"
+            >
+              <svg className="w-3.5 h-3.5 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+              </svg>
+              <span>Tampilan Ringan (Statis)</span>
+            </button>
+          </div>
+
+          {/* Render all 3D floating photo cards */}
           {BANDA_3D_PHOTOS.map((item) => (
             <PhotoCard
               key={item.id}
@@ -655,7 +872,6 @@ export const Banda3DPhotoGallery: React.FC = () => {
               <h2 className="text-4xl sm:text-6xl font-script font-normal text-white tracking-wide leading-tight drop-shadow-lg">
                 {t.gallery.title}
               </h2>
-
             </div>
           </div>
         </div>

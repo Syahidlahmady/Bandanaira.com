@@ -272,14 +272,44 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     })
 
     const scroller = useWindowScroll ? window : root
-    scroller.addEventListener('scroll', onScroll, { passive: true })
+
+    let isAttached = false
+    const attach = () => {
+      if (!isAttached) {
+        scroller.addEventListener('scroll', onScroll, { passive: true })
+        isAttached = true
+        onScroll()
+      }
+    }
+    const detach = () => {
+      if (isAttached) {
+        scroller.removeEventListener('scroll', onScroll)
+        isAttached = false
+        if (raf) cancelAnimationFrame(raf)
+        if (scrollRaf) cancelAnimationFrame(scrollRaf)
+      }
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries[0]?.isIntersecting ?? false
+        setIsIntersecting(visible)
+        if (visible) {
+          attach()
+        } else {
+          detach()
+        }
+      },
+      { rootMargin: '400px 0px' }
+    )
+    observer.observe(root)
+
     window.addEventListener('resize', onResize)
 
     return () => {
       cancelAnimationFrame(initRaf)
-      if (raf) cancelAnimationFrame(raf)
-      if (scrollRaf) cancelAnimationFrame(scrollRaf)
-      scroller.removeEventListener('scroll', onScroll)
+      observer.disconnect()
+      detach()
       window.removeEventListener('resize', onResize)
     }
   }, [applyProgress, useWindowScroll])
@@ -289,6 +319,7 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     typeof window !== 'undefined' ? window.innerWidth >= 1024 : false
   )
   const [iframeReady, setIframeReady] = useState<boolean>(false)
+  const [isIntersecting, setIsIntersecting] = useState<boolean>(true)
 
   useEffect(() => {
     const handleResize = () => {
@@ -327,7 +358,7 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
         className="absolute inset-0 w-full h-full object-cover -z-10"
         draggable={false}
       />
-      {iframeReady && (
+      {iframeReady && isIntersecting && (
         <iframe
           className="scroll-expand__youtube-iframe"
           src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&playsinline=1&rel=0&disablekb=1&modestbranding=1&iv_load_policy=3&showinfo=0&fs=0`}

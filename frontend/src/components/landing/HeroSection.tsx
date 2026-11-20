@@ -42,7 +42,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     if (typeof window === 'undefined') return false
     return (
       window.innerWidth < 1024 ||
-      window.matchMedia('(pointer: coarse)').matches ||
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
     )
   })
@@ -63,7 +62,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     const handleResize = () => {
       const mobile =
         window.innerWidth < 1024 ||
-        window.matchMedia('(pointer: coarse)').matches ||
         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
       setIsMobile(mobile)
     }
@@ -102,9 +100,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           {/* Scrim gradient for crisp text readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#081d35] via-black/40 to-black/60 pointer-events-none -z-10" />
 
-          {/* Static Mobile Top Navbar */}
-          <div className="w-full px-4 pt-3.5 z-50">
-            <header className="flex h-16 items-center justify-between px-4 w-full rounded-2xl border border-solid border-white/20 backdrop-blur-md shadow-2xl bg-[#081d35cc]">
+          {/* Sticky Mobile Top Navbar */}
+          <div className="sticky top-0 w-full px-3.5 pt-2.5 z-50 pointer-events-auto">
+            <header className="flex h-14 sm:h-16 items-center justify-between px-3.5 sm:px-4 w-full rounded-2xl border border-solid border-white/20 backdrop-blur-sm shadow-xl bg-[#081d35ee]">
               {/* Brand Logo */}
               <a
                 href="#beranda"
@@ -225,7 +223,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 </span>
               </h1>
 
-              <div className="w-full p-4 rounded-2xl bg-black/60 backdrop-blur-md border border-white/15 shadow-2xl">
+              <div className="w-full p-4 rounded-2xl bg-[#081d35d9] backdrop-blur-sm border border-white/15 shadow-2xl">
                 <p className="text-white/95 text-sm leading-relaxed font-sans font-normal antialiased">
                   {t.hero.description}
                 </p>
@@ -375,8 +373,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             startRadius={24}
             endRadius={0}
             mediaZoom={1.22}
-            scrollDistance={0.75}
-            holdDistance={1.6}
+            scrollDistance={0.5}
+            holdDistance={0.25}
             smoothing={0.1}
             overlayScrim={0.4}
             onProgressChange={handleProgressChange}

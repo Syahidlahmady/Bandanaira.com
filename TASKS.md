@@ -1089,6 +1089,18 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Memangkas tinggi vertikal seksi galeri dari 1350px menjadi ~450px yang ringkas dan ramah sentuhan.
 - [x] 62.3 Pertahankan Pengalaman Sinematik Kaya pada Desktop (`>= 1024px`):
   - Tampilan desktop tetap mempertahankan `ScrollExpand` dengan video YouTube latar dan penjelajahan galeri perspektif 3D lengkap.
-- [x] 62.4 Verifikasi Build Produksi & Pengujian:
-  - Build frontend `npm --prefix frontend run build` sukses 100% (2.045 modul, exit code 0).
+- [x] 62.4 Optimasi Lanjutan Seksi 1 (Hero Section) & Suspensi Iframe Offscreen (`frontend/src/components/ui/ScrollExpand.tsx`, `HeroSection.tsx`):
+  - Memangkas jarak pin scroll desktop dari `scrollDistance=0.75, holdDistance=1.6` (335vh) menjadi `scrollDistance=0.5, holdDistance=0.25` (175vh), membuat transisi hero terasa ringan dan tidak menahan pengguna terlalu lama.
+  - Mengintegrasikan deteksi `isIntersecting` pada `ScrollExpand`: saat pengguna menggulir melewati Hero Section, iframe video YouTube dilepas/disuspensi dari DOM sehingga decoding video di background terhenti total dan CPU/GPU 0% saat menjelajah seksi lain.
+  - Inisialisasi `isMobile` instan pada HeroSection untuk mengeliminasi ketergantungan scroll listener pada ponsel dan perangkat sentuh.
+- [x] 62.5 Optimasi Ukuran Payload Gambar Galeri (12 Thumbnail WebP 600w):
+  - Membuat 12 varian WebP 600w (`*-card.webp`) pada `frontend/public/images/landmarks/`, memangkas ukuran total dari ~2.9 MB menjadi ~550 KB (-81% penghematan bandwidth).
+  - Mengintegrasikan `cardSrc` pada seluruh kartu galeri untuk mempercepat pemuatan gambar secara drastis pada seluler dan desktop.
+- [x] 62.6 Optimasi Lanjutan Seksi 2 (Banda 3D Photo Gallery):
+  - Lazy Initializer pada `breakpoint` untuk mencegah mounting 23 layer 3D desktop secara sesaat pada perangkat ponsel saat load pertama.
+  - Fitur Dwi-Tata Letak Seluler: pengguna seluler dapat memilih antara "Rel Geser" (Touch Snap Rail) dan "Kisi Foto" (Grid Kompak 2 Kolom) murni CSS tanpa JavaScript animation loops.
+  - Pemangkasan Track 3D Desktop dari 3500px ke 2200px dengan `speedMultiplier=1.6` agar penjelajahan 3D terasa lebih dinamis, gesit, dan tidak melelahkan.
+  - Dukungan Mode Statis Desktop: tombol "Tampilan Ringan (Statis)" di desktop yang mengubah tampilan 3D menjadi grid 4-kolom responsif, lengkap dengan deteksi otomatis `prefers-reduced-motion` dan persistensi di `localStorage`.
+- [x] 62.7 Verifikasi Build Produksi & Pengujian:
+  - Build frontend `npm --prefix frontend run build` sukses 100% (2.045 modul, exit code 0 dalam 6.42s).
   - Pengujian backend `test_health`, `test_tourism`, dan `test_auth` lulus 100% (31 passed).
