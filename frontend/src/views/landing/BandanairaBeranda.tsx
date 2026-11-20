@@ -128,7 +128,9 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
       />
 
       {/* 2. 3D Perspective Photo Gallery (Kompilasi Foto Banda Neira) */}
-      <Banda3DPhotoGallery />
+      <div className="w-full content-auto">
+        <Banda3DPhotoGallery />
+      </div>
 
       <Suspense
         fallback={

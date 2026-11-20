@@ -43,7 +43,7 @@ const IslandTelemetryWorkspace = React.lazy(() => import('./views/IslandTelemetr
 const TourismEcoStayWorkspace = React.lazy(() => import('./views/TourismEcoStayWorkspace.tsx').then(m => ({ default: m.TourismEcoStayWorkspace })))
 const InteractiveMapWorkspace = React.lazy(() => import('./views/InteractiveMapWorkspace.tsx').then(m => ({ default: m.InteractiveMapWorkspace })))
 const SurveyEtlWorkspace = React.lazy(() => import('./views/SurveyEtlWorkspace.tsx').then(m => ({ default: m.SurveyEtlWorkspace })))
-const LandingPortalWorkspace = React.lazy(() => import('./views/LandingPortalWorkspace.tsx').then(m => ({ default: m.LandingPortalWorkspace })))
+import { LandingPortalWorkspace } from './views/LandingPortalWorkspace.tsx'
 const UserEcosystemDashboard = React.lazy(() => import('./views/dashboard/UserEcosystemDashboard.tsx').then(m => ({ default: m.UserEcosystemDashboard })))
 import { DashboardLayout } from './views/dashboard/DashboardLayout.tsx'
 import { BandaUnifiedFooter } from './components/common/BandaUnifiedFooter.tsx'

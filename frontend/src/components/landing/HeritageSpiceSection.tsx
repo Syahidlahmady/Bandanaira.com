@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import FlyingPosters from '../ui/FlyingPosters'
+import FlyingPosters, { FlyingPostersHandle } from '../ui/FlyingPosters'
 import { useLanguage } from '../../context/LanguageContext'
 
 const ITEMS = [
@@ -55,7 +55,7 @@ export interface HeritageSpiceSectionProps {
 export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
   const { t, isEnglish } = useLanguage()
   const sectionRef = useRef<HTMLElement>(null)
-  const [scrollProgress, setScrollProgress] = useState(0)
+  const postersRef = useRef<FlyingPostersHandle | null>(null)
   const [activeIndex, setActiveIndex] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
 
@@ -103,11 +103,14 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
   }, [])
 
   useEffect(() => {
+    const section = sectionRef.current
+    if (!section) return
+
     let sectionTop = 0
     let totalScrollable = 0
-    let lastProgress = -1
     let lastStoryIndex = -1
     let rafId = 0
+    let isAttached = false
 
     const measure = () => {
       if (!sectionRef.current) return
@@ -122,8 +125,7 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
 
       rafId = requestAnimationFrame(() => {
         const scrollY = window.scrollY
-        // Fast bail-out when offscreen
-        if (scrollY < sectionTop - 600 || scrollY > sectionTop + totalScrollable + 600) {
+        if (scrollY < sectionTop - 400 || scrollY > sectionTop + totalScrollable + 400) {
           return
         }
 
@@ -137,24 +139,49 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
             setActiveIndex(newIdx)
           }
         } else {
-          if (Math.abs(progress - lastProgress) > 0.003) {
-            lastProgress = progress
-            setScrollProgress(progress)
-          }
+          postersRef.current?.applyProgress(progress)
         }
       })
     }
 
+    const attach = () => {
+      if (!isAttached) {
+        window.addEventListener('scroll', handleScroll, { passive: true })
+        isAttached = true
+        handleScroll()
+      }
+    }
+
+    const detach = () => {
+      if (isAttached) {
+        window.removeEventListener('scroll', handleScroll)
+        isAttached = false
+        if (rafId) cancelAnimationFrame(rafId)
+      }
+    }
+
     measure()
     window.addEventListener('resize', measure, { passive: true })
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    handleScroll()
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          measure()
+          attach()
+        } else {
+          detach()
+        }
+      },
+      { rootMargin: '400px 0px' }
+    )
+    observer.observe(section)
+
     return () => {
-      if (rafId) cancelAnimationFrame(rafId)
+      observer.disconnect()
+      detach()
       window.removeEventListener('resize', measure)
-      window.removeEventListener('scroll', handleScroll)
     }
-  }, [])
+  }, [isMobile])
 
   const scrollToStory = (index: number) => {
     if (!sectionRef.current) return
@@ -184,6 +211,7 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
         <div className="absolute inset-0 z-0">
           {!isMobile ? (
             <FlyingPosters
+              ref={postersRef}
               items={ITEMS}
               planeWidth={380}
               planeHeight={285}
@@ -192,7 +220,6 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
               scrollEase={0.06}
               cameraFov={45}
               cameraZ={20}
-              progress={scrollProgress}
               onActiveIndexChange={(idx) => setActiveIndex(idx)}
               onItemClick={(_, idx) => scrollToStory(idx)}
               className="w-full h-full"
