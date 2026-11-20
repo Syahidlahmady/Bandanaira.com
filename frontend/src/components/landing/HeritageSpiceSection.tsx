@@ -91,27 +91,69 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
   ]
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    const checkMobile = () =>
+      setIsMobile(
+        window.innerWidth < 1024 ||
+        window.matchMedia('(pointer: coarse)').matches ||
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      )
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
   useEffect(() => {
-    const handleScroll = () => {
+    let sectionTop = 0
+    let totalScrollable = 0
+    let lastProgress = -1
+    let lastStoryIndex = -1
+    let rafId = 0
+
+    const measure = () => {
       if (!sectionRef.current) return
       const rect = sectionRef.current.getBoundingClientRect()
-      const totalScrollable = rect.height - window.innerHeight
-      if (totalScrollable <= 0) return
-
-      const currentScroll = -rect.top
-      const progress = Math.max(0, Math.min(1, currentScroll / totalScrollable))
-      setScrollProgress(progress)
+      sectionTop = rect.top + window.scrollY
+      totalScrollable = rect.height - window.innerHeight
     }
 
+    const handleScroll = () => {
+      if (totalScrollable <= 0) return
+      if (rafId) cancelAnimationFrame(rafId)
+
+      rafId = requestAnimationFrame(() => {
+        const scrollY = window.scrollY
+        // Fast bail-out when offscreen
+        if (scrollY < sectionTop - 600 || scrollY > sectionTop + totalScrollable + 600) {
+          return
+        }
+
+        const currentScroll = scrollY - sectionTop
+        const progress = Math.max(0, Math.min(1, currentScroll / totalScrollable))
+
+        if (isMobile) {
+          const newIdx = Math.min(STORIES.length - 1, Math.floor(progress * STORIES.length))
+          if (newIdx !== lastStoryIndex) {
+            lastStoryIndex = newIdx
+            setActiveIndex(newIdx)
+          }
+        } else {
+          if (Math.abs(progress - lastProgress) > 0.003) {
+            lastProgress = progress
+            setScrollProgress(progress)
+          }
+        }
+      })
+    }
+
+    measure()
+    window.addEventListener('resize', measure, { passive: true })
     window.addEventListener('scroll', handleScroll, { passive: true })
     handleScroll()
-    return () => window.removeEventListener('scroll', handleScroll)
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId)
+      window.removeEventListener('resize', measure)
+      window.removeEventListener('scroll', handleScroll)
+    }
   }, [])
 
   const scrollToStory = (index: number) => {
@@ -138,22 +180,42 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
         {/* Background Radial Glow */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,#113a68_0%,#081d35_70%)] pointer-events-none" />
 
-        {/* FULL SECTION FLYING POSTERS */}
+        {/* HERO MEDIA: Desktop uses WebGL 3D FlyingPosters; Mobile uses lightweight GPU-accelerated CSS crossfade */}
         <div className="absolute inset-0 z-0">
-          <FlyingPosters
-            items={ITEMS}
-            planeWidth={isMobile ? 260 : 380}
-            planeHeight={isMobile ? 195 : 285}
-            radius={18}
-            distortion={1.5}
-            scrollEase={0.06}
-            cameraFov={45}
-            cameraZ={20}
-            progress={scrollProgress}
-            onActiveIndexChange={(idx) => setActiveIndex(idx)}
-            onItemClick={(_, idx) => scrollToStory(idx)}
-            className="w-full h-full"
-          />
+          {!isMobile ? (
+            <FlyingPosters
+              items={ITEMS}
+              planeWidth={380}
+              planeHeight={285}
+              radius={18}
+              distortion={1.5}
+              scrollEase={0.06}
+              cameraFov={45}
+              cameraZ={20}
+              progress={scrollProgress}
+              onActiveIndexChange={(idx) => setActiveIndex(idx)}
+              onItemClick={(_, idx) => scrollToStory(idx)}
+              className="w-full h-full"
+            />
+          ) : (
+            <div className="relative w-full h-full flex items-center justify-center p-6">
+              <div className="relative w-full max-w-[320px] aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+                {ITEMS.map((itemSrc, idx) => (
+                  <img
+                    key={itemSrc}
+                    src={itemSrc}
+                    alt={STORIES[idx]?.title || 'Sejarah Banda Neira'}
+                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-out ${
+                      activeIndex === idx ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
+                    }`}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ))}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#081d35]/80 via-transparent to-transparent pointer-events-none" />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* SECTION HEADER: Placed safely below the fixed navbar */}

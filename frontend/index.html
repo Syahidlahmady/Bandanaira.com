@@ -16,12 +16,21 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://www.youtube-nocookie.com" />
 
-  <!-- Preload LCP hero image for instant discovery -->
-  <link rel="preload" href="/src/assets/image.webp" as="image" type="image/webp" />
+  <!-- Preload responsive LCP hero image for instant discovery -->
+  <link rel="preload" href="/banda.webp" imagesrcset="/banda-mobile.webp 800w, /banda.webp 1920w" imagesizes="(max-width: 768px) 100vw, 1920px" as="image" type="image/webp" fetchpriority="high" />
 
+  <!-- Non-blocking asynchronous font loading -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Montserrat:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Style+Script&family=JetBrains+Mono:wght@400;500;600;700&display=swap" as="style" />
   <link
+    rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Montserrat:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Style+Script&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
-    rel="stylesheet" />
+    media="print"
+    onload="this.media='all'" />
+  <noscript>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Montserrat:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Style+Script&family=JetBrains+Mono:wght@400;500;600;700&display=swap" />
+  </noscript>
 
   <title>Visit Banda Naira : Official Banda Naira Website</title>
 </head>

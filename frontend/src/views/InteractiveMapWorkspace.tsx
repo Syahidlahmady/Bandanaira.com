@@ -309,8 +309,8 @@ export const BANDA_LANDMARK_MEDIA: Record<
     tag: 'Spot Snorkeling & Coral Garden Ternama',
   },
   'Pohon Sejuta Umat (Pohon Talang)': {
-    image: '/images/landmarks/pohon-talang.jpg',
-    panorama: '/images/landmarks/pohon-talang.jpg',
+    image: '/images/landmarks/pohon-sejuta-umat.webp',
+    panorama: '/images/landmarks/pohon-sejuta-umat.webp',
     rating: 4.9,
     reviews: 79,
     hours: 'Buka 24 Jam',

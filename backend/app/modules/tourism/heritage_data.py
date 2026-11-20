@@ -15,7 +15,7 @@ HERITAGE_CATALOG: List[HeritageCatalogItem] = [
         ),
         audio_guide_url="https://actions.google.com/sounds/v1/ambiences/outdoor_evening.ogg",
         coordinates=(-4.5265, 129.9015),
-        photo_url="https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?auto=format&fit=crop&w=800&q=80",
+        photo_url="/images/landmarks/belgica.jpg",
     ),
     HeritageCatalogItem(
         slug="benteng-nassau",
@@ -29,7 +29,7 @@ HERITAGE_CATALOG: List[HeritageCatalogItem] = [
         ),
         audio_guide_url="https://actions.google.com/sounds/v1/ambiences/outdoor_evening.ogg",
         coordinates=(-4.5292, 129.9042),
-        photo_url="https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=80",
+        photo_url="/images/landmarks/nassau.jpg",
     ),
     HeritageCatalogItem(
         slug="rumah-pengasingan-bung-hatta",
@@ -44,7 +44,7 @@ HERITAGE_CATALOG: List[HeritageCatalogItem] = [
         ),
         audio_guide_url="https://actions.google.com/sounds/v1/ambiences/outdoor_evening.ogg",
         coordinates=(-4.5278, 129.9038),
-        photo_url="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80",
+        photo_url="/images/landmarks/bung-hatta.jpg",
     ),
     HeritageCatalogItem(
         slug="rumah-pengasingan-sutan-sjahrir",
@@ -59,7 +59,7 @@ HERITAGE_CATALOG: List[HeritageCatalogItem] = [
         ),
         audio_guide_url="https://actions.google.com/sounds/v1/ambiences/outdoor_evening.ogg",
         coordinates=(-4.5271, 129.9029),
-        photo_url="https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=800&q=80",
+        photo_url="/images/landmarks/sutan-sjahrir.jpg",
     ),
     HeritageCatalogItem(
         slug="istana-mini-voc",
@@ -74,7 +74,7 @@ HERITAGE_CATALOG: List[HeritageCatalogItem] = [
         ),
         audio_guide_url="https://actions.google.com/sounds/v1/ambiences/outdoor_evening.ogg",
         coordinates=(-4.5285, 129.9051),
-        photo_url="https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=800&q=80",
+        photo_url="/images/landmarks/istana-mini.jpg",
     ),
     HeritageCatalogItem(
         slug="benteng-hollandia-lonthoir",
@@ -88,7 +88,7 @@ HERITAGE_CATALOG: List[HeritageCatalogItem] = [
         ),
         audio_guide_url="https://actions.google.com/sounds/v1/ambiences/outdoor_evening.ogg",
         coordinates=(-4.5450, 129.9020),
-        photo_url="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+        photo_url="/images/landmarks/hollandia.jpg",
     ),
     HeritageCatalogItem(
         slug="benteng-revenge-pulau-ay",
@@ -102,6 +102,38 @@ HERITAGE_CATALOG: List[HeritageCatalogItem] = [
         ),
         audio_guide_url="https://actions.google.com/sounds/v1/ambiences/outdoor_evening.ogg",
         coordinates=(-4.5280, 129.8380),
-        photo_url="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80",
+        photo_url="/images/landmarks/benteng-revenge.jpg",
+    ),
+    HeritageCatalogItem(
+        slug="klenteng-sun-tian-kong",
+        title="Klenteng Sun Tian Kong (1673)",
+        category="CAGAR_BUDAYA",
+        island="Pulau Neira",
+        historical_period="1673 (Jaringan Niaga Bahari Tionghoa)",
+        narrative=(
+            "Klenteng bersejarah tertua di Kepulauan Banda yang didirikan tahun 1673 sebagai bukti akulturasi "
+            "harmonis pelaut dan pedagang Tionghoa dengan masyarakat adat Banda. Panduan Etika Adat (Tabea & Sasi): "
+            "Wisatawan wajib berpakaian sopan, mengucapkan salam Tabea kepada penjaga klenteng, serta tidak menyentuh "
+            "altar persembahan atau artefak kayu berukir tanpa izin."
+        ),
+        audio_guide_url="https://actions.google.com/sounds/v1/ambiences/outdoor_evening.ogg",
+        coordinates=(-4.5262, 129.9038),
+        photo_url="/images/landmarks/klenteng.jpg",
+    ),
+    HeritageCatalogItem(
+        slug="sumur-pusaka-parigi-rante-rumah-budaya",
+        title="Sumur Pusaka Parigi Rante & Rumah Budaya",
+        category="CAGAR_BUDAYA",
+        island="Pulau Neira",
+        historical_period="Abad ke-16 - ke-17 (Adat Negeri & Kolonial)",
+        narrative=(
+            "Situs sakral Sumur Pusaka Parigi Rante yang menjadi pusat ritual adat pencucian rantai pusaka (Buka Kampong) "
+            "berdampingan dengan Rumah Budaya Banda yang menyimpan meriam VOC, lukisan Tragedi 1621, dan mata uang kuno. "
+            "Panduan Etika Adat (Tabea & Sasi): Pengunjung wajib menjaga ketenangan, menghormati hukum adat Sasi dan tata "
+            "krama Tabea, serta meminta pendampingan juru kunci adat saat mendekati area sumur keramat."
+        ),
+        audio_guide_url="https://actions.google.com/sounds/v1/ambiences/outdoor_evening.ogg",
+        coordinates=(-4.5274, 129.9032),
+        photo_url="/images/landmarks/perigi-rante.jpg",
     ),
 ]

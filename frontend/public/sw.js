@@ -1,11 +1,12 @@
 // Banda Digital Ecosystem - Service Worker
-const CACHE_NAME = 'banda-digital-v5'
+const CACHE_NAME = 'banda-digital-v7'
 const MAP_TILES_CACHE = 'banda-map-tiles-v1'
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/icon.svg',
+  '/banda-mobile.webp',
 ]
 
 self.addEventListener('install', (event) => {

@@ -26,7 +26,9 @@ import {
   Users,
   Lock,
   Zap,
+  BookOpen,
 } from 'lucide-react'
+import { CommunityLiteracyHub } from './CommunityLiteracyHub'
 import {
   tourismService,
   AccommodationItem,
@@ -76,7 +78,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
   const [guideIslandFilter, setGuideIslandFilter] = useState<string>('')
 
   // CMS State
-  const [cmsSubTab, setCmsSubTab] = useState<'accommodations' | 'guides'>('accommodations')
+  const [cmsSubTab, setCmsSubTab] = useState<'accommodations' | 'guides' | 'community_contents'>('accommodations')
   const [cmsNotice, setCmsNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   // CMS Accommodation Modal
@@ -594,6 +596,27 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
             }}
           >
             <Landmark size={14} /> 🏛️ 177 Cagar Budaya &amp; Audio Guide
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSelectSubTab('community_literacy')}
+            style={{
+              padding: '0.5rem 0.95rem',
+              borderRadius: '10px',
+              border: 'none',
+              fontSize: '0.8rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              transition: 'all 0.2s',
+              background: activeTab === 'community_literacy' ? '#081D35' : 'transparent',
+              color: activeTab === 'community_literacy' ? '#F4B75E' : '#64748B',
+              boxShadow: activeTab === 'community_literacy' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
+            }}
+          >
+            <BookOpen size={14} /> 📚 Konten &amp; Literasi Komunitas
           </button>
           <button
             type="button"
@@ -1618,6 +1641,15 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
         </div>
       )}
 
+      {/* TAB: BANK KONTEN & LITERASI KOMUNITAS (MANDAT REYHAN ALBAR FAHRYAN) */}
+      {activeTab === 'community_literacy' && (
+        <CommunityLiteracyHub
+          mode="public_hub"
+          currentUser={currentUser}
+          onOpenQuickLogin={onOpenQuickLogin}
+        />
+      )}
+
       {/* TAB: CMS PUSAT & PENGATURAN TARIF */}
       {activeTab === 'cms' && (
         !canAccessCMS ? (
@@ -1757,6 +1789,26 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 }}
               >
                 <Users size={14} /> Pemandu Wisata ({guides.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setCmsSubTab('community_contents')}
+                style={{
+                  padding: '0.55rem 0.95rem',
+                  borderRadius: '10px',
+                  border: 'none',
+                  fontSize: '0.8rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  background: cmsSubTab === 'community_contents' ? '#081D35' : '#F8FAFC',
+                  color: cmsSubTab === 'community_contents' ? '#F4B75E' : '#64748B',
+                  boxShadow: cmsSubTab === 'community_contents' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
+                }}
+              >
+                <BookOpen size={14} /> Konten &amp; Karya Warga
               </button>
             </div>
           </div>
@@ -2126,6 +2178,15 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 ))}
               </div>
             </div>
+          )}
+
+          {/* SUB-PANEL 3: CMS KONTEN & KARYA WARGA (MANDAT REYHAN ALBAR FAHRYAN) */}
+          {cmsSubTab === 'community_contents' && (
+            <CommunityLiteracyHub
+              mode="cms_manager"
+              currentUser={currentUser}
+              onOpenQuickLogin={onOpenQuickLogin}
+            />
           )}
         </div>
         )

@@ -311,10 +311,30 @@ Documentation of data models, relationships, and constraints for **Banda Digital
   - `migrated_feature_id`: UUID (FK -> spatial_features.id, SET NULL)
   - `created_at`, `updated_at`: TIMESTAMPTZ
 
+### 2.12 Community Content Bank & Digital Literacy CMS (Migration `014_community_contents_table`)
+- **`community_contents`**
+  - `id`: UUID (PK)
+  - `content_code`: VARCHAR(40) (UNIQUE, INDEXED, NOT NULL)
+  - `title`: VARCHAR(200) (NOT NULL)
+  - `slug`: VARCHAR(200) (UNIQUE, INDEXED, NOT NULL)
+  - `content_type`: VARCHAR(30) (INDEXED, NOT NULL) - `ARTICLE`, `PHOTO_GEOTAGGED`, `VIDEO_REELS`, `COMMUNITY_WORK`
+  - `priority_category`: VARCHAR(40) (INDEXED, NOT NULL) - `DESTINASI`, `UMKM`, `RELIGI_KULTURAL`, `LAYANAN_PUBLIK`
+  - `island_name`: VARCHAR(100) (INDEXED, DEFAULT 'Pulau Neira', NOT NULL)
+  - `author_name`: VARCHAR(150) (NOT NULL)
+  - `author_role`: VARCHAR(100) (DEFAULT 'Pokdarwis / Komunitas Lokal', NOT NULL)
+  - `summary`: TEXT (NOT NULL)
+  - `body_narrative`: TEXT (NOT NULL)
+  - `media_url`: VARCHAR(255) (Local path `/images/landmarks/...`)
+  - `latitude`: FLOAT, `longitude`: FLOAT
+  - `sop_stage`: VARCHAR(30) (DEFAULT 'PUBLIKASI', NOT NULL) - `IDE`, `PRODUKSI`, `REVIEW`, `VALIDASI`, `PUBLIKASI`, `ARSIP`
+  - `qc_accuracy`, `qc_language`, `qc_visual`, `qc_adat_ethics`, `qc_source_validated`, `qc_consent_copyright`: BOOLEAN (DEFAULT TRUE, NOT NULL) - 6-Point Quality Checklist
+  - `is_published`: BOOLEAN (INDEXED, DEFAULT TRUE, NOT NULL)
+  - `created_at`, `updated_at`: TIMESTAMPTZ
+
 ---
 
 ## 3. Database Migration Policy
 1. Every schema change must be created via Alembic migrations.
 2. Inspect generated migration files before applying with `alembic upgrade head`.
 3. Never drop tables or columns directly in live environments.
-4. All 12 migrations are tracked deterministically in `backend/migrations/versions/`.
+4. All 14 migrations are tracked deterministically in `backend/migrations/versions/`.

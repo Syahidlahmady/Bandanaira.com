@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react'
-import bandaCinematicVideoBackdrop from '../../assets/image.webp'
+import React, { useState, useEffect, useCallback } from 'react'
 import { NutmegLogoIcon, ArrowUpRightIcon } from './LandingIcons'
 import { ScrollExpand } from '../ui/ScrollExpand'
 import { useLanguage } from '../../context/LanguageContext'
 import LanguageSwitcher from '../common/LanguageSwitcher'
+
+const HERO_IMAGE_URL = '/banda.webp'
 
 export const defaultNavigationItems = [
   { label: 'Beranda', href: '#beranda' },
@@ -36,10 +37,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   const { t } = useLanguage()
   const [internalActiveNav, setInternalActiveNav] = useState<string>('#beranda')
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false)
-  const [scrollProgress, setScrollProgress] = useState<number>(0)
-  const [isMobile, setIsMobile] = useState<boolean>(() =>
-    typeof window !== 'undefined' ? window.innerWidth < 768 : false
-  )
+  const [navVisible, setNavVisible] = useState<boolean>(false)
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return (
+      window.innerWidth < 1024 ||
+      window.matchMedia('(pointer: coarse)').matches ||
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    )
+  })
 
   const navigationItems = [
     { label: t.navbar.navHome, href: '#beranda' },
@@ -55,10 +61,19 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768)
+      const mobile =
+        window.innerWidth < 1024 ||
+        window.matchMedia('(pointer: coarse)').matches ||
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      setIsMobile(mobile)
     }
-    window.addEventListener('resize', handleResize)
+    window.addEventListener('resize', handleResize, { passive: true })
     return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const handleProgressChange = useCallback((p: number) => {
+    const isVisible = p >= 0.85
+    setNavVisible((prev) => (prev !== isVisible ? isVisible : prev))
   }, [])
 
   return (
@@ -70,7 +85,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       {/* 1. FIXED TOP NAVBAR (Hides during resting/expansion, smoothly emerges once fully expanded) */}
       <div
         className={`fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 lg:px-12 pt-3 sm:pt-5 transition-all duration-500 ease-out ${
-          scrollProgress >= 0.85
+          navVisible
             ? 'opacity-100 translate-y-0 pointer-events-auto'
             : 'opacity-0 -translate-y-8 pointer-events-none'
         }`}
@@ -253,24 +268,24 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         )}
       </div>
 
-      {/* 2. SCROLL EXPAND COMPONENT INTEGRATION WITH SEAMLESS AUTOPLAY YOUTUBE BACKDROP */}
+      {/* 2. SCROLL EXPAND COMPONENT INTEGRATION (YouTube for Desktop, Pure Image for Mobile) */}
       <ScrollExpand
-        mediaType="youtube"
-        youtubeId="bVvv6oNiFnw"
-        poster={bandaCinematicVideoBackdrop}
-        src={bandaCinematicVideoBackdrop}
+        mediaType={isMobile ? 'image' : 'youtube'}
+        youtubeId={isMobile ? '' : 'bVvv6oNiFnw'}
+        poster={HERO_IMAGE_URL}
+        src={HERO_IMAGE_URL}
         alt="Pemandangan Banda Neira dari udara dengan laut dan pulau-pulau di sekitarnya"
         useWindowScroll
         startWidth={isMobile ? 70 : 44}
         startHeight={isMobile ? 52 : 58}
         startRadius={isMobile ? 18 : 24}
         endRadius={0}
-        mediaZoom={1.22}
-        scrollDistance={0.75}
-        holdDistance={1.6}
-        smoothing={0.1}
+        mediaZoom={isMobile ? 1.05 : 1.22}
+        scrollDistance={isMobile ? 0.28 : 0.75}
+        holdDistance={isMobile ? 0.05 : 1.6}
+        smoothing={isMobile ? 0 : 0.1}
         overlayScrim={0.4}
-        onProgressChange={setScrollProgress}
+        onProgressChange={handleProgressChange}
         title={
           <div className="w-full flex items-center justify-center text-center pointer-events-none select-none">
             <h2 className="font-sans font-black tracking-[-0.035em] text-white text-[clamp(1.75rem,5.6vw,7.5rem)] leading-none drop-shadow-[0_16px_36px_rgba(0,0,0,0.95)] whitespace-nowrap">

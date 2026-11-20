@@ -6,6 +6,7 @@ from sqlalchemy import (
     Text,
     Numeric,
     Integer,
+    Float,
     Boolean,
     Date,
     ForeignKey,
@@ -88,4 +89,35 @@ class TourGuide(Base, TimestampMixin):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     rating: Mapped[float] = mapped_column(Numeric(3, 2), default=4.9, nullable=False)
     trips_completed: Mapped[int] = mapped_column(Integer, default=12, nullable=False)
+
+
+class CommunityContent(Base, TimestampMixin):
+    """
+    Model Bank Konten Wisata & Karya Peserta Workshop Literasi Digital (Mandat Reyhan Albar Fahryan).
+    Mendukung SOP 6-Tahap Manajemen Konten BST & 6-Point Quality Checklist.
+    """
+    __tablename__ = "community_contents"
+
+    content_code: Mapped[str] = mapped_column(String(40), unique=True, index=True, nullable=False)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    slug: Mapped[str] = mapped_column(String(200), unique=True, index=True, nullable=False)
+    content_type: Mapped[str] = mapped_column(String(30), index=True, nullable=False)
+    priority_category: Mapped[str] = mapped_column(String(40), index=True, nullable=False)
+    island_name: Mapped[str] = mapped_column(String(100), default="Pulau Neira", index=True, nullable=False)
+    author_name: Mapped[str] = mapped_column(String(150), nullable=False)
+    author_role: Mapped[str] = mapped_column(String(100), default="Pokdarwis / Komunitas Lokal", nullable=False)
+    summary: Mapped[str] = mapped_column(Text, nullable=False)
+    body_narrative: Mapped[str] = mapped_column(Text, nullable=False)
+    media_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    longitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    sop_stage: Mapped[str] = mapped_column(String(30), default="PUBLIKASI", nullable=False)
+    qc_accuracy: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    qc_language: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    qc_visual: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    qc_adat_ethics: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    qc_source_validated: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    qc_consent_copyright: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_published: Mapped[bool] = mapped_column(Boolean, default=True, index=True, nullable=False)
+
 

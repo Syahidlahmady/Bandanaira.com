@@ -162,6 +162,18 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
       lg: { left: '62%', top: '54%', z: -2050 },
     },
   },
+  {
+    id: 'pohon-sejuta-umat',
+    src: '/images/landmarks/pohon-sejuta-umat.webp',
+    alt: 'Pohon Sejuta Umat & Gunung Api Banda',
+    positions: {
+      xxs: { left: '10%', top: '42%', z: -1950 },
+      xs: { left: '12%', top: '42%', z: -1950 },
+      sm: { left: '14%', top: '42%', z: -2020 },
+      md: { left: '16%', top: '40%', z: -2140 },
+      lg: { left: '18%', top: '38%', z: -2240 },
+    },
+  },
 ]
 
 export const BANDA_3D_ORNAMENTS: OrnamentItem[] = [
@@ -251,6 +263,7 @@ const PhotoCard = memo(({ item, breakpoint, registerElement }: PhotoCardProps) =
           height={220}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           loading="lazy"
+          decoding="async"
         />
       </div>
     </div>
@@ -286,6 +299,7 @@ const OrnamentCard = memo(({ item, breakpoint, registerElement }: OrnamentCardPr
         alt={item.alt}
         className="w-full h-full object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.6)]"
         loading="lazy"
+        decoding="async"
       />
     </div>
   )
@@ -326,7 +340,7 @@ export const Banda3DPhotoGallery: React.FC = () => {
   }, [])
 
   // Scroll effect driving 3D Z-flythrough and Depth-of-Field Blur (Reflow-free)
-  const cachedBoundsRef = useRef({ activeStart: 0, activeEnd: 0, speedMultiplier: 1.2 })
+  const cachedBoundsRef = useRef({ activeStart: 0, activeEnd: 0, speedMultiplier: 1.2, isMobileDevice: false })
 
   useEffect(() => {
     const measureBounds = () => {
@@ -335,12 +349,13 @@ export const Banda3DPhotoGallery: React.FC = () => {
       const scrollY = window.scrollY
       const sectionTop = rect.top + scrollY
       const isMobile = window.innerWidth < 1024
-      const travelPadding = isMobile ? 250 : 200
+      const isMobileDevice = window.innerWidth < 768
+      const travelPadding = isMobile ? 150 : 200
       const activeStart = sectionTop - travelPadding
       const totalHeight = sectionRef.current.offsetHeight
-      const activeEnd = sectionTop + totalHeight - (isMobile ? 1000 : 900)
-      const speedMultiplier = isMobile ? 1.6 : 1.2
-      cachedBoundsRef.current = { activeStart, activeEnd, speedMultiplier }
+      const activeEnd = sectionTop + totalHeight - (isMobile ? 550 : 900)
+      const speedMultiplier = isMobile ? 2.8 : 1.2
+      cachedBoundsRef.current = { activeStart, activeEnd, speedMultiplier, isMobileDevice }
     }
 
     measureBounds()
@@ -361,7 +376,15 @@ export const Banda3DPhotoGallery: React.FC = () => {
         if (Math.abs(scrollY - lastScrollYRef.current) < 0.5) return
         lastScrollYRef.current = scrollY
 
-        const { activeStart, activeEnd, speedMultiplier } = cachedBoundsRef.current
+        const { activeStart, activeEnd, speedMultiplier, isMobileDevice } = cachedBoundsRef.current
+
+        // Fast bail-out when offscreen
+        if (scrollY < activeStart - 500 || scrollY > activeEnd + 500) {
+          if (section.style.visibility !== 'hidden') section.style.visibility = 'hidden'
+          return
+        }
+        if (section.style.visibility !== 'visible') section.style.visibility = 'visible'
+
         const isActive = scrollY >= activeStart && scrollY <= activeEnd
         const progressDist = Math.max(0, scrollY - activeStart)
 
@@ -377,31 +400,42 @@ export const Banda3DPhotoGallery: React.FC = () => {
             currentZ = initialZ + speedMultiplier * (activeEnd - activeStart)
           }
 
-          currentZ = Math.round(currentZ * 100) / 100
+          currentZ = Math.round(currentZ * 10) / 10
 
-          // Apply 3D translate
+          // Viewport depth culling: hide elements past the viewer or far in distance to reduce GPU draw calls
+          const isOutOfView = currentZ > 560 || currentZ < -2600
+          if (isOutOfView) {
+            if (el.style.display !== 'none') el.style.display = 'none'
+            continue
+          } else {
+            if (el.style.display !== '') el.style.display = ''
+          }
+
+          // Apply 3D translate (GPU composite property)
           el.style.transform = `translate3d(0, 0, ${currentZ}px)`
 
-          // Dynamic depth-of-field blur & opacity
+          // Opacity calculations (GPU composite property)
           if (currentZ < -400) {
-            el.style.filter = 'blur(8px)'
             el.style.opacity = '0.45'
           } else if (currentZ < -200) {
-            const b = Math.min((Math.abs(currentZ) / 400) * 4, 4)
-            el.style.filter = `blur(${b.toFixed(1)}px)`
             el.style.opacity = '0.75'
           } else if (currentZ < 0) {
-            const b = Math.min((Math.abs(currentZ) / 200) * 2, 2)
-            el.style.filter = `blur(${b.toFixed(1)}px)`
             el.style.opacity = '0.95'
           } else {
-            el.style.filter = 'blur(0px)'
-            // Fade out gracefully as it flies past camera
             if (currentZ > 420) {
               const fade = Math.max(0, 1 - (currentZ - 420) / 160)
               el.style.opacity = `${fade.toFixed(2)}`
             } else {
               el.style.opacity = '1'
+            }
+          }
+
+          // Discrete depth-of-field blur only on desktop (cached texture, eliminates GPU jank)
+          if (!isMobileDevice) {
+            if (currentZ < -350) {
+              el.style.filter = 'blur(4px)'
+            } else {
+              el.style.filter = 'none'
             }
           }
         }
@@ -443,8 +477,8 @@ export const Banda3DPhotoGallery: React.FC = () => {
       aria-label="Kompilasi Galeri Foto Banda Neira"
       className="relative z-10 w-full bg-[#081d35]"
     >
-      {/* Scroll track with generous height for smooth 3D perspective flythrough */}
-      <div className="relative z-10 h-[2600px] w-full lg:h-[3500px]">
+      {/* Scroll track with generous height on desktop and mobile-optimized height */}
+      <div className="relative z-10 h-[1350px] w-full lg:h-[3500px]">
         {/* Sticky viewport stage with true 3D perspective */}
         <div
           className="sticky top-0 h-[100dvh] min-h-[100dvh] w-full overflow-hidden flex items-center justify-center"

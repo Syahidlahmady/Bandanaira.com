@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import './ScrollExpand.css'
 
 const clamp = (v: number, a: number, b: number) => (v < a ? a : v > b ? b : v)
@@ -113,29 +113,52 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     const ix = Math.max(0, (100 - w) / 2)
     const iy = Math.max(0, (100 - h) / 2)
     const r = c.startRadius + (c.endRadius - c.startRadius) * e
-    frame.style.clipPath = `inset(${iy}% ${ix}% ${iy}% ${ix}% round ${r}px)`
+
+    if (p >= 0.999) {
+      frame.style.clipPath = 'none'
+    } else {
+      frame.style.clipPath = `inset(${iy}% ${ix}% ${iy}% ${ix}% round ${r}px)`
+    }
 
     media.style.transform = `scale(${c.mediaZoom + (1 - c.mediaZoom) * e})`
 
     if (scrimRef.current) scrimRef.current.style.opacity = `${c.overlayScrim * e}`
 
     if (titleRef.current) {
-      const out = smoothstep(0.2, 0.7, p)
-      titleRef.current.style.opacity = `${1 - out}`
-      titleRef.current.style.transform = `translate3d(0, ${-28 * out}px, 0) scale(${1 + 0.05 * out})`
+      if (p >= 0.75) {
+        if (titleRef.current.style.visibility !== 'hidden') titleRef.current.style.visibility = 'hidden'
+      } else {
+        if (titleRef.current.style.visibility !== 'visible') titleRef.current.style.visibility = 'visible'
+        const out = smoothstep(0.2, 0.7, p)
+        titleRef.current.style.opacity = `${1 - out}`
+        titleRef.current.style.transform = `translate3d(0, ${-28 * out}px, 0) scale(${1 + 0.05 * out})`
+      }
     }
 
     if (hintRef.current) {
-      const gone = smoothstep(0, 0.12, p)
-      hintRef.current.style.opacity = `${1 - gone}`
-      hintRef.current.style.transform = `translate3d(0, ${8 * gone}px, 0)`
+      if (p >= 0.15) {
+        if (hintRef.current.style.visibility !== 'hidden') hintRef.current.style.visibility = 'hidden'
+      } else {
+        if (hintRef.current.style.visibility !== 'visible') hintRef.current.style.visibility = 'visible'
+        const gone = smoothstep(0, 0.12, p)
+        hintRef.current.style.opacity = `${1 - gone}`
+        hintRef.current.style.transform = `translate3d(0, ${8 * gone}px, 0)`
+      }
     }
 
     if (overlayRef.current) {
-      const inn = smoothstep(0.7, 1, p)
-      overlayRef.current.style.opacity = `${inn}`
-      overlayRef.current.style.transform = `translate3d(0, ${18 * (1 - inn)}px, 0)`
-      overlayRef.current.style.pointerEvents = p >= 0.75 ? 'auto' : 'none'
+      if (p <= 0.65) {
+        if (overlayRef.current.style.visibility !== 'hidden') {
+          overlayRef.current.style.visibility = 'hidden'
+          overlayRef.current.style.pointerEvents = 'none'
+        }
+      } else {
+        if (overlayRef.current.style.visibility !== 'visible') overlayRef.current.style.visibility = 'visible'
+        const inn = smoothstep(0.7, 1, p)
+        overlayRef.current.style.opacity = `${inn}`
+        overlayRef.current.style.transform = `translate3d(0, ${18 * (1 - inn)}px, 0)`
+        overlayRef.current.style.pointerEvents = p >= 0.75 ? 'auto' : 'none'
+      }
     }
   }, [])
 
@@ -148,20 +171,35 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     let raf = 0
+    let scrollRaf = 0
+    let lastProgress = -1
     let current = 0
     let target = 0
     let stageH = 0
+    let totalTrackH = 0
     let running = false
+
+    let trackTop = 0
 
     const measure = () => {
       const c = propsRef.current
-      stageH = c.useWindowScroll ? window.innerHeight : root.clientHeight
-      if (stageH <= 0) return
-      stage.style.height = `${stageH}px`
-      track.style.height = `${stageH * (1 + Math.max(0, c.scrollDistance) + Math.max(0, c.holdDistance))}px`
+      const windowH = window.innerHeight
+      const clientH = root.clientHeight
+      const currentStageH = c.useWindowScroll ? windowH : clientH
+      if (currentStageH <= 0) return
 
-      const w = root.clientWidth || stageH
-      stage.style.setProperty('--se-title-size', `${clamp(w * 0.055, 24, 76)}px`)
+      // BATCH ALL DOM READS FIRST (Avoid Forced Synchronous Layout / Forced Reflow)
+      const rect = track.getBoundingClientRect()
+      const clientW = root.clientWidth || currentStageH
+
+      stageH = currentStageH
+      trackTop = rect.top + window.scrollY
+      totalTrackH = currentStageH * (1 + Math.max(0, c.scrollDistance) + Math.max(0, c.holdDistance))
+
+      // BATCH ALL DOM WRITES AFTER
+      stage.style.height = `${currentStageH}px`
+      track.style.height = `${totalTrackH}px`
+      stage.style.setProperty('--se-title-size', `${clamp(clientW * 0.055, 24, 76)}px`)
     }
 
     const readProgress = () => {
@@ -169,7 +207,7 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
       if (!c.enabled) return 1
       const span = stageH * Math.max(0.01, c.scrollDistance)
       if (c.useWindowScroll) {
-        const top = track.getBoundingClientRect().top
+        const top = trackTop - window.scrollY
         return clamp(-top / span, 0, 1)
       }
       return clamp(root.scrollTop / span, 0, 1)
@@ -194,13 +232,29 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     }
 
     const onScroll = () => {
-      target = readProgress()
-      if (propsRef.current.smoothing <= 0 || reduceMotion) {
-        current = target
-        applyProgress(current)
-        return
-      }
-      kick()
+      if (cRefScrollOffscreen()) return
+      if (scrollRaf) return
+      scrollRaf = requestAnimationFrame(() => {
+        scrollRaf = 0
+        const p = readProgress()
+        target = p
+
+        if (Math.abs(p - lastProgress) < 0.001) return
+        lastProgress = p
+
+        if (propsRef.current.smoothing <= 0 || reduceMotion) {
+          current = target
+          applyProgress(current)
+          return
+        }
+        kick()
+      })
+    }
+
+    const cRefScrollOffscreen = () => {
+      if (!useWindowScroll) return false
+      const sy = window.scrollY
+      return sy > trackTop + totalTrackH + 400
     }
 
     const onResize = () => {
@@ -221,37 +275,64 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
 
     return () => {
       if (raf) cancelAnimationFrame(raf)
+      if (scrollRaf) cancelAnimationFrame(scrollRaf)
       scroller.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onResize)
     }
   }, [applyProgress, useWindowScroll])
 
-  const isYoutube = mediaType === 'youtube' || mediaType === 'iframe' || Boolean(youtubeId)
+  // Dynamic desktop viewport state: rigorously ensures YouTube iframe is NEVER rendered on mobile
+  const [isDesktopClient, setIsDesktopClient] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.innerWidth >= 1024 : false
+  )
+  const [iframeReady, setIframeReady] = useState<boolean>(false)
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktopClient(window.innerWidth >= 1024)
+    }
+    window.addEventListener('resize', handleResize, { passive: true })
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  useEffect(() => {
+    if (isDesktopClient && (mediaType === 'youtube' || mediaType === 'iframe') && Boolean(youtubeId)) {
+      // Defer desktop iframe load to ensure LCP image renders with 0ms Total Blocking Time
+      const timer = setTimeout(() => setIframeReady(true), 600)
+      return () => clearTimeout(timer)
+    } else {
+      setIframeReady(false)
+    }
+  }, [isDesktopClient, mediaType, youtubeId])
+
+  const isYoutube = isDesktopClient && (mediaType === 'youtube' || mediaType === 'iframe') && Boolean(youtubeId)
 
   const media = isYoutube ? (
     <div
       ref={mediaRef as React.RefObject<HTMLDivElement>}
       className="scroll-expand__media scroll-expand__youtube-wrap"
     >
-      {poster || src ? (
-        <img
-          src={poster || src}
-          alt={alt}
-          width={1440}
-          height={802}
-          {...({ fetchpriority: 'high' } as any)}
-          decoding="async"
-          className="absolute inset-0 w-full h-full object-cover -z-10"
-          draggable={false}
-        />
-      ) : null}
-      <iframe
-        className="scroll-expand__youtube-iframe"
-        src={`https://www.youtube-nocookie.com/embed/${youtubeId || 'bVvv6oNiFnw'}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId || 'bVvv6oNiFnw'}&playsinline=1&rel=0&disablekb=1&modestbranding=1&iv_load_policy=3&showinfo=0&fs=0`}
-        title="Banda Neira Aerial Video Backdrop"
-        allow="autoplay; encrypted-media; picture-in-picture"
-        tabIndex={-1}
+      <img
+        src={poster || src || '/banda.webp'}
+        srcSet="/banda-mobile.webp 800w, /banda.webp 1920w"
+        sizes="(max-width: 768px) 100vw, 1920px"
+        alt={alt}
+        width={1920}
+        height={1106}
+        {...({ fetchpriority: 'high' } as any)}
+        decoding="async"
+        className="absolute inset-0 w-full h-full object-cover -z-10"
+        draggable={false}
       />
+      {iframeReady && (
+        <iframe
+          className="scroll-expand__youtube-iframe"
+          src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&playsinline=1&rel=0&disablekb=1&modestbranding=1&iv_load_policy=3&showinfo=0&fs=0`}
+          title="Banda Neira Aerial Video Backdrop"
+          allow="autoplay; encrypted-media; picture-in-picture"
+          tabIndex={-1}
+        />
+      )}
     </div>
   ) : mediaType === 'video' ? (
     <video
@@ -268,8 +349,14 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     <img
       ref={mediaRef as React.RefObject<HTMLImageElement>}
       className="scroll-expand__media"
-      src={src}
+      src={src || poster || '/banda.webp'}
+      srcSet="/banda-mobile.webp 800w, /banda.webp 1920w"
+      sizes="(max-width: 768px) 100vw, 1920px"
       alt={alt}
+      width={1920}
+      height={1106}
+      {...({ fetchpriority: 'high' } as any)}
+      decoding="async"
       draggable={false}
     />
   )

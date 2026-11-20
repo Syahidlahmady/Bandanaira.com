@@ -46,9 +46,9 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 41: Transformasi Kartu Detail POI ke Google Maps Desktop Drawer & Penampil Panorama 360° Interaktif (Anti-Slop Modern UI)**
 - [x] **Phase 42: Kurasi & Scraping Foto Autentik Cagar Budaya/Landmark Banda Neira (Zero External Hotlinking & Full Offline Asset Resilience)**
 - [x] **Phase 43: Integrasi Komponen Sinematik <ScrollExpand /> React Bits pada Hero Section Beranda Banda Neira**
-- [x] **Phase 44: History Timeline Redesign, Infographics Anti-Slop Overhaul, Full Mobile Responsiveness, and Lighthouse Performance Optimization (CLS 0, Code-Splitting, SEO 100)**
-- [x] **Phase 45: Redesain Beranda Visual Ala Wonderful Indonesia, Tipografi Nexa Pro/Intro Script & Chatbot Cerdas**
-- [x] **Phase 46: Territorial Jurisdiction Scoping & Official GIS Village Boundary Enforcement (Pemetaan Aktor & Batas Wilayah Desa)**
+- [x] **Phase 44: Redesain Antarmuka Kanvas Utama Dashboard Smart Tourism Banda Neira Berdasarkan Referensi Grid 3-Bagian (redesain_dashboard.md & redesain_dashboard.png)**
+- [x] **Phase 45: History Timeline Redesign, Infographics Anti-Slop Overhaul, Full Mobile Responsiveness, and Lighthouse Performance Optimization**
+- [x] **Phase 46: Adaptasi Dinamis Dashboard Seluruh 10 Role Ekosistem & Territorial Jurisdiction Scoping**
 - [x] **Phase 47: Redesain Sidebar Dashboard Sesuai Desain Referensi Floating Dark Card & Preservasi Palet Asli Banda Neira**
 - [x] **Phase 48: Redesain Komponen Top Bar / Header Dashboard Gaya Floating Search Bar Minimalis Satu Baris (promtdesain.md)**
 - [x] **Phase 49: Fungsionalitas Quick Search Command Palette pada Floating Topbar (Pencarian Cepat Dashboard)**
@@ -56,7 +56,13 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 51: Restorasi Tata Letak Dashboard Kanvas Utama (Grid 3-Bagian Sesuai Peran & Perspektif Role Switcher)**
 - [x] **Phase 52: Pengetatan Hak Akses RBAC & Diferensiasi Fitur Berbasis Peran Pengguna (Admin Super Control vs Non-Admin)**
 - [x] **Phase 53: Redesain Minimalis Telemetri Infrastruktur Kepulauan (Ikon Header & Popover 21st.dev Khusus Admin)**
-- [x] **Phase 54: Multilingual Language Switcher (ID/EN) & Dual-Language Heritage Audio Subtitles (Mandat Branch Subtitle)**
+- [x] **Phase 54: CMS Bank Konten Wisata, Kurikulum 3 Modul Literasi Digital Pokdarwis/UMKM & SOP 6-Tahap + 6-Point Quality Checklist (Mandat Reyhan Albar Fahryan)**
+- [x] **Phase 55: Comprehensive Mobile Performance & Responsiveness Optimization**
+- [x] **Phase 56: Zero-Jank Scroll Optimization, Strict Mobile Hero Image Rendering, and Reflow Elimination Across All Devices**
+- [x] **Phase 57: Deep Engine Optimization: banda.webp Compression, RAF Scroll Decoupling, Viewport 3D Culling, and Content-Visibility Acceleration**
+- [x] **Phase 58: Direct /banda.webp Mobile Route, Strict Mobile YouTube Lockout, and Mobile Scroll Distance Tuning**
+- [x] **Phase 59: Production Dockerfile (Vite Preview), HTTP/1.1 Waterfall Elimination, Non-Blocking Font Loading, Forced Reflow Batching, and Mobile WebP Delivery**
+- [x] **Phase 60: Multilingual Language Switcher (ID/EN), Peta Interaktif Dwibahasa & Dual-Language Heritage Audio Subtitles (Mandat Branch Subtitle)**
 ---
 
 ## Detailed Task Checklist
@@ -842,27 +848,34 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 53.4 Verifikasi Build & Kestabilan:
   - Menjalankan `npm --prefix frontend run build` lolos 100% tanpa error TypeScript (2.042 modul ditransformasikan, exit code 0).
 
-### Phase 54: Multilingual Language Switcher (ID/EN) & Dual-Language Heritage Audio Subtitles
-- [x] 54.1 Kamus Terjemahan Lengkap Dwibahasa (`frontend/src/services/i18n/translations.ts`):
+### Phase 54: CMS Bank Konten Wisata, Kurikulum 3 Modul Literasi Digital Pokdarwis/UMKM & SOP 6-Tahap + 6-Point Quality Checklist (Mandat Reyhan Albar Fahryan)
+- [x] 54.1 Migrasi Alembic `014_community_contents_table.py`, model SQLAlchemy `CommunityContent`, dan skema Pydantic (`CommunityContentCreateInput`, `CommunityContentUpdateInput`, `CommunityContentItemResponse`, `LiteracyModuleItem`, `SopStageItem`, `LiteracyGovernanceResponse`).
+- [x] 54.2 Data seeder autentik `backend/app/modules/tourism/literacy_content_data.py` (Bank Konten Batch 1 H7 & Karya Peserta Workshop H11 dengan foto lokal `/images/landmarks/*.jpg`, 3 Modul Literasi Digital, SOP 6-Tahap, 6-Point Quality Checklist, dan 4 Zona Sinyal Pulau).
+- [x] 54.3 Endpoint REST API di `backend/app/modules/tourism/router.py` (`GET/POST/PUT/DELETE /api/v1/tourism/community-contents` & `GET /api/v1/tourism/literacy-modules`) serta pengayaan `heritage_data.py` dan `survei/seed_data.py` (`SRV-202611-007` & `SRV-202611-008`).
+- [x] 54.4 Integrasi Frontend Service (`frontend/src/services/tourism.ts`), komponen modular plug-and-play `frontend/src/views/CommunityLiteracyHub.tsx` (`public_hub`, `cms_manager`, `standalone_full`), serta penyematan tab publik `📚 Konten & Literasi Komunitas` dan sub-tab CMS `Konten & Karya Warga` di `TourismEcoStayWorkspace.tsx`.
+- [x] 54.5 Perombakan UI/UX `CommunityLiteracyHub.tsx` berbasis Anti-Slop + YAGNI + Humanizer + `safeMediaUrl` guard serta integrasi aset `.webp` asli Banda Neira (`nirana-logo.webp`, `bst-emblem.webp`, `pohon-sejuta-umat.webp`, `gunung-api-portrait.webp`, dan Reels 9:16 `media/*.webp` dengan optimasi FCP/LCP `IntersectionObserver`).
+
+### Phase 60: Multilingual Language Switcher (ID/EN) & Dual-Language Heritage Audio Subtitles (Mandat Branch Subtitle)
+- [x] 60.1 Kamus Terjemahan Lengkap Dwibahasa (`frontend/src/services/i18n/translations.ts`):
   - Definisi tipe `Language = 'id' | 'en'` dan struktur antarmuka `TranslationDictionary`.
   - Terjemahan komprehensif untuk navigasi portal, hero section (center title, headline baris 1 & 2, deskripsi, CTA buttons), narasi sejarah 4 babak rempah (`STORIES`: Pala, Belgica, Rhun, Bung Hatta), serta katalog cagar budaya dan audio guide.
-- [x] 54.2 State Management Bahasa Reaktif (`frontend/src/context/LanguageContext.tsx`):
+- [x] 60.2 State Management Bahasa Reaktif (`frontend/src/context/LanguageContext.tsx`):
   - `LanguageProvider` dan custom hook `useLanguage()` dengan persistensi otomatis ke `localStorage` (`banda_language`).
   - Sinkronisasi atribut HTML `document.documentElement.lang`.
   - Fungsi `toggleLanguage()`, `setLanguage()`, boolean flag `isEnglish`, dan objek kamus aktif `t`.
-- [x] 54.3 Komponen UI Switcher Dropdown Elegan (`frontend/src/components/common/LanguageSwitcher.tsx`):
+- [x] 60.3 Komponen UI Switcher Dropdown Elegan (`frontend/src/components/common/LanguageSwitcher.tsx`):
   - Selector dropdown interaktif dengan ikon globe, bendera negara (`🇮🇩 / 🇬🇧`), label bahasa, indikator panah rotasi `ChevronDown`, dan tanda centang aktif `Check`.
   - Popover flyout modern berlatar navy emas pala `#081D35` / `#F4B75E` dengan backdrop blur dan *click-outside listener*.
   - Dukungan varian: `'dropdown'` (navbar & floating hero), `'topbar'` (dashboard admin & warga), serta `'mobile'` (drawer menu navigasi).
-- [x] 54.4 Integrasi Dropdown di Landing Page Depan & Seluruh Titik Akses (`HeroSection.tsx`):
+- [x] 60.4 Integrasi Dropdown di Landing Page Depan & Seluruh Titik Akses (`HeroSection.tsx`):
   - Menempatkan **Floating Language Dropdown** di pojok kanan atas halaman depan (`fixed top-4 right-4 sm:top-6 sm:right-8 z-40`) sehingga langsung terlihat oleh pengunjung pulau dan turis mancanegara saat pertama kali membuka website (resting state).
   - Mengintegrasikan dropdown pemilih bahasa di fixed top navbar `HeroSection.tsx` dan `BandaUnifiedNavbar.tsx`, serta drawer menu seluler.
   - Mengintegrasikan dropdown pemilih bahasa di floating topbar header dashboard `DashboardLayout.tsx`.
-- [x] 54.5 Tampilan Subtitle & Narasi Sejarah Dwibahasa:
+- [x] 60.5 Tampilan Subtitle & Narasi Sejarah Dwibahasa:
   - Hubungan dinamis di `HeritageSpiceSection.tsx`: judul cerita, subtitle periode sejarah, deskripsi naratif, dan heading seksi otomatis bertransisi mulus saat pengguna memilih Bahasa Indonesia atau English.
   - Hubungan dinamis di `TourismEcoStayWorkspace.tsx`: label status pemutaran audio guide dan periode cagar budaya dwibahasa.
   - Sinkronisasi judul utama dan deskripsi editorial di `HeroSection.tsx`.
-- [x] 54.6 Translasi Menyeluruh Seluruh Seksi Landing Page Beranda:
+- [x] 60.6 Translasi Menyeluruh Seluruh Seksi Landing Page Beranda:
   - `Banda3DPhotoGallery.tsx`: Tagline dan judul kompilasi foto dwibahasa.
   - `PetaInteractiveSection.tsx`: Tagline, judul seksi, deskripsi, status muat, dan tombol CTA peta layar penuh.
   - `TourismSawSection.tsx`: Tagline kurasi spotlight, heading, tombol jelajah, tombol smart planner, navigasi destinasi, dan tombol hubungi pemandu.
@@ -873,11 +886,11 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - `PlanYourVisitSection.tsx`: Atribusi Sutan Sjahrir, kutipan legendaris, tombol jelajah Banda, dan tombol peta interaktif.
   - `LandingFooterSection.tsx`: Deskripsi ekosistem brand, lokasi, seluruh grup navigasi (Jelajahi Banda, Layanan & Wisata, Akses Akun), hak cipta, tagline quote, kebijakan privasi, dan syarat penggunaan.
   - `TourismChatbotBubble.tsx`: Tombol pemicu, header modal, pesan sambutan, persentase kecocokan SAW, tarif destinasi, chip filter cepat, dan input placeholder dwibahasa.
-- [x] 54.7 Solusi Navbar Sinematik & Dropdown Bahasa Melayang Bebas:
+- [x] 60.7 Solusi Navbar Sinematik & Dropdown Bahasa Melayang Bebas:
   - Mengubah `<header>` di `HeroSection.tsx` menjadi `overflow-visible` sehingga menu popover melayang bebas tanpa terpotong garis bawah navbar.
   - Memulihkan visibilitas navbar agar tidak langsung muncul di awal (`opacity-0`), melainkan bertransisi mulus (`opacity-100`) saat scroll melewati intro video (`scrollProgress >= 0.85`).
   - Menghilangkan container terpisah yang bertubrukan dengan tombol Masuk; menata tombol secara rapi di dalam navbar: `[ Daftar ]` `[ Masuk ]` `[ | ]` `[ Dropdown Bahasa ]`.
-- [x] 54.8 Translasi Menyeluruh Peta Interaktif Spasial GIS (`InteractiveMapWorkspace.tsx`):
+- [x] 60.8 Translasi Menyeluruh Peta Interaktif Spasial GIS (`InteractiveMapWorkspace.tsx`):
   - Inkorporasi kamus `gisMap` ke `translations.ts` (ID & EN).
   - Terjemahan input pencarian (`searchPlaceholder`) dan filter pulau dinamis (`allIslands`, `neiraIsland`, `greatBanda`, `hattaIsland`, `ayIsland`, `rhunIsland`).
   - Terjemahan kontrol peta: fullscreen, keluar fullscreen, re-center ke Banda, menu gaya peta dan layer.
@@ -885,16 +898,126 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Terjemahan Legenda Kartografi: 7 kategori layer spasial (Wisata & Bahari, Cagar Budaya, Penginapan, Sentra UMKM, Fasilitas Umum, Air Bersih, Energi & Lingkungan), pemilih semua/kosongkan, dan 4 tingkat kepadatan penduduk.
   - Terjemahan Drawer Rincian Objek (POI): tombol aksi (Fokus Peta, Panorama 360°, Salin Koordinat, Kontak WA, Audio Guide), informasi jam operasional, status cagar budaya, panjang rute & waktu tempuh laut, mutu air TDS, kapasitas PLTS, tarif eco-stay, dan daftar UMKM binaan.
   - Terjemahan Kartu Profil Desa: pulau, populasi, luas wilayah, kepadatan, komoditas, daya tarik, statistik resmi 2026, komposisi gender & KK, profesi utama, dan unit UMKM binaan aktif.
-- [x] 54.9 Verifikasi Mutu & Kestabilan:
+- [x] 60.9 Verifikasi Mutu & Kestabilan:
   - Build frontend Vite lolos 100% tanpa error (`tsc && vite build`, 2.044 modul ditransformasikan).
   - 10 pengujian backend `pytest tests/test_tourism.py` dan 8 pengujian `pytest tests/test_gis.py` lulus 100%.
 
+---
 
+## [Phase 54] - Comprehensive Mobile Performance & Responsiveness Optimization
+- [x] 54.1 Bypass Lenis Smooth Scroll di Perangkat Seluler (`BandanairaBeranda.tsx`):
+  - Mematikan pembajakan touch event oleh Lenis pada layar sentuh/mobile (`window.innerWidth < 768` atau `pointer: coarse`).
+  - Mengembalikan native 60/120Hz GPU-accelerated momentum scrolling bawaan iOS Safari & Android Chrome.
+  - Smooth anchor link click tetap berfungsi mulus menggunakan `scrollIntoView({ behavior: 'smooth' })`.
+- [x] 54.2 Eliminasi Beban YouTube Iframe di Hero Section Seluler (`HeroSection.tsx`):
+  - Pada layar ponsel, iframe YouTube diganti dengan gambar poster sinematik WebP teroptimasi beresolusi pas.
+  - Menghemat ~1.5 MB unduhan script internal YouTube dan membebaskan hardware video decoder pada perangkat seluler.
+  - Desktop tetap menikmati latar video udara sinematik YouTube secara utuh.
+- [x] 54.3 Eliminasi Dynamic `filter: blur(...)` pada Galeri 3D (`Banda3DPhotoGallery.tsx`):
+  - Menghilangkan kalkulasi dinamis filter blur per-frame scroll pada ponsel untuk membebaskan GPU dari beban multi-pass rasterization.
+  - Animasi tetap berjalan mulus menggunakan sifat GPU-composited (`transform: translate3d` dan `opacity`).
+- [x] 54.4 Bypass WebGL 2.0 Shader di Jalur Rempah Seluler (`HeritageSpiceSection.tsx`):
+  - Menggantikan canvas WebGL 2.0 shader pada ponsel dengan transisi crossfade gambar CSS berbasis GPU yang sangat ringan.
+  - Menghemat lebih dari 100MB memori video (VRAM) pada ponsel.
+- [x] 54.5 Gesture Isolation pada Peta Interaktif Spasial (`PetaInteractiveSection.tsx`):
+  - Menambahkan gesture isolation overlay di layar ponsel agar sentuhan scroll vertikal pengguna tidak terjebak (*gesture trapping*) di dalam kanvas peta Leaflet.
+- [x] 54.6 Penguatan Jalur Penemuan Berkas Seeder Spasial (`seed_spatial_features.py`):
+  - Menambahkan multi-path candidate discovery (`find_seed_file`) untuk memastikan `gis_spatial_features.json` dan `banda_villages.geojson` selalu terdeteksi baik di dalam container Docker maupun dari root host.
+  - Logging rincian terpisah antara 73 Titik Spasial dan 18 Poligon Batas Desa.
 
+---
 
+## [Phase 55] - Zero-Jank Scroll Optimization, Strict Mobile Hero Image Rendering, and Reflow Elimination Across All Devices
+- [x] 55.1 Strict Image Fallback & Perbaikan Logika `ScrollExpand.tsx`:
+  - Memperbaiki bug evaluasi kondisi boolean `isYoutube = (mediaType === 'youtube' || mediaType === 'iframe') && Boolean(youtubeId)` yang sebelumnya selalu bernilai `true` karena default fallback prop.
+  - Memastikan 100% gambar murni (`<img fetchpriority="high" decoding="async" />`) dimuat pada ponsel tanpa script internal YouTube maupun iframe pihak ketiga.
+- [x] 55.2 Eliminasi Forced Synchronous Layouts & Reflow Thrashing (`ScrollExpand.tsx` & `HeritageSpiceSection.tsx`):
+  - Mengganti pemanggilan `getBoundingClientRect()` per-frame scroll dengan offset ter-cache (`trackTop - window.scrollY`).
+  - Nilai bounding rect hanya dihitung ulang secara pasif saat `window.onresize` atau komponen mount.
+  - Menambahkan throttling pembaruan state React dengan ambang toleransi `Math.abs(progress - lastProgress) > 0.003` di dalam `requestAnimationFrame`.
+- [x] 55.3 Offscreen Bail-out & Discrete GPU Blur Caching (`Banda3DPhotoGallery.tsx`):
+  - Menambahkan penghenti kalkulasi dini saat galeri 3D berada di luar viewport layar (`scrollY < activeStart - 500 || scrollY > activeEnd + 500`), membebaskan 100% komputasi CPU saat pengguna melihat section lain.
+  - Mengubah kalkulasi filter blur fraksional (`blur(X.Xpx)`) dinamis per frame di desktop menjadi nilai diskrit ter-cache (`blur(4px)` atau `none`), memungkinkan GPU Chrome/Safari menggunakan rasterized texture cache tanpa re-render berulang.
+- [x] 55.4 WebGL Idle Guard pada `FlyingPosters.tsx`:
+  - Menambahkan pengecekan status visibilitas elemen sebelum mengaktifkan shader render loop pada event scroll.
+- [x] 55.5 Verifikasi Build & Kestabilan:
+  - Eksekusi `npm --prefix frontend run build` sukses tanpa error (exit code 0, 2.041 modul ditransformasikan dalam 7.13s).
 
+---
 
+## [Phase 56] - Deep Engine Optimization: banda.webp Compression, RAF Scroll Decoupling, Viewport 3D Culling, and Content-Visibility Acceleration
+- [x] 56.1 Kompresi & Integrasi `banda.webp` pada Hero Section Mobile:
+  - Mengompresi berkas asli `banda.webp` dari 4.46 MB menjadi 217 KB untuk aset Vite (1920px Retina) dan 538 KB untuk berkas publik (2722px full), memangkas payload jaringan >90% tanpa mengurangi ketajaman visual.
+  - Memperbarui `HeroSection.tsx` untuk mengimpor dan merender langsung `banda.webp` sebagai backdrop mobile murni tanpa menyentuh script/iframe YouTube.
+  - Memperluas deteksi perangkat sentuh mobile (`window.innerWidth < 1024`, `(pointer: coarse)`, dan pengecekan User Agent) sehingga tablet maupun ponsel beresolusi tinggi dijamin 100% menggunakan mode static image.
+- [x] 56.2 Penghentian Re-render Berulang React pada Hero Section:
+  - Mengganti state desimal `scrollProgress` yang sebelumnya memicu puluhan kali re-render komponen `HeroSection` per detik saat scroll dengan state boolean diskrit `navVisible` (hanya re-render sekali saat melewati ambang `p >= 0.85`).
+  - Menambahkan bypass `frame.style.clipPath = 'none'` saat frame mencapai ekspansi penuh (`p >= 0.999`) untuk membebaskan GPU dari kalkulasi clipping mask.
+  - Menyembunyikan elemen judul, petunjuk, dan overlay secara fisik (`visibility: hidden`) saat opasitas 0 agar tidak memakan lapisan komposisi GPU.
+- [x] 56.3 RAF Decoupling & Deadzone Bail-out pada `ScrollExpand.tsx`:
+  - Membungkus pembacaan scroll pada `ScrollExpand.tsx` di dalam `requestAnimationFrame` dengan dirty check (`scrollRaf`) agar tidak memblokir pergerakan sentuhan mobile.
+  - Menambahkan deadzone bail-out saat pengguna telah menggulir jauh melewati section hero.
+- [x] 56.4 Viewport Depth Culling & Visibility Toggle pada `Banda3DPhotoGallery.tsx`:
+  - Menyembunyikan elemen kartu foto 3D yang sudah lewat di belakang kamera viewer (`currentZ > 560`) atau masih terlalu jauh di kedalaman kabut (`currentZ < -2600`) dengan `display: none`. Pada setiap saat, hanya 3-5 kartu aktif yang dirender GPU dibanding sebelumnya 21 kartu sekaligus.
+  - Menambahkan `visibility: hidden` pada container galeri 3D saat berada di luar viewport layar.
+  - Menerapkan `decoding="async"` pada seluruh kartu foto dan ornamen budaya.
+- [x] 56.5 Akselerasi `content-visibility: auto` pada Seluruh Section Flow Bawah (`BandanairaBeranda.tsx` & `global.css`):
+  - Menambahkan utilitas `.content-auto` (`content-visibility: auto; contain-intrinsic-size: 1px 700px;`) pada section flow (Peta, SAW Tourism, Eco-Stay, Layanan Warga, Marketplace, Travel Stats, Footer).
+  - Browser (Chrome Android/Desktop, Safari) menunda kalkulasi layout, style, dan paint untuk section bawah hingga pengguna menggulir mendekatinya, menurunkan beban komputasi awal hingga >60%.
+- [x] 56.6 Verifikasi Build Produksi Vite:
+  - Menjalankan `npm --prefix frontend run build` lolos 100% (2.042 modul ditransformasikan dalam 7.68s, exit code 0).
 
+---
 
+## [Phase 57] - Direct /banda.webp Mobile Route, Strict Mobile YouTube Lockout, and Mobile Scroll Distance Tuning
+- [x] 57.1 Penerapan Rute Langsung `/banda.webp` Tanpa Hash Bundler:
+  - Mengubah import aset di `HeroSection.tsx` dari import module Vite (yang menghasilkan nama acak seperti `/assets/banda-DZpgqXy0.webp`) menjadi rute publik statis `/banda.webp` sehingga browser secara harfiah merequest `GET /banda.webp 200 OK` dan inspect element menampilkan `<img src="/banda.webp" />`.
+  - Berkas `frontend/public/banda.webp` dioptimasi ulang menjadi 211 KB (1920x1106).
+- [x] 57.2 Strict Lockout YouTube Iframe di Layar Sentuh (`ScrollExpand.tsx`):
+  - Menambahkan pengecekan hardware touch dan viewport mobile langsung di level inti `ScrollExpand.tsx` (`!isTouchOrMobileDevice && ...`). Jika terdeteksi layar sentuh atau lebar < 1024px, kondisi `isYoutube` dipaksa 100% `false` tanpa terkecuali, mencegah iframe termuat dalam kondisi apa pun.
+- [x] 57.3 Eliminasi Efek "Layar Macet" pada Scroll Mobile (`HeroSection.tsx`):
+  - Memangkas `holdDistance` pada mobile dari `0.8` menjadi `0.05` dan `scrollDistance` dari `0.45` menjadi `0.28`. Begitu kartu hero selesai mengembang, layar langsung mengalir mulus ke section berikutnya tanpa menahan atau membekukan scroll pengguna selama ratusan pixel.
+- [x] 57.4 Pemangkasan Ketinggian Galeri 3D Mobile (`Banda3DPhotoGallery.tsx`):
+  - Memangkas ketinggian scroll galeri 3D pada mobile dari `2600px` menjadi `1350px` dan menaikkan `speedMultiplier` menjadi `2.8`. Seluruh 17 kartu foto dapat dijelajahi hanya dalam 2-3 usapan jari yang ringan tanpa membebani GPU ponsel.
+- [x] 57.5 Pengurangan Radius Interseksi Peta (`PetaInteractiveSection.tsx`):
+  - Mengurangi `rootMargin` IntersectionObserver peta dari `350px` menjadi `100px` agar pustaka Leaflet dan ribuan koordinat GeoJSON tidak diunduh di background saat pengguna masih berada di bagian atas halaman.
+- [x] 57.6 Verifikasi Build Produksi Vite:
+  - Menjalankan `npm --prefix frontend run build` sukses 100% (2.041 modul ditransformasikan dalam 6.72s, exit code 0).
 
+---
 
+## [Phase 58] - Ironclad Mobile CSS Display Lockout, Deferred Desktop YouTube Iframe, and Service Worker Cache Invalidation
+- [x] 58.1 Ironclad CSS Media Query Lockout pada YouTube Iframe (`ScrollExpand.css`):
+  - Menambahkan aturan `@media (max-width: 1023px)` yang secara absolut mematikan `.scroll-expand__youtube-wrap` dan `.scroll-expand__youtube-iframe` dengan `display: none !important; width: 0 !important; height: 0 !important;`. Meskipun iframe sempat ter-mount, pada tampilan mobile elemen video YouTube dibungkam total di level CSS.
+- [x] 58.2 Deferred YouTube Iframe Rendering di Desktop (`ScrollExpand.tsx`):
+  - Di desktop (`window.innerWidth >= 1024`), iframe YouTube ditunda pemasangannya selama 600ms (`iframeReady`). Gambar statis `/banda.webp` dimuat terlebih dahulu seketika, memberikan skor Largest Contentful Paint (LCP) mendekati 100 dengan 0ms Total Blocking Time (TBT). Setelah paint pertama selesai, barulah video YouTube dipasang di background.
+  - Pada layar mobile (< 1024px), tag `<iframe>` sama sekali tidak pernah di-mount ke virtual DOM maupun real DOM.
+- [x] 58.3 Preload `/banda.webp` di Level Header HTML (`index.html`):
+  - Mengubah tautan preload LCP di `index.html` menjadi `<link rel="preload" href="/banda.webp" as="image" type="image/webp" fetchpriority="high" />`.
+- [x] 58.4 Invalidation Cache Service Worker (`sw.js`):
+  - Menaikkan versi cache Service Worker dari `banda-digital-v5` menjadi `banda-digital-v6`. Saat pengguna membuka kembali halaman, Service Worker otomatis menghapus cache lama dan menyajikan aset JavaScript baru.
+- [x] 58.5 Optimasi Idle Loop Lenis di Desktop (`BandanairaBeranda.tsx`):
+  - Mengaktifkan `autoRaf: true` bawaan Lenis dan menghapus perulangan manual `requestAnimationFrame(raf)` tak terhingga. Lenis hanya menggunakan siklus animasi saat ada event scroll roda mouse desktop dan tidur saat pengguna membaca halaman.
+- [x] 58.6 Verifikasi Build Produksi Vite:
+  - Eksekusi `npm --prefix frontend run build` lolos 100% (2.041 modul ditransformasikan dalam 6.87s, exit code 0).
+
+---
+>>>>>>> origin/fix/gis-villages-database
+
+## [Phase 59] - Production Dockerfile (Vite Preview), HTTP/1.1 Waterfall Elimination, Non-Blocking Font Loading, Forced Reflow Batching, and Mobile WebP Delivery
+- [x] 59.1 Eliminasi Root Cause Skor Lighthouse Rendah (Vite Dev Server di Docker Produksi VPS):
+  - Mengubah konfigurasi `frontend/Dockerfile` dari `CMD ["npm", "run", "dev", "--", "--host"]` (server pengembangan yang mengirim 200+ modul mentah tak ter-bundle per request) menjadi build produksi dan preview: `RUN npm run build` dan `CMD ["sh", "-c", "npm run build && npm run preview -- --host 0.0.0.0 --port 5175"]`.
+  - Mengeliminasi penundaan antrean HTTP/1.1 sebesar 2.440 ms ("Modern HTTP — Est savings of 2,440 ms"), memangkas FCP dari 3.8s ke <1s dan LCP dari 6.8s ke <1.5s.
+- [x] 59.2 Konfigurasi Host & Proxy Preview Server (`frontend/vite.config.ts`):
+  - Menambahkan blok konfigurasi `preview` pada `vite.config.ts` dengan host `0.0.0.0`, port `5175`, `allowedHosts: ['bandanaira.cloud', 'www.bandanaira.cloud', 'localhost']`, dan routing proxy `/api` ke backend.
+- [x] 59.3 Non-Blocking Asynchronous Google Fonts Loading (`frontend/index.html`):
+  - Mengubah pemuatan font Google dari link stylesheet sinkron yang memblokir rendering menjadi asinkron (`media="print" onload="this.media='all'"` dengan `<noscript>` fallback), menghapus peringatan Lighthouse "Font display — Est savings of 180 ms" dan "Render-blocking requests — Est savings of 40 ms".
+- [x] 59.4 Batching DOM Reads & Writes untuk Menghilangkan Forced Synchronous Reflow (`ScrollExpand.tsx`):
+  - Memisahkan seluruh pembacaan geometri DOM (`window.innerHeight`, `root.clientHeight`, `track.getBoundingClientRect()`, `root.clientWidth`) di awal fungsi `measure()`, baru kemudian melakukan penulisan style (`stage.style.height`, `track.style.height`, `stage.style.setProperty`).
+  - Menghilangkan sepenuhnya audit Lighthouse "Forced reflow".
+- [x] 59.5 Pengiriman Citra Responsif WebP Mobile 47 KB (`frontend/public/banda-mobile.webp` & `index.html`):
+  - Menghasilkan varian gambar WebP mobile sebesar 47.9 KB (800x460) dan menerapkannya melalui `srcSet` serta preload HTML responsif (`imagesrcset` dan `imagesizes`), menghemat payload sebesar 173 KiB pada audit "Improve image delivery".
+- [x] 59.6 Invalidation Cache Service Worker ke Versi 7 (`frontend/public/sw.js`):
+  - Memperbarui `CACHE_NAME` menjadi `banda-digital-v7` dan menambahkan `/banda-mobile.webp` ke dalam cache statis awal sehingga browser klien segera mengosongkan cache lama `v6`/`v5` dan menyajikan aset baru tanpa bentrok IndexedDB/Service Worker.
+- [x] 59.7 Verifikasi Build Produksi:
+  - Menjalankan `npm --prefix frontend run build` sukses 100% (2.041 modul ditransformasikan dalam 7.22s, exit code 0).

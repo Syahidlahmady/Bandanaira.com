@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict, Any
 from pydantic import BaseModel, Field
 
 
@@ -137,4 +137,109 @@ class TourGuideItemResponse(BaseModel):
     rating: float
     trips_completed: int
     created_at: datetime
+
+
+class CommunityContentCreateInput(BaseModel):
+    content_code: Optional[str] = Field(default=None, max_length=40, description="Kode unik konten (otomatis jika kosong)")
+    title: str = Field(..., min_length=3, max_length=200, description="Judul artikel, foto geotagged, video reels, atau karya warga")
+    slug: Optional[str] = Field(default=None, max_length=200, description="Slug URL unik (otomatis dari judul jika kosong)")
+    content_type: str = Field(default="ARTICLE", max_length=30, description="ARTICLE, PHOTO_GEOTAGGED, VIDEO_REELS, COMMUNITY_WORK")
+    priority_category: str = Field(default="DESTINASI", max_length=40, description="DESTINASI, UMKM, RELIGI_KULTURAL, LAYANAN_PUBLIK")
+    island_name: str = Field(default="Pulau Neira", max_length=100, description="Nama pulau lokasi objek")
+    author_name: str = Field(..., min_length=2, max_length=150, description="Nama penulis atau peserta workshop Pokdarwis/UMKM")
+    author_role: str = Field(default="Pokdarwis / Komunitas Lokal", max_length=100, description="Peran penulis atau peserta")
+    summary: str = Field(..., min_length=5, description="Ringkasan eksekutif atau caption AIDA")
+    body_narrative: str = Field(..., min_length=10, description="Isi narasi lengkap artikel, storyboard video, atau cerita karya")
+    media_url: Optional[str] = Field(default="/images/landmarks/belgica.jpg", max_length=3_000_000, description="Path gambar/media lokal atau data URL Base64")
+    latitude: Optional[float] = Field(default=None, description="Koordinat lintang GPS (opsional)")
+    longitude: Optional[float] = Field(default=None, description="Koordinat bujur GPS (opsional)")
+    sop_stage: str = Field(default="PUBLIKASI", max_length=30, description="IDE, PRODUKSI, REVIEW, VALIDASI, PUBLIKASI, ARSIP")
+    qc_accuracy: bool = Field(default=True, description="Checklist 1: Akurasi fakta sejarah/data")
+    qc_language: bool = Field(default=True, description="Checklist 2: Kerapian bahasa & caption AIDA")
+    qc_visual: bool = Field(default=True, description="Checklist 3: Kualitas visual resolusi & pencahayaan")
+    qc_adat_ethics: bool = Field(default=True, description="Checklist 4: Etika adat Tabea & Sasi")
+    qc_source_validated: bool = Field(default=True, description="Checklist 5: Validasi narasumber/tokoh")
+    qc_consent_copyright: bool = Field(default=True, description="Checklist 6: Consent form & kredit hak cipta")
+    is_published: bool = Field(default=True, description="Status publikasi di portal BST")
+
+
+class CommunityContentUpdateInput(BaseModel):
+    title: Optional[str] = Field(None, min_length=3, max_length=200)
+    content_type: Optional[str] = Field(None, max_length=30)
+    priority_category: Optional[str] = Field(None, max_length=40)
+    island_name: Optional[str] = Field(None, max_length=100)
+    author_name: Optional[str] = Field(None, max_length=150)
+    author_role: Optional[str] = Field(None, max_length=100)
+    summary: Optional[str] = None
+    body_narrative: Optional[str] = None
+    media_url: Optional[str] = Field(None, max_length=3_000_000)
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    sop_stage: Optional[str] = Field(None, max_length=30)
+    qc_accuracy: Optional[bool] = None
+    qc_language: Optional[bool] = None
+    qc_visual: Optional[bool] = None
+    qc_adat_ethics: Optional[bool] = None
+    qc_source_validated: Optional[bool] = None
+    qc_consent_copyright: Optional[bool] = None
+    is_published: Optional[bool] = None
+
+
+class CommunityContentItemResponse(BaseModel):
+    id: str
+    content_code: str
+    title: str
+    slug: str
+    content_type: str
+    priority_category: str
+    island_name: str
+    author_name: str
+    author_role: str
+    summary: str
+    body_narrative: str
+    media_url: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    sop_stage: str
+    qc_accuracy: bool
+    qc_language: bool
+    qc_visual: bool
+    qc_adat_ethics: bool
+    qc_source_validated: bool
+    qc_consent_copyright: bool
+    qc_passed_count: int
+    is_published: bool
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+
+class LiteracyModuleItem(BaseModel):
+    module_code: str
+    title: str
+    validation_status: str
+    target_audience: str
+    duration_minutes: int
+    learning_objectives: List[str]
+    key_topics: List[str]
+    practical_output: str
+    offline_ready: bool = True
+
+
+class SopStageItem(BaseModel):
+    stage_order: int
+    stage_code: str
+    stage_name: str
+    pic_actor: str
+    description: str
+    deliverable: str
+
+
+class LiteracyGovernanceResponse(BaseModel):
+    mandate_owner: str
+    community_brand: str
+    modules: List[LiteracyModuleItem]
+    sop_stages: List[SopStageItem]
+    quality_checklist_standards: List[Dict[str, Any]]
+    signal_zones_mapping: List[Dict[str, Any]]
+
 

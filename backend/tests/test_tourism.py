@@ -109,11 +109,14 @@ async def test_get_heritage_catalog(client: AsyncClient):
     res = await client.get("/api/v1/tourism/heritage-catalog")
     assert res.status_code == 200
     catalog = res.json()
-    assert len(catalog) >= 7
+    assert len(catalog) >= 9
     slugs = [c["slug"] for c in catalog]
     assert "benteng-belgica" in slugs
     assert "rumah-pengasingan-bung-hatta" in slugs
     assert "benteng-hollandia-lonthoir" in slugs
+    assert "klenteng-sun-tian-kong" in slugs
+    assert "sumur-pusaka-parigi-rante-rumah-budaya" in slugs
+    assert all(c["photo_url"].startswith("/images/landmarks/") for c in catalog)
 
     # Filter kategori benteng
     res_benteng = await client.get("/api/v1/tourism/heritage-catalog?category=BENTENG")
@@ -334,6 +337,145 @@ async def test_forbidden_role_access_blocked(client: AsyncClient):
         headers=farmer_headers,
     )
     assert res_guide.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_community_contents_auto_seed_and_filters(client: AsyncClient):
+    """Uji Bank Konten Batch 1 & Karya Peserta Workshop (Mandat Reyhan Albar Fahryan)."""
+    res = await client.get("/api/v1/tourism/community-contents")
+    assert res.status_code == 200
+    items = res.json()
+    assert len(items) >= 10
+    codes = [i["content_code"] for i in items]
+    assert "CNT-ART-001" in codes
+    assert "CNT-FOTO-001" in codes
+    assert "CNT-VID-001" in codes
+    assert "CNT-WARGA-001" in codes
+    assert all(i["media_url"].startswith("/images/landmarks/") for i in items if i["media_url"])
+    assert all(i["qc_passed_count"] == 6 for i in items)
+
+    # Filter berdasarkan content_type
+    res_art = await client.get("/api/v1/tourism/community-contents?content_type=ARTICLE")
+    assert res_art.status_code == 200
+    assert len(res_art.json()) >= 4
+    assert all(i["content_type"] == "ARTICLE" for i in res_art.json())
+
+    # Filter berdasarkan priority_category
+    res_umkm = await client.get("/api/v1/tourism/community-contents?priority_category=UMKM")
+    assert res_umkm.status_code == 200
+    assert len(res_umkm.json()) >= 2
+    assert all(i["priority_category"] == "UMKM" for i in res_umkm.json())
+
+
+@pytest.mark.asyncio
+async def test_literacy_modules_governance_endpoint(client: AsyncClient):
+    """Uji endpoint kurikulum 3 Modul Literasi Digital, SOP 6-Tahap, 6-Point QC, dan 4 Zona Sinyal."""
+    res = await client.get("/api/v1/tourism/literacy-modules")
+    assert res.status_code == 200
+    data = res.json()
+    assert "Reyhan Albar Fahryan" in data["mandate_owner"]
+    assert len(data["modules"]) == 3
+    assert [m["module_code"] for m in data["modules"]] == ["MODUL-01", "MODUL-02", "MODUL-03"]
+    assert data["modules"][0]["validation_status"] == "SIAP_UJI_PENUH"
+    assert len(data["sop_stages"]) == 6
+    assert [s["stage_code"] for s in data["sop_stages"]] == [
+        "IDE", "PRODUKSI", "REVIEW", "VALIDASI", "PUBLIKASI", "ARSIP"
+    ]
+    assert len(data["quality_checklist_standards"]) == 6
+    assert len(data["signal_zones_mapping"]) == 4
+
+
+@pytest.mark.asyncio
+async def test_cms_community_contents_crud_and_rbac(client: AsyncClient):
+    """Uji CRUD CMS Bank Konten, perhitungan 6-Point Quality Checklist, validasi input, dan RBAC."""
+    token = await get_auth_token(client, "admin_wisata", "Wisata123!")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 1. Create new community content in REVIEW stage with 4/6 QC passed
+    payload = {
+        "title": "Liputan Pokdarwis: Festival Kora-Kora Adat Banda Neira",
+        "content_type": "COMMUNITY_WORK",
+        "priority_category": "RELIGI_KULTURAL",
+        "island_name": "Pulau Neira",
+        "author_name": "Ahmad Latarissa",
+        "author_role": "Peserta Workshop Pokdarwis",
+        "summary": "Dokumentasi lomba dayung perahu adat Kora-Kora di Selat Neira dengan struktur caption AIDA.",
+        "body_narrative": "Perahu Kora-Kora merupakan simbol persatuan masyarakat adat negeri-negeri di Kepulauan Banda.",
+        "media_url": "/images/landmarks/pelabuhan.jpg",
+        "latitude": -4.5250,
+        "longitude": 129.9040,
+        "sop_stage": "REVIEW",
+        "qc_accuracy": True,
+        "qc_language": True,
+        "qc_visual": True,
+        "qc_adat_ethics": True,
+        "qc_source_validated": False,
+        "qc_consent_copyright": False,
+        "is_published": False,
+    }
+    res_create = await client.post("/api/v1/tourism/community-contents", json=payload, headers=headers)
+    assert res_create.status_code == 201
+    created = res_create.json()
+    content_id = created["id"]
+    assert created["qc_passed_count"] == 4
+    assert created["sop_stage"] == "REVIEW"
+    assert created["is_published"] is False
+
+    # 2. Update to PUBLIKASI after passing all 6 QC items
+    res_update = await client.put(
+        f"/api/v1/tourism/community-contents/{content_id}",
+        json={
+            "sop_stage": "PUBLIKASI",
+            "qc_source_validated": True,
+            "qc_consent_copyright": True,
+            "is_published": True,
+        },
+        headers=headers,
+    )
+    assert res_update.status_code == 200
+    updated = res_update.json()
+    assert updated["qc_passed_count"] == 6
+    assert updated["sop_stage"] == "PUBLIKASI"
+    assert updated["is_published"] is True
+
+    # 3. Validation failure (invalid short title -> 422)
+    res_invalid = await client.post(
+        "/api/v1/tourism/community-contents",
+        json={**payload, "title": "Ab"},
+        headers=headers,
+    )
+    assert res_invalid.status_code == 422
+
+    # 4. Not found & invalid UUID
+    res_bad_uuid = await client.put(
+        "/api/v1/tourism/community-contents/not-a-uuid",
+        json={"sop_stage": "ARSIP"},
+        headers=headers,
+    )
+    assert res_bad_uuid.status_code == 400
+
+    res_404 = await client.delete(
+        "/api/v1/tourism/community-contents/00000000-0000-0000-0000-000000000000",
+        headers=headers,
+    )
+    assert res_404.status_code == 404
+
+    # 5. Unauthorized guest (401) & Forbidden farmer role (403)
+    res_unauth = await client.post("/api/v1/tourism/community-contents", json=payload)
+    assert res_unauth.status_code == 401
+
+    farmer_token = await get_auth_token(client, "petani", "Petani123!")
+    res_forbidden = await client.delete(
+        f"/api/v1/tourism/community-contents/{content_id}",
+        headers={"Authorization": f"Bearer {farmer_token}"},
+    )
+    assert res_forbidden.status_code == 403
+
+    # 6. Delete content (happy path)
+    res_del = await client.delete(f"/api/v1/tourism/community-contents/{content_id}", headers=headers)
+    assert res_del.status_code == 200
+    assert "berhasil dihapus" in res_del.json()["message"]
+
 
 
 

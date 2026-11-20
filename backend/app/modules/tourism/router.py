@@ -1,3 +1,4 @@
+import re
 import urllib.parse
 import uuid
 from datetime import datetime, timezone
@@ -14,7 +15,7 @@ from backend.app.core.permissions import (
     require_roles,
 )
 from backend.app.modules.auth.models import User
-from backend.app.modules.tourism.models import Accommodation, Booking, TourGuide
+from backend.app.modules.tourism.models import Accommodation, Booking, TourGuide, CommunityContent
 from backend.app.modules.tourism.schemas import (
     AccommodationCreateInput,
     AccommodationUpdateInput,
@@ -25,8 +26,21 @@ from backend.app.modules.tourism.schemas import (
     TourGuideCreateInput,
     TourGuideUpdateInput,
     TourGuideItemResponse,
+    CommunityContentCreateInput,
+    CommunityContentUpdateInput,
+    CommunityContentItemResponse,
+    LiteracyModuleItem,
+    SopStageItem,
+    LiteracyGovernanceResponse,
 )
 from backend.app.modules.tourism.heritage_data import HERITAGE_CATALOG
+from backend.app.modules.tourism.literacy_content_data import (
+    SEED_COMMUNITY_CONTENTS,
+    LITERACY_MODULES_CATALOG,
+    SOP_CONTENT_WORKFLOW,
+    QUALITY_CHECKLIST_STANDARDS,
+    SIGNAL_ZONES_MAPPING,
+)
 
 router = APIRouter(prefix="/tourism", tags=["Smart Tourism & Eco-Stay Accommodations"])
 
@@ -814,5 +828,226 @@ async def list_pemesanan_alias(
     current_user: User = Depends(BOOKINGS_VIEW_ROLES),
 ):
     return await list_bookings(accommodation_id=accommodation_id, limit=limit, db=db, current_user=current_user)
+
+
+# =======================================================================
+# BANK KONTEN WISATA, KARYA WARGA & MODUL LITERASI DIGITAL
+# (MANDAT REYHAN ALBAR FAHRYAN - CONTENT MANAGER & COMMUNITY ENGAGEMENT)
+# =======================================================================
+
+async def ensure_community_contents_seeded(db: AsyncSession):
+    """Menyemai otomatis Bank Konten Batch 1 (H7) & Karya Peserta Workshop (H11) secara idempoten."""
+    stmt = select(CommunityContent).limit(1)
+    res = await db.execute(stmt)
+    if not res.scalar_one_or_none():
+        for item in SEED_COMMUNITY_CONTENTS:
+            content = CommunityContent(**item)
+            db.add(content)
+        await db.commit()
+
+
+def _to_community_content_response(c: CommunityContent) -> CommunityContentItemResponse:
+    qc_flags = [
+        c.qc_accuracy,
+        c.qc_language,
+        c.qc_visual,
+        c.qc_adat_ethics,
+        c.qc_source_validated,
+        c.qc_consent_copyright,
+    ]
+    qc_passed_count = sum(1 for flag in qc_flags if flag)
+    return CommunityContentItemResponse(
+        id=str(c.id),
+        content_code=c.content_code,
+        title=c.title,
+        slug=c.slug,
+        content_type=c.content_type,
+        priority_category=c.priority_category,
+        island_name=c.island_name,
+        author_name=c.author_name,
+        author_role=c.author_role,
+        summary=c.summary,
+        body_narrative=c.body_narrative,
+        media_url=c.media_url,
+        latitude=c.latitude,
+        longitude=c.longitude,
+        sop_stage=c.sop_stage,
+        qc_accuracy=c.qc_accuracy,
+        qc_language=c.qc_language,
+        qc_visual=c.qc_visual,
+        qc_adat_ethics=c.qc_adat_ethics,
+        qc_source_validated=c.qc_source_validated,
+        qc_consent_copyright=c.qc_consent_copyright,
+        qc_passed_count=qc_passed_count,
+        is_published=c.is_published,
+        created_at=c.created_at,
+        updated_at=c.updated_at,
+    )
+
+
+@router.get(
+    "/community-contents",
+    response_model=List[CommunityContentItemResponse],
+    summary="Daftar Bank Konten Wisata & Karya Peserta Workshop Literasi Digital",
+)
+async def list_community_contents(
+    content_type: Optional[str] = Query(None, description="ARTICLE, PHOTO_GEOTAGGED, VIDEO_REELS, COMMUNITY_WORK"),
+    priority_category: Optional[str] = Query(None, description="DESTINASI, UMKM, RELIGI_KULTURAL, LAYANAN_PUBLIK"),
+    island: Optional[str] = Query(None, description="Filter berdasarkan nama pulau"),
+    only_published: Optional[bool] = Query(None, description="Filter hanya konten berstatus tayang publik"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Mengambil daftar Bank Konten Wisata Batch 1 dan Karya Peserta Workshop Pokdarwis/UMKM."""
+    await ensure_community_contents_seeded(db)
+
+    stmt = select(CommunityContent).order_by(CommunityContent.content_code)
+    if content_type:
+        stmt = stmt.where(CommunityContent.content_type == content_type.upper())
+    if priority_category:
+        stmt = stmt.where(CommunityContent.priority_category == priority_category.upper())
+    if island:
+        stmt = stmt.where(CommunityContent.island_name.ilike(f"%{island}%"))
+    if only_published is not None:
+        stmt = stmt.where(CommunityContent.is_published == only_published)
+
+    res = await db.execute(stmt)
+    items = res.scalars().all()
+    return [_to_community_content_response(c) for c in items]
+
+
+@router.post(
+    "/community-contents",
+    response_model=CommunityContentItemResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Unggah Artikel / Konten Wisata / Karya Warga Baru ke CMS BST",
+)
+async def create_community_content(
+    payload: CommunityContentCreateInput,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(GUIDE_CMS_ROLES),
+):
+    """Mendaftarkan artikel wisata, foto geotagged, storyboard reels, atau karya peserta workshop ke CMS BST."""
+    await ensure_community_contents_seeded(db)
+
+    code = (
+        payload.content_code.strip().upper()
+        if payload.content_code and payload.content_code.strip()
+        else f"CNT-CMS-{uuid.uuid4().hex[:6].upper()}"
+    )
+    if payload.slug and payload.slug.strip():
+        slug_val = payload.slug.strip().lower()
+    else:
+        base_slug = re.sub(r"[^a-z0-9]+", "-", payload.title.lower()).strip("-")
+        slug_val = f"{base_slug[:160]}-{uuid.uuid4().hex[:4].lower()}"
+
+    content = CommunityContent(
+        content_code=code,
+        title=payload.title.strip(),
+        slug=slug_val,
+        content_type=payload.content_type.upper(),
+        priority_category=payload.priority_category.upper(),
+        island_name=payload.island_name.strip(),
+        author_name=payload.author_name.strip(),
+        author_role=payload.author_role.strip(),
+        summary=payload.summary.strip(),
+        body_narrative=payload.body_narrative.strip(),
+        media_url=payload.media_url,
+        latitude=payload.latitude,
+        longitude=payload.longitude,
+        sop_stage=payload.sop_stage.upper(),
+        qc_accuracy=payload.qc_accuracy,
+        qc_language=payload.qc_language,
+        qc_visual=payload.qc_visual,
+        qc_adat_ethics=payload.qc_adat_ethics,
+        qc_source_validated=payload.qc_source_validated,
+        qc_consent_copyright=payload.qc_consent_copyright,
+        is_published=payload.is_published,
+    )
+    db.add(content)
+    await db.commit()
+    await db.refresh(content)
+    return _to_community_content_response(content)
+
+
+@router.put(
+    "/community-contents/{content_id}",
+    response_model=CommunityContentItemResponse,
+    summary="Update Konten, Tahap SOP 6-Tahap, atau Verifikasi 6-Point Quality Checklist",
+)
+async def update_community_content(
+    content_id: str,
+    payload: CommunityContentUpdateInput,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(GUIDE_CMS_ROLES),
+):
+    """Memperbarui draf konten, mengubah tahapan SOP manajemen konten, atau memvalidasi 6-Point Quality Checklist."""
+    try:
+        c_uuid = uuid.UUID(content_id)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID Konten tidak valid.")
+
+    stmt = select(CommunityContent).where(CommunityContent.id == c_uuid)
+    res = await db.execute(stmt)
+    content = res.scalar_one_or_none()
+    if not content:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Konten tidak ditemukan.")
+
+    update_data = payload.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        if field in ("content_type", "priority_category", "sop_stage") and isinstance(value, str):
+            value = value.upper()
+        setattr(content, field, value)
+
+    await db.commit()
+    await db.refresh(content)
+    return _to_community_content_response(content)
+
+
+@router.delete(
+    "/community-contents/{content_id}",
+    summary="Hapus Konten dari Bank Konten CMS BST",
+)
+async def delete_community_content(
+    content_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(GUIDE_CMS_ROLES),
+):
+    """Menghapus item konten dari Bank Konten CMS (khusus admin / pengelola Smart Tourism)."""
+    try:
+        c_uuid = uuid.UUID(content_id)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID Konten tidak valid.")
+
+    stmt = select(CommunityContent).where(CommunityContent.id == c_uuid)
+    res = await db.execute(stmt)
+    content = res.scalar_one_or_none()
+    if not content:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Konten tidak ditemukan.")
+
+    await db.delete(content)
+    await db.commit()
+    return {"message": "Konten berhasil dihapus."}
+
+
+@router.get(
+    "/literacy-modules",
+    response_model=LiteracyGovernanceResponse,
+    summary="Katalog 3 Modul Literasi Digital, SOP 6-Tahap, 6-Point QC & Pemetaan 4 Zona Sinyal Pulau",
+)
+async def get_literacy_modules_governance():
+    """
+    Mengembalikan kurikulum 3 Modul Literasi Digital Pokdarwis/UMKM,
+    SOP 6-Tahap Manajemen Konten BST, standar 6-Point Quality Checklist,
+    dan pemetaan 4 zona sinyal internet pulau untuk arsitektur Offline-First 3T.
+    """
+    return LiteracyGovernanceResponse(
+        mandate_owner="Reyhan Albar Fahryan (Content Manager & Community Engagement)",
+        community_brand="@neirabasudara — Komunitas Pariwisata, Sejarah & UMKM Banda Neira",
+        modules=[LiteracyModuleItem(**m) for m in LITERACY_MODULES_CATALOG],
+        sop_stages=[SopStageItem(**s) for s in SOP_CONTENT_WORKFLOW],
+        quality_checklist_standards=QUALITY_CHECKLIST_STANDARDS,
+        signal_zones_mapping=SIGNAL_ZONES_MAPPING,
+    )
+
 
 
