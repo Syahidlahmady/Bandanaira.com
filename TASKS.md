@@ -1108,3 +1108,8 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Mengeliminasi `min-height: 335vh;` hardcoded pada `.scroll-expand__track` di `ScrollExpand.css` (mengubahnya menjadi `min-height: 100vh;`), membuang ~1.500px dead zone scroll kosong.
   - Menghapus pembungkus `content-auto` pada `Banda3DPhotoGallery` di `BandanairaBeranda.tsx` yang sebelumnya memicu `contain: paint layout` dan merusak `position: sticky` serta menahan rendering konten dengan placeholder 700px.
   - Menghapus manipulasi `section.style.visibility = 'hidden'` pada `Banda3DPhotoGallery.tsx` agar Seksi 2 selalu tampil mulus saat pengguna menggulir mendekatinya.
+- [x] 62.9 Refaktorisasi Statis Murni Hero Section & Seksi Galeri (Eliminasi Scroll-Jacking & Void Biru):
+  - Mengganti seluruh mekanisme sticky scroll-jacking `ScrollExpand` dengan Hero Section statis responsif murni (`min-h-[100dvh]`), citra latar WebP 4-tier berkecepatan tinggi, dan navbar terpadu.
+  - Mengubah `Banda3DPhotoGallery` menjadi galeri foto statis murni: 4 kolom responsif di desktop dan rel geser sentuh native di ponsel, membuang seluruh 880 baris kalkulasi matriks 3D, loop RAF, dan listener scroll.
+  - Menghapus seluruh tombol/label mode yang menyatakan "(tampilan ringan (statis))" atau tombol beralih mode dari tampilan antarmuka pengguna.
+  - Menghilangkan tuntas void biru kosong antara Seksi 1 dan Seksi 2, menyambungkan transisi kedua seksi secara langsung dan seamless dengan performa 60/120Hz native.
