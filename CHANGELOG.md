@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## [Unreleased]
+### Fixed
+- **Perbaikan Blank Putih Saat Logout & Pematangan Endpoint Sesi (`/auth/logout`) (Phase 61)**:
+  - **Akar Masalah**: Transisi sinkronus `handleLogout` memicu pemuatan ulang komponen malas (*lazy loaded components*) di Landing Portal tanpa concurrent transition (`React.startTransition`), yang menyebabkan React melempar error tak tertangkap `A component suspended while responding to synchronous input`. Ketiadaan `<ErrorBoundary>` dan `<React.Suspense>` di tingkat terluar `LandingPortalWorkspace` menyebabkan seluruh pohon render React ter-unmount seketika (layar menjadi putih polos/blank).
+  - **Pencegahan Blank Putih & Error Boundary**:
+    - Membungkus `LandingPortalWorkspace` di [App.tsx](file:///home/nor/Nor/Banda_Neira/Bandanaira.com/frontend/src/App.tsx) dengan `<ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Beranda Utama">` dan `<React.Suspense>` lengkap dengan loader elegan bertema navy `#081D35` dan aksen emas `#F4B75E`.
+    - Membungkus mutasi state logout (`setCurrentUser(null)` & `setActiveTab('landing')`) dengan `React.startTransition` sehingga update yang men-suspend dikelola secara asinkron tanpa merusak siklus render utama.
+    - Menambahkan `window.scrollTo({ top: 0, behavior: 'instant' })` saat logout agar viewport kembali ke puncak Beranda tanpa terjebak di posisi scroll workspace sebelumnya.
+    - Mengganti `fallback={null}` di [BandanairaBeranda.tsx](file:///home/nor/Nor/Banda_Neira/Bandanaira.com/frontend/src/views/landing/BandanairaBeranda.tsx) dengan placeholder animasi spinner yang halus agar tidak muncul area putih kosong selama lazy chunk sedang dimuat.
+  - **Penyediaan Endpoint Backend `/api/v1/auth/logout`**:
+    - Menambahkan rute resmi `POST /api/v1/auth/logout` di [backend/app/modules/auth/router.py](file:///home/nor/Nor/Banda_Neira/Bandanaira.com/backend/app/modules/auth/router.py).
+    - Memperbarui `authService.logout()` di [frontend/src/services/auth.ts](file:///home/nor/Nor/Banda_Neira/Bandanaira.com/frontend/src/services/auth.ts) agar memanggil endpoint logout secara non-blocking dengan fallback offline yang aman.
+  - **Verifikasi Mutu & Pengujian Menyeluruh**:
+    - Seluruh 93 tes suite backend (`pytest tests/`) lulus 100% tanpa error, termasuk penambahan `test_logout_endpoint` di [test_auth.py](file:///home/nor/Nor/Banda_Neira/Bandanaira.com/backend/tests/test_auth.py).
+    - Uji headless Chromium via Chrome DevTools Protocol mengonfirmasi tidak ada lagi `Runtime.exceptionThrown` atau `console.error` saat transisi logout.
+    - Build produksi frontend `npm run build` lulus 100% tanpa error (exit code 0).
+
 ### Added
 - **Translasi Menyeluruh Peta Interaktif Spasial GIS & Multilingual Language Switcher (Phase 56 — Mandat Branch Subtitle)**:
   - **Kamus Dwibahasa Peta Spasial (`gisMap` di `translations.ts`)**:

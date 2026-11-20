@@ -198,3 +198,13 @@ async def test_login_segmented_roles(
     assert data["user"]["username"] == username
     assert any(role["name"] == expected_role for role in data["user"]["roles"])
 
+
+@pytest.mark.asyncio
+async def test_logout_endpoint(client: AsyncClient):
+    response = await client.post("/api/v1/auth/logout")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "success"
+    assert "Sesi berhasil ditutup" in data["message"]
+
+

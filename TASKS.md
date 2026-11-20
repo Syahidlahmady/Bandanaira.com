@@ -1002,7 +1002,6 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Eksekusi `npm --prefix frontend run build` lolos 100% (2.041 modul ditransformasikan dalam 6.87s, exit code 0).
 
 ---
->>>>>>> origin/fix/gis-villages-database
 
 ## [Phase 59] - Production Dockerfile (Vite Preview), HTTP/1.1 Waterfall Elimination, Non-Blocking Font Loading, Forced Reflow Batching, and Mobile WebP Delivery
 - [x] 59.1 Eliminasi Root Cause Skor Lighthouse Rendah (Vite Dev Server di Docker Produksi VPS):
@@ -1021,3 +1020,21 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Memperbarui `CACHE_NAME` menjadi `banda-digital-v7` dan menambahkan `/banda-mobile.webp` ke dalam cache statis awal sehingga browser klien segera mengosongkan cache lama `v6`/`v5` dan menyajikan aset baru tanpa bentrok IndexedDB/Service Worker.
 - [x] 59.7 Verifikasi Build Produksi:
   - Menjalankan `npm --prefix frontend run build` sukses 100% (2.041 modul ditransformasikan dalam 7.22s, exit code 0).
+
+---
+
+## [Phase 61] - Anti-Blank Screen Logout Hardening & Backend Logout Endpoint Integration
+- [x] 61.1 Root Cause Elimination (`A component suspended while responding to synchronous input`):
+  - Membungkus mutasi state keluar (`setCurrentUser(null)` & `setActiveTab('landing')`) dengan `React.startTransition` di `App.tsx`, menghindari benturan render siklus sinkron saat komponen malas memuat chunk JavaScript.
+- [x] 61.2 Error Boundary & Suspense Guard di Tingkat Terluar `LandingPortalWorkspace` (`App.tsx`):
+  - Menambahkan `<ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Beranda Utama">` dan `<React.Suspense>` dengan spinner anggun `#081D35` / `#F4B75E` di sekitar `LandingPortalWorkspace`.
+  - Mengubah `fallback={null}` di `BandanairaBeranda.tsx` menjadi fallback visual halus agar tidak terjadi kekosongan layar.
+- [x] 61.3 Scroll Position Reset saat Logout (`App.tsx`):
+  - Menambahkan `window.scrollTo({ top: 0, behavior: 'instant' })` saat logout sehingga pengunjung kembali ke puncak Beranda tanpa terjebak di posisi scroll workspace sebelumnya.
+- [x] 61.4 Endpoint Backend `POST /api/v1/auth/logout`:
+  - Mengimplementasikan endpoint logout resmi di `backend/app/modules/auth/router.py` dan menambahkan unit test di `backend/tests/test_auth.py`.
+  - Mengintegrasikan pemanggilan API di `authService.logout()` (`frontend/src/services/auth.ts`) dengan fallback aman saat offline.
+- [x] 61.5 Verifikasi Menyeluruh:
+  - Pengujian Chromium headless CDP memverifikasi nihil exception atau runtime error saat logout.
+  - 15 pengujian `pytest tests/test_auth.py` dan 93 pengujian backend keseluruhan lulus 100%.
+  - Build produksi frontend Vite sukses 100% (2.045 modul, exit code 0).

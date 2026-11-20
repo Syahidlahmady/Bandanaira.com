@@ -493,7 +493,12 @@ export const authService = {
     return res
   },
 
-  logout() {
+  async logout() {
+    try {
+      await fetch(`${API_BASE}/auth/logout`, { method: 'POST' })
+    } catch {
+      // safe fallback if offline
+    }
     this.clearTokens()
   },
 }
