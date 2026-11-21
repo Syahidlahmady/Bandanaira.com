@@ -317,7 +317,11 @@ const ScrollExpandComponent: React.FC<ScrollExpandProps> = ({
   useEffect(() => {
     if (isDesktopClient && (mediaType === 'youtube' || mediaType === 'iframe') && Boolean(youtubeId)) {
       // Defer desktop iframe load to ensure LCP image renders with 0ms Total Blocking Time
-      const timer = setTimeout(() => setIframeReady(true), 600)
+      if ('requestIdleCallback' in window) {
+        const id = (window as any).requestIdleCallback(() => setIframeReady(true), { timeout: 2000 })
+        return () => (window as any).cancelIdleCallback(id)
+      }
+      const timer = setTimeout(() => setIframeReady(true), 1200)
       return () => clearTimeout(timer)
     } else {
       setIframeReady(false)
@@ -346,6 +350,7 @@ const ScrollExpandComponent: React.FC<ScrollExpandProps> = ({
       {iframeReady && isIntersecting && (
         <iframe
           className="scroll-expand__youtube-iframe"
+          loading="lazy"
           src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&playsinline=1&rel=0&disablekb=1&modestbranding=1&iv_load_policy=3&showinfo=0&fs=0`}
           title="Banda Neira Aerial Video Backdrop"
           allow="autoplay; encrypted-media; picture-in-picture"

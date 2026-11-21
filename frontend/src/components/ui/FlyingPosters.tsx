@@ -122,7 +122,7 @@ void main() {
 const AXES = { vertical: [0, 1, 0], horizontal: [1, 0, 0], diagonal: [1, 1, 0] };
 const REFERENCE_FOV = (45 * Math.PI) / 180;
 const REFERENCE_Z = 20;
-const GRID_X = 100;
+const GRID_X = 40;
 const GRID_Y = 1;
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
@@ -424,7 +424,7 @@ const FlyingPosters = forwardRef<FlyingPostersHandle, FlyingPostersProps>(({
       const entries = list.map(toItem);
       const total = Math.max(1, entries.length);
       atlas.cells = Math.ceil(Math.sqrt(total));
-      atlas.cell = clamp(Math.floor(4096 / atlas.cells), 128, 1024);
+      atlas.cell = clamp(Math.floor(2048 / atlas.cells), 128, 512);
       atlas.canvas.width = atlas.cells * atlas.cell;
       atlas.canvas.height = atlas.cells * atlas.cell;
       atlas.images = entries.map(() => null);
@@ -666,10 +666,16 @@ const FlyingPosters = forwardRef<FlyingPostersHandle, FlyingPostersProps>(({
     const resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(root);
     const visibility = new IntersectionObserver(entries => {
-      visible = entries.some(entry => entry.isIntersecting);
-      if (visible) {
+      const isVisible = entries.some(entry => entry.isIntersecting);
+      visible = isVisible;
+      if (isVisible) {
         last = 0;
         wake();
+      } else {
+        if (raf) {
+          cancelAnimationFrame(raf);
+          raf = 0;
+        }
       }
     });
     visibility.observe(root);
@@ -701,10 +707,6 @@ const FlyingPosters = forwardRef<FlyingPostersHandle, FlyingPostersProps>(({
   useEffect(() => {
     engineRef.current?.loadItems(items);
   }, [items]);
-
-  useEffect(() => {
-    engineRef.current?.wake();
-  });
 
   useEffect(() => {
     if (typeof progress === 'number') {

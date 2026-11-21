@@ -105,7 +105,7 @@ function runSawRecommendation(
   return scored.sort((a, b) => b.scorePercent - a.scorePercent).slice(0, 3)
 }
 
-export const TourismChatbotBubble: React.FC<TourismChatbotBubbleProps> = ({ onNavigate }) => {
+export const TourismChatbotBubbleComponent: React.FC<TourismChatbotBubbleProps> = ({ onNavigate }) => {
   const { t, isEnglish } = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
   const [inputText, setInputText] = useState('')
@@ -243,7 +243,7 @@ export const TourismChatbotBubble: React.FC<TourismChatbotBubbleProps> = ({ onNa
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end will-change-transform transform-gpu">
       {/* Floating Chatbot Bubble Trigger */}
       {!isOpen && (
         <button
@@ -444,4 +444,5 @@ export const TourismChatbotBubble: React.FC<TourismChatbotBubbleProps> = ({ onNa
   )
 }
 
+export const TourismChatbotBubble = React.memo(TourismChatbotBubbleComponent)
 export default TourismChatbotBubble

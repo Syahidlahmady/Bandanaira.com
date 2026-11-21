@@ -11,6 +11,7 @@ export interface BandaVisualReelItem {
   aspectLabel: string
   isAnimatedWebp: boolean
   src: string
+  videoSrc?: string
   posterSrc: string
   caption: string
 }
@@ -19,11 +20,12 @@ export const BANDA_PORTRAIT_REELS: BandaVisualReelItem[] = [
   {
     id: 'reel-pohon-sejuta-umat',
     title: 'Teduhnya Pohon Sejuta Umat',
-    subtitle: 'Reels 9:16 · 15fps Motion WebP',
+    subtitle: 'Reels 9:16 · HD Motion Reel',
     location: 'Benteng Lonthoir, Banda Besar',
     aspectLabel: '9:16 LIVE MOTION',
     isAnimatedWebp: true,
     src: '/images/media/pohon-sejuta-umat-motion.webp',
+    videoSrc: '/images/media/pohon-sejuta-umat-motion.mp4',
     posterSrc: '/images/landmarks/pohon-sejuta-umat.webp',
     caption:
       'Suasana angin sepoi di bawah naungan Pohon Sejuta Umat menghadap langsung ke kerucut Gunung Api Banda dan perairan hijau turkois Selat Zonnegat.',
@@ -31,11 +33,12 @@ export const BANDA_PORTRAIT_REELS: BandaVisualReelItem[] = [
   {
     id: 'reel-sunset-pelabuhan',
     title: 'Senja Keemasan Pelabuhan Neira',
-    subtitle: 'Reels 9:16 · 15fps Motion WebP',
+    subtitle: 'Reels 9:16 · HD Motion Reel',
     location: 'Pelabuhan Bandanaira',
     aspectLabel: '9:16 LIVE MOTION',
     isAnimatedWebp: true,
     src: '/images/media/sunset-pelabuhan-gunung-api.webp',
+    videoSrc: '/images/media/sunset-pelabuhan-gunung-api.mp4',
     posterSrc: '/images/landmarks/pelabuhan.jpg',
     caption:
       'Momen matahari terbenam di balik siluet megah Gunung Api Banda yang memantulkan cahaya keemasan di sepanjang dermaga Pelabuhan Bandanaira.',
@@ -521,14 +524,26 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
             onClick={(e) => e.stopPropagation()}
             className="relative flex flex-col sm:flex-row max-w-3xl w-full max-h-[90vh] overflow-hidden rounded-3xl bg-[#081d35] border border-white/20 shadow-2xl text-white"
           >
-            <div className="relative w-full sm:w-[320px] aspect-[9/16] max-h-[75vh] sm:max-h-[85vh] shrink-0 bg-black mx-auto">
-              <img
-                src={selectedReelModal.src}
-                alt={selectedReelModal.title}
-                loading="lazy"
-                decoding="async"
-                className="w-full h-full object-cover"
-              />
+            <div className="relative w-full sm:w-[320px] aspect-[9/16] max-h-[75vh] sm:max-h-[85vh] shrink-0 bg-black mx-auto overflow-hidden">
+              {selectedReelModal.videoSrc ? (
+                <video
+                  src={selectedReelModal.videoSrc}
+                  poster={selectedReelModal.posterSrc}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <img
+                  src={selectedReelModal.src}
+                  alt={selectedReelModal.title}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover"
+                />
+              )}
             </div>
             <div className="flex flex-col justify-between p-6 sm:p-8 flex-1 overflow-y-auto">
               <div>
