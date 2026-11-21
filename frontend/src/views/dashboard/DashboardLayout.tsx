@@ -251,14 +251,14 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       shortLabel: 'Surat',
       icon: Mail,
       badge: isOfficerOrAdmin && adminPendingLettersCount > 0 ? adminPendingLettersCount : undefined,
-      visible: true,
+      visible: !isSmartTourismAdmin,
     },
     {
       id: 'population',
       label: 'Kependudukan',
       shortLabel: 'Penduduk',
       icon: Users,
-      visible: isOfficerOrAdmin,
+      visible: !isSmartTourismAdmin && isOfficerOrAdmin,
     },
     {
       id: 'traceability',
@@ -269,7 +269,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         : 'Panen & Mutu Rempah',
       shortLabel: 'Rempah',
       icon: Sprout,
-      visible: isFarmer || isFarmerGroupAdmin || isCoopManager || isOfficerOrAdmin,
+      visible: !isSmartTourismAdmin && (isFarmer || isFarmerGroupAdmin || isCoopManager || isOfficerOrAdmin),
     },
     {
       id: 'farming',
@@ -277,26 +277,26 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       shortLabel: 'Kebun',
       icon: MapPin,
       badge: (isFarmerGroupAdmin || isOfficerOrAdmin) && pendingFarmsCount > 0 ? pendingFarmsCount : undefined,
-      visible: isFarmer || isFarmerGroupAdmin || isOfficerOrAdmin,
+      visible: !isSmartTourismAdmin && (isFarmer || isFarmerGroupAdmin || isOfficerOrAdmin),
     },
     {
       id: 'koperasi',
       label: isCoopManager || isOfficerOrAdmin ? 'Kasir Koperasi Hatta' : 'Koperasi & Tabungan Warga',
       shortLabel: isCoopManager || isOfficerOrAdmin ? 'Kasir' : 'Koperasi',
       icon: Scale,
-      visible: true,
+      visible: !isSmartTourismAdmin,
     },
     {
       id: 'tourism',
       label: isHomestayOperator
         ? 'Kelola Eco-Stay & Tamu'
         : isSmartTourismAdmin
-        ? 'Pemandu & Cagar Budaya'
+        ? 'Draf Artikel Sejarah'
         : isOfficerOrAdmin
         ? 'Master Data Wisata'
         : 'Cagar Budaya & Wisata',
-      shortLabel: 'Wisata',
-      icon: Home,
+      shortLabel: isSmartTourismAdmin ? 'Draf Artikel' : 'Wisata',
+      icon: isSmartTourismAdmin ? BookOpen : Home,
       visible: true,
     },
     {
@@ -304,35 +304,35 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       label: isOfficerOrAdmin ? 'Peta GIS & Spatial Studio' : 'Peta Spasial GIS',
       shortLabel: 'Peta GIS',
       icon: Layers,
-      visible: true,
+      visible: !isSmartTourismAdmin,
     },
     {
       id: 'smart_planner',
       label: isOfficerOrAdmin ? 'Perencana DSS & SAW Admin' : 'Perencana Cerdas DSS',
       shortLabel: 'Smart DSS',
       icon: Compass,
-      visible: true,
+      visible: !isSmartTourismAdmin,
     },
     {
       id: 'iot',
       label: 'Telemetri IoT Cuaca',
       shortLabel: 'IoT Cuaca',
       icon: Radio,
-      visible: true,
+      visible: !isSmartTourismAdmin && (isSurveyor || isOfficerOrAdmin),
     },
     {
       id: 'survei',
       label: 'Survei Lapangan',
       shortLabel: 'Survei',
       icon: Database,
-      visible: isSurveyor || isOfficerOrAdmin,
+      visible: !isSmartTourismAdmin && (isSurveyor || isOfficerOrAdmin),
     },
     {
       id: 'audit',
       label: 'Jejak Audit & Verifikasi',
       shortLabel: 'Audit',
       icon: ShieldCheck,
-      visible: isOfficerOrAdmin,
+      visible: !isSmartTourismAdmin && isOfficerOrAdmin,
     },
   ]
 
@@ -541,16 +541,28 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       },
     ]
 
-    if (isOfficerOrAdmin || isSmartTourismAdmin) {
+    if (isSmartTourismAdmin) {
+      quickActions.push({
+        id: 'act-article-draft',
+        title: 'Tulis & Draf Artikel Sejarah',
+        subtitle: 'Buat draf naskah sejarah baru, edit cerita, dan publikasikan ke /sejarah',
+        keywords: ['artikel', 'draf', 'sejarah', 'pokdarwis', 'tulis', 'cerita', 'seo'],
+        icon: BookOpen,
+        badge: 'Pokdarwis',
+        action: () => {
+          onSelectTab('tourism')
+        },
+      })
+    } else if (isOfficerOrAdmin) {
       quickActions.push({
         id: 'act-cms-contents',
-        title: 'CMS Bank Konten & Verifikasi 6-Point QC',
-        subtitle: 'Unggah karya warga, atur tahapan SOP & validasi 6 poin mutu',
-        keywords: ['cms', 'qc', 'kurasi', 'unggah artikel', 'validasi adat', '6-point'],
+        title: 'CMS Master Data Wisata',
+        subtitle: 'Pengaturan tarif penginapan & pemandu wisata',
+        keywords: ['cms', 'wisata', 'tarif', 'homestay', 'pemandu'],
         icon: ShieldCheck,
         badge: 'CMS',
         action: () => {
-          setPreferredTourismSubTab('cms')
+          setPreferredTourismSubTab('accommodations')
           onSelectTab('tourism')
         },
       })
@@ -814,105 +826,108 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             )
           })}
 
-          {/* --- 2.3 GARIS PEMISAH TIPIS ELEGAN SESUAI PALET (#1E3A5F) --- */}
-          <div className="my-3 border-t border-[#1E3A5F] mx-1" />
+          {/* --- 2.3 GARIS PEMISAH TIPIS ELEGAN SESUAI PALET (#1E3A5F) & UTILITAS --- */}
+          {!isSmartTourismAdmin && (
+            <>
+              <div className="my-3 border-t border-[#1E3A5F] mx-1" />
 
-          {/* --- 2.4 SECTION UTILITAS: NOTIFICATION, DOCUMENTS, HELP --- */}
-          {/* Notification Item dengan Badge Emas/Hijau Sesuai Gambar */}
-          <button
-            type="button"
-            onClick={() => {
-              setShowNotificationToast(true)
-              setTimeout(() => setShowNotificationToast(false), 3500)
-            }}
-            className={`w-full flex items-center rounded-xl text-xs font-medium transition-all group relative ${
-              collapsed
-                ? 'justify-center py-2.5 px-0 h-11'
-                : 'gap-3.5 px-3 py-2.5 text-left'
-            } text-slate-300 hover:text-white hover:bg-white/5`}
-          >
-            <div className="relative shrink-0">
-              <Bell size={19} className="text-slate-400 group-hover:text-[#F4B75E] transition-colors" />
-              {/* Green/Gold Dot di collapsed mode seperti gambar referensi */}
-              {collapsed && (
-                <span className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-[#F4B75E]" />
-              )}
-            </div>
+              {/* Notification Item dengan Badge Emas/Hijau Sesuai Gambar */}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowNotificationToast(true)
+                  setTimeout(() => setShowNotificationToast(false), 3500)
+                }}
+                className={`w-full flex items-center rounded-xl text-xs font-medium transition-all group relative ${
+                  collapsed
+                    ? 'justify-center py-2.5 px-0 h-11'
+                    : 'gap-3.5 px-3 py-2.5 text-left'
+                } text-slate-300 hover:text-white hover:bg-white/5`}
+              >
+                <div className="relative shrink-0">
+                  <Bell size={19} className="text-slate-400 group-hover:text-[#F4B75E] transition-colors" />
+                  {/* Green/Gold Dot di collapsed mode seperti gambar referensi */}
+                  {collapsed && (
+                    <span className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-[#F4B75E]" />
+                  )}
+                </div>
 
-            {!collapsed && (
-              <>
-                <span className="truncate flex-1 text-[13px] tracking-tight text-slate-300 group-hover:text-white">
-                  Notification
-                </span>
-                {/* Circle Badge persis seperti di gambar referensi */}
-                <span className="size-5 rounded-full bg-[#F4B75E] text-[#081D35] font-bold text-[10px] flex items-center justify-center shrink-0 shadow-xs">
-                  {totalNotifications}
-                </span>
-              </>
-            )}
+                {!collapsed && (
+                  <>
+                    <span className="truncate flex-1 text-[13px] tracking-tight text-slate-300 group-hover:text-white">
+                      Notification
+                    </span>
+                    {/* Circle Badge persis seperti di gambar referensi */}
+                    <span className="size-5 rounded-full bg-[#F4B75E] text-[#081D35] font-bold text-[10px] flex items-center justify-center shrink-0 shadow-xs">
+                      {totalNotifications}
+                    </span>
+                  </>
+                )}
 
-            {collapsed && (
-              <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0F2C59] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                Notification ({totalNotifications})
-              </div>
-            )}
-          </button>
+                {collapsed && (
+                  <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0F2C59] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                    Notification ({totalNotifications})
+                  </div>
+                )}
+              </button>
 
-          {/* Documents Item */}
-          <button
-            type="button"
-            onClick={() => {
-              onPublicVerify()
-              setMobileSidebarOpen(false)
-            }}
-            className={`w-full flex items-center rounded-xl text-xs font-medium transition-all group relative ${
-              collapsed
-                ? 'justify-center py-2.5 px-0 h-11'
-                : 'gap-3.5 px-3 py-2.5 text-left'
-            } text-slate-300 hover:text-white hover:bg-white/5`}
-          >
-            <FileText size={19} className="shrink-0 text-slate-400 group-hover:text-[#F4B75E] transition-colors" />
+              {/* Documents Item */}
+              <button
+                type="button"
+                onClick={() => {
+                  onPublicVerify()
+                  setMobileSidebarOpen(false)
+                }}
+                className={`w-full flex items-center rounded-xl text-xs font-medium transition-all group relative ${
+                  collapsed
+                    ? 'justify-center py-2.5 px-0 h-11'
+                    : 'gap-3.5 px-3 py-2.5 text-left'
+                } text-slate-300 hover:text-white hover:bg-white/5`}
+              >
+                <FileText size={19} className="shrink-0 text-slate-400 group-hover:text-[#F4B75E] transition-colors" />
 
-            {!collapsed && (
-              <span className="truncate flex-1 text-[13px] tracking-tight text-slate-300 group-hover:text-white">
-                Documents
-              </span>
-            )}
+                {!collapsed && (
+                  <span className="truncate flex-1 text-[13px] tracking-tight text-slate-300 group-hover:text-white">
+                    Documents
+                  </span>
+                )}
 
-            {collapsed && (
-              <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0F2C59] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                Documents &amp; Verifikasi
-              </div>
-            )}
-          </button>
+                {collapsed && (
+                  <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0F2C59] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                    Documents &amp; Verifikasi
+                  </div>
+                )}
+              </button>
 
-          {/* Help Item */}
-          <button
-            type="button"
-            onClick={() => {
-              onOpenLanding()
-              setMobileSidebarOpen(false)
-            }}
-            className={`w-full flex items-center rounded-xl text-xs font-medium transition-all group relative ${
-              collapsed
-                ? 'justify-center py-2.5 px-0 h-11'
-                : 'gap-3.5 px-3 py-2.5 text-left'
-            } text-slate-300 hover:text-white hover:bg-white/5`}
-          >
-            <HelpCircle size={19} className="shrink-0 text-slate-400 group-hover:text-[#F4B75E] transition-colors" />
+              {/* Help Item */}
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenLanding()
+                  setMobileSidebarOpen(false)
+                }}
+                className={`w-full flex items-center rounded-xl text-xs font-medium transition-all group relative ${
+                  collapsed
+                    ? 'justify-center py-2.5 px-0 h-11'
+                    : 'gap-3.5 px-3 py-2.5 text-left'
+                } text-slate-300 hover:text-white hover:bg-white/5`}
+              >
+                <HelpCircle size={19} className="shrink-0 text-slate-400 group-hover:text-[#F4B75E] transition-colors" />
 
-            {!collapsed && (
-              <span className="truncate flex-1 text-[13px] tracking-tight text-slate-300 group-hover:text-white">
-                Help
-              </span>
-            )}
+                {!collapsed && (
+                  <span className="truncate flex-1 text-[13px] tracking-tight text-slate-300 group-hover:text-white">
+                    Help
+                  </span>
+                )}
 
-            {collapsed && (
-              <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0F2C59] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                Help &amp; Beranda Desa
-              </div>
-            )}
-          </button>
+                {collapsed && (
+                  <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0F2C59] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                    Help &amp; Beranda Desa
+                  </div>
+                )}
+              </button>
+            </>
+          )}
         </div>
 
         {/* --- 2.5 USER PROFILE CARD DI BAGIAN BAWAH PERSIS SESUAI GAMBAR --- */}

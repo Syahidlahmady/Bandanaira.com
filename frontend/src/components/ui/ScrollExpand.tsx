@@ -373,9 +373,9 @@ const ScrollExpandComponent: React.FC<ScrollExpandProps> = ({
     <img
       ref={mediaRef as React.RefObject<HTMLImageElement>}
       className="scroll-expand__media"
-      src={src || poster || '/banda.webp'}
+      src={src || poster || '/banda-480.webp'}
       srcSet="/banda-480.webp 480w, /banda-960.webp 960w, /banda-1440.webp 1440w, /banda.webp 1920w"
-      sizes="(max-width: 1024px) 100vw, 1920px"
+      sizes="(max-width: 640px) 70vw, (max-width: 1024px) 80vw, 1920px"
       alt={alt}
       width={1920}
       height={1106}

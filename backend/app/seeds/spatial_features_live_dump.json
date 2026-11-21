@@ -5871,37 +5871,5 @@
     },
     "description": "",
     "is_active": true
-  },
-  {
-    "name": "Dermaga Waer Banda Besar",
-    "layer_type": "LAYER_PUBLIC_SAFETY",
-    "category": "publik",
-    "island_name": "Banda Besar",
-    "latitude": -4.5285,
-    "longitude": 129.969,
-    "geometry_geojson": null,
-    "properties_meta": {
-      "facility_type": "Dermaga Penyeberangan",
-      "island": "Banda Besar",
-      "image_url": "/images/landmarks/dermaga-waer.jpg"
-    },
-    "description": "Dermaga penyeberangan pesisir tenggara Pulau Banda Besar (Desa Waer) menuju Pulau Neira dan Hatta.",
-    "is_active": true
-  },
-  {
-    "name": "Dermaga Selamon Banda Besar",
-    "layer_type": "LAYER_PUBLIC_SAFETY",
-    "category": "publik",
-    "island_name": "Banda Besar",
-    "latitude": -4.538,
-    "longitude": 129.961,
-    "geometry_geojson": null,
-    "properties_meta": {
-      "facility_type": "Dermaga Tradisional",
-      "island": "Banda Besar",
-      "image_url": "/images/landmarks/dermaga-selamon.jpg"
-    },
-    "description": "Dermaga pesisir timur laut Banda Besar, sentra pendaratan perahu nelayan tradisional Desa Selamon.",
-    "is_active": true
   }
 ]

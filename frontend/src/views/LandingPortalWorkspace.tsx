@@ -2,7 +2,7 @@ import React from 'react'
 import { BandanairaBeranda, NavTabType } from './landing/BandanairaBeranda'
 
 export interface LandingPortalWorkspaceProps {
-  onNavigate: (tab: NavTabType) => void
+  onNavigate: (tab: NavTabType, slugOrParam?: string) => void
   onOpenLogin: () => void
   onOpenRegister?: () => void
   onOpenMarketplace: () => void

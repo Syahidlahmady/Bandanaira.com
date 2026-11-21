@@ -499,11 +499,17 @@ async def seed_all():
                     await session.flush()
 
         # 8. SPATIAL FEATURES (7-Layer GIS & Rute Maritim)
-        logger.info("🗺️ Menginisialisasi 37 Objek Spasial 7-Layer GIS & Rute Maritim...")
+        logger.info("Menginisialisasi Objek Spasial 7-Layer GIS & Rute Maritim...")
         await seed_spatial_features(session)
 
+        # 9. TOURISM ACCOMMODATIONS & ARTIKEL SEJARAH
+        logger.info("Menginisialisasi Bank Konten Wisata, Penginapan & Artikel Sejarah...")
+        from backend.app.modules.tourism.router import ensure_accommodations_seeded, ensure_community_contents_seeded
+        await ensure_accommodations_seeded(session)
+        await ensure_community_contents_seeded(session)
+
         await session.commit()
-        logger.info("✅ Seeding ekosistem Banda Digital selesai dengan sukses!")
+        logger.info("Seeding ekosistem Banda Digital selesai dengan sukses!")
 
 
 if __name__ == "__main__":

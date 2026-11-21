@@ -26,9 +26,10 @@ export type NavTabType =
   | 'audit'
   | 'smart_planner'
   | 'survei'
+  | 'sejarah'
 
 export interface BandanairaBerandaProps {
-  onNavigate: (tab: NavTabType) => void
+  onNavigate: (tab: NavTabType, slugOrParam?: string) => void
   onOpenLogin: () => void
   onOpenRegister?: () => void
   onOpenMarketplace: () => void
