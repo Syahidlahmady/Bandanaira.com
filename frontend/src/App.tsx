@@ -47,7 +47,7 @@ const HistoryArticlesWorkspace = React.lazy(() => import('./views/HistoryArticle
 import { LandingPortalWorkspace } from './views/LandingPortalWorkspace.tsx'
 const UserEcosystemDashboard = React.lazy(() => import('./views/dashboard/UserEcosystemDashboard.tsx').then(m => ({ default: m.UserEcosystemDashboard })))
 import { DashboardLayout } from './views/dashboard/DashboardLayout.tsx'
-import { BandaUnifiedFooter } from './components/common/BandaUnifiedFooter.tsx'
+import { ArrowLeft, Compass, Sparkles } from 'lucide-react'
 import { ErrorBoundary } from './components/common/ErrorBoundary.tsx'
 import { AccessRestrictedNotice } from './components/common/AccessRestrictedNotice.tsx'
 import { offlineDB } from './offline/db.ts'
@@ -1497,104 +1497,70 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {/* 3. Public Tourist Explorer (Zona 1 SRS: Eksplorasi Wisatawan Tanpa Login) */}
+      {/* 3. Dedicated Public Tourism Workspace (Direktori Wisata & Penginapan) */}
       {!currentUser &&
         !authService.getAccessToken() &&
         activeTab === 'tourism' && (
-        <div className="min-h-screen flex flex-col bg-[#F7F5F0] text-[#081D35]">
-          <header className="sticky top-0 z-40 bg-[#081D35] text-white border-b border-[#1E3A5F] shadow-md">
-            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3 flex-wrap">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('landing')}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[#F4B75E] text-xs font-semibold transition cursor-pointer"
-                >
-                  <span>&larr;</span>
-                  <span>Beranda Utama</span>
-                </button>
-                <span className="font-serif font-bold text-base tracking-tight text-white">
-                  bandanaira<span className="text-[#F4B75E]">.com</span>
-                </span>
-                <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#F4B75E]/20 text-[#F4B75E] border border-[#F4B75E]/40">
-                  🧭 Mode Wisatawan Publik
-                </span>
+        <ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Layanan Wisata Banda Neira">
+          <React.Suspense
+            fallback={
+              <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7] text-[#081D35] font-medium text-sm">
+                Memuat Direktori Wisata &amp; Penginapan Banda Neira...
               </div>
-
-              <nav
-                aria-label="Navigasi eksplorasi wisatawan"
-                className="flex items-center gap-2 flex-wrap"
-              >
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('tourism')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
-                    activeTab === 'tourism'
-                      ? 'bg-[#F4B75E] text-[#081D35] font-bold shadow-sm'
-                      : 'bg-white/10 text-slate-200 hover:bg-white/20'
-                  }`}
-                >
-                  Penginapan &amp; Cagar Budaya
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('gis')}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/10 text-slate-200 hover:bg-white/20 transition cursor-pointer"
-                >
-                  Peta Spasial 7-Layer
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('smart_planner')}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/10 text-slate-200 hover:bg-white/20 transition cursor-pointer"
-                >
-                  Perencana Wisata
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowMarketplaceModal(true)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/10 text-slate-200 hover:bg-white/20 transition cursor-pointer"
-                >
-                  Etalase UMKM
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('dashboard')}
-                  className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white border border-[#F4B75E]/50 transition cursor-pointer"
-                >
-                  Masuk / Daftar Portal
-                </button>
-              </nav>
-            </div>
-          </header>
-
-          <main className="flex-1 w-full max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8">
-            <ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Eksplorasi Wisatawan">
-              <React.Suspense
-                fallback={
-                  <div className="p-8 text-center text-slate-500 font-medium">
-                    Memuat layanan eksplorasi wisata Banda Neira...
+            }
+          >
+            <div className="min-h-screen bg-[#FDFBF7] text-[#081D35] flex flex-col selection:bg-[#F4B75E] selection:text-[#081D35]">
+              <header className="sticky top-0 z-30 bg-[#FDFBF7]/95 backdrop-blur-md border-b border-[#E8E2D5] px-4 sm:px-8 py-3">
+                <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('landing')}
+                      className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white hover:bg-[#F4B75E]/20 text-[#0c2340] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer shadow-xs active:scale-[0.98]"
+                    >
+                      <ArrowLeft size={14} />
+                      <span>Kembali ke Beranda</span>
+                    </button>
+                    <span className="font-serif font-bold text-sm tracking-tight text-[#0c2340]">
+                      bandanaira<span className="text-[#F4B75E]">.com</span>
+                    </span>
+                    <span className="hidden sm:inline text-stone-300">|</span>
+                    <span className="hidden sm:inline text-xs font-serif font-medium text-stone-600">
+                      Direktori Wisata &amp; Penginapan
+                    </span>
                   </div>
-                }
-              >
-                {activeTab === 'tourism' && (
-                  <TourismEcoStayWorkspace
-                    currentUser={null}
-                    onNavigate={(tab, param) => handleNavigateWithSlug(tab, param)}
-                    onOpenQuickLogin={() => setShowQuickLoginModal(true)}
-                  />
-                )}
-              </React.Suspense>
-            </ErrorBoundary>
-          </main>
 
-          <BandaUnifiedFooter
-            onNavigateTab={(tab) => setActiveTab(tab)}
-            onOpenRegister={() => setActiveTab('register')}
-            onOpenLogin={() => setActiveTab('population')}
-            onOpenQuickLogin={() => setShowQuickLoginModal(true)}
-          />
-        </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('gis')}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-stone-50 text-[#0c2340] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer shadow-xs"
+                    >
+                      <Compass size={13} />
+                      <span className="hidden sm:inline">Peta Spasial GIS</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('smart_planner')}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-stone-50 text-[#0c2340] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer shadow-xs"
+                    >
+                      <Sparkles size={13} className="text-amber-500" />
+                      <span className="hidden sm:inline">Perencana Wisata</span>
+                    </button>
+                  </div>
+                </div>
+              </header>
+
+              <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+                <TourismEcoStayWorkspace
+                  currentUser={null}
+                  onNavigate={(tab, param) => handleNavigateWithSlug(tab, param)}
+                  onOpenQuickLogin={() => setShowQuickLoginModal(true)}
+                />
+              </main>
+            </div>
+          </React.Suspense>
+        </ErrorBoundary>
       )}
 
       {/* 2B. Loading State when restoring active user session with valid token */}
