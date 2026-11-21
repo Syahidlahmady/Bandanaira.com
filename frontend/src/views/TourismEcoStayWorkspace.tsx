@@ -27,8 +27,11 @@ import {
   Lock,
   Zap,
   BookOpen,
+  Eye,
+  ExternalLink,
 } from 'lucide-react'
 import { CommunityLiteracyHub } from './CommunityLiteracyHub'
+import { PokdarwisHistoryCms } from '../components/dashboard/PokdarwisHistoryCms'
 import {
   tourismService,
   AccommodationItem,
@@ -46,9 +49,14 @@ import { PUBLIC_SAW_DESTINATIONS } from '../components/landing/TourismSawSection
 export interface TourismEcoStayWorkspaceProps {
   currentUser?: any
   onOpenQuickLogin?: () => void
+  onNavigate?: (tab: any, param?: any) => void
 }
 
-export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = ({ currentUser, onOpenQuickLogin }) => {
+export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = ({
+  currentUser,
+  onOpenQuickLogin,
+  onNavigate,
+}) => {
   const { t } = useLanguage()
   const [activeTab, setActiveTab] = useState<TourismSubTab>(() => getPreferredTourismSubTab())
   const [destIslandFilter, setDestIslandFilter] = useState<string>('')
@@ -60,7 +68,8 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
     : []
   const isSuperuser = Boolean(currentUser?.is_superuser)
   const isHomestayOperator = isSuperuser || userRoleNames.some((r) => ['admin', 'village_officer', 'operator_homestay', 'homestay_operator'].includes(r))
-  const isSmartTourismAdmin = isSuperuser || userRoleNames.some((r) => ['admin', 'village_officer', 'smart_tourism_admin'].includes(r))
+  const isSmartTourismAdmin = isSuperuser || userRoleNames.some((r) => ['admin', 'village_officer', 'smart_tourism_admin', 'admin_wisata'].includes(r))
+  const isSmartTourismOnly = userRoleNames.some((r) => ['smart_tourism_admin', 'admin_wisata'].includes(r)) && !isSuperuser && !userRoleNames.some((r) => ['operator_homestay', 'homestay_operator'].includes(r))
   const canAccessCMS = isHomestayOperator || isSmartTourismAdmin
   const canAccessBookings = isHomestayOperator || isSmartTourismAdmin
 
@@ -78,7 +87,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
   const [guideIslandFilter, setGuideIslandFilter] = useState<string>('')
 
   // CMS State
-  const [cmsSubTab, setCmsSubTab] = useState<'accommodations' | 'guides' | 'community_contents'>('accommodations')
+  const [cmsSubTab, setCmsSubTab] = useState<'accommodations' | 'guides' | 'community_contents' | 'history_articles'>('accommodations')
   const [cmsNotice, setCmsNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   // CMS Accommodation Modal
@@ -478,6 +487,80 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : 'Gagal menghapus pemandu wisata.')
     }
+  }
+
+  // Dedicated simplified workspace for Pokdarwis / Admin Wisata (Fokus Khusus Draf Artikel Sejarah)
+  if (isSmartTourismOnly) {
+    return (
+      <div className="workspace-container animate-fade-in" style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '3rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
+              <span className="badge badge-amber" style={{ fontSize: '0.72rem', textTransform: 'uppercase' }}>
+                Pokdarwis Banda Neira
+              </span>
+              <span className="badge badge-blue" style={{ fontSize: '0.72rem' }}>
+                Penulis: {currentUser?.full_name || currentUser?.username}
+              </span>
+            </div>
+            <h2 style={{ margin: 0, fontSize: '1.65rem', fontWeight: 900, color: '#081D35', letterSpacing: '-0.02em' }}>
+              Draf &amp; Manajemen Artikel Sejarah
+            </h2>
+            <p style={{ margin: '0.35rem 0 0', color: '#475569', fontSize: '0.875rem' }}>
+              Tulis narasi sejarah otentik Banda Neira, kelola draf cerita, dan publikasikan langsung ke halaman pembaca /sejarah untuk penguatan SEO.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => onNavigate?.('sejarah')}
+              className="btn btn-outline"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                padding: '0.55rem 0.95rem',
+                borderRadius: '10px',
+                border: '1px solid #CBD5E1',
+                background: '#FFFFFF',
+                color: '#081D35',
+                cursor: 'pointer',
+              }}
+            >
+              <Eye size={14} /> Buka Halaman Pembaca /sejarah
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate?.('landing')}
+              className="btn btn-outline"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                padding: '0.55rem 0.95rem',
+                borderRadius: '10px',
+                border: '1px solid #CBD5E1',
+                background: '#FFFFFF',
+                color: '#081D35',
+                cursor: 'pointer',
+              }}
+            >
+              <ExternalLink size={14} /> Beranda
+            </button>
+          </div>
+        </div>
+
+        <PokdarwisHistoryCms
+          currentUser={currentUser}
+          onPreviewArticle={(slug) => onNavigate?.('sejarah', slug)}
+        />
+      </div>
+    )
   }
 
   return (
@@ -1810,6 +1893,26 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               >
                 <BookOpen size={14} /> Konten &amp; Karya Warga
               </button>
+              <button
+                type="button"
+                onClick={() => setCmsSubTab('history_articles')}
+                style={{
+                  padding: '0.55rem 0.95rem',
+                  borderRadius: '10px',
+                  border: 'none',
+                  fontSize: '0.8rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  background: cmsSubTab === 'history_articles' ? '#081D35' : '#F8FAFC',
+                  color: cmsSubTab === 'history_articles' ? '#F4B75E' : '#64748B',
+                  boxShadow: cmsSubTab === 'history_articles' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
+                }}
+              >
+                <Landmark size={14} /> Artikel Sejarah (Pokdarwis)
+              </button>
             </div>
           </div>
 
@@ -2186,6 +2289,18 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               mode="cms_manager"
               currentUser={currentUser}
               onOpenQuickLogin={onOpenQuickLogin}
+            />
+          )}
+
+          {/* SUB-PANEL 4: ARSIP ARTIKEL SEJARAH (MANDAT POKDARWIS & SEO) */}
+          {cmsSubTab === 'history_articles' && (
+            <PokdarwisHistoryCms
+              currentUser={currentUser}
+              onPreviewArticle={(slug) => {
+                if (onNavigate) {
+                  onNavigate('sejarah', slug)
+                }
+              }}
             />
           )}
         </div>

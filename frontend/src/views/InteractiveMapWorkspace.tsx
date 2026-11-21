@@ -61,6 +61,8 @@ import {
 
 export interface InteractiveMapWorkspaceProps {
   currentUser?: any
+  isPageFullscreen?: boolean
+  onBackToLanding?: () => void
 }
 
 // Helper icons mapping
@@ -626,7 +628,11 @@ export const getFeatureMedia = (feat: GeoJSONFeature): LandmarkMediaInfo => {
   }
 }
 
-export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = ({ currentUser }) => {
+export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = ({
+  currentUser,
+  isPageFullscreen = false,
+  onBackToLanding,
+}) => {
   const { t, isEnglish } = useLanguage()
   const workspaceContainerRef = useRef<HTMLDivElement | null>(null)
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
@@ -634,6 +640,23 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   const layerGroupRef = useRef<L.LayerGroup | null>(null)
   const draftMarkerRef = useRef<L.Marker | null>(null)
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false)
+
+  // Synchronize Leaflet map sizing when isPageFullscreen is active or changes
+  useEffect(() => {
+    if (isPageFullscreen && mapInstanceRef.current) {
+      mapInstanceRef.current.invalidateSize()
+      const t1 = setTimeout(() => {
+        if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize()
+      }, 150)
+      const t2 = setTimeout(() => {
+        if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize()
+      }, 400)
+      return () => {
+        clearTimeout(t1)
+        clearTimeout(t2)
+      }
+    }
+  }, [isPageFullscreen])
 
   const getLayerLabel = (layerType: string): string => {
     switch (layerType) {
@@ -2334,9 +2357,33 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   return (
     <div
       ref={workspaceContainerRef}
-      className={`workspace-container animate-fade-in ${isFullscreen ? 'workspace-fullscreen' : ''}`}
+      className={`workspace-container animate-fade-in ${
+        isPageFullscreen
+          ? 'w-screen h-[100dvh] overflow-hidden'
+          : isFullscreen
+          ? 'workspace-fullscreen'
+          : ''
+      }`}
       style={
-        isFullscreen
+        isPageFullscreen
+          ? {
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100vw',
+              height: '100dvh',
+              zIndex: 1000,
+              background: '#0f172a',
+              overflow: 'hidden',
+              padding: 0,
+              margin: 0,
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+            }
+          : isFullscreen
           ? {
               position: 'fixed',
               top: 0,
@@ -4120,17 +4167,19 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
       )}
 
       {/* Main Map Container (Full Width with Overlay Google Maps Drawer) */}
-      <div style={{ position: 'relative', width: '100%' }}>
+      <div style={{ position: 'relative', width: '100%', height: isPageFullscreen ? '100dvh' : 'auto' }}>
         {/* Leaflet Map Card */}
         <div
           style={{
             padding: 0,
             overflow: 'hidden',
-            border: '1px solid #cbd5e1',
-            borderRadius: '16px',
-            boxShadow: '0 4px 20px rgba(15, 44, 89, 0.06)',
+            border: isPageFullscreen ? 'none' : '1px solid #cbd5e1',
+            borderRadius: isPageFullscreen ? '0px' : '16px',
+            boxShadow: isPageFullscreen ? 'none' : '0 4px 20px rgba(15, 44, 89, 0.06)',
             position: 'relative',
             background: '#ffffff',
+            height: isPageFullscreen ? '100dvh' : undefined,
+            width: '100%',
           }}
         >
           {/* In-Map Floating Search & Island Filter Bar (Top Left Canvas) */}
@@ -4150,6 +4199,19 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               maxWidth: isMobile ? 'none' : 'calc(100% - 100px)',
             }}
           >
+            {/* Minimalist Floating Back to Landing Pill Button */}
+            {onBackToLanding && (
+              <button
+                type="button"
+                onClick={onBackToLanding}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/95 hover:bg-white text-[#0c2340] text-xs font-semibold shadow-md backdrop-blur-md border border-slate-200/90 transition-all cursor-pointer hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 shrink-0"
+                title="Kembali ke Beranda Utama"
+              >
+                <ChevronLeft size={15} />
+                <span className="hidden sm:inline">Kembali ke Beranda</span>
+                <span className="inline sm:hidden">Kembali</span>
+              </button>
+            )}
             {/* Search Box */}
             <div style={{ position: 'relative', width: isMobile ? '100%' : '220px' }}>
               {loading ? (
@@ -4356,10 +4418,16 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
             ref={mapContainerRef}
             style={{
               width: '100%',
-              height: isFullscreen
+              height: isPageFullscreen
+                ? (adminStudioOpen ? 'calc(100dvh - 380px)' : '100dvh')
+                : isFullscreen
                 ? (adminStudioOpen ? 'calc(100vh - 380px)' : 'calc(100vh - 145px)')
                 : isMobile ? '480px' : '640px',
-              minHeight: isFullscreen ? '480px' : (isMobile ? '440px' : '640px'),
+              minHeight: isPageFullscreen
+                ? '100dvh'
+                : isFullscreen
+                ? '480px'
+                : (isMobile ? '440px' : '640px'),
               background: '#e0f2fe',
               transition: 'height 0.2s ease',
             }}

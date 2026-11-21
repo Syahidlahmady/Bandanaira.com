@@ -76,6 +76,53 @@ export type RoleKey =
 // DEFINISI DATA & KONFIGURASI DINAMIS UNTUK SETIAP ROLE PENGGUNA
 // -----------------------------------------------------------------------------
 
+const POKDARWIS_ARTICLES_OVERVIEW = [
+  {
+    title: 'Pulau Rhun & Barter Manhattan: Perjanjian Breda 1667 yang Mengubah Peta Dunia',
+    slug: 'pulau-rhun-barter-manhattan-perjanjian-breda-1667',
+    category: 'Sejarah & Diplomasi',
+    island: 'Pulau Rhun',
+    author: 'Pokdarwis Banda Neira',
+    summary:
+      'Kisah pertukaran teritori paling bersejarah antara Kerajaan Inggris dan VOC Belanda: Pulau Rhun ditukar guling dengan New Amsterdam (kini Manhattan, New York) demi memonopoli rempah pala.',
+    cover: '/images/landmarks/pulau-rhun.jpg',
+    readTime: '6 menit baca',
+  },
+  {
+    title: 'Menelusuri Benteng Belgica: Mahkota Pertahanan Segi Lima di Puncak Bukit Tabaleku',
+    slug: 'menelusuri-benteng-belgica-mahkota-pertahanan-tabaleku',
+    category: 'Cagar Budaya & Benteng',
+    island: 'Pulau Neira',
+    author: 'Pokdarwis Banda Neira',
+    summary:
+      'Benteng bintang segi lima karya Gubernur Jenderal VOC Pieter Both tahun 1611, spot terbaik menikmati matahari terbit dengan latar kemegahan Gunung Api Banda.',
+    cover: '/images/landmarks/belgica.jpg',
+    readTime: '5 menit baca',
+  },
+  {
+    title: 'Pala yang Dicari Dunia: Emas Hijau dari Kepulauan Banda Neira',
+    slug: 'pala-yang-dicari-dunia-dan-jalur-rempah-nusantara',
+    category: 'Jalur Rempah & Alam',
+    island: 'Pulau Banda Besar',
+    author: 'Pokdarwis Banda Neira',
+    summary:
+      'Pohon pala endemik Banda yang dahulu nilainya melampaui emas di pasar Eropa dan memicu penjelajahan samudra bangsa-bangsa dunia ke Maluku.',
+    cover: '/images/landmarks/kebun-pala.jpg',
+    readTime: '5 menit baca',
+  },
+  {
+    title: 'Rumah Pengasingan Bung Hatta & Sjahrir: Laboratorium Pemikiran Kebangsaan di Ujung Timur',
+    slug: 'rumah-pengasingan-bung-hatta-sjahrir-laboratorium-kebangsaan',
+    category: 'Jejak Tokoh Bangsa',
+    island: 'Pulau Neira',
+    author: 'Pokdarwis Banda Neira',
+    summary:
+      'Enam tahun masa pengasingan Mohammad Hatta dan Sutan Sjahrir (1936–1942) di Neira yang diisi dengan mendidik anak-anak lokal dan merumuskan fondasi Republik.',
+    cover: '/images/landmarks/bung-hatta.jpg',
+    readTime: '6 menit baca',
+  },
+]
+
 interface RoleDashboardProfile {
   key: RoleKey
   name: string
@@ -734,14 +781,14 @@ const ROLE_PROFILES: Record<RoleKey, RoleDashboardProfile> = {
   // 8. DINAS WISATA & PEMANDU CAGAR BUDAYA (SMART TOURISM ADMIN)
   smart_tourism_admin: {
     key: 'smart_tourism_admin',
-    name: 'Pemandu Budaya & Dinas Wisata',
-    shortBadge: 'Cagar Budaya HPI',
-    tagline: 'Kurasi 177 Cagar Budaya, Audio Guide & Direktori Pemandu Wisata',
+    name: 'Pokdarwis & Pengelola Artikel Sejarah',
+    shortBadge: 'Pokdarwis CMS',
+    tagline: 'Draf & Publikasi Artikel Sejarah Banda Neira untuk Penguatan SEO & Budaya',
     kpis: [
-      { title: 'SITUS CAGAR BUDAYA AKTIF', value: '177 Objek', trend: '▲ 100% Narasi & Audio Guide', icon: Home, color: '#2563EB' },
-      { title: 'KUNJUNGAN WISATAWAN', value: '14.280 Jiwa', trend: '▲ 15,27% dibanding bln lalu', icon: Users, color: '#059669' },
-      { title: 'PEMANDU WISATA TERLISENSI', value: '24 Pemandu', trend: '▲ HPI Maluku Tengah Terdaftar', icon: Compass, color: '#D97706' },
-      { title: 'SESI DENGAR AUDIO GUIDE', value: '8.420 Kali', trend: '▲ Streaming Tanpa Buffering', icon: Radio, color: '#7C3AED' },
+      { title: 'TOTAL NASKAH & DRAF', value: '4 Artikel', trend: 'Terbit di /sejarah & Beranda', icon: BookOpen, color: '#2563EB' },
+      { title: 'STATUS PUBLIKASI', value: '100% Aktif', trend: 'Dapat diakses publik & pembaca', icon: CheckCircle2, color: '#059669' },
+      { title: 'ESTIMASI WAKTU BACA', value: '18 Menit', trend: 'Total durasi baca arsip', icon: Clock, color: '#D97706' },
+      { title: 'PEMBACA & PENGUNJUNG', value: '14.280 Sesi', trend: 'Trafik organik SEO Google', icon: Users, color: '#7C3AED' },
     ],
     lineChart: {
       title: 'TREN KUNJUNGAN WISATAWAN BANDA NEIRA (RIBU)',
@@ -1102,10 +1149,14 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#D97706]">
             <span className={`size-2 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-            Portal Komando: {profile.name}
+            {activeRoleKey === 'smart_tourism_admin'
+              ? 'Kelompok Sadar Wisata (Pokdarwis)'
+              : `Ruang Kerja: ${profile.name}`}
           </div>
           <h1 className="text-xl sm:text-2xl font-extrabold font-serif text-[#081D35] tracking-tight mt-0.5">
-            {profile.tagline}
+            {activeRoleKey === 'smart_tourism_admin'
+              ? 'Ruang Redaksi & Manajemen Artikel Sejarah'
+              : profile.tagline}
           </h1>
         </div>
 
@@ -1214,6 +1265,231 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
       {/* =====================================================================
           TATA LETAK UTAMA: GRID 3 BAGIAN (AREA KIRI-TENGAH + PANEL KANAN)
       ====================================================================== */}
+      {activeRoleKey === 'smart_tourism_admin' ? (
+        <div className="flex flex-col gap-6">
+          {/* 4 Ringkasan Realistis & Bersih */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs">
+              <div className="size-12 rounded-xl bg-[#081D35] text-[#F4B75E] flex items-center justify-center shrink-0">
+                <BookOpen size={22} />
+              </div>
+              <div className="min-w-0">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block truncate">
+                  Naskah Terbit
+                </span>
+                <p className="text-xl font-bold text-[#081D35] mt-0.5">4 Tulisan</p>
+                <span className="text-[11px] text-emerald-600 font-semibold block mt-0.5 truncate">
+                  Tayang di /sejarah &amp; beranda
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs">
+              <div className="size-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                <CheckCircle2 size={22} />
+              </div>
+              <div className="min-w-0">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block truncate">
+                  Status Pembaca
+                </span>
+                <p className="text-xl font-bold text-[#081D35] mt-0.5">Terbuka Publik</p>
+                <span className="text-[11px] text-emerald-600 font-semibold block mt-0.5 truncate">
+                  Bebas diakses tanpa akun
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs">
+              <div className="size-12 rounded-xl bg-sky-600 text-white flex items-center justify-center shrink-0">
+                <Layers size={22} />
+              </div>
+              <div className="min-w-0">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block truncate">
+                  Topik Bahasan
+                </span>
+                <p className="text-xl font-bold text-[#081D35] mt-0.5">4 Kategori</p>
+                <span className="text-[11px] text-slate-500 font-semibold block mt-0.5 truncate">
+                  Diplomasi, Benteng, Rempah, Tokoh
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs">
+              <div className="size-12 rounded-xl bg-amber-600 text-white flex items-center justify-center shrink-0">
+                <MapPin size={22} />
+              </div>
+              <div className="min-w-0">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block truncate">
+                  Sebaran Cerita
+                </span>
+                <p className="text-xl font-bold text-[#081D35] mt-0.5">3 Pulau</p>
+                <span className="text-[11px] text-slate-500 font-semibold block mt-0.5 truncate">
+                  P. Neira, Banda Besar, P. Rhun
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Area Utama: Kolom Kiri 8 col + Kolom Kanan 4 col */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Kolom Kiri: Daftar Naskah Sejarah */}
+            <div className="lg:col-span-8 flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs">
+                <div>
+                  <h2 className="font-serif text-lg font-bold text-[#081D35]">
+                    Daftar Naskah Sejarah Banda Neira
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Naskah cerita sejarah yang dikurasi oleh Pokdarwis untuk penguatan literasi dan pariwisata.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('tourism')}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#081D35] text-[#F4B75E] hover:bg-[#0F2C59] text-xs font-semibold transition cursor-pointer shrink-0"
+                >
+                  <BookOpen size={14} />
+                  <span>Tulis Artikel di CMS</span>
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {POKDARWIS_ARTICLES_OVERVIEW.map((art, idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs hover:border-[#CBD5E1] transition flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between"
+                  >
+                    <div className="flex gap-3.5 items-start">
+                      <img
+                        src={art.cover}
+                        alt={art.title}
+                        className="size-16 rounded-xl object-cover shrink-0 border border-slate-200"
+                        onError={(e) => {
+                          ;(e.target as HTMLElement).style.display = 'none'
+                        }}
+                      />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 text-[10px] font-semibold">
+                            {art.island}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-medium">
+                            {art.category}
+                          </span>
+                          <span className="text-[10px] text-slate-400">• {art.readTime}</span>
+                        </div>
+                        <h3 className="text-sm font-bold text-[#081D35] leading-snug line-clamp-1">
+                          {art.title}
+                        </h3>
+                        <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">
+                          {art.summary}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex sm:flex-col gap-2 shrink-0 self-end sm:self-center w-full sm:w-auto">
+                      <button
+                        type="button"
+                        onClick={() => onNavigate('tourism')}
+                        className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition cursor-pointer"
+                      >
+                        Sunting Naskah
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onNavigate('sejarah')}
+                        className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#081D35] hover:bg-[#0F2C59] text-xs font-semibold text-white transition cursor-pointer"
+                      >
+                        <Eye size={12} className="text-[#F4B75E]" />
+                        <span>Lihat di Web</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Kolom Kanan: Aksi & Pedoman Penulisan */}
+            <div className="lg:col-span-4 flex flex-col gap-4">
+              {/* Kartu Aksi Cepat */}
+              <div className="p-5 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-3">
+                <h3 className="font-serif text-sm font-bold text-[#081D35] border-b border-slate-100 pb-2">
+                  Pintasan Kerja Redaksi
+                </h3>
+
+                <button
+                  type="button"
+                  onClick={() => onNavigate('tourism')}
+                  className="w-full p-3 rounded-xl bg-[#081D35] text-white hover:bg-[#0F2C59] transition flex items-center justify-between text-left cursor-pointer group"
+                >
+                  <div>
+                    <p className="text-xs font-bold text-[#F4B75E]">Buka CMS Artikel Sejarah</p>
+                    <p className="text-[11px] text-slate-300">Tambah draf &amp; perbarui publikasi</p>
+                  </div>
+                  <ChevronRight size={16} className="text-[#F4B75E] group-hover:translate-x-1 transition-transform" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onNavigate('sejarah')}
+                  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-slate-100/70 transition flex items-center justify-between text-left cursor-pointer group"
+                >
+                  <div>
+                    <p className="text-xs font-bold text-[#081D35]">Halaman Pembaca (/sejarah)</p>
+                    <p className="text-[11px] text-slate-500">Pratinjau tampilan publik dan pembaca</p>
+                  </div>
+                  <ExternalLink size={14} className="text-slate-400 group-hover:text-[#081D35] transition-colors" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onNavigate('landing')}
+                  className="w-full p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition flex items-center justify-between text-left cursor-pointer group"
+                >
+                  <div>
+                    <p className="text-xs font-bold text-[#081D35]">Linimasa Sejarah di Beranda</p>
+                    <p className="text-[11px] text-slate-500">Cek integrasi cerita di halaman utama</p>
+                  </div>
+                  <ChevronRight size={14} className="text-slate-400 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+
+              {/* Kartu Pedoman Penulisan Narasi Pokdarwis */}
+              <div className="p-5 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-3.5">
+                <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                  <CheckCircle2 size={16} className="text-emerald-600" />
+                  <h3 className="font-serif text-sm font-bold text-[#081D35]">
+                    Pedoman Narasi Pokdarwis
+                  </h3>
+                </div>
+
+                <div className="space-y-3 text-xs text-slate-600">
+                  <div>
+                    <h4 className="font-bold text-slate-800 mb-0.5">1. Verifikasi Sumber &amp; Tutur Adat</h4>
+                    <p className="text-[11px] text-slate-500 leading-relaxed">
+                      Rujuk tuturan para tetua adat lokal, arsip cagar budaya Banda, dan literatur sejarah terpercaya.
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-slate-800 mb-0.5">2. Gaya Cerita yang Santun &amp; Mengalir</h4>
+                    <p className="text-[11px] text-slate-500 leading-relaxed">
+                      Gunakan bahasa yang lugas dan mengalir agar mudah dinikmati wisatawan maupun generasi muda.
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold text-slate-800 mb-0.5">3. Dokumentasi Visual Otentik</h4>
+                    <p className="text-[11px] text-slate-500 leading-relaxed">
+                      Sertakan dokumentasi foto asli benteng, kebun pala, atau rumah bersejarah untuk memperkuat cerita.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
         {/* ===================================================================
             KOLOM KIRI-TENGAH (AREA UTAMA ~75% LEBAR -> xl:col-span-9)
@@ -1712,11 +1988,12 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
           </button>
         </div>
       </div>
+      )}
 
       {/* =====================================================================
           DRAWER / EXPANDABLE PELUNCUR RUANG KERJA SESUAI ROLE PENGGUNA
       ====================================================================== */}
-      {showModuleLaunchpad && (
+      {showModuleLaunchpad && activeRoleKey !== 'smart_tourism_admin' && (
         <section className="p-5 rounded-2xl bg-[#081D35] text-white shadow-lg flex flex-col gap-4 animate-fade-in">
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <div>
@@ -1780,29 +2057,23 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
             >
               <Home size={16} className="text-[#F4B75E] mb-1" />
               <p className="text-xs font-bold text-white">Cagar &amp; Eco-Stay</p>
-              <p className="text-[10px] text-slate-400">177 cagar budaya</p>
+              <p className="text-[10px] text-slate-400">Penginapan &amp; budaya</p>
             </button>
 
             <button
               type="button"
               onClick={() => {
-                setPreferredTourismSubTab(
-                  isOfficerOrAdmin || activeRoleKey === 'smart_tourism_admin' ? 'cms' : 'community_literacy'
-                )
+                setPreferredTourismSubTab('accommodations')
                 onNavigate('tourism')
               }}
               className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-left transition cursor-pointer"
             >
               <BookOpen size={16} className="text-[#F4B75E] mb-1" />
               <p className="text-xs font-bold text-white">
-                {isOfficerOrAdmin || activeRoleKey === 'smart_tourism_admin'
-                  ? 'CMS Bank Konten'
-                  : 'Literasi & Konten'}
+                {isOfficerOrAdmin ? 'Katalog Wisata' : 'Destinasi Wisata'}
               </p>
               <p className="text-[10px] text-slate-400">
-                {isOfficerOrAdmin || activeRoleKey === 'smart_tourism_admin'
-                  ? 'Kurasi 6-Point QC'
-                  : 'Karya @neirabasudara'}
+                {isOfficerOrAdmin ? 'Kelola data wisata' : 'Jelajahi pulau'}
               </p>
             </button>
 
@@ -1873,73 +2144,75 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
           SENTUHAN VISUAL BAWAH: FOOTER BANNER LANSKAP BANDA NEIRA
           (Gunung Api Banda, Benteng Belgica, Pohon Pala & Perahu Kora-Kora)
       ====================================================================== */}
-      <footer className="relative w-full mt-4 rounded-2xl overflow-hidden border border-[#E2E8F0] bg-gradient-to-t from-[#081D35] via-[#0F2C59] to-[#1E3A5F] text-white">
-        {/* Siluet Vektor Lanskap Tradisional Banda Neira */}
-        <div className="relative h-28 sm:h-36 w-full flex items-end justify-between px-6 pt-4 pointer-events-none select-none overflow-hidden">
-          {/* Siluet Lanskap Alam & Cagar Budaya */}
-          <svg
-            viewBox="0 0 1200 160"
-            preserveAspectRatio="none"
-            className="absolute inset-0 w-full h-full opacity-35 text-[#F4B75E]"
-          >
-            {/* Siluet Gunung Api Banda di Latar Tengah */}
-            <path d="M 400 160 L 580 30 Q 600 20 620 30 L 800 160 Z" fill="currentColor" opacity="0.3" />
-            {/* Kepulan Asap Halus Gunung Api */}
-            <circle cx="600" cy="18" r="8" fill="currentColor" opacity="0.15" />
-            <circle cx="615" cy="10" r="12" fill="currentColor" opacity="0.1" />
+      {activeRoleKey !== 'smart_tourism_admin' && (
+        <footer className="relative w-full mt-4 rounded-2xl overflow-hidden border border-[#E2E8F0] bg-gradient-to-t from-[#081D35] via-[#0F2C59] to-[#1E3A5F] text-white">
+          {/* Siluet Vektor Lanskap Tradisional Banda Neira */}
+          <div className="relative h-28 sm:h-36 w-full flex items-end justify-between px-6 pt-4 pointer-events-none select-none overflow-hidden">
+            {/* Siluet Lanskap Alam & Cagar Budaya */}
+            <svg
+              viewBox="0 0 1200 160"
+              preserveAspectRatio="none"
+              className="absolute inset-0 w-full h-full opacity-35 text-[#F4B75E]"
+            >
+              {/* Siluet Gunung Api Banda di Latar Tengah */}
+              <path d="M 400 160 L 580 30 Q 600 20 620 30 L 800 160 Z" fill="currentColor" opacity="0.3" />
+              {/* Kepulan Asap Halus Gunung Api */}
+              <circle cx="600" cy="18" r="8" fill="currentColor" opacity="0.15" />
+              <circle cx="615" cy="10" r="12" fill="currentColor" opacity="0.1" />
 
-            {/* Benteng Belgica (Menara Segi Lima Ikonik di Kiri) */}
-            <polygon points="120,160 120,95 160,80 200,95 200,160" fill="currentColor" opacity="0.45" />
-            <polygon points="150,80 160,65 170,80" fill="currentColor" opacity="0.5" />
-            <rect x="70" y="120" width="70" height="40" fill="currentColor" opacity="0.35" />
-            <rect x="180" y="120" width="70" height="40" fill="currentColor" opacity="0.35" />
+              {/* Benteng Belgica (Menara Segi Lima Ikonik di Kiri) */}
+              <polygon points="120,160 120,95 160,80 200,95 200,160" fill="currentColor" opacity="0.45" />
+              <polygon points="150,80 160,65 170,80" fill="currentColor" opacity="0.5" />
+              <rect x="70" y="120" width="70" height="40" fill="currentColor" opacity="0.35" />
+              <rect x="180" y="120" width="70" height="40" fill="currentColor" opacity="0.35" />
 
-            {/* Deretan Pohon Pala & Kelapa Pesisir */}
-            <path d="M 280 160 Q 285 110 300 90 Q 315 110 320 160 Z" fill="currentColor" opacity="0.3" />
-            <path d="M 320 160 Q 325 105 340 85 Q 355 105 360 160 Z" fill="currentColor" opacity="0.25" />
-            <path d="M 850 160 Q 860 100 880 80 Q 900 100 910 160 Z" fill="currentColor" opacity="0.3" />
-            <path d="M 910 160 Q 920 105 940 85 Q 960 105 970 160 Z" fill="currentColor" opacity="0.25" />
+              {/* Deretan Pohon Pala & Kelapa Pesisir */}
+              <path d="M 280 160 Q 285 110 300 90 Q 315 110 320 160 Z" fill="currentColor" opacity="0.3" />
+              <path d="M 320 160 Q 325 105 340 85 Q 355 105 360 160 Z" fill="currentColor" opacity="0.25" />
+              <path d="M 850 160 Q 860 100 880 80 Q 900 100 910 160 Z" fill="currentColor" opacity="0.3" />
+              <path d="M 910 160 Q 920 105 940 85 Q 960 105 970 160 Z" fill="currentColor" opacity="0.25" />
 
-            {/* Perahu Tradisional Kora-Kora Banda di Lautan Kanan */}
-            <path
-              d="M 1000 145 C 1030 140, 1100 140, 1140 145 C 1110 152, 1040 152, 1000 145 Z"
-              fill="currentColor"
-              opacity="0.6"
-            />
-            {/* Tiang Layar & Bendera Kora-Kora */}
-            <line x1="1070" y1="145" x2="1070" y2="105" stroke="currentColor" strokeWidth="2" opacity="0.6" />
-            <polygon points="1070,105 1095,120 1070,135" fill="currentColor" opacity="0.5" />
-            {/* Dayung Kora-kora */}
-            <line x1="1020" y1="148" x2="1010" y2="158" stroke="currentColor" strokeWidth="1.5" opacity="0.5" />
-            <line x1="1040" y1="148" x2="1030" y2="158" stroke="currentColor" strokeWidth="1.5" opacity="0.5" />
-            <line x1="1060" y1="148" x2="1050" y2="158" stroke="currentColor" strokeWidth="1.5" opacity="0.5" />
-            <line x1="1080" y1="148" x2="1070" y2="158" stroke="currentColor" strokeWidth="1.5" opacity="0.5" />
-            <line x1="1100" y1="148" x2="1090" y2="158" stroke="currentColor" strokeWidth="1.5" opacity="0.5" />
+              {/* Perahu Tradisional Kora-Kora Banda di Lautan Kanan */}
+              <path
+                d="M 1000 145 C 1030 140, 1100 140, 1140 145 C 1110 152, 1040 152, 1000 145 Z"
+                fill="currentColor"
+                opacity="0.6"
+              />
+              {/* Tiang Layar & Bendera Kora-Kora */}
+              <line x1="1070" y1="145" x2="1070" y2="105" stroke="currentColor" strokeWidth="2" opacity="0.6" />
+              <polygon points="1070,105 1095,120 1070,135" fill="currentColor" opacity="0.5" />
+              {/* Dayung Kora-kora */}
+              <line x1="1020" y1="148" x2="1010" y2="158" stroke="currentColor" strokeWidth="1.5" opacity="0.5" />
+              <line x1="1040" y1="148" x2="1030" y2="158" stroke="currentColor" strokeWidth="1.5" opacity="0.5" />
+              <line x1="1060" y1="148" x2="1050" y2="158" stroke="currentColor" strokeWidth="1.5" opacity="0.5" />
+              <line x1="1080" y1="148" x2="1070" y2="158" stroke="currentColor" strokeWidth="1.5" opacity="0.5" />
+              <line x1="1100" y1="148" x2="1090" y2="158" stroke="currentColor" strokeWidth="1.5" opacity="0.5" />
 
-            {/* Gelombang Lautan Banda */}
-            <path
-              d="M 0 155 Q 300 148 600 155 Q 900 162 1200 155 L 1200 160 L 0 160 Z"
-              fill="#081D35"
-              opacity="0.9"
-            />
-          </svg>
+              {/* Gelombang Lautan Banda */}
+              <path
+                d="M 0 155 Q 300 148 600 155 Q 900 162 1200 155 L 1200 160 L 0 160 Z"
+                fill="#081D35"
+                opacity="0.9"
+              />
+            </svg>
 
-          {/* Teks Identitas Lanskap Banda Neira */}
-          <div className="relative z-10 pb-3 flex flex-col sm:flex-row sm:items-center justify-between w-full text-xs">
-            <div className="flex items-center gap-2">
-              <span className="font-serif font-black tracking-wider text-base text-[#F4B75E]">
-                Kepulauan Banda Neira
-              </span>
-              <span className="text-slate-300 hidden md:inline">
-                • Titik Nol Jalur Rempah Dunia &amp; Cagar Budaya Maritim
-              </span>
-            </div>
-            <div className="text-[11px] text-slate-400 mt-1 sm:mt-0 font-medium">
-              Benteng Belgica • Gunung Api Banda • Perahu Kora-Kora
+            {/* Teks Identitas Lanskap Banda Neira */}
+            <div className="relative z-10 pb-3 flex flex-col sm:flex-row sm:items-center justify-between w-full text-xs">
+              <div className="flex items-center gap-2">
+                <span className="font-serif font-black tracking-wider text-base text-[#F4B75E]">
+                  Kepulauan Banda Neira
+                </span>
+                <span className="text-slate-300 hidden md:inline">
+                  • Titik Nol Jalur Rempah Dunia &amp; Cagar Budaya Maritim
+                </span>
+              </div>
+              <div className="text-[11px] text-slate-400 mt-1 sm:mt-0 font-medium">
+                Benteng Belgica • Gunung Api Banda • Perahu Kora-Kora
+              </div>
             </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      )}
     </div>
   )
 }
