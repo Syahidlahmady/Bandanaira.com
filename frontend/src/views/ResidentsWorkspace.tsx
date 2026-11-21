@@ -472,7 +472,9 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
               else if (occ.toLowerCase().includes('nelayan') || occ.toLowerCase().includes('laut')) icon = '🐟'
               else if (occ.toLowerCase().includes('cengkeh')) icon = '🌾'
               else if (occ.toLowerCase().includes('fuli') || occ.toLowerCase().includes('pengolah')) icon = '🌺'
-              else if (occ.toLowerCase().includes('wisata')) icon = '⛵'
+              else if (occ.toLowerCase().includes('homestay') || occ.toLowerCase().includes('penginapan')) icon = '🏡'
+              else if (occ.toLowerCase().includes('cinderamata') || occ.toLowerCase().includes('kerajinan')) icon = '🎁'
+              else if (occ.toLowerCase().includes('wisata') || occ.toLowerCase().includes('pemandu') || occ.toLowerCase().includes('guide')) icon = '⛵'
               else if (occ.toLowerCase().includes('desa') || occ.toLowerCase().includes('asn') || occ.toLowerCase().includes('guru')) icon = '🏛️'
 
               return (

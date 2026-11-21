@@ -277,6 +277,8 @@ const getAuthHeaders = (hasBody = true): HeadersInit => {
 export const tourismService = {
   async listAccommodations(params?: {
     island?: string
+    village?: string
+    search?: string
     type?: string
     max_price?: number
     has_ro_water?: boolean
@@ -284,6 +286,8 @@ export const tourismService = {
   }): Promise<AccommodationItem[]> {
     const q = new URLSearchParams()
     if (params?.island) q.append('island', params.island)
+    if (params?.village) q.append('village', params.village)
+    if (params?.search) q.append('search', params.search)
     if (params?.type) q.append('type', params.type)
     if (params?.max_price) q.append('max_price', params.max_price.toString())
     if (params?.has_ro_water !== undefined) q.append('has_ro_water', String(params.has_ro_water))
@@ -326,9 +330,14 @@ export const tourismService = {
     return res.json()
   },
 
-  async listBookings(accommodationId?: string): Promise<BookingItem[]> {
+  async listBookings(paramsOrId?: string | { accommodationId?: string; search?: string }): Promise<BookingItem[]> {
     const q = new URLSearchParams()
-    if (accommodationId) q.append('accommodation_id', accommodationId)
+    if (typeof paramsOrId === 'string') {
+      if (paramsOrId) q.append('accommodation_id', paramsOrId)
+    } else if (paramsOrId) {
+      if (paramsOrId.accommodationId) q.append('accommodation_id', paramsOrId.accommodationId)
+      if (paramsOrId.search) q.append('search', paramsOrId.search)
+    }
 
     const res = await fetch(`${getApiBase()}/tourism/bookings?${q.toString()}`, {
       headers: getAuthHeaders(false),
@@ -379,9 +388,10 @@ export const tourismService = {
     }
   },
 
-  async listTourGuides(params?: { island?: string; is_verified?: boolean }): Promise<TourGuideItem[]> {
+  async listTourGuides(params?: { island?: string; search?: string; is_verified?: boolean }): Promise<TourGuideItem[]> {
     const q = new URLSearchParams()
     if (params?.island) q.append('island', params.island)
+    if (params?.search) q.append('search', params.search)
     if (params?.is_verified !== undefined) q.append('is_verified', String(params.is_verified))
 
     const res = await fetch(`${getApiBase()}/tourism/guides?${q.toString()}`)

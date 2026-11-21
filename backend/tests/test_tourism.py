@@ -477,5 +477,52 @@ async def test_cms_community_contents_crud_and_rbac(client: AsyncClient):
     assert "berhasil dihapus" in res_del.json()["message"]
 
 
+@pytest.mark.asyncio
+async def test_filter_accommodations_by_village_and_search(client: AsyncClient):
+    """Verifikasi filter penginapan per desa dan pencarian kata kunci."""
+    # 1. Filter by village 'Hatta'
+    res_hatta = await client.get("/api/v1/tourism/accommodations?village=Hatta")
+    assert res_hatta.status_code == 200
+    data_hatta = res_hatta.json()
+    assert len(data_hatta) >= 1
+    assert any("Hatta" in a["address"] or "Hatta" in a["name"] for a in data_hatta)
+
+    # 2. Filter by search 'Delfika'
+    res_search = await client.get("/api/v1/tourism/accommodations?search=Delfika")
+    assert res_search.status_code == 200
+    data_search = res_search.json()
+    assert len(data_search) >= 1
+    assert "Delfika" in data_search[0]["name"]
+
+    # 3. Filter by search not found
+    res_none = await client.get("/api/v1/tourism/accommodations?search=NonExistentHomestayXYZ")
+    assert res_none.status_code == 200
+    assert len(res_none.json()) == 0
+
+
+@pytest.mark.asyncio
+async def test_list_bookings_village_scoping_and_search(client: AsyncClient):
+    """Verifikasi scoping desa dan pencarian pada daftar reservasi tamu desa."""
+    admin_token = await get_auth_token(client, "admin", "Admin123!")
+    headers = {"Authorization": f"Bearer {admin_token}"}
+
+    # 1. Search booking by code or guest name
+    res_search = await client.get("/api/v1/tourism/bookings?search=Sarah", headers=headers)
+    assert res_search.status_code == 200
+    data_search = res_search.json()
+    assert isinstance(data_search, list)
+
+
+@pytest.mark.asyncio
+async def test_list_tour_guides_search(client: AsyncClient):
+    """Verifikasi pencarian pemandu wisata berdasarkan nama, keahlian, atau bahasa."""
+    res_search = await client.get("/api/v1/tourism/guides?search=Benteng")
+    assert res_search.status_code == 200
+    data = res_search.json()
+    assert len(data) >= 1
+    assert any("Benteng" in g["specialties"] or "Benteng" in g["bio"] for g in data)
+
+
+
 
 

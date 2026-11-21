@@ -1098,3 +1098,28 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 62.6 Pengujian Unit & Verifikasi Menyeluruh:
   - Menambahkan pengujian di `backend/tests/test_farmers_and_farms.py` dan `backend/tests/test_population.py`.
   - 100% tes backend (97 passed) dan build frontend `npm run build` sukses 100% (2.045 modul, exit code 0).
+
+---
+
+## [Phase 63] - Optimasi Terpadu Sektor Pariwisata (Smart Tourism) & Kependudukan Desa (Community-Based Tourism)
+- [x] 63.1 Integrasi Profesi Pariwisata di Master Data Kependudukan (`OccupationBadge.tsx` & `ResidentsWorkspace.tsx`):
+  - Menambahkan profesi spesifik pariwisata: `'Pengelola Homestay & Eco-Stay'` (🏡), `'Pemandu Wisata Sejarah & Bahari'` (⛵), dan `'Pelaku Usaha Wisata & Cinderamata'` (🎁) ke master `BANDA_OCCUPATIONS`.
+  - Menambahkan filter chip profesi dan visual badge khusus pada dasbor kependudukan agar Kepala Desa dapat memetakan pelaku pariwisata di desanya dalam 1-klik.
+- [x] 63.2 Layanan Administrasi Surat Pariwisata Desa (`CitizenPortalWorkspace.tsx` & `LettersWorkspace.tsx`):
+  - Menambahkan jenis permohonan surat pariwisata desa pada formulir mandiri warga: *Surat Izin / Rekomendasi Usaha Homestay & Penginapan Desa*, *Surat Keterangan Pemandu Wisata Lokal Terdaftar*, dan *Surat Lapor Kedatangan & Domisili Tamu Wisatawan (Wajib Lapor 1x24 Jam)*.
+  - Memperbarui template cetak surat resmi desa di `LettersWorkspace` untuk mendukung rekomendasi usaha pariwisata warga.
+- [x] 63.3 Parameter Lingkup Desa & Pencarian pada API Penginapan (`GET /tourism/accommodations` & `/penginapan`):
+  - Menambahkan parameter query `village` dan `search` dengan operator SQL `or_` pada alamat, nama, dan deskripsi penginapan.
+- [x] 63.4 Pengawasan Reservasi Tamu Desa (Wajib Lapor 1x24 Jam) pada API Pemesanan (`GET /tourism/bookings` & `/pemesanan`):
+  - Menerapkan territorial scoping bagi aparatur desa (`ROLE_VILLAGE_OFFICER` / Kepala Desa) yang terikat ke desa tertentu (`current_user.village`).
+  - Menambahkan parameter query `search` pada buku reservasi tamu untuk pelacakan tamu menginap berdasarkan nama atau kode booking.
+- [x] 63.5 Pencarian Pemandu Wisata Lokal (`GET /tourism/guides`):
+  - Menambahkan parameter query `search` untuk pencarian pemandu berlisensi berdasarkan nama, keahlian khusus, bahasa, atau biografi.
+- [x] 63.6 Antarmuka Penginapan, Tamu & Pemandu (`TourismEcoStayWorkspace.tsx`):
+  - Menambahkan filter chip desa (*Semua Desa, Nassau, Dwiwarna, Rajawali, Lonthoir, Kampung Baru/Hatta, Pulau Ay*) dan search bar kata kunci pada katalog penginapan.
+  - Menambahkan search bar dan widget monitoring *Lingkup Wilayah Desa* pada tab reservasi tamu khusus bagi operator/kepala desa.
+  - Menambahkan search bar kata kunci pada katalog direktori pemandu wisata.
+- [x] 63.7 Pengujian & Verifikasi Menyeluruh:
+  - Menambahkan pengujian di `backend/tests/test_tourism.py` (`test_filter_accommodations_by_village_and_search`, `test_list_bookings_village_scoping_and_search`, `test_list_tour_guides_search`).
+  - 100% tes pariwisata (16 passed) dan kependudukan (10 passed) lulus sempurna.
+  - Build produksi frontend Vite sukses 100% (2.044 modul, exit code 0).

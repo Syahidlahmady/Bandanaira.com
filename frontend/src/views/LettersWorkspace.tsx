@@ -54,7 +54,7 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
               Kotak Masuk Pelayanan Surat Warga (Inbox Desa)
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Verifikasi dan terbitkan surat keterangan usaha (Petani Pala, Nelayan, Fuli) dan surat domisili warga desa.
+              Verifikasi dan terbitkan surat keterangan usaha (Petani Pala, Nelayan, Fuli, Homestay &amp; Wisata) dan surat domisili/lapor tamu desa.
             </p>
           </div>
         </div>

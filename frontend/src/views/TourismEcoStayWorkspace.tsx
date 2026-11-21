@@ -68,6 +68,8 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
   const [accommodations, setAccommodations] = useState<AccommodationItem[]>([])
   const [loadingAccs, setLoadingAccs] = useState<boolean>(true)
   const [islandFilter, setIslandFilter] = useState<string>('')
+  const [villageFilter, setVillageFilter] = useState<string>('')
+  const [accSearch, setAccSearch] = useState<string>('')
   const [typeFilter, setTypeFilter] = useState<string>('')
   const [filterRoOnly, setFilterRoOnly] = useState<boolean>(false)
   const [filterSolarOnly, setFilterSolarOnly] = useState<boolean>(false)
@@ -76,6 +78,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
   const [guides, setGuides] = useState<TourGuideItem[]>([])
   const [loadingGuides, setLoadingGuides] = useState<boolean>(false)
   const [guideIslandFilter, setGuideIslandFilter] = useState<string>('')
+  const [guideSearch, setGuideSearch] = useState<string>('')
+
+  // Bookings State
+  const [bookingSearch, setBookingSearch] = useState<string>('')
 
   // CMS State
   const [cmsSubTab, setCmsSubTab] = useState<'accommodations' | 'guides' | 'community_contents'>('accommodations')
@@ -172,12 +178,15 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
     if (canAccessBookings) {
       loadBookings()
     }
-  }, [islandFilter, typeFilter, filterRoOnly, filterSolarOnly, heritageCategory, guideIslandFilter, canAccessBookings])
+  }, [islandFilter, villageFilter, accSearch, typeFilter, filterRoOnly, filterSolarOnly, heritageCategory, guideIslandFilter, guideSearch, bookingSearch, canAccessBookings])
 
   const loadGuides = async () => {
     setLoadingGuides(true)
     try {
-      const data = await tourismService.listTourGuides({ island: guideIslandFilter || undefined })
+      const data = await tourismService.listTourGuides({
+        island: guideIslandFilter || undefined,
+        search: guideSearch || undefined,
+      })
       setGuides(data)
     } catch {
       // ignore
@@ -190,7 +199,9 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
     if (!canAccessBookings) return
     setLoadingBookings(true)
     try {
-      const data = await tourismService.listBookings()
+      const data = await tourismService.listBookings({
+        search: bookingSearch || undefined,
+      })
       setBookings(data)
     } catch {
       // ignore
@@ -204,6 +215,8 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
     try {
       const data = await tourismService.listAccommodations({
         island: islandFilter || undefined,
+        village: villageFilter || undefined,
+        search: accSearch || undefined,
         type: typeFilter || undefined,
         has_ro_water: filterRoOnly ? true : undefined,
         has_solar: filterSolarOnly ? true : undefined,
@@ -972,6 +985,57 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 <Sun size={13} color="#D97706" /> Ada Listrik Surya
               </label>
             </div>
+
+            {/* Row 2: Filter Desa & Search Penginapan */}
+            <div style={{ width: '100%', borderTop: '1px solid #F1F5F9', paddingTop: '0.75rem', marginTop: '0.25rem', display: 'flex', gap: '0.65rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#081D35', textTransform: 'uppercase' }}>
+                Desa:
+              </span>
+              {['', 'Nassau', 'Dwiwarna', 'Rajawali', 'Lonthoir', 'Kampung Baru', 'Pulau Ay'].map((vil) => (
+                <button
+                  type="button"
+                  key={vil}
+                  onClick={() => setVillageFilter(vil)}
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.3rem 0.7rem',
+                    borderRadius: '20px',
+                    border: villageFilter === vil ? '1px solid #2563EB' : '1px solid #E2E8F0',
+                    background: villageFilter === vil ? '#2563EB' : '#F8FAFC',
+                    color: villageFilter === vil ? '#FFFFFF' : '#64748B',
+                    cursor: 'pointer',
+                    fontWeight: 700,
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {vil ? `Desa ${vil}` : 'Semua Desa'}
+                </button>
+              ))}
+
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.45rem', alignItems: 'center', minWidth: '240px' }}>
+                <div style={{ position: 'relative', width: '100%' }}>
+                  <input
+                    type="text"
+                    placeholder="Cari penginapan atau alamat..."
+                    value={accSearch}
+                    onChange={(e) => setAccSearch(e.target.value)}
+                    className="form-control"
+                    style={{ paddingLeft: '2.2rem', fontSize: '0.78rem', height: '34px', borderRadius: '8px' }}
+                  />
+                  <Search size={14} color="#94A3B8" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+                </div>
+                {accSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setAccSearch('')}
+                    className="btn btn-secondary btn-sm"
+                    style={{ height: '34px', fontSize: '0.75rem', padding: '0 0.6rem' }}
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Accommodation Cards Grid */}
@@ -1347,6 +1411,20 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 Kamar Ramah Lingkungan &amp; Air RO
               </div>
             </div>
+
+            {currentUser?.village && (
+              <div className="card" style={{ padding: '1.25rem', background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '14px', boxShadow: '0 2px 8px rgba(8, 29, 53, 0.04)' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#166534', textTransform: 'uppercase' }}>
+                  Lingkup Wilayah Desa
+                </div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#14532D', marginTop: '0.25rem' }}>
+                  Desa {currentUser.village}
+                </div>
+                <div style={{ fontSize: '0.72rem', color: '#15803D', marginTop: '0.35rem', fontWeight: 600 }}>
+                  Wajib Lapor Tamu 1x24 Jam Aktif
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Action Header */}
@@ -1364,6 +1442,31 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               <RefreshCw size={13} className={loadingBookings ? 'animate-spin' : ''} />
               {loadingBookings ? 'Menyinkronkan...' : 'Perbarui Data'}
             </button>
+          </div>
+
+          {/* Search Bar Reservasi Tamu */}
+          <div style={{ marginBottom: '1.15rem', display: 'flex', gap: '0.65rem', alignItems: 'center' }}>
+            <div style={{ position: 'relative', flex: 1, maxWidth: '420px' }}>
+              <input
+                type="text"
+                placeholder="Cari nama tamu, kode booking, atau penginapan..."
+                value={bookingSearch}
+                onChange={(e) => setBookingSearch(e.target.value)}
+                className="form-control"
+                style={{ paddingLeft: '2.2rem', fontSize: '0.82rem', height: '36px', borderRadius: '10px' }}
+              />
+              <Search size={14} color="#94A3B8" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+            </div>
+            {bookingSearch && (
+              <button
+                type="button"
+                onClick={() => setBookingSearch('')}
+                className="btn btn-secondary btn-sm"
+                style={{ height: '36px', fontSize: '0.75rem' }}
+              >
+                Reset
+              </button>
+            )}
           </div>
 
           {/* Bookings List */}
@@ -1508,6 +1611,30 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 {isl || 'Semua Pulau'}
               </button>
             ))}
+
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.45rem', alignItems: 'center', minWidth: '240px' }}>
+              <div style={{ position: 'relative', width: '100%' }}>
+                <input
+                  type="text"
+                  placeholder="Cari nama pemandu atau keahlian..."
+                  value={guideSearch}
+                  onChange={(e) => setGuideSearch(e.target.value)}
+                  className="form-control"
+                  style={{ paddingLeft: '2.2rem', fontSize: '0.78rem', height: '34px', borderRadius: '8px' }}
+                />
+                <Search size={14} color="#94A3B8" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+              </div>
+              {guideSearch && (
+                <button
+                  type="button"
+                  onClick={() => setGuideSearch('')}
+                  className="btn btn-secondary btn-sm"
+                  style={{ height: '34px', fontSize: '0.75rem', padding: '0 0.6rem' }}
+                >
+                  Reset
+                </button>
+              )}
+            </div>
           </div>
 
           {loadingGuides ? (
