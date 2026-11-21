@@ -1475,10 +1475,32 @@ export const App: React.FC = () => {
         </ErrorBoundary>
       )}
 
+      {/* 2E. Dedicated Edge-to-Edge Fullscreen Smart Planner Workspace for Public Visitors */}
+      {!currentUser &&
+        !authService.getAccessToken() &&
+        activeTab === 'smart_planner' && (
+        <div className="fixed inset-0 w-screen h-[100dvh] overflow-hidden bg-[#FDFBF7] z-50 flex flex-col">
+          <ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Perencana Wisata Banda Neira">
+            <React.Suspense
+              fallback={
+                <div className="flex-1 flex items-center justify-center bg-[#FDFBF7] text-[#081D35] font-medium text-sm">
+                  Memuat Perencana Wisata Banda Neira...
+                </div>
+              }
+            >
+              <SmartPlannerWorkspace
+                onNavigate={(tab, param) => handleNavigateWithSlug(tab as TabId, param)}
+                onBackToLanding={() => setActiveTab('landing')}
+              />
+            </React.Suspense>
+          </ErrorBoundary>
+        </div>
+      )}
+
       {/* 3. Public Tourist Explorer (Zona 1 SRS: Eksplorasi Wisatawan Tanpa Login) */}
       {!currentUser &&
         !authService.getAccessToken() &&
-        (activeTab === 'tourism' || activeTab === 'smart_planner') && (
+        activeTab === 'tourism' && (
         <div className="min-h-screen flex flex-col bg-[#F7F5F0] text-[#081D35]">
           <header className="sticky top-0 z-40 bg-[#081D35] text-white border-b border-[#1E3A5F] shadow-md">
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
@@ -1524,11 +1546,7 @@ export const App: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setActiveTab('smart_planner')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
-                    activeTab === 'smart_planner'
-                      ? 'bg-[#F4B75E] text-[#081D35] font-bold shadow-sm'
-                      : 'bg-white/10 text-slate-200 hover:bg-white/20'
-                  }`}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/10 text-slate-200 hover:bg-white/20 transition cursor-pointer"
                 >
                   Perencana Wisata
                 </button>
@@ -1564,11 +1582,6 @@ export const App: React.FC = () => {
                     currentUser={null}
                     onNavigate={(tab, param) => handleNavigateWithSlug(tab, param)}
                     onOpenQuickLogin={() => setShowQuickLoginModal(true)}
-                  />
-                )}
-                {activeTab === 'smart_planner' && (
-                  <SmartPlannerWorkspace
-                    onNavigate={(tab, param) => handleNavigateWithSlug(tab as TabId, param)}
                   />
                 )}
               </React.Suspense>
@@ -1786,6 +1799,7 @@ export const App: React.FC = () => {
           {activeTab === 'smart_planner' && (
             <SmartPlannerWorkspace
               onNavigate={(tab, param) => handleNavigateWithSlug(tab as TabId, param)}
+              onBackToLanding={() => setActiveTab('landing')}
             />
           )}
 
