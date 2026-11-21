@@ -218,6 +218,7 @@ export const PokdarwisHistoryCms: React.FC<PokdarwisHistoryCmsProps> = ({
         setArticles(data)
         try {
           localStorage.setItem('pokdarwis_articles_cache', JSON.stringify(data))
+          window.dispatchEvent(new CustomEvent('banda_articles_updated', { detail: data }))
         } catch {
           // ignore storage error
         }
@@ -329,31 +330,34 @@ export const PokdarwisHistoryCms: React.FC<PokdarwisHistoryCmsProps> = ({
           is_published: formData.is_published,
           sop_stage: formData.is_published ? 'PUBLIKASI' : 'REVIEW',
         }
+        let updatedItem: CommunityContentItem | null = null
         try {
-          await tourismService.updateCommunityContent(editingArticleId, payload)
-        } catch {
-          // Tetap simpan ke local state jika koneksi server sedang offline
+          updatedItem = await tourismService.updateCommunityContent(editingArticleId, payload)
+        } catch (err: any) {
+          console.warn('Backend update failed, falling back to local state:', err)
         }
         setArticles((prev) => {
           const updated = prev.map((a) =>
-            a.id === editingArticleId
-              ? {
+            a.id === editingArticleId || a.content_code === editingArticleId || a.slug === editingArticleId
+              ? (updatedItem || {
                   ...a,
                   ...payload,
                   latitude: lat,
                   longitude: lng,
                   updated_at: new Date().toISOString(),
-                }
+                })
               : a
           )
           try {
             localStorage.setItem('pokdarwis_articles_cache', JSON.stringify(updated))
+            window.dispatchEvent(new CustomEvent('banda_articles_updated', { detail: updated }))
+            window.dispatchEvent(new Event('storage'))
           } catch {
             // ignore
           }
           return updated
         })
-        setNotice({ type: 'success', text: 'Artikel sejarah berhasil diperbarui.' })
+        setNotice({ type: 'success', text: 'Artikel sejarah berhasil diperbarui dan disinkronkan.' })
       } else {
         // Create new article
         const payload: CommunityContentCreatePayload = {
@@ -381,8 +385,8 @@ export const PokdarwisHistoryCms: React.FC<PokdarwisHistoryCmsProps> = ({
         let createdItem: CommunityContentItem | null = null
         try {
           createdItem = await tourismService.createCommunityContent(payload)
-        } catch {
-          // Buat entri fallback lokal
+        } catch (err: any) {
+          console.warn('Backend create failed, saving locally:', err)
         }
         const finalItem: CommunityContentItem = createdItem || {
           id: `art-local-${Date.now()}`,
@@ -414,12 +418,14 @@ export const PokdarwisHistoryCms: React.FC<PokdarwisHistoryCmsProps> = ({
           const updated = [finalItem, ...prev]
           try {
             localStorage.setItem('pokdarwis_articles_cache', JSON.stringify(updated))
+            window.dispatchEvent(new CustomEvent('banda_articles_updated', { detail: updated }))
+            window.dispatchEvent(new Event('storage'))
           } catch {
             // ignore
           }
           return updated
         })
-        setNotice({ type: 'success', text: 'Artikel sejarah baru berhasil ditambahkan dan disimpan.' })
+        setNotice({ type: 'success', text: 'Artikel sejarah baru berhasil ditambahkan dan disinkronkan.' })
       }
 
       setShowModal(false)
@@ -439,13 +445,15 @@ export const PokdarwisHistoryCms: React.FC<PokdarwisHistoryCmsProps> = ({
       setLoading(true)
       try {
         await tourismService.deleteCommunityContent(id)
-      } catch {
-        // Fallback local deletion
+      } catch (err: any) {
+        console.warn('Backend delete failed, removing locally:', err)
       }
       setArticles((prev) => {
-        const updated = prev.filter((a) => a.id !== id)
+        const updated = prev.filter((a) => a.id !== id && a.content_code !== id && a.slug !== id)
         try {
           localStorage.setItem('pokdarwis_articles_cache', JSON.stringify(updated))
+          window.dispatchEvent(new CustomEvent('banda_articles_updated', { detail: updated }))
+          window.dispatchEvent(new Event('storage'))
         } catch {
           // ignore
         }

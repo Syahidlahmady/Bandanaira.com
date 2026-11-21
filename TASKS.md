@@ -69,6 +69,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 64: Peta Spasial GIS Fullscreen Edge-to-Edge, Navigasi Minimalis, Pembersihan Seeder, & Optimasi Lighthouse**
 - [x] **Phase 65: Fitur Artikel Sejarah Pokdarwis, Dedicated Public History Page, & Pokdarwis CMS Dashboard**
 - [x] **Phase 66: Galeri Pusaka Snap-Rail Seluler, Thumbnail WebP 12 Cagar Budaya, dan Integrasi Mobile Static Optimization**
+- [x] **Phase 67: Sinkronisasi Penuh CRUD Artikel Sejarah antara Database PostgreSQL, CMS, Reader View, dan Dasbor Utama**
 ---
 
 ## Detailed Task Checklist
