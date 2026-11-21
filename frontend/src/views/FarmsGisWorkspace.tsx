@@ -3,6 +3,7 @@ import { MapPin } from 'lucide-react'
 import { User } from '../services/auth'
 import { gisService } from '../services/gis'
 import {
+  CandidateResident,
   Farm,
   Farmer,
   FarmerGroup,
@@ -179,7 +180,12 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
     name: '',
     phone: '',
     farmer_group_id: '',
+    resident_id: '',
   })
+  const [candidateResidents, setCandidateResidents] = useState<CandidateResident[]>([])
+  const [loadingCandidates, setLoadingCandidates] = useState(false)
+  const [selectedResidentId, setSelectedResidentId] = useState<string>('')
+
   const [newFarmerMsg, setNewFarmerMsg] = useState<{
     type: 'success' | 'error'
     text: string
@@ -202,7 +208,59 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
       )
     : farmerGroups
 
+  // Muat kandidat warga desa terverifikasi saat kotak pendaftaran petani dibuka
+  useEffect(() => {
+    if (!showNewFarmerBox) return
+    let active = true
+    setLoadingCandidates(true)
+    farmerService
+      .getCandidateResidents({
+        farmer_group_id: newFarmerForm.farmer_group_id || accessibleFarmerGroups[0]?.id || undefined,
+        village: activeVillage || undefined,
+      })
+      .then((data) => {
+        if (active) {
+          setCandidateResidents(data)
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching candidate residents:', err)
+      })
+      .finally(() => {
+        if (active) setLoadingCandidates(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [showNewFarmerBox, activeVillage, newFarmerForm.farmer_group_id, accessibleFarmerGroups])
+
+  const handleSelectResident = (resId: string) => {
+    setSelectedResidentId(resId)
+    const res = candidateResidents.find((c) => c.id === resId)
+    if (res) {
+      setNewFarmerForm((prev) => ({
+        ...prev,
+        resident_id: res.id,
+        name: res.full_name,
+        phone: res.phone_number || prev.phone,
+      }))
+    } else {
+      setSelectedResidentId('')
+      setNewFarmerForm((prev) => ({
+        ...prev,
+        resident_id: '',
+      }))
+    }
+  }
+
   const handleCreateFarmerMember = async () => {
+    if (!selectedResidentId && isFarmerGroupAdmin) {
+      setNewFarmerMsg({
+        type: 'error',
+        text: 'Wajib memilih warga terdaftar (NIK) di desa Anda untuk ditambahkan ke kelompok tani.',
+      })
+      return
+    }
     const cleanName = newFarmerForm.name.trim()
     if (cleanName.length < 2) {
       setNewFarmerMsg({ type: 'error', text: 'Nama lengkap petani minimal 2 huruf.' })
@@ -220,14 +278,16 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
         name: cleanName,
         phone: newFarmerForm.phone.trim() || undefined,
         farmer_group_id: newFarmerForm.farmer_group_id || accessibleFarmerGroups[0]?.id || undefined,
+        resident_id: selectedResidentId || undefined,
         village: activeVillage,
       })
       setFarmForm((prev: any) => ({ ...prev, farmer_id: created.id, village: activeVillage || prev.village }))
-      setNewFarmerForm({ name: '', phone: '', farmer_group_id: '' })
+      setNewFarmerForm({ name: '', phone: '', farmer_group_id: '', resident_id: '' })
+      setSelectedResidentId('')
       setShowNewFarmerBox(false)
       setNewFarmerMsg({
         type: 'success',
-        text: `✓ Petani ${created.name} (${created.farmer_code}) berhasil didaftarkan ke Kelompok Tani ${activeVillage ? `Desa ${activeVillage} ` : ''}dan dipilih otomatis.`,
+        text: `✓ Petani ${created.name} (${created.farmer_code}) dari data warga terdaftar Desa ${activeVillage || 'terkait'} berhasil didaftarkan ke Kelompok Tani dan dipilih otomatis.`,
       })
       fetchFarmingData()
     } catch (err: unknown) {
@@ -837,33 +897,96 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
               <div
                 style={{
                   marginBottom: '0.9rem',
-                  padding: '0.9rem',
-                  background: '#ffffff',
-                  border: '1.5px solid #bae6fd',
+                  padding: '1rem',
+                  background: '#f8fafc',
+                  border: '1.5px solid #38bdf8',
                   borderRadius: '10px',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0f2c59' }}>
-                    👨‍🌾 Tambah Petani Anggota Poktan
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#0f2c59' }}>
+                      👨‍🌾 Tambah Petani Anggota Poktan dari Warga Terdaftar
+                    </span>
+                    {activeVillage && (
+                      <span
+                        style={{
+                          fontSize: '0.72rem',
+                          padding: '0.2rem 0.5rem',
+                          background: '#e0f2fe',
+                          color: '#0369a1',
+                          borderRadius: '6px',
+                          fontWeight: 700,
+                        }}
+                      >
+                        Wilayah: Desa {activeVillage}
+                      </span>
+                    )}
+                  </div>
                   <button
                     type="button"
-                    onClick={() => setShowNewFarmerBox(false)}
+                    onClick={() => {
+                      setShowNewFarmerBox(false)
+                      setSelectedResidentId('')
+                    }}
                     style={{ background: 'transparent', border: 'none', color: '#64748b', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
                   >
                     Tutup ✕
                   </button>
                 </div>
+
+                {/* Pemilih Warga Berdasarkan NIK Terdaftar */}
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <label className="form-label" style={{ fontWeight: 700, fontSize: '0.78rem', color: '#0369a1', marginBottom: '0.35rem' }}>
+                    Pilih NIK & Warga Terverifikasi Desa {activeVillage ? `(${activeVillage})` : ''} *
+                  </label>
+                  <select
+                    value={selectedResidentId}
+                    onChange={(e) => handleSelectResident(e.target.value)}
+                    className="form-control"
+                    style={{ fontWeight: 600, borderColor: selectedResidentId ? '#0284c7' : '#cbd5e1' }}
+                  >
+                    <option value="">
+                      {loadingCandidates
+                        ? '⏳ Memuat daftar warga terverifikasi desa...'
+                        : candidateResidents.length === 0
+                        ? `-- Belum ada warga terverifikasi di Desa ${activeVillage || ''} --`
+                        : `-- Pilih NIK & Nama Warga Terdaftar (${candidateResidents.length} warga tersedia) --`}
+                    </option>
+                    {candidateResidents.map((c) => (
+                      <option key={c.id} value={c.id} disabled={c.already_member}>
+                        NIK: {c.nik} | {c.full_name} ({c.occupation || 'Warga'}{c.already_member ? ' - Sudah Anggota Poktan' : ''})
+                      </option>
+                    ))}
+                  </select>
+                  {candidateResidents.length === 0 && !loadingCandidates && (
+                    <div
+                      style={{
+                        marginTop: '0.4rem',
+                        fontSize: '0.74rem',
+                        color: '#b45309',
+                        background: '#fef3c7',
+                        padding: '0.4rem 0.6rem',
+                        borderRadius: '6px',
+                        border: '1px solid #fde68a',
+                      }}
+                    >
+                      ⚠️ Belum ada warga berstatus <strong>terverifikasi (verified)</strong> di Desa {activeVillage}. Pastikan Kepala Desa telah mendaftarkan dan memverifikasi data warga di modul Kependudukan.
+                    </div>
+                  )}
+                </div>
+
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '0.75rem', alignItems: 'end' }}>
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label className="form-label">Nama Lengkap Petani</label>
                     <input
                       type="text"
-                      placeholder="Mis. La Ode Usman"
+                      placeholder="Terisi otomatis dari NIK warga terpilih"
                       value={newFarmerForm.name}
+                      readOnly={Boolean(selectedResidentId)}
                       onChange={(e) => setNewFarmerForm({ ...newFarmerForm, name: e.target.value })}
                       className="form-control"
+                      style={{ background: selectedResidentId ? '#f1f5f9' : '#ffffff' }}
                     />
                   </div>
                   <div className="form-group" style={{ marginBottom: 0 }}>
@@ -894,7 +1017,7 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                   <div>
                     <button
                       type="button"
-                      disabled={savingFarmer}
+                      disabled={savingFarmer || (isFarmerGroupAdmin && !selectedResidentId)}
                       onClick={handleCreateFarmerMember}
                       className="btn btn-primary"
                       style={{ width: '100%', padding: '0.55rem 0.9rem', fontSize: '0.8rem' }}

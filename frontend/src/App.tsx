@@ -1508,6 +1508,7 @@ export const App: React.FC = () => {
           {activeTab === 'population' && (
             isOfficerOrAdmin ? (
               <ResidentsWorkspace
+                currentUser={currentUser}
                 residents={residents}
                 popStats={popStats}
                 loadingPop={loadingPop}

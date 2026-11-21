@@ -23,13 +23,28 @@ class FarmerGroupResponse(BaseModel):
 
 
 class FarmerCreate(BaseModel):
-    farmer_code: str = Field(..., min_length=3, max_length=50)
-    name: str = Field(..., min_length=2, max_length=255)
+    farmer_code: Optional[str] = Field(None, max_length=50)
+    name: Optional[str] = Field(None, max_length=255)
     phone: Optional[str] = Field(None, max_length=20)
     status: str = Field("active", pattern=r"^(active|inactive)$")
     user_id: Optional[uuid.UUID] = None
     resident_id: Optional[uuid.UUID] = None
     farmer_group_id: Optional[uuid.UUID] = None
+
+
+class CandidateResidentResponse(BaseModel):
+    id: uuid.UUID
+    nik: str
+    full_name: str
+    gender: str
+    phone_number: Optional[str] = None
+    village: str
+    occupation: Optional[str] = None
+    address: Optional[str] = None
+    verification_status: str
+    already_member: bool = False
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class FarmerUpdate(BaseModel):

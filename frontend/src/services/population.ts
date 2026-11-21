@@ -45,6 +45,7 @@ export interface ResidentCreateInput {
   address?: string
   rt?: string
   rw?: string
+  village?: string
   occupation?: string
   phone_number?: string
 }
@@ -82,13 +83,16 @@ export const populationService = {
     return authService.fetchWithAuth(`${API_BASE}${path}`, options)
   },
 
-  async listResidents(page = 1, limit = 20, search?: string, occupation?: string): Promise<ResidentListResponse> {
+  async listResidents(page = 1, limit = 20, search?: string, occupation?: string, village?: string): Promise<ResidentListResponse> {
     let path = `/population/residents?page=${page}&limit=${limit}`
     if (search) {
       path += `&search=${encodeURIComponent(search)}`
     }
     if (occupation) {
       path += `&occupation=${encodeURIComponent(occupation)}`
+    }
+    if (village) {
+      path += `&village=${encodeURIComponent(village)}`
     }
     const res = await this.requestWithAuth(path)
     if (!res.ok) {
@@ -100,7 +104,7 @@ export const populationService = {
   async createResident(input: ResidentCreateInput): Promise<Resident> {
     const res = await this.requestWithAuth('/population/residents', {
       method: 'POST',
-      body: JSON.stringify({ ...input, village: 'Banda Neira' }),
+      body: JSON.stringify({ ...input, village: input.village || 'Lonthoir' }),
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
@@ -120,8 +124,9 @@ export const populationService = {
     return res.json()
   },
 
-  async getStatistics(): Promise<PopulationStatistics> {
-    const res = await this.requestWithAuth('/population/statistics')
+  async getStatistics(village?: string): Promise<PopulationStatistics> {
+    const q = village ? `?village=${encodeURIComponent(village)}` : ''
+    const res = await this.requestWithAuth(`/population/statistics${q}`)
     if (!res.ok) {
       throw new Error(`Gagal memuat statistik penduduk (${res.status})`)
     }

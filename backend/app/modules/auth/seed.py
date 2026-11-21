@@ -33,6 +33,7 @@ DEMO_USERS = [
         "password": "Petugas123!",
         "full_name": "Budi Santoso (Petugas Pelayanan Desa)",
         "role": "village_officer",
+        "village": "Lonthoir",
         "is_superuser": False,
     },
     {
@@ -41,6 +42,7 @@ DEMO_USERS = [
         "password": "Ketua123!",
         "full_name": "Hasan Baadilla (Ketua Poktan Pala Banda)",
         "role": "farmer_group_admin",
+        "village": "Lonthoir",
         "is_superuser": False,
     },
     {
@@ -49,6 +51,7 @@ DEMO_USERS = [
         "password": "Petani123!",
         "full_name": "Ali Wailissa (Petani Rempah Lonthoir)",
         "role": "farmer",
+        "village": "Lonthoir",
         "is_superuser": False,
     },
     {
@@ -57,6 +60,7 @@ DEMO_USERS = [
         "password": "Warga123!",
         "full_name": "Siti Rahma (Warga Banda Neira)",
         "role": "resident",
+        "village": "Banda Neira",
         "is_superuser": False,
     },
     {
@@ -119,6 +123,7 @@ async def seed_roles_and_admin(db: AsyncSession) -> None:
                 full_name=u_data["full_name"],
                 is_active=True,
                 is_superuser=u_data["is_superuser"],
+                village=u_data.get("village"),
                 roles=[role_obj],
             )
             db.add(user_obj)

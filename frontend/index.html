@@ -18,24 +18,87 @@
   <!-- Preload responsive LCP hero image for instant discovery -->
   <link rel="preload" href="/banda.webp" imagesrcset="/banda-480.webp 480w, /banda-960.webp 960w, /banda-1440.webp 1440w, /banda.webp 1920w" imagesizes="(max-width: 1024px) 100vw, 1920px" as="image" type="image/webp" fetchpriority="high" />
 
-  <!-- Non-blocking asynchronous font loading -->
-  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@400;500;600;700&family=Style+Script&family=JetBrains+Mono:wght@400;500&display=swap" as="style" />
+  <!-- Fast, preconnected font loading with font-display: swap -->
   <link
     rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@400;500;600;700&family=Style+Script&family=JetBrains+Mono:wght@400;500&display=swap"
-    media="print"
-    onload="this.media='all'" />
-  <noscript>
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@400;500;600;700&family=Style+Script&family=JetBrains+Mono:wght@400;500&display=swap" />
-  </noscript>
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Style+Script&display=swap" />
 
   <title>Visit Banda Naira : Official Banda Naira Website</title>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      color: #fff;
+      font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .critical-hero {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      min-height: 100dvh;
+      background-color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .critical-hero__frame {
+      position: absolute;
+      inset: 0;
+      clip-path: inset(21% 28% 21% 28% round 24px);
+      overflow: hidden;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.6);
+    }
+    @media (max-width: 1023px) {
+      .critical-hero__frame {
+        clip-path: inset(24% 15% 24% 15% round 18px);
+      }
+    }
+    .critical-hero__media {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .critical-hero__title {
+      position: relative;
+      z-index: 10;
+      color: #fff;
+      font-weight: 900;
+      font-size: clamp(1.75rem, 5.6vw, 7.5rem);
+      text-align: center;
+      letter-spacing: -0.035em;
+      text-shadow: 0 16px 36px rgba(0,0,0,0.95);
+      user-select: none;
+      pointer-events: none;
+    }
+  </style>
 </head>
 
-<body>
-  <div id="root"></div>
+<body style="background-color: #000; margin: 0;">
+  <div id="root">
+    <div class="critical-hero" aria-hidden="true">
+      <div class="critical-hero__frame">
+        <img
+          class="critical-hero__media"
+          src="/banda.webp"
+          srcset="/banda-480.webp 480w, /banda-960.webp 960w, /banda-1440.webp 1440w, /banda.webp 1920w"
+          sizes="(max-width: 1024px) 100vw, 1920px"
+          alt="Pemandangan Banda Neira dari udara dengan laut dan pulau-pulau di sekitarnya"
+          width="1920"
+          height="1106"
+          fetchpriority="high"
+          decoding="sync"
+        />
+      </div>
+      <div class="critical-hero__title">
+        Di jantung rempah dunia
+      </div>
+    </div>
+  </div>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 

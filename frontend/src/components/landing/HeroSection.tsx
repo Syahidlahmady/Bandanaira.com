@@ -91,7 +91,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         }`}
       >
         <header
-          className="flex h-16 sm:h-20 items-center justify-between px-4 sm:px-6 py-0 w-full max-w-7xl mx-auto rounded-2xl overflow-visible border border-solid border-white/20 transition-all duration-300 backdrop-blur-md shadow-2xl pointer-events-auto bg-[#081d35cc]"
+          className="flex h-16 sm:h-20 items-center justify-between px-4 sm:px-6 py-0 w-full max-w-7xl mx-auto rounded-2xl overflow-visible border border-solid border-white/20 transition-all duration-300 backdrop-blur-sm bg-[#081d35f2] shadow-2xl pointer-events-auto will-change-transform transform-gpu"
         >
           {/* Brand Logo */}
           <a
@@ -282,8 +282,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         endRadius={0}
         mediaZoom={isMobile ? 1.05 : 1.22}
         scrollDistance={isMobile ? 0.28 : 0.75}
-        holdDistance={isMobile ? 0.05 : 1.6}
-        smoothing={isMobile ? 0 : 0.1}
+        holdDistance={isMobile ? 0.05 : 0.15}
+        smoothing={0}
         overlayScrim={0.4}
         onProgressChange={handleProgressChange}
         title={

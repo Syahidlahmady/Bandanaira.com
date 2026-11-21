@@ -18,8 +18,7 @@ export const FALLBACK_ACCOMMODATIONS: AccommodationItem[] = [
     contact_whatsapp: '6281234567801',
     description:
       'Penginapan bergaya kolonial Hindia dengan pemandangan langsung ke Benteng Belgica, dilengkapi suplai Air Bersih RO dan panel surya.',
-    photo_url:
-      'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=85',
+    photo_url: '/images/landmarks/hotel-maulana.jpg',
     is_verified: true,
     created_at: '2026-01-10T00:00:00Z',
   },
@@ -37,8 +36,7 @@ export const FALLBACK_ACCOMMODATIONS: AccommodationItem[] = [
     contact_whatsapp: '6281234567802',
     description:
       'Homestay keluarga di bawah naungan pohon pala dan kenari, sarapan kuliner lokal kue kenari dan ikan asar segar.',
-    photo_url:
-      'https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=900&q=85',
+    photo_url: '/images/landmarks/nutmeg-tree-resort.jpg',
     is_verified: true,
     created_at: '2026-01-12T00:00:00Z',
   },
@@ -56,8 +54,7 @@ export const FALLBACK_ACCOMMODATIONS: AccommodationItem[] = [
     contact_whatsapp: '6281234567804',
     description:
       'Bungalow kayu tepi pantai berpasir putih, hanya 10 langkah dari tebing karang drop-off bawah laut Pulau Hatta.',
-    photo_url:
-      'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=900&q=85',
+    photo_url: '/images/landmarks/pulau-hatta.jpg',
     is_verified: true,
     created_at: '2026-01-15T00:00:00Z',
   },
@@ -75,8 +72,7 @@ export const FALLBACK_ACCOMMODATIONS: AccommodationItem[] = [
     contact_whatsapp: '6281234567805',
     description:
       'Panorama langsung ke Laut Banda dan Gunung Api dari ketinggian tebing Lonthoir, dekat anak tangga keramat menuju perkebunan pala.',
-    photo_url:
-      'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=900&q=85',
+    photo_url: '/images/landmarks/abba-homestay.jpg',
     is_verified: true,
     created_at: '2026-01-18T00:00:00Z',
   },
@@ -94,8 +90,7 @@ export const FALLBACK_ACCOMMODATIONS: AccommodationItem[] = [
     contact_whatsapp: '6281234567803',
     description:
       'Hotel legendaris tepi dermaga Neira yang pernah disinggahi tamu negara dan pesohor dunia, dengan teras menghadap selat gunung api.',
-    photo_url:
-      'https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=900&q=85',
+    photo_url: '/images/landmarks/hotel-maulana.jpg',
     is_verified: true,
     created_at: '2026-01-20T00:00:00Z',
   },
@@ -113,8 +108,7 @@ export const FALLBACK_ACCOMMODATIONS: AccommodationItem[] = [
     contact_whatsapp: '6281234567806',
     description:
       'Ketenangan total di pulau perkebunan pala tertua, dikelilingi laguna jernih yang menjadi habitat kura-kura dan hiu karang jinak.',
-    photo_url:
-      'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=900&q=85',
+    photo_url: '/images/landmarks/baba-lagoon.jpg',
     is_verified: true,
     created_at: '2026-01-22T00:00:00Z',
   },
@@ -301,10 +295,11 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
               >
                 {/* Background Image */}
                 <img
-                  src={stay.photo_url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=85'}
+                  src={stay.photo_url || '/images/landmarks/hotel-maulana.jpg'}
                   alt={stay.name}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                   loading="lazy"
+                  decoding="async"
                 />
 
                 {/* Scrim Overlay */}
