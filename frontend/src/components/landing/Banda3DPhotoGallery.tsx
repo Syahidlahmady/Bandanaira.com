@@ -350,31 +350,6 @@ export const Banda3DPhotoGallery: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Scroll effect driving 3D Z-flythrough
-  const cachedBoundsRef = useRef({ activeStart: 0, activeEnd: 0, speedMultiplier: 1.2, isMobileDevice: false })
-
-  useEffect(() => {
-    const measureBounds = () => {
-      if (!sectionRef.current) return
-      const rect = sectionRef.current.getBoundingClientRect()
-      const scrollY = window.scrollY
-      const sectionTop = rect.top + scrollY
-      const isMobile = window.innerWidth < 1024
-      const isMobileDevice = window.innerWidth < 768
-      const activeStart = sectionTop
-      const totalHeight = sectionRef.current.offsetHeight
-      const windowH = typeof window !== 'undefined' ? window.innerHeight : 900
-      const activeEnd = sectionTop + totalHeight - (isMobile ? 550 : windowH)
-      const totalTravel = Math.max(1, activeEnd - activeStart)
-      const speedMultiplier = isMobile ? 2.8 : 2600 / totalTravel
-      cachedBoundsRef.current = { activeStart, activeEnd, speedMultiplier, isMobileDevice }
-    }
-
-    measureBounds()
-    window.addEventListener('resize', measureBounds, { passive: true })
-    return () => window.removeEventListener('resize', measureBounds)
-  }, [])
-
   useEffect(() => {
     const section = sectionRef.current
     if (!section) return
@@ -388,15 +363,24 @@ export const Banda3DPhotoGallery: React.FC = () => {
         if (Math.abs(scrollY - lastScrollYRef.current) < 0.5) return
         lastScrollYRef.current = scrollY
 
-        const { activeStart, activeEnd, speedMultiplier } = cachedBoundsRef.current
+        const rect = section.getBoundingClientRect()
+        const windowH = typeof window !== 'undefined' ? window.innerHeight : 900
+        const totalHeight = section.offsetHeight
 
         // Fast bail-out when completely offscreen (avoids layout thrashing)
-        if (scrollY < activeStart - 800 || scrollY > activeEnd + 800) {
+        if (rect.bottom < -400 || rect.top > windowH + 400) {
           return
         }
 
-        const isActive = scrollY >= activeStart && scrollY <= activeEnd
-        const progressDist = scrollY < activeStart ? 0 : Math.min(scrollY - activeStart, activeEnd - activeStart)
+        // Active start is precisely when top of section touches top of viewport (rect.top <= 0)
+        // If rect.top > 0, user is still in Hero section -> strictly 0 progress (frozen at initial positions)
+        const maxTravel = Math.max(1, totalHeight - windowH)
+        const progressDist = rect.top > 0 ? 0 : Math.min(-rect.top, maxTravel)
+        const isPastEnd = -rect.top > maxTravel
+
+        // Distance from furthest element (approx -2240) to camera pass (+400) is ~2640px
+        const isMobile = window.innerWidth < 1024
+        const speedMultiplier = isMobile ? 2.8 : 2600 / maxTravel
 
         // Animate photo cards & floating ornaments
         const elements = elementsRef.current
@@ -406,10 +390,10 @@ export const Banda3DPhotoGallery: React.FC = () => {
           const initialZ = Number(el.dataset.zinit || 0)
           let currentZ = initialZ
 
-          if (isActive) {
+          if (rect.top <= 0 && !isPastEnd) {
             currentZ = initialZ + speedMultiplier * progressDist
-          } else if (scrollY > activeEnd) {
-            currentZ = initialZ + speedMultiplier * (activeEnd - activeStart)
+          } else if (isPastEnd) {
+            currentZ = initialZ + speedMultiplier * maxTravel
           }
 
           currentZ = Math.round(currentZ * 10) / 10
@@ -452,7 +436,7 @@ export const Banda3DPhotoGallery: React.FC = () => {
           if (progressDist > 0) {
             titleZ = initialTitleZ + speedMultiplier * 0.7 * progressDist
             titleOpacity = Math.max(0, 1 - progressDist / 600)
-          } else if (scrollY > activeEnd) {
+          } else if (isPastEnd) {
             titleOpacity = 0
           }
 

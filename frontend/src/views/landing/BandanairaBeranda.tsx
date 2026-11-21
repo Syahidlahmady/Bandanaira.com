@@ -2,7 +2,6 @@ import React, { useEffect, useState, Suspense } from 'react'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import { HeroSection } from '../../components/landing/HeroSection'
-import { Banda3DPhotoGallery } from '../../components/landing/Banda3DPhotoGallery'
 
 const PetaInteractiveSection = React.lazy(() => import('../../components/landing/PetaInteractiveSection'))
 const HeritageSpiceSection = React.lazy(() => import('../../components/landing/HeritageSpiceSection'))
@@ -126,11 +125,6 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
         activeNav={activeNav}
         setActiveNav={setActiveNav}
       />
-
-      {/* 2. 3D Perspective Photo Gallery (Kompilasi Foto Banda Neira) */}
-      <div className="w-full">
-        <Banda3DPhotoGallery />
-      </div>
 
       <Suspense
         fallback={
