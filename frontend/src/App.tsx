@@ -227,6 +227,14 @@ export const App: React.FC = () => {
       return
     }
     setActiveTab(tab)
+    if (tab === 'gis' && slug) {
+      const q = slug.startsWith('?') ? slug : `?${slug}`
+      try {
+        window.history.pushState({ tab: 'gis' }, '', `/gis${q}`)
+      } catch {
+        // ignore
+      }
+    }
   }
 
   const setActiveTab = (tab: TabId, replace: boolean = false) => {
@@ -1558,7 +1566,11 @@ export const App: React.FC = () => {
                     onOpenQuickLogin={() => setShowQuickLoginModal(true)}
                   />
                 )}
-                {activeTab === 'smart_planner' && <SmartPlannerWorkspace />}
+                {activeTab === 'smart_planner' && (
+                  <SmartPlannerWorkspace
+                    onNavigate={(tab, param) => handleNavigateWithSlug(tab as TabId, param)}
+                  />
+                )}
               </React.Suspense>
             </ErrorBoundary>
           </main>
@@ -1770,9 +1782,11 @@ export const App: React.FC = () => {
             <InteractiveMapWorkspace currentUser={currentUser} />
           )}
 
-          {/* TAB 8: PERENCANA CERDAS SAW (DSS) */}
+          {/* TAB 8: ASISTEN PERENCANA WISATA CERDAS */}
           {activeTab === 'smart_planner' && (
-            <SmartPlannerWorkspace />
+            <SmartPlannerWorkspace
+              onNavigate={(tab, param) => handleNavigateWithSlug(tab as TabId, param)}
+            />
           )}
 
           {/* TAB 9: PUSAT KOMANDO TELEMETRI IoT & RESILIENSI PULAU */}

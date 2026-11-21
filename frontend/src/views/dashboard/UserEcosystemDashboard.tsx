@@ -840,12 +840,12 @@ const ROLE_PROFILES: Record<RoleKey, RoleDashboardProfile> = {
       subtext: 'Titik Nol Jalur Rempah Dunia',
     },
     workspace3: {
-      title: 'EVALUASI REKOMENDASI CERDAS SAW',
+      title: 'ASISTEN REKOMENDASI WISATA',
       subtitle: 'Indeks Kepuasan Rute Wisatawan',
       mainValue: '94,8%',
-      trend: '▲ 3,4% akurasi multikriteria',
+      trend: '▲ 3,4% tingkat kepuasan kurasi',
       badgeText: 'Optimal',
-      buttonText: 'Buka Perencana SAW',
+      buttonText: 'Buka Asisten Perencana',
       targetTab: 'smart_planner',
       bars: [
         { label: 'Jan', value: 86 },

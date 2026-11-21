@@ -72,7 +72,7 @@ export const BandaUnifiedFooter: React.FC<BandaUnifiedFooterProps> = ({
                   Peta Spasial Vektor
                 </button>
                 <button type="button" onClick={() => onNavigateTab && onNavigateTab('smart_planner')} className="text-left hover:text-white transition-colors">
-                  Kalkulator SAW Wisata
+                  Perencana Wisata Cerdas
                 </button>
                 <button type="button" onClick={() => onNavigateTab && onNavigateTab('tourism')} className="text-left hover:text-white transition-colors">
                   Direktori Eco-Stay

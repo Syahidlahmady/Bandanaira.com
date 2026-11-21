@@ -2247,6 +2247,38 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
     }
   }
 
+  // Auto-focus feature if requested via URL query params (e.g. from Smart Planner)
+  useEffect(() => {
+    if (!features || features.length === 0) return
+    const params = new URLSearchParams(window.location.search)
+    const targetFeatureId = params.get('feature_id')
+    const targetName = params.get('name')
+    const targetLat = params.get('lat')
+    const targetLng = params.get('lng')
+
+    let matched: GeoJSONFeature | undefined
+    if (targetFeatureId) {
+      matched = features.find((f) => String(f.id) === targetFeatureId || String(f.properties?.id) === targetFeatureId)
+    }
+    if (!matched && targetName) {
+      const q = targetName.toLowerCase()
+      matched = features.find((f) => f.properties?.name?.toLowerCase().includes(q))
+    }
+
+    if (matched) {
+      handleFocusFeature(matched)
+      if (matched.properties?.layer_type) {
+        setSelectedLayers((prev) => new Set([...prev, matched!.properties.layer_type]))
+      }
+    } else if (targetLat && targetLng && mapInstanceRef.current) {
+      const lat = parseFloat(targetLat)
+      const lng = parseFloat(targetLng)
+      if (!isNaN(lat) && !isNaN(lng)) {
+        mapInstanceRef.current.setView([lat, lng], 16, { animate: true })
+      }
+    }
+  }, [features])
+
   // Copy Coordinates to Clipboard with user feedback
   const handleCopyCoordinates = async () => {
     if (!selectedFeature) return

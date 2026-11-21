@@ -308,8 +308,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     },
     {
       id: 'smart_planner',
-      label: isOfficerOrAdmin ? 'Perencana DSS & SAW Admin' : 'Perencana Cerdas DSS',
-      shortLabel: 'Smart DSS',
+      label: 'Perencana Wisata Cerdas',
+      shortLabel: 'Perencana Wisata',
       icon: Compass,
       visible: !isSmartTourismAdmin,
     },

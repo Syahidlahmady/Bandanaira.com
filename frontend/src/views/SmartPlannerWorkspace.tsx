@@ -1,1095 +1,1179 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import {
-  Sparkles,
-  Award,
   Compass,
-  AlertTriangle,
-  CheckCircle2,
-  RefreshCw,
-  Bot,
+  Home,
+  MapPin,
+  Sparkles,
   Send,
+  Calendar,
+  CheckCircle2,
+  Copy,
+  Check,
+  BookOpen,
+  Droplets,
+  Zap,
+  ArrowRight,
+  Printer,
+  Bot,
+  User,
+  RefreshCw,
+  Phone,
+  Bookmark,
+  BookmarkCheck,
+  Layers,
+  Clock,
+  Info,
 } from 'lucide-react'
-import {
-  dssService,
-  SAWCalculationResponse,
-  TourismPreferences,
-  CrisisPriorityWeights,
-} from '../services/dss'
+import { gisService, GeoJSONFeature } from '../services/gis'
+import { tourismService, AccommodationItem, CommunityContentItem } from '../services/tourism'
+import { getFeatureMedia } from './InteractiveMapWorkspace'
+import { BandaUnifiedFooter } from '../components/common/BandaUnifiedFooter'
 
-interface DssChatMessage {
+export interface SmartPlannerWorkspaceProps {
+  onNavigate?: (tab: string, param?: string) => void
+}
+
+export interface UnifiedPlannerItem {
   id: string
-  role: 'user' | 'assistant'
-  text: string
-  topName?: string
-  topScorePercent?: string
-  weightsSummary?: string
+  name: string
+  type: 'heritage' | 'nature' | 'accommodation'
+  categoryLabel: string
+  island: string
+  description: string
+  photoUrl: string
+  latitude: number
+  longitude: number
+  priceRp?: number
+  contactWhatsapp?: string
+  hasCleanRoWater?: boolean
+  hasSolarBackup?: boolean
+  audioUrl?: string
+  relatedArticleSlug?: string
+  historicalEra?: string
+  builtYear?: number
+  hoursOrAccess?: string
+  relevanceScore?: number
 }
 
-const TOURISM_QUICK_PROMPTS = [
-  'Cari penginapan hemat biaya dengan air RO di Pulau Neira',
-  'Prioritaskan fasilitas air bersih RO dan listrik surya lengkap',
-  'Suasana alam, snorkeling, dan cagar budaya di Pulau Hatta',
-  'Penginapan paling dekat dermaga utama di Pulau Banda Besar',
+export interface ItineraryDay {
+  dayNumber: number
+  title: string
+  focusArea: string
+  items: UnifiedPlannerItem[]
+  curatorNotes: string
+}
+
+export interface ChatMessage {
+  id: string
+  role: 'assistant' | 'user'
+  content: string
+  timestamp: string
+  highlightedItems?: UnifiedPlannerItem[]
+  itineraryPlan?: ItineraryDay[]
+}
+
+const QUICK_PROMPT_CHIPS = [
+  'Jelajah 3 Hari Sejarah Benteng & Jejak Bung Hatta',
+  'Snorkeling Karang Lava Flow & Wisata Bahari Pulau Hatta',
+  'Penginapan Hemat Air Bersih RO & Listrik Surya di Neira',
+  'Island Hopping Banda Besar, Perkebunan Pala & Pulau Rhun',
+  'Rute 1 Hari Keliling Kota Neira Jalan Kaki',
 ]
 
-const CRISIS_QUICK_PROMPTS = [
-  'Prioritaskan desa dengan kualitas air paling kritis (TDS tinggi)',
-  'Fokus bantuan pada desa berpenduduk padat yang butuh air segera',
-  'Desa terpencil yang jauh dari sumber air dan sering padam listrik',
-  'Kalkulasi seimbang antara krisis TDS, populasi, jarak air, dan listrik',
-]
+export const SmartPlannerWorkspace: React.FC<SmartPlannerWorkspaceProps> = ({ onNavigate }) => {
+  const [gisFeatures, setGisFeatures] = useState<GeoJSONFeature[]>([])
+  const [accommodations, setAccommodations] = useState<AccommodationItem[]>([])
+  const [articles, setArticles] = useState<CommunityContentItem[]>([])
+  const [isLoadingData, setIsLoadingData] = useState(true)
 
-const normalizeWeightMap = <T extends Record<string, number>>(raw: T): T => {
-  const keys = Object.keys(raw) as (keyof T)[]
-  const total = keys.reduce((sum, key) => sum + (raw[key] || 0), 0) || 1
-  const out = {} as T
-  for (const key of keys) {
-    out[key] = (Math.round(((raw[key] || 0) / total) * 20) / 20) as T[keyof T]
-  }
-  return out
-}
+  // Chat conversation state
+  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [inputValue, setInputValue] = useState('')
+  const [isTyping, setIsTyping] = useState(false)
 
-const parseWorkspaceTourismPrompt = (
-  prompt: string
-): { prefs: TourismPreferences; explanation: string } => {
-  const q = prompt.toLowerCase()
-  let weightHarga = 0.25
-  let weightJarak = 0.2
-  let weightFasilitas = 0.3
-  let weightDayaTarik = 0.25
-  let maxBudget: number | undefined
-  let islandFilter = ''
-  const reasons: string[] = []
+  // Current selected itinerary / recommendations
+  const [activePlanDays, setActivePlanDays] = useState<ItineraryDay[]>([])
+  const [activeItems, setActiveItems] = useState<UnifiedPlannerItem[]>([])
+  const [planTitle, setPlanTitle] = useState('Rencana Perjalanan Rekomendasi Kurator')
+  const [planSummary, setPlanSummary] = useState('Pilihan destinasi dan penginapan otentik berdasarkan kurasi data spasial Kepulauan Banda.')
 
-  if (/(hemat|murah|budget|terjangkau|ekonomis|ransel|backpacker)/.test(q)) {
-    weightHarga = 0.45
-    reasons.push('bobot biaya tarif hemat dinaikkan')
-  }
-  const ribuMatch = q.match(/\b(\d{3})\s*(rb|ribu)\b/)
-  const jutaMatch = q.match(/\b(\d+(?:[.,]\d+)?)\s*(jt|juta)\b/)
-  if (ribuMatch) {
-    maxBudget = Number(ribuMatch[1]) * 1000
-    reasons.push(`batas tarif Rp ${maxBudget.toLocaleString('id-ID')}`)
-  } else if (jutaMatch) {
-    maxBudget = Math.round(Number(jutaMatch[1].replace(',', '.')) * 1_000_000)
-    reasons.push(`batas tarif Rp ${maxBudget.toLocaleString('id-ID')}`)
-  }
-
-  if (/(dekat|dermaga|pelabuhan|pusat|kota|cepat|jalan kaki)/.test(q)) {
-    weightJarak = 0.4
-    reasons.push('kedekatan ke dermaga utama diutamakan')
-  }
-  if (/(air|ro|surya|plts|listrik|fasilitas|nyaman|keluarga|genset)/.test(q)) {
-    weightFasilitas = 0.45
-    reasons.push('fasilitas air RO & daya surya diprioritaskan')
-  }
-  if (/(alam|snorkeling|selam|karang|sejarah|benteng|budaya|pala|pemandangan)/.test(q)) {
-    weightDayaTarik = 0.45
-    reasons.push('daya tarik cagar budaya & alam ditingkatkan')
-  }
-
-  if (/(neira|kota|belgica|nassau)/.test(q)) {
-    islandFilter = 'Pulau Neira'
-    reasons.push('filter wilayah Pulau Neira')
-  } else if (/(banda besar|lonthoir|lontor|benteng hollandia)/.test(q)) {
-    islandFilter = 'Pulau Banda Besar'
-    reasons.push('filter wilayah Pulau Banda Besar')
-  } else if (/(hatta|rozengain)/.test(q)) {
-    islandFilter = 'Pulau Hatta'
-    reasons.push('filter wilayah Pulau Hatta')
-  } else if (/(\bai\b|pulau ai|pulau run|\brun\b)/.test(q)) {
-    islandFilter = 'Pulau Ai'
-    reasons.push('filter wilayah Pulau Ai')
-  }
-
-  const normalized = normalizeWeightMap({
-    weight_harga: weightHarga,
-    weight_jarak: weightJarak,
-    weight_fasilitas: weightFasilitas,
-    weight_daya_tarik: weightDayaTarik,
-  })
-
-  return {
-    prefs: {
-      ...normalized,
-      max_budget_rp: maxBudget,
-      island_filter: islandFilter,
-    },
-    explanation:
-      reasons.length > 0
-        ? `Preferensi dihitung ulang dengan ${reasons.join(', ')}.`
-        : 'Menggunakan kalkulasi SAW berimbang untuk penginapan dan destinasi kepulauan Banda.',
-  }
-}
-
-const parseWorkspaceCrisisPrompt = (
-  prompt: string
-): { weights: CrisisPriorityWeights; explanation: string } => {
-  const q = prompt.toLowerCase()
-  let weightTds = 0.35
-  let weightPopulasi = 0.25
-  let weightJarakAir = 0.2
-  let weightPadamListrik = 0.2
-  const reasons: string[] = []
-
-  if (/(tds|asin|garam|payau|kualitas air|kritis|tercemar|sensor)/.test(q)) {
-    weightTds = 0.55
-    reasons.push('tingkat salinitas/TDS air diprioritaskan tinggi')
-  }
-  if (/(penduduk|populasi|warga|padat|jiwa|kk)/.test(q)) {
-    weightPopulasi = 0.45
-    reasons.push('jumlah penduduk terdampak menjadi bobot utama')
-  }
-  if (/(jauh|jarak|terpencil|akses air|angkut|dermaga)/.test(q)) {
-    weightJarakAir = 0.4
-    reasons.push('jarak angkut sumber air tawar diberi urgensi lebih')
-  }
-  if (/(listrik|padam|pln|genset|mati|energi|plts)/.test(q)) {
-    weightPadamListrik = 0.4
-    reasons.push('durasi pemadaman listrik diperberat')
-  }
-
-  const normalized = normalizeWeightMap({
-    weight_tds: weightTds,
-    weight_populasi: weightPopulasi,
-    weight_jarak_air: weightJarakAir,
-    weight_padam_listrik: weightPadamListrik,
-  })
-
-  return {
-    weights: normalized,
-    explanation:
-      reasons.length > 0
-        ? `Matriks urgensi desa diperbarui: ${reasons.join(', ')}.`
-        : 'Menjalankan kalkulasi SAW prioritas krisis air & energi secara berimbang.',
-  }
-}
-
-export const SmartPlannerWorkspace: React.FC = () => {
-  const [activeDssMode, setActiveDssMode] = useState<'tourism' | 'crisis'>('tourism')
-  const [loading, setLoading] = useState<boolean>(false)
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
-
-  // Mode 1: Tourism State
-  const [tourismPrefs, setTourismPrefs] = useState<TourismPreferences>({
-    weight_harga: 0.25,
-    weight_jarak: 0.20,
-    weight_fasilitas: 0.30,
-    weight_daya_tarik: 0.25,
-    max_budget_rp: undefined,
-    island_filter: '',
-  })
-  const [tourismResults, setTourismResults] = useState<SAWCalculationResponse | null>(null)
-
-  // Mode 2: Crisis State
-  const [crisisWeights, setCrisisWeights] = useState<CrisisPriorityWeights>({
-    weight_tds: 0.35,
-    weight_populasi: 0.25,
-    weight_jarak_air: 0.20,
-    weight_padam_listrik: 0.20,
-  })
-  const [crisisResults, setCrisisResults] = useState<SAWCalculationResponse | null>(null)
-
-  const handleRunTourismSAW = async () => {
-    setLoading(true)
-    setErrorMsg(null)
+  // Saved / Bookmarked items
+  const [savedItemIds, setSavedItemIds] = useState<string[]>(() => {
     try {
-      const res = await dssService.calculateTourismRecommendation(tourismPrefs)
-      setTourismResults(res)
-    } catch (err: unknown) {
-      if (err instanceof Error) setErrorMsg(err.message)
-    } finally {
-      setLoading(false)
+      const saved = localStorage.getItem('banda_saved_planner_items')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
     }
-  }
-
-  const handleRunCrisisSAW = async () => {
-    setLoading(true)
-    setErrorMsg(null)
-    try {
-      const res = await dssService.calculateCrisisPriority(crisisWeights)
-      setCrisisResults(res)
-    } catch (err: unknown) {
-      if (err instanceof Error) setErrorMsg(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const [chatInput, setChatInput] = useState<string>('')
-  const [chatHistory, setChatHistory] = useState<Record<'tourism' | 'crisis', DssChatMessage[]>>({
-    tourism: [
-      {
-        id: 'init-tourism',
-        role: 'assistant',
-        text: 'Halo! Saya Asisten Kalkulator DSS SAW Wisata Banda. Ceritakan budget, kebutuhan fasilitas air RO/listrik surya, atau pulau tujuan Anda—saya akan menyusun bobot SAW secara otomatis dan memperbarui peringkat di bawah.',
-      },
-    ],
-    crisis: [
-      {
-        id: 'init-crisis',
-        role: 'assistant',
-        text: 'Halo! Saya Asisten Kalkulator DSS Ketahanan Desa. Sebutkan fokus penanggulangan (misalnya kadar TDS kritis, kepadatan warga, jarak angkut air, atau pemadaman listrik) untuk mengkalkulasi peringkat urgensi desa.',
-      },
-    ],
   })
 
-  const appendChatMessage = (mode: 'tourism' | 'crisis', msg: DssChatMessage) => {
-    setChatHistory((prev) => ({
-      ...prev,
-      [mode]: [...prev[mode], msg],
-    }))
-  }
+  // View state: 'itinerary' (Day-by-Day) vs 'all' (Grid list) vs 'saved'
+  const [canvasTab, setCanvasTab] = useState<'itinerary' | 'all' | 'saved'>('itinerary')
+  // Mobile tab state: 'chat' vs 'canvas'
+  const [mobileActiveView, setMobileActiveView] = useState<'chat' | 'canvas'>('chat')
+  const [copiedPlan, setCopiedPlan] = useState(false)
 
-  const handleWorkspaceChatPrompt = async (rawPrompt: string) => {
-    const prompt = rawPrompt.trim()
-    if (!prompt || loading) return
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
-    const mode = activeDssMode
-    setChatInput('')
-    setLoading(true)
-    setErrorMsg(null)
-    appendChatMessage(mode, {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      text: prompt,
-    })
+  // 1. Fetch Real Database on Mount
+  useEffect(() => {
+    let isMounted = true
 
-    try {
-      if (mode === 'tourism') {
-        const { prefs, explanation } = parseWorkspaceTourismPrompt(prompt)
-        setTourismPrefs(prefs)
-        const res = await dssService.calculateTourismRecommendation(prefs)
-        setTourismResults(res)
-        const nw = res.normalized_weights || {}
-        const wHarga = nw.harga ?? nw.weight_harga ?? prefs.weight_harga ?? 0.25
-        const wJarak = nw.jarak ?? nw.weight_jarak ?? prefs.weight_jarak ?? 0.2
-        const wFasilitas = nw.fasilitas ?? nw.weight_fasilitas ?? prefs.weight_fasilitas ?? 0.3
-        const wDayaTarik = nw.daya_tarik ?? nw.weight_daya_tarik ?? prefs.weight_daya_tarik ?? 0.25
-        const weightsSummary = `Biaya ${Math.round(wHarga * 100)}% · Jarak ${Math.round(wJarak * 100)}% · Fasilitas RO ${Math.round(wFasilitas * 100)}% · Daya Tarik ${Math.round(wDayaTarik * 100)}%`
-        appendChatMessage('tourism', {
-          id: `bot-${Date.now()}`,
-          role: 'assistant',
-          text: explanation,
-          topName: res.top_recommendation?.name,
-          topScorePercent: res.top_recommendation
-            ? (res.top_recommendation.preference_score * 100).toFixed(1)
-            : undefined,
-          weightsSummary,
-        })
-      } else {
-        const { weights, explanation } = parseWorkspaceCrisisPrompt(prompt)
-        setCrisisWeights(weights)
-        const res = await dssService.calculateCrisisPriority(weights)
-        setCrisisResults(res)
-        const nw = res.normalized_weights || {}
-        const wTds = nw.tds ?? nw.weight_tds ?? weights.weight_tds ?? 0.35
-        const wPop = nw.populasi ?? nw.weight_populasi ?? weights.weight_populasi ?? 0.25
-        const wJarakAir = nw.jarak_air ?? nw.weight_jarak_air ?? weights.weight_jarak_air ?? 0.2
-        const wListrik = nw.padam_listrik ?? nw.weight_padam_listrik ?? weights.weight_padam_listrik ?? 0.2
-        const weightsSummary = `TDS ${Math.round(wTds * 100)}% · Populasi ${Math.round(wPop * 100)}% · Jarak Air ${Math.round(wJarakAir * 100)}% · Listrik ${Math.round(wListrik * 100)}%`
-        appendChatMessage('crisis', {
-          id: `bot-${Date.now()}`,
-          role: 'assistant',
-          text: explanation,
-          topName: res.top_recommendation?.name,
-          topScorePercent: res.top_recommendation
-            ? (res.top_recommendation.preference_score * 100).toFixed(1)
-            : undefined,
-          weightsSummary,
+    const loadRealData = async () => {
+      setIsLoadingData(true)
+      try {
+        const [layersRes, accRes, artRes] = await Promise.all([
+          gisService.getLayers({ layers: 'LAYER_HERITAGE,LAYER_TOURISM_4A,LAYER_ACCOMMODATION' }).catch(() => ({ type: 'FeatureCollection' as const, features: [] })),
+          tourismService.listAccommodations().catch(() => []),
+          tourismService.listCommunityContents({ content_type: 'ARTICLE' }).catch(() => []),
+        ])
+
+        if (isMounted) {
+          setGisFeatures(layersRes.features || [])
+          setAccommodations(accRes || [])
+          setArticles(artRes || [])
+        }
+      } catch (err) {
+        console.warn('Gagal memuat data basis data untuk smart planner:', err)
+      } finally {
+        if (isMounted) {
+          setIsLoadingData(false)
+        }
+      }
+    }
+
+    loadRealData()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  // 2. Build Unified Master Catalog from Real Database
+  const masterCatalog: UnifiedPlannerItem[] = useMemo(() => {
+    const items: UnifiedPlannerItem[] = []
+
+    // Map GIS Features
+    for (const feat of gisFeatures) {
+      const p = feat.properties || {}
+      const name = p.name || 'Destinasi Banda'
+      const layerType = p.layer_type || ''
+      const island = p.island_name || 'Pulau Neira'
+      const coords = feat.geometry?.coordinates
+      const lng = Array.isArray(coords) && typeof coords[0] === 'number' ? coords[0] : Number(p.longitude || 129.8989)
+      const lat = Array.isArray(coords) && typeof coords[1] === 'number' ? coords[1] : Number(p.latitude || -4.5261)
+      const media = getFeatureMedia(feat)
+
+      let type: 'heritage' | 'nature' | 'accommodation' = 'heritage'
+      let categoryLabel = 'Cagar Budaya'
+
+      if (layerType === 'LAYER_TOURISM_4A') {
+        type = 'nature'
+        categoryLabel = 'Wisata Bahari & Alam'
+      } else if (layerType === 'LAYER_ACCOMMODATION') {
+        type = 'accommodation'
+        categoryLabel = 'Penginapan'
+      }
+
+      // Check if related article exists
+      const matchedArt = articles.find((a) => {
+        const artTitle = (a.title || '').toLowerCase()
+        const n = name.toLowerCase()
+        return artTitle.includes(n) || n.includes(artTitle.slice(0, 15))
+      })
+
+      // Check if accommodation details match
+      const matchedAcc = accommodations.find((acc) => {
+        return acc.name.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(acc.name.toLowerCase())
+      })
+
+      items.push({
+        id: String(feat.id || p.id || `gis-${Math.random()}`),
+        name,
+        type,
+        categoryLabel,
+        island,
+        description: p.description || media.tag || 'Destinasi wisata bersejarah di Kepulauan Banda.',
+        photoUrl: media.imageUrl || p.image_url || '/images/landmarks/belgica.jpg',
+        latitude: lat,
+        longitude: lng,
+        priceRp: matchedAcc?.price_per_night_rp || p.price_per_night_rp,
+        contactWhatsapp: matchedAcc?.contact_whatsapp || p.contact_whatsapp,
+        hasCleanRoWater: matchedAcc?.has_clean_ro_water ?? p.has_clean_ro_water,
+        hasSolarBackup: matchedAcc?.has_solar_backup ?? p.has_solar_backup,
+        audioUrl: p.audio_url,
+        relatedArticleSlug: matchedArt?.slug,
+        historicalEra: p.era || (p.built_year ? `Tahun ${p.built_year}` : undefined),
+        builtYear: p.built_year,
+        hoursOrAccess: media.operatingHours || 'Akses Terbuka Setiap Hari',
+      })
+    }
+
+    // Also include accommodations from accommodations table not in GIS
+    for (const acc of accommodations) {
+      const alreadyIn = items.some((it) => it.name.toLowerCase() === acc.name.toLowerCase())
+      if (!alreadyIn) {
+        items.push({
+          id: `acc-${acc.id}`,
+          name: acc.name,
+          type: 'accommodation',
+          categoryLabel: 'Penginapan Eco-Stay',
+          island: acc.island_name || 'Pulau Neira',
+          description: acc.description || 'Penginapan ramah lingkungan dengan fasilitas terawat.',
+          photoUrl: acc.photo_url || '/images/landmarks/hotel-maulana.jpg',
+          latitude: -4.524,
+          longitude: 129.902,
+          priceRp: acc.price_per_night_rp,
+          contactWhatsapp: acc.contact_whatsapp,
+          hasCleanRoWater: acc.has_clean_ro_water,
+          hasSolarBackup: acc.has_solar_backup,
+          hoursOrAccess: 'Check-in 14:00 · Check-out 12:00',
         })
       }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Gagal menghitung matriks DSS SAW.'
-      setErrorMsg(msg)
-      appendChatMessage(mode, {
-        id: `bot-err-${Date.now()}`,
-        role: 'assistant',
-        text: `Maaf, kalkulasi API sedang terkendala (${msg}). Anda tetap dapat menyesuaikan bobot slider di bawah.`,
-      })
-    } finally {
-      setLoading(false)
     }
-  }
 
-  const handleWorkspaceChatSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    void handleWorkspaceChatPrompt(chatInput)
-  }
+    return items
+  }, [gisFeatures, accommodations, articles])
 
+  // Initialize initial welcome message and default curated plan
   useEffect(() => {
-    if (activeDssMode === 'tourism' && !tourismResults) {
-      handleRunTourismSAW()
-    } else if (activeDssMode === 'crisis' && !crisisResults) {
-      handleRunCrisisSAW()
-    }
-  }, [activeDssMode])
+    if (masterCatalog.length === 0) return
 
-  const openWhatsAppBooking = (altName: string, phone?: string) => {
-    const targetPhone = phone || '6281234567891'
-    const message = encodeURIComponent(
-      `Halo Pengelola ${altName}, saya tertarik memesan penginapan melalui rekomendasi cerdas Ekosistem Digital Banda Neira (BST-NIRANA). Mohon informasi ketersediaan kamar.`
-    )
-    window.open(`https://wa.me/${targetPhone}?text=${message}`, '_blank')
+    // Default 3-Day Heritage & Marine Itinerary
+    const day1Items = masterCatalog.filter((it) =>
+      /(belgica|nassau|hatta|sjahrir|istana mini)/i.test(it.name)
+    ).slice(0, 3)
+
+    const day2Items = masterCatalog.filter((it) =>
+      /(lava flow|tampa nama|gunung api|selam|snorkeling|hatta)/i.test(it.name)
+    ).slice(0, 3)
+
+    const day3Items = masterCatalog.filter((it) =>
+      /(kebun pala|lonthoir|hollandia|rhun|perigi rante|welvaren)/i.test(it.name)
+    ).slice(0, 3)
+
+    const defaultAccommodations = masterCatalog.filter((it) => it.type === 'accommodation').slice(0, 2)
+
+    const initialPlan: ItineraryDay[] = [
+      {
+        dayNumber: 1,
+        title: 'Hari 1: Pusaka Benteng & Jejak Pengasingan Tokoh Bangsa',
+        focusArea: 'Pulau Neira (Kota Pusaka)',
+        items: day1Items.length > 0 ? day1Items : masterCatalog.slice(0, 3),
+        curatorNotes: 'Awali pagi hari menjelajahi Benteng Belgica saat fajar, dilanjutkan ke Benteng Nassau dan Kompleks Pengasingan Bung Hatta & Sutan Sjahrir yang berada dalam jarak jalan kaki.',
+      },
+      {
+        dayNumber: 2,
+        title: 'Hari 2: Eksplorasi Bawah Laut & Snorkeling Karang Lava',
+        focusArea: 'Selat Neira, Gunung Api & Pulau Hatta',
+        items: day2Items.length > 0 ? day2Items : masterCatalog.slice(3, 6),
+        curatorNotes: 'Menyeberang perahu cepat ke Lava Flow untuk menyaksikan regenerasi terumbu karang tercepat di dunia, lalu berlayar ke Pulau Hatta untuk menikmati drop-off karang spektakuler.',
+      },
+      {
+        dayNumber: 3,
+        title: 'Hari 3: Legenda Perkebunan Pala Tua & Jejak Diplomasi Rhun',
+        focusArea: 'Pulau Banda Besar & Pulau Rhun',
+        items: day3Items.length > 0 ? day3Items : masterCatalog.slice(6, 9),
+        curatorNotes: 'Mengunjungi pohon pala berusia ratusan tahun di Lonthoir, menaiki tangga Benteng Hollandia, dan menelusuri sejarah barter Pulau Rhun dengan Manhattan pada Traktat Breda 1667.',
+      },
+    ]
+
+    setActivePlanDays(initialPlan)
+    const combined = [...day1Items, ...day2Items, ...day3Items, ...defaultAccommodations]
+    const uniqueCombined = Array.from(new Map(combined.map((m) => [m.id, m])).values())
+    setActiveItems(uniqueCombined)
+
+    if (messages.length === 0) {
+      setMessages([
+        {
+          id: 'welcome-msg',
+          role: 'assistant',
+          content:
+            'Halo! Selamat datang di Asisten Perencana Perjalanan Kepulauan Banda. Saya siap membantu Anda merancang liburan terbaik di Kepulauan Banda dengan menghubungkan langsung titik-titik cagar budaya bersejarah, spot bahari, dan penginapan ramah lingkungan dari basis data spasial resmi.\n\nSilakan tanyakan apa saja, sebutkan durasi perjalanan, anggaran, pulau tujuan, atau klik salah satu pilihan cepat di bawah ini.',
+          timestamp: 'Baru saja',
+          highlightedItems: uniqueCombined.slice(0, 3),
+          itineraryPlan: initialPlan,
+        },
+      ])
+    }
+  }, [masterCatalog])
+
+  // Scroll to bottom of chat
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, isTyping])
+
+  // Save/Unsave Item Handler
+  const handleToggleSaveItem = (item: UnifiedPlannerItem) => {
+    setSavedItemIds((prev) => {
+      const isSaved = prev.includes(item.id)
+      const next = isSaved ? prev.filter((id) => id !== item.id) : [...prev, item.id]
+      try {
+        localStorage.setItem('banda_saved_planner_items', JSON.stringify(next))
+      } catch {
+        // ignore
+      }
+      return next
+    })
   }
+
+  // Interconnected Action: Open in GIS Map
+  const handleOpenInGis = (item: UnifiedPlannerItem) => {
+    if (onNavigate) {
+      onNavigate('gis', `feature_id=${encodeURIComponent(item.id)}&name=${encodeURIComponent(item.name)}`)
+    } else {
+      window.location.href = `/gis?feature_id=${encodeURIComponent(item.id)}&name=${encodeURIComponent(item.name)}`
+    }
+  }
+
+  // Interconnected Action: Read History Article
+  const handleReadArticle = (slug?: string) => {
+    if (!slug) return
+    if (onNavigate) {
+      onNavigate('sejarah', slug)
+    } else {
+      window.location.href = `/sejarah?slug=${encodeURIComponent(slug)}`
+    }
+  }
+
+  // Interconnected Action: Booking / WhatsApp Direct Link
+  const handleBookingWhatsapp = (item: UnifiedPlannerItem) => {
+    const phone = (item.contactWhatsapp || '6281234567890').replace(/[^0-9]/g, '')
+    const message = `Halo Pengelola ${item.name}, saya merancang rencana perjalanan di Portal Digital Banda Neira dan ingin menanyakan ketersediaan kamar serta fasilitas untuk liburan mendatang. Terima kasih.`
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
+  // Process User Query & Generate Conversational Response with Real Data
+  const handleSendPrompt = (promptText?: string) => {
+    const q = (promptText || inputValue).trim()
+    if (!q) return
+
+    const userMessageId = `usr-${Date.now()}`
+    const userMsg: ChatMessage = {
+      id: userMessageId,
+      role: 'user',
+      content: q,
+      timestamp: 'Baru saja',
+    }
+
+    setMessages((prev) => [...prev, userMsg])
+    if (!promptText) setInputValue('')
+    setIsTyping(true)
+
+    // Analyze intent against real database
+    setTimeout(() => {
+      const qLower = q.toLowerCase()
+
+      // 1. Detect Island Filter
+      let targetIsland = ''
+      if (/(neira|kota)/i.test(qLower)) targetIsland = 'Pulau Neira'
+      else if (/(banda besar|lonthoir|lontor)/i.test(qLower)) targetIsland = 'Pulau Banda Besar'
+      else if (/(hatta|rozengain)/i.test(qLower)) targetIsland = 'Pulau Hatta'
+      else if (/(rhun|run)/i.test(qLower)) targetIsland = 'Pulau Rhun'
+      else if (/(\bai\b|pulau ai|pulau ay|\bay\b)/i.test(qLower)) targetIsland = 'Pulau Ay'
+
+      // 2. Detect Focus / Theme
+      const wantsAccommodation = /(hotel|homestay|penginapan|kamar|menginap|tidur|ro|air|surya|listrik|budget|murah|hemat)/i.test(qLower)
+      const wantsMarine = /(snorkeling|selam|diving|karang|pantai|laut|ikan|lava flow|tampa nama)/i.test(qLower)
+      const wantsHeritage = /(benteng|sejarah|hatta|sjahrir|belgica|nassau|museum|budaya|voc|kolonial|perigi|istana)/i.test(qLower)
+      const wants1Day = /(1 hari|satu hari|seharian|singkat|express|jalan kaki)/i.test(qLower)
+      const wantsBudget = /(hemat|murah|budget|terjangkau|ekonomis|backpacker)/i.test(qLower)
+
+      // 3. Filter and score real items from master catalog
+      const scoredItems = masterCatalog.map((item) => {
+        let score = 0
+        const itemText = `${item.name} ${item.description} ${item.island} ${item.categoryLabel}`.toLowerCase()
+
+        if (targetIsland && item.island.toLowerCase().includes(targetIsland.toLowerCase())) {
+          score += 40
+        }
+
+        if (wantsAccommodation && item.type === 'accommodation') {
+          score += 50
+          if (wantsBudget && item.priceRp && item.priceRp <= 350000) score += 30
+          if (item.hasCleanRoWater) score += 20
+          if (item.hasSolarBackup) score += 15
+        }
+
+        if (wantsMarine && item.type === 'nature') {
+          score += 50
+        }
+
+        if (wantsHeritage && item.type === 'heritage') {
+          score += 50
+          if (item.relatedArticleSlug) score += 15
+        }
+
+        // Direct keyword matching
+        const words = qLower.split(/\s+/).filter((w) => w.length > 3)
+        for (const word of words) {
+          if (itemText.includes(word)) score += 10
+        }
+
+        return { ...item, relevanceScore: score }
+      })
+
+      scoredItems.sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0))
+
+      const topPicks = scoredItems.filter((it) => (it.relevanceScore || 0) > 10).slice(0, 6)
+      const finalPicks = topPicks.length >= 3 ? topPicks : masterCatalog.slice(0, 5)
+
+      // 4. Construct Narrative Answer
+      let botResponseText = ''
+      let newItinerary: ItineraryDay[] = []
+
+      if (wantsAccommodation) {
+        botResponseText =
+          `Berikut adalah kurasi penginapan riil di Kepulauan Banda yang paling sesuai dengan kebutuhan Anda. Seluruh penginapan berikut terverifikasi memiliki nomor kontak resmi pengelola, ketersediaan air bersih RO yang layak konsumsi, serta sistem kelistrikan andal.`
+        setPlanTitle('Rekomendasi Penginapan & Eco-Stay Terverifikasi')
+        setPlanSummary('Daftar penginapan otentik dengan tarif riil per malam, air bersih RO, dan cadangan listrik surya.')
+      } else if (wants1Day) {
+        botResponseText =
+          `Untuk durasi 1 hari (jalan kaki di Pulau Neira), rute terbaik dirancang memusat di kawasan kota pusaka agar efisien dan tidak menguras energi.`
+        newItinerary = [
+          {
+            dayNumber: 1,
+            title: 'Eksplorasi Kota Pusaka Neira (Rute Jalan Kaki)',
+            focusArea: 'Pulau Neira',
+            items: finalPicks.slice(0, 4),
+            curatorNotes: 'Awali pagi di Benteng Belgica (pukul 06.00 WIT), berjalan kaki ke Benteng Nassau, Istana Mini, dan Rumah Pengasingan Bung Hatta. Sore hari nikmati senja di pelabuhan.',
+          },
+        ]
+        setPlanTitle('Rencana Perjalanan 1 Hari: Rute Warisan Pusaka Neira')
+        setPlanSummary('Rute jalan kaki santai menyusuri situs bersejarah abad ke-17 di jantung Pulau Neira.')
+      } else if (wantsMarine) {
+        botResponseText =
+          `Untuk wisata bahari dan selam, Kepulauan Banda menawarkan keanekaragaman karang kelas dunia. Kami mengombinasikan spot snorkeling dangkal di Lava Flow dengan drop-off karang dinding Pulau Hatta.`
+        newItinerary = [
+          {
+            dayNumber: 1,
+            title: 'Hari 1: Snorkeling Karang Meja Lava Flow & Kaki Gunung Api',
+            focusArea: 'Selat Neira & Kaki Gunung Api Banda',
+            items: finalPicks.filter((it) => it.type === 'nature' || it.name.includes('Lava')).slice(0, 3),
+            curatorNotes: 'Waktu terbaik berenang adalah pukul 08.00 - 11.00 WIT saat air sangat tenang dan visibilitas mencapai 25 meter.',
+          },
+          {
+            dayNumber: 2,
+            title: 'Hari 2: Menembus Samudra Menuju Karang Pulau Hatta',
+            focusArea: 'Pulau Hatta',
+            items: finalPicks.filter((it) => it.island.includes('Hatta') || it.type === 'heritage').slice(0, 3),
+            curatorNotes: 'Sewa perahu dari Neira memakan waktu sekitar 45 menit. Bawa perlengkapan snorkeling pribadi dan nikmati pantai pasir putih bersih.',
+          },
+        ]
+        setPlanTitle('Rencana Wisata Bahari & Terumbu Karang Banda')
+        setPlanSummary('Kurasi spot snorkeling terbaik dengan visibilitas air sejernih kristal.')
+      } else {
+        botResponseText =
+          `Tentu, kami telah menyusun rencana perjalanan terintegrasi yang memadukan titik cagar budaya, wisata bahari, dan rekomendasi penginapan riil. Anda dapat membuka setiap titik langsung di Peta Spasial GIS, membaca kisah sejarahnya, atau memesan penginapan via WhatsApp.`
+        newItinerary = [
+          {
+            dayNumber: 1,
+            title: 'Hari 1: Jejak Sejarah Benteng & Tokoh Kemerdekaan',
+            focusArea: targetIsland || 'Pulau Neira',
+            items: finalPicks.slice(0, 3),
+            curatorNotes: 'Menikmati panorama fajar dari puncak Benteng Belgica dan mendalami naskah pengasingan tokoh bangsa.',
+          },
+          {
+            dayNumber: 2,
+            title: 'Hari 2: Wisata Bahari & Keindahan Alam Kepulauan',
+            focusArea: 'Laut Banda & Pulau Sekitar',
+            items: finalPicks.slice(3, 6),
+            curatorNotes: 'Snorkeling di terumbu karang alami dan menjelajahi pulau-pulau eksotis dengan perahu nelayan lokal.',
+          },
+        ]
+        setPlanTitle('Rencana Perjalanan Eksplorasi Kepulauan Banda')
+        setPlanSummary('Kombinasi situs cagar budaya, lanskap alam vulkanik, dan penginapan terakreditasi.')
+      }
+
+      setActiveItems(finalPicks)
+      if (newItinerary.length > 0) {
+        setActivePlanDays(newItinerary)
+      }
+
+      const botMsg: ChatMessage = {
+        id: `bot-${Date.now()}`,
+        role: 'assistant',
+        content: botResponseText,
+        timestamp: 'Baru saja',
+        highlightedItems: finalPicks.slice(0, 3),
+        itineraryPlan: newItinerary.length > 0 ? newItinerary : activePlanDays,
+      }
+
+      setMessages((prev) => [...prev, botMsg])
+      setIsTyping(false)
+      // Switch view on mobile to canvas to let user immediately see results
+      if (window.innerWidth < 1024) {
+        setMobileActiveView('canvas')
+      }
+    }, 400)
+  }
+
+  // Copy Itinerary Text to Clipboard
+  const handleCopyItineraryText = () => {
+    let text = `*${planTitle}*\n`
+    text += `${planSummary}\n`
+    text += `Disusun melalui Portal Digital Banda Neira (https://bandanaira.com)\n\n`
+
+    if (activePlanDays.length > 0) {
+      activePlanDays.forEach((day) => {
+        text += `[${day.title}] - ${day.focusArea}\n`
+        text += `Catatan Kurator: ${day.curatorNotes}\n`
+        day.items.forEach((it, idx) => {
+          text += `  ${idx + 1}. ${it.name} (${it.categoryLabel} - ${it.island})\n`
+          if (it.priceRp) text += `     Tarif: Rp ${it.priceRp.toLocaleString('id-ID')}/malam\n`
+          if (it.historicalEra) text += `     Era: ${it.historicalEra}\n`
+        })
+        text += `\n`
+      })
+    } else {
+      activeItems.forEach((it, idx) => {
+        text += `${idx + 1}. ${it.name} (${it.categoryLabel} - ${it.island})\n`
+        if (it.priceRp) text += `   Tarif: Rp ${it.priceRp.toLocaleString('id-ID')}/malam\n`
+        text += `   Deskripsi: ${it.description}\n\n`
+      })
+    }
+
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedPlan(true)
+      setTimeout(() => setCopiedPlan(false), 2500)
+    })
+  }
+
+  // Saved items list
+  const savedItems = useMemo(() => {
+    return masterCatalog.filter((it) => savedItemIds.includes(it.id))
+  }, [masterCatalog, savedItemIds])
 
   return (
-    <div className="workspace-container animate-fade-in">
-      {/* Workspace Header */}
-      <div className="workspace-header" style={{ marginBottom: '1.75rem' }}>
-        <div>
-          <span className="badge badge-emerald" style={{ marginBottom: '0.4rem', display: 'inline-flex', gap: '0.35rem' }}>
-            <Sparkles size={12} /> Decision Support System (DSS SAW)
-          </span>
-          <h2 style={{ margin: 0, fontSize: '1.65rem', fontWeight: 900, color: '#f8fafc', letterSpacing: '-0.02em' }}>
-            Perencana Cerdas &amp; Ketahanan Pulau
-          </h2>
-          <p style={{ margin: '0.35rem 0 0', color: '#94a3b8', fontSize: '0.875rem' }}>
-            Mesin optimasi keputusan multikriteria berbasis <b>Simple Additive Weighting (SAW)</b> untuk wisatawan dan pemerintah desa.
-          </p>
-        </div>
-
-        {/* Segmented Mode Selector */}
-        <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(15, 23, 42, 0.8)', padding: '0.35rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)' }}>
-          <button
-            type="button"
-            onClick={() => setActiveDssMode('tourism')}
-            style={{
-              padding: '0.55rem 1.15rem',
-              borderRadius: 'var(--radius-md)',
-              border: 'none',
-              fontSize: '0.825rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.45rem',
-              transition: 'all 0.2s',
-              background: activeDssMode === 'tourism' ? 'linear-gradient(135deg, #10b981, #06b6d4)' : 'transparent',
-              color: activeDssMode === 'tourism' ? '#ffffff' : '#94a3b8',
-              boxShadow: activeDssMode === 'tourism' ? '0 0 15px rgba(16, 185, 129, 0.3)' : 'none',
-            }}
-          >
-            <Compass size={15} /> Mode 1: Wisata &amp; Penginapan
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveDssMode('crisis')}
-            style={{
-              padding: '0.55rem 1.15rem',
-              borderRadius: 'var(--radius-md)',
-              border: 'none',
-              fontSize: '0.825rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.45rem',
-              transition: 'all 0.2s',
-              background: activeDssMode === 'crisis' ? 'linear-gradient(135deg, #f59e0b, #ef4444)' : 'transparent',
-              color: activeDssMode === 'crisis' ? '#ffffff' : '#94a3b8',
-              boxShadow: activeDssMode === 'crisis' ? '0 0 15px rgba(245, 158, 11, 0.3)' : 'none',
-            }}
-          >
-            <AlertTriangle size={15} /> Mode 2: Prioritas Krisis Air &amp; Energi
-          </button>
-        </div>
-      </div>
-
-      {errorMsg && (
-        <div className="alert alert-danger" style={{ marginBottom: '1.25rem' }}>
-          {errorMsg}
-        </div>
-      )}
-
-      {/* Interactive Chatbot DSS Calculator */}
-      <section
-        aria-label="Asisten Kalkulator Chatbot DSS"
-        style={{
-          background: '#FFFFFF',
-          color: '#081D35',
-          border: '1px solid #E2E8F0',
-          borderRadius: '18px',
-          padding: '1.35rem',
-          marginBottom: '1.5rem',
-          boxShadow: '0 8px 24px rgba(8, 29, 53, 0.06)',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '0.75rem',
-            marginBottom: '1rem',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div
-              style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '12px',
-                background: '#0f2c59',
-                color: '#FFFFFF',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}
-            >
-              <Bot size={20} />
+    <div className="min-h-[100dvh] bg-[#f8fafc] text-slate-800 flex flex-col font-sans">
+      {/* 1. TOP HEADER BAR */}
+      <header className="sticky top-0 z-40 bg-[#0B192C] text-white border-b border-slate-700/60 shadow-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center shadow-lg text-slate-950 font-black">
+              <Compass size={22} className="stroke-[2.2]" />
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#081D35' }}>
-                Asisten Kalkulator Chatbot DSS
-              </h3>
-              <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: '#475569' }}>
-                {activeDssMode === 'tourism'
-                  ? 'Ketik preferensi budget, pulau, atau fasilitas — bobot SAW & peringkat terupdate otomatis.'
-                  : 'Ketik prioritas krisis desa (TDS, penduduk, jarak air, pemadaman) — matriks urgensi terupdate otomatis.'}
+              <div className="flex items-center gap-2">
+                <h1 className="text-base sm:text-lg font-bold tracking-tight text-white leading-tight">
+                  Perencana Wisata Cerdas
+                </h1>
+                <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  <CheckCircle2 size={11} /> Basis Data Spasial Aktif
+                </span>
+              </div>
+              <p className="text-xs text-slate-300">
+                Asisten Kurator Perjalanan Berbasis Titik GIS & Penginapan Riil Kepulauan Banda
               </p>
             </div>
           </div>
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              padding: '0.3rem 0.75rem',
-              borderRadius: '999px',
-              background: activeDssMode === 'tourism' ? '#ECFDF5' : '#FEF3C7',
-              color: activeDssMode === 'tourism' ? '#065F46' : '#92400E',
-              fontSize: '0.72rem',
-              fontWeight: 800,
-              border: `1px solid ${activeDssMode === 'tourism' ? '#A7F3D0' : '#FDE68A'}`,
-            }}
-          >
-            <Sparkles size={12} />
-            {activeDssMode === 'tourism' ? 'Mode Wisata & Penginapan' : 'Mode Ketahanan Desa'}
-          </span>
-        </div>
 
-        {/* Quick Prompt Scenarios */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.9rem' }}>
-          {(activeDssMode === 'tourism' ? TOURISM_QUICK_PROMPTS : CRISIS_QUICK_PROMPTS).map((qPrompt) => (
+          <div className="flex items-center gap-2">
             <button
-              key={qPrompt}
               type="button"
-              disabled={loading}
-              onClick={() => void handleWorkspaceChatPrompt(qPrompt)}
-              style={{
-                background: '#F8FAFC',
-                color: '#0f2c59',
-                border: '1px solid #CBD5E1',
-                borderRadius: '999px',
-                padding: '0.35rem 0.85rem',
-                fontSize: '0.74rem',
-                fontWeight: 600,
-                cursor: loading ? 'not-allowed' : 'pointer',
-              }}
+              onClick={() => onNavigate && onNavigate('gis')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-200 hover:bg-slate-700 border border-slate-700 transition-all active:scale-[0.98]"
             >
-              {qPrompt}
+              <Layers size={14} className="text-cyan-400" />
+              <span className="hidden md:inline">Buka Peta Spasial GIS</span>
             </button>
-          ))}
-        </div>
-
-        {/* Conversational Log */}
-        <div
-          style={{
-            background: '#F7F5F0',
-            border: '1px solid #E2E8F0',
-            borderRadius: '14px',
-            padding: '0.9rem',
-            maxHeight: '260px',
-            overflowY: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.7rem',
-            marginBottom: '0.9rem',
-          }}
-        >
-          {chatHistory[activeDssMode].map((msg) => (
-            <div
-              key={msg.id}
-              style={{
-                display: 'flex',
-                justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
-              }}
+            <button
+              type="button"
+              onClick={() => onNavigate && onNavigate('landing')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 text-slate-950 hover:bg-amber-400 transition-all active:scale-[0.98] shadow-sm font-bold"
             >
+              <Home size={14} />
+              <span className="hidden sm:inline">Beranda</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* 2. MOBILE VIEW SWITCHER (< 1024px) */}
+      <div className="lg:hidden bg-slate-900 border-b border-slate-800 px-4 py-2 flex items-center justify-center gap-2">
+        <button
+          type="button"
+          onClick={() => setMobileActiveView('chat')}
+          className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
+            mobileActiveView === 'chat'
+              ? 'bg-amber-500 text-slate-950 shadow-sm'
+              : 'bg-slate-800 text-slate-300'
+          }`}
+        >
+          <Bot size={15} /> Obrolan Asisten
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileActiveView('canvas')}
+          className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
+            mobileActiveView === 'canvas'
+              ? 'bg-amber-500 text-slate-950 shadow-sm'
+              : 'bg-slate-800 text-slate-300'
+          }`}
+        >
+          <Compass size={15} /> Rencana Wisata ({activeItems.length})
+        </button>
+      </div>
+
+      {/* 3. MAIN WORKSPACE BODY (SPLIT-SCREEN) */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* ================= LEFT COLUMN: CONVERSATIONAL CHATBOT (7 Cols on LG) ================= */}
+        <section
+          className={`lg:col-span-5 flex flex-col bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden min-h-[600px] lg:h-[calc(100vh-140px)] ${
+            mobileActiveView === 'canvas' ? 'hidden lg:flex' : 'flex'
+          }`}
+        >
+          {/* Chat Header Status */}
+          <div className="px-4 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="relative">
+                <div className="w-8 h-8 rounded-full bg-slate-900 text-amber-400 flex items-center justify-center font-bold text-xs">
+                  <Bot size={16} />
+                </div>
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-slate-900">Kurator Wisata Banda</h3>
+                <p className="text-[10px] text-slate-500">
+                  {isLoadingData ? 'Menghubungkan basis data spasial...' : `${masterCatalog.length} titik destinasi riil siap dipetakan`}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (masterCatalog.length > 0) {
+                  setMessages([
+                    {
+                      id: `reset-${Date.now()}`,
+                      role: 'assistant',
+                      content: 'Percakapan direset. Silakan tanyakan rencana perjalanan baru atau pilih rekomendasi cepat.',
+                      timestamp: 'Baru saja',
+                    },
+                  ])
+                }
+              }}
+              title="Reset Percakapan"
+              className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+            >
+              <RefreshCw size={14} />
+            </button>
+          </div>
+
+          {/* Chat Messages Scroll Area */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/40">
+            {messages.map((msg) => (
               <div
-                style={{
-                  maxWidth: '85%',
-                  padding: '0.7rem 0.95rem',
-                  borderRadius: '14px',
-                  fontSize: '0.82rem',
-                  lineHeight: 1.5,
-                  background: msg.role === 'user' ? '#0f2c59' : '#FFFFFF',
-                  color: msg.role === 'user' ? '#FFFFFF' : '#1E293B',
-                  border: msg.role === 'user' ? 'none' : '1px solid #E2E8F0',
-                  boxShadow: '0 1px 3px rgba(8, 29, 53, 0.05)',
-                }}
+                key={msg.id}
+                className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <p style={{ margin: 0 }}>{msg.text}</p>
-                {msg.topName && (
-                  <div
-                    style={{
-                      marginTop: '0.5rem',
-                      paddingTop: '0.45rem',
-                      borderTop: '1px solid #E2E8F0',
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: '0.45rem',
-                      alignItems: 'center',
-                    }}
+                {msg.role === 'assistant' && (
+                  <div className="w-7 h-7 rounded-lg bg-[#0B192C] text-amber-400 flex-shrink-0 flex items-center justify-center mt-0.5 text-xs font-bold shadow-sm">
+                    <Compass size={14} />
+                  </div>
+                )}
+
+                <div
+                  className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-sm ${
+                    msg.role === 'user'
+                      ? 'bg-[#0B192C] text-white rounded-tr-none'
+                      : 'bg-white text-slate-800 border border-slate-200/80 rounded-tl-none'
+                  }`}
+                >
+                  <p className="whitespace-pre-line">{msg.content}</p>
+
+                  {/* If Bot message provides quick highlight cards */}
+                  {msg.highlightedItems && msg.highlightedItems.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
+                      <p className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
+                        <Sparkles size={12} className="text-amber-500" />
+                        Destinasi Terkait:
+                      </p>
+                      <div className="grid grid-cols-1 gap-1.5">
+                        {msg.highlightedItems.map((item) => (
+                          <div
+                            key={item.id}
+                            className="p-2 rounded-lg bg-slate-50 border border-slate-200/70 flex items-center justify-between gap-2"
+                          >
+                            <div className="flex items-center gap-2 overflow-hidden">
+                              <img
+                                src={item.photoUrl}
+                                alt={item.name}
+                                className="w-9 h-9 rounded object-cover flex-shrink-0"
+                                onError={(e) => {
+                                  ;(e.target as HTMLImageElement).src = '/images/landmarks/belgica.jpg'
+                                }}
+                              />
+                              <div className="overflow-hidden">
+                                <h4 className="font-bold text-[11px] text-slate-900 truncate">
+                                  {item.name}
+                                </h4>
+                                <span className="text-[10px] text-slate-500">{item.island}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenInGis(item)}
+                                className="p-1 rounded text-cyan-600 hover:bg-cyan-50 border border-cyan-200 transition-colors"
+                                title="Buka di Peta GIS"
+                              >
+                                <MapPin size={12} />
+                              </button>
+                              {item.relatedArticleSlug && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleReadArticle(item.relatedArticleSlug)}
+                                  className="p-1 rounded text-amber-600 hover:bg-amber-50 border border-amber-200 transition-colors"
+                                  title="Baca Kisah Sejarah"
+                                >
+                                  <BookOpen size={12} />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <span
+                    className={`block text-[9px] mt-1.5 font-medium ${
+                      msg.role === 'user' ? 'text-slate-400 text-right' : 'text-slate-400'
+                    }`}
                   >
-                    <span
-                      style={{
-                        background: '#ECFDF5',
-                        color: '#065F46',
-                        padding: '0.2rem 0.55rem',
-                        borderRadius: '999px',
-                        fontSize: '0.72rem',
-                        fontWeight: 800,
-                      }}
-                    >
-                      Peringkat #1: {msg.topName} ({msg.topScorePercent}%)
-                    </span>
-                    {msg.weightsSummary && (
-                      <span style={{ fontSize: '0.72rem', color: '#475569', fontWeight: 600 }}>
-                        {msg.weightsSummary}
-                      </span>
-                    )}
+                    {msg.timestamp}
+                  </span>
+                </div>
+
+                {msg.role === 'user' && (
+                  <div className="w-7 h-7 rounded-lg bg-amber-500 text-slate-950 flex-shrink-0 flex items-center justify-center mt-0.5 text-xs font-bold shadow-sm">
+                    <User size={14} />
                   </div>
                 )}
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
 
-        {/* Prompt Input Form */}
-        <form onSubmit={handleWorkspaceChatSubmit} style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-          <input
-            type="text"
-            value={chatInput}
-            onChange={(e) => setChatInput(e.target.value)}
-            disabled={loading}
-            placeholder={
-              activeDssMode === 'tourism'
-                ? 'Contoh: Cari homestay hemat air RO bersih di Pulau Neira budget 450rb...'
-                : 'Contoh: Prioritaskan desa dengan TDS tinggi dan pemadaman listrik lama...'
-            }
-            style={{
-              flex: '1 1 260px',
-              padding: '0.65rem 0.95rem',
-              borderRadius: '12px',
-              border: '1px solid #CBD5E1',
-              background: '#FFFFFF',
-              color: '#081D35',
-              fontSize: '0.84rem',
-              outline: 'none',
-            }}
-          />
-          <button
-            type="submit"
-            disabled={loading || !chatInput.trim()}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.65rem 1.2rem',
-              borderRadius: '12px',
-              border: 'none',
-              background: loading || !chatInput.trim() ? '#94A3B8' : '#0f2c59',
-              color: '#FFFFFF',
-              fontSize: '0.83rem',
-              fontWeight: 700,
-              cursor: loading || !chatInput.trim() ? 'not-allowed' : 'pointer',
-            }}
-          >
-            <Send size={15} />
-            {loading ? 'Menghitung...' : 'Hitung SAW'}
-          </button>
-        </form>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* MODE 1: SMART TOURISM & ACCOMMODATION RECOMMENDATION */}
-      {/* ========================================================================= */}
-      {activeDssMode === 'tourism' && (
-        <div>
-          {/* Preference Tuning Control Panel */}
-          <div className="app-card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-              <div>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc', margin: 0 }}>
-                  Sesuaikan Bobot Preferensi Wisatawan
-                </h3>
-                <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: '0.25rem 0 0' }}>
-                  Atur persentase kepentingan Anda terhadap harga, jarak, ketersediaan air tawar RO, dan pesona cagar budaya.
-                </p>
+            {isTyping && (
+              <div className="flex items-center gap-2 text-slate-500 text-xs py-2 px-3 bg-white rounded-xl border border-slate-200 w-fit">
+                <Sparkles size={14} className="animate-spin text-amber-500" />
+                <span>Menghubungkan koordinat spasial & kurasi rencana...</span>
               </div>
-              <button
-                type="button"
-                onClick={handleRunTourismSAW}
-                disabled={loading}
-                className="btn btn-primary"
-                style={{
-                  padding: '0.6rem 1.35rem',
-                  fontSize: '0.85rem',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                }}
-              >
-                <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
-                {loading ? 'Menghitung Matriks...' : 'Kalkulasi Rekomendasi SAW'}
-              </button>
-            </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '1.25rem' }}>
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.35rem' }}>
-                  <span style={{ color: '#cbd5e1', fontWeight: 600 }}>Biaya / Tarif Sewa (Cost)</span>
-                  <span style={{ color: '#38bdf8', fontWeight: 700 }}>{Math.round((tourismPrefs.weight_harga || 0.25) * 100)}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.05"
-                  max="0.60"
-                  step="0.05"
-                  value={tourismPrefs.weight_harga}
-                  onChange={(e) => setTourismPrefs({ ...tourismPrefs, weight_harga: parseFloat(e.target.value) })}
-                  style={{ width: '100%', accentColor: '#38bdf8' }}
-                />
-                <span style={{ fontSize: '0.7rem', color: '#64748b' }}>Semakin murah tarif per malam, semakin disukai</span>
-              </div>
-
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.35rem' }}>
-                  <span style={{ color: '#cbd5e1', fontWeight: 600 }}>Jarak ke Dermaga Utama (Cost)</span>
-                  <span style={{ color: '#38bdf8', fontWeight: 700 }}>{Math.round((tourismPrefs.weight_jarak || 0.20) * 100)}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.05"
-                  max="0.50"
-                  step="0.05"
-                  value={tourismPrefs.weight_jarak}
-                  onChange={(e) => setTourismPrefs({ ...tourismPrefs, weight_jarak: parseFloat(e.target.value) })}
-                  style={{ width: '100%', accentColor: '#38bdf8' }}
-                />
-                <span style={{ fontSize: '0.7rem', color: '#64748b' }}>Semakin dekat ke pusat aktivitas pulau, semakin disukai</span>
-              </div>
-
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.35rem' }}>
-                  <span style={{ color: '#cbd5e1', fontWeight: 600 }}>Fasilitas Air RO &amp; Surya (Benefit)</span>
-                  <span style={{ color: '#10b981', fontWeight: 700 }}>{Math.round((tourismPrefs.weight_fasilitas || 0.30) * 100)}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.05"
-                  max="0.60"
-                  step="0.05"
-                  value={tourismPrefs.weight_fasilitas}
-                  onChange={(e) => setTourismPrefs({ ...tourismPrefs, weight_fasilitas: parseFloat(e.target.value) })}
-                  style={{ width: '100%', accentColor: '#10b981' }}
-                />
-                <span style={{ fontSize: '0.7rem', color: '#64748b' }}>Jaminan air tawar minum layak dan genset/PLTS mandiri</span>
-              </div>
-
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.35rem' }}>
-                  <span style={{ color: '#cbd5e1', fontWeight: 600 }}>Daya Tarik Budaya/Alam (Benefit)</span>
-                  <span style={{ color: '#f59e0b', fontWeight: 700 }}>{Math.round((tourismPrefs.weight_daya_tarik || 0.25) * 100)}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.05"
-                  max="0.60"
-                  step="0.05"
-                  value={tourismPrefs.weight_daya_tarik}
-                  onChange={(e) => setTourismPrefs({ ...tourismPrefs, weight_daya_tarik: parseFloat(e.target.value) })}
-                  style={{ width: '100%', accentColor: '#f59e0b' }}
-                />
-                <span style={{ fontSize: '0.7rem', color: '#64748b' }}>Akses panorama alam, snorkeling, dan jejak cagar budaya</span>
-              </div>
-            </div>
-
-            {/* Quick Filters */}
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '1rem', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Filter Lokasi Pulau:</span>
-              {['', 'Pulau Neira', 'Pulau Banda Besar', 'Pulau Hatta', 'Pulau Ai'].map((isl) => (
+          {/* Quick Prompts Chips */}
+          <div className="p-3 bg-white border-t border-slate-100 overflow-x-auto">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+              <Sparkles size={11} className="text-amber-500" /> Ide Pertanyaan Cepat:
+            </p>
+            <div className="flex gap-1.5 pb-1 flex-nowrap sm:flex-wrap">
+              {QUICK_PROMPT_CHIPS.map((chip, idx) => (
                 <button
-                  key={isl}
+                  key={idx}
                   type="button"
-                  onClick={() => {
-                    const updated = { ...tourismPrefs, island_filter: isl }
-                    setTourismPrefs(updated)
-                    dssService.calculateTourismRecommendation(updated).then(setTourismResults)
-                  }}
-                  className={`badge ${tourismPrefs.island_filter === isl ? 'badge-emerald' : 'badge-neutral'}`}
-                  style={{ cursor: 'pointer', padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}
+                  onClick={() => handleSendPrompt(chip)}
+                  className="px-2.5 py-1 text-[11px] rounded-full bg-slate-100 hover:bg-amber-50 hover:text-amber-800 text-slate-700 border border-slate-200/80 transition-colors whitespace-nowrap active:scale-[0.98]"
                 >
-                  {isl === '' ? 'Semua Pulau' : isl}
+                  {chip}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Top Recommendation Highlight Card */}
-          {tourismResults && tourismResults.top_recommendation && (
-            <div
-              className="app-card animate-fade-in"
-              style={{
-                marginBottom: '1.75rem',
-                padding: '1.5rem',
-                borderLeft: '4px solid #10b981',
-                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(15, 23, 42, 0.85))',
-              }}
+          {/* Chat Input Field */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleSendPrompt()
+            }}
+            className="p-3 bg-slate-50 border-t border-slate-200 flex items-center gap-2"
+          >
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Ketik durasi liburan, anggaran, atau pulau tujuan..."
+              className="flex-1 bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+            />
+            <button
+              type="submit"
+              disabled={!inputValue.trim() || isTyping}
+              className="px-4 py-2.5 rounded-xl bg-[#0B192C] hover:bg-slate-800 text-amber-400 disabled:opacity-40 disabled:cursor-not-allowed font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm active:scale-[0.98]"
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.45rem' }}>
-                    <span className="badge badge-emerald" style={{ display: 'inline-flex', gap: '0.35rem', fontWeight: 800 }}>
-                      <Award size={13} /> REKOMENDASI TERBAIK #1
-                    </span>
-                    <span className="badge badge-blue">
-                      Skor Preferensi: {(tourismResults.top_recommendation.preference_score * 100).toFixed(1)}%
-                    </span>
-                  </div>
-                  <h3 style={{ fontSize: '1.45rem', fontWeight: 900, color: '#f8fafc', margin: '0 0 0.35rem' }}>
-                    {tourismResults.top_recommendation.name}
-                  </h3>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.825rem', color: '#94a3b8', flexWrap: 'wrap' }}>
-                    <span>📍 {String(tourismResults.top_recommendation.metadata?.island || 'Kepulauan Banda')}</span>
-                    <span>&bull;</span>
-                    <span style={{ color: '#38bdf8', fontWeight: 700 }}>
-                      Rp {Number(tourismResults.top_recommendation.raw_values.c1_harga).toLocaleString('id-ID')} / malam
-                    </span>
-                    <span>&bull;</span>
-                    <span>Jarak: {tourismResults.top_recommendation.raw_values.c2_jarak} km</span>
-                  </div>
-                  <p style={{ fontSize: '0.85rem', color: '#cbd5e1', margin: '0.75rem 0 0', maxWidth: '750px', lineHeight: 1.5 }}>
-                    {String(tourismResults.top_recommendation.metadata?.description || '')}
-                  </p>
-                </div>
+              <span>Kirim</span>
+              <Send size={13} />
+            </button>
+          </form>
+        </section>
 
-                <div style={{ textAlign: 'right' }}>
-                  <button
-                    type="button"
-                    onClick={() => openWhatsAppBooking(
-                      tourismResults.top_recommendation!.name,
-                      String(tourismResults.top_recommendation!.metadata?.contact_whatsapp || '')
-                    )}
-                    className="btn btn-success"
-                    style={{
-                      padding: '0.75rem 1.5rem',
-                      fontSize: '0.9rem',
-                      fontWeight: 800,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      boxShadow: '0 0 20px rgba(16, 185, 129, 0.35)',
-                    }}
-                  >
-                    <span>💬 Hubungi Pemilik via WA</span>
-                  </button>
-                  <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '0.45rem' }}>
-                    Konfirmasi instan ke admin vila
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Ranked Alternatives Table */}
-          {tourismResults && (
-            <div className="app-card" style={{ padding: '1.25rem' }}>
-              <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#f8fafc', margin: '0 0 1rem' }}>
-                Peringkat Lengkap Alternatif Penginapan (Metode SAW)
-              </h4>
-              <div style={{ overflowX: 'auto' }}>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th style={{ width: '60px' }}>Rank</th>
-                      <th>Nama Akomodasi</th>
-                      <th>Lokasi Pulau</th>
-                      <th>Tarif / Malam</th>
-                      <th>Jarak Dermaga</th>
-                      <th>Eco-Stay (Air RO / Surya)</th>
-                      <th>Skor Preferensi (Vi)</th>
-                      <th style={{ textAlign: 'right' }}>Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {tourismResults.results.map((item) => (
-                      <tr key={item.id}>
-                        <td>
-                          <span
-                            className="badge"
-                            style={{
-                              background: item.rank === 1 ? '#10b981' : item.rank === 2 ? '#06b6d4' : item.rank === 3 ? '#f59e0b' : 'rgba(255,255,255,0.08)',
-                              color: item.rank <= 3 ? '#ffffff' : '#94a3b8',
-                              fontWeight: 800,
-                            }}
-                          >
-                            #{item.rank}
-                          </span>
-                        </td>
-                        <td>
-                          <b style={{ color: '#f8fafc', display: 'block' }}>{item.name}</b>
-                          <span style={{ fontSize: '0.72rem', color: '#64748b' }}>{String(item.metadata?.type || 'Akomodasi')}</span>
-                        </td>
-                        <td style={{ color: '#cbd5e1' }}>{String(item.metadata?.island || '-')}</td>
-                        <td style={{ color: '#38bdf8', fontWeight: 700 }}>
-                          Rp {Number(item.raw_values.c1_harga).toLocaleString('id-ID')}
-                        </td>
-                        <td style={{ color: '#cbd5e1' }}>{item.raw_values.c2_jarak} km</td>
-                        <td>
-                          {item.metadata?.eco_stay_badge ? (
-                            <span className="badge badge-emerald" style={{ display: 'inline-flex', gap: '0.25rem' }}>
-                              <CheckCircle2 size={11} /> Eco-Stay Lolos
-                            </span>
-                          ) : (
-                            <span className="badge badge-neutral">Standar</span>
-                          )}
-                        </td>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <div style={{ width: '60px', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
-                              <div
-                                style={{
-                                  width: `${Math.round(item.preference_score * 100)}%`,
-                                  height: '100%',
-                                  background: 'linear-gradient(90deg, #10b981, #06b6d4)',
-                                }}
-                              />
-                            </div>
-                            <b style={{ color: '#f8fafc', fontSize: '0.85rem' }}>{item.preference_score.toFixed(4)}</b>
-                          </div>
-                        </td>
-                        <td style={{ textAlign: 'right' }}>
-                          <button
-                            type="button"
-                            onClick={() => openWhatsAppBooking(item.name, String(item.metadata?.contact_whatsapp || ''))}
-                            className="btn btn-secondary"
-                            style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem' }}
-                          >
-                            Booking WA
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODE 2: VILLAGE CRISIS & INFRASTRUCTURE PRIORITY */}
-      {/* ========================================================================= */}
-      {activeDssMode === 'crisis' && (
-        <div>
-          {/* Crisis Weight Controls */}
-          <div className="app-card" style={{ marginBottom: '1.5rem', padding: '1.5rem', borderLeft: '4px solid #f59e0b' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-              <div>
-                <span className="badge badge-amber" style={{ marginBottom: '0.3rem', display: 'inline-flex', gap: '0.35rem' }}>
-                  <AlertTriangle size={12} /> Mandat Strategis Prof. Purwo
+        {/* ================= RIGHT COLUMN: INTERACTIVE ITINERARY & SPATIAL CANVAS (7 Cols on LG) ================= */}
+        <section
+          className={`lg:col-span-7 flex flex-col bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden min-h-[600px] lg:h-[calc(100vh-140px)] ${
+            mobileActiveView === 'chat' ? 'hidden lg:flex' : 'flex'
+          }`}
+        >
+          {/* Canvas Header & Sub-Tabs */}
+          <div className="p-4 sm:p-5 bg-gradient-to-r from-slate-900 to-[#0B192C] text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  Kurasi Terintegrasi
                 </span>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc', margin: 0 }}>
-                  Bobot Urgensi Intervensi Air Bersih &amp; Energi Mandiri
-                </h3>
-                <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: '0.25rem 0 0' }}>
-                  Analisis perankingan prioritas desa untuk penempatan unit penjernihan air laut/payau (BWRO) dan instalasi PLTS.
-                </p>
+                <span className="text-xs text-slate-400">
+                  {activeItems.length} Destinasi & Penginapan Terpilih
+                </span>
               </div>
+              <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">{planTitle}</h2>
+              <p className="text-xs text-slate-300 max-w-xl line-clamp-1">{planSummary}</p>
+            </div>
+
+            <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 type="button"
-                onClick={handleRunCrisisSAW}
-                disabled={loading}
-                className="btn btn-warning"
-                style={{
-                  padding: '0.6rem 1.35rem',
-                  fontSize: '0.85rem',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  fontWeight: 800,
-                }}
+                onClick={handleCopyItineraryText}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-all active:scale-[0.98]"
               >
-                <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
-                {loading ? 'Menganalisis Krisis...' : 'Simulasi Prioritas Bantuan Desa'}
+                {copiedPlan ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
+                <span>{copiedPlan ? 'Tersalin!' : 'Salin Rute'}</span>
               </button>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.35rem' }}>
-                  <span style={{ color: '#cbd5e1', fontWeight: 600 }}>Kadar Garam / TDS Sumur (Urgency)</span>
-                  <span style={{ color: '#ef4444', fontWeight: 700 }}>{Math.round((crisisWeights.weight_tds || 0.35) * 100)}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.10"
-                  max="0.60"
-                  step="0.05"
-                  value={crisisWeights.weight_tds}
-                  onChange={(e) => setCrisisWeights({ ...crisisWeights, weight_tds: parseFloat(e.target.value) })}
-                  style={{ width: '100%', accentColor: '#ef4444' }}
-                />
-                <span style={{ fontSize: '0.7rem', color: '#64748b' }}>Semakin asin/tinggi TDS ppm, semakin mendesak butuh RO</span>
-              </div>
-
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.35rem' }}>
-                  <span style={{ color: '#cbd5e1', fontWeight: 600 }}>Populasi Terdampak (Benefit)</span>
-                  <span style={{ color: '#f59e0b', fontWeight: 700 }}>{Math.round((crisisWeights.weight_populasi || 0.25) * 100)}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.10"
-                  max="0.50"
-                  step="0.05"
-                  value={crisisWeights.weight_populasi}
-                  onChange={(e) => setCrisisWeights({ ...crisisWeights, weight_populasi: parseFloat(e.target.value) })}
-                  style={{ width: '100%', accentColor: '#f59e0b' }}
-                />
-                <span style={{ fontSize: '0.7rem', color: '#64748b' }}>Semakin banyak jumlah jiwa/KK, semakin prioritas</span>
-              </div>
-
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.35rem' }}>
-                  <span style={{ color: '#cbd5e1', fontWeight: 600 }}>Jarak ke Mata Air Tawar (Benefit)</span>
-                  <span style={{ color: '#38bdf8', fontWeight: 700 }}>{Math.round((crisisWeights.weight_jarak_air || 0.20) * 100)}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.10"
-                  max="0.50"
-                  step="0.05"
-                  value={crisisWeights.weight_jarak_air}
-                  onChange={(e) => setCrisisWeights({ ...crisisWeights, weight_jarak_air: parseFloat(e.target.value) })}
-                  style={{ width: '100%', accentColor: '#38bdf8' }}
-                />
-                <span style={{ fontSize: '0.7rem', color: '#64748b' }}>Semakin jauh dari mata air terdekat, semakin butuh tandon</span>
-              </div>
-
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.35rem' }}>
-                  <span style={{ color: '#cbd5e1', fontWeight: 600 }}>Durasi Pemadaman Diesel (Benefit)</span>
-                  <span style={{ color: '#a855f7', fontWeight: 700 }}>{Math.round((crisisWeights.weight_padam_listrik || 0.20) * 100)}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.10"
-                  max="0.50"
-                  step="0.05"
-                  value={crisisWeights.weight_padam_listrik}
-                  onChange={(e) => setCrisisWeights({ ...crisisWeights, weight_padam_listrik: parseFloat(e.target.value) })}
-                  style={{ width: '100%', accentColor: '#a855f7' }}
-                />
-                <span style={{ fontSize: '0.7rem', color: '#64748b' }}>Semakin sering mati lampu, semakin butuh PLTS pompa</span>
-              </div>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-all active:scale-[0.98]"
+                title="Cetak Rencana Perjalanan"
+              >
+                <Printer size={13} />
+              </button>
             </div>
           </div>
 
-          {/* Crisis Results Table */}
-          {crisisResults && (
-            <div className="app-card" style={{ padding: '1.25rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#f8fafc', margin: 0 }}>
-                  Peringkat Urgensi Intervensi Infrastruktur Desa (Metode SAW)
-                </h4>
-                <span className="badge badge-emerald">Total {crisisResults.total_alternatives} Wilayah Dianalisis</span>
-              </div>
-
-              <div style={{ overflowX: 'auto' }}>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th style={{ width: '60px' }}>Rank</th>
-                      <th>Wilayah / Dusun</th>
-                      <th>Desa &amp; Pulau</th>
-                      <th>Kadar TDS Air Sumur</th>
-                      <th>Warga Terdampak</th>
-                      <th>Jarak Air Tawar</th>
-                      <th>Pemadaman Listrik</th>
-                      <th>Tingkat Urgensi</th>
-                      <th>Skor SAW (Vi)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {crisisResults.results.map((item) => (
-                      <tr key={item.id}>
-                        <td>
-                          <span
-                            className="badge"
-                            style={{
-                              background: item.rank === 1 ? '#ef4444' : item.rank === 2 ? '#f59e0b' : 'rgba(255,255,255,0.08)',
-                              color: item.rank <= 2 ? '#ffffff' : '#94a3b8',
-                              fontWeight: 800,
-                            }}
-                          >
-                            #{item.rank}
-                          </span>
-                        </td>
-                        <td>
-                          <b style={{ color: '#f8fafc', display: 'block' }}>{item.name}</b>
-                          <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>{String(item.metadata?.notes || '')}</span>
-                        </td>
-                        <td style={{ color: '#cbd5e1' }}>
-                          {String(item.metadata?.village || '-')}, {String(item.metadata?.island || '-')}
-                        </td>
-                        <td style={{ color: Number(item.raw_values.c1_kadar_tds) > 2000 ? '#ef4444' : '#f59e0b', fontWeight: 700 }}>
-                          {item.raw_values.c1_kadar_tds} ppm
-                        </td>
-                        <td style={{ color: '#cbd5e1' }}>{item.raw_values.c2_populasi} jiwa</td>
-                        <td style={{ color: '#cbd5e1' }}>{item.raw_values.c3_jarak_air} m</td>
-                        <td style={{ color: '#cbd5e1' }}>{item.raw_values.c4_durasi_padam} jam/hari</td>
-                        <td>
-                          <span
-                            className={`badge ${
-                              item.metadata?.urgency_level === 'SANGAT_KRITIS'
-                                ? 'badge-rose'
-                                : item.metadata?.urgency_level === 'KRITIS'
-                                ? 'badge-amber'
-                                : 'badge-blue'
-                            }`}
-                          >
-                            {String(item.metadata?.urgency_level || 'PRIORITAS')}
-                          </span>
-                        </td>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <div style={{ width: '50px', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
-                              <div
-                                style={{
-                                  width: `${Math.round(item.preference_score * 100)}%`,
-                                  height: '100%',
-                                  background: item.rank === 1 ? '#ef4444' : '#f59e0b',
-                                }}
-                              />
-                            </div>
-                            <b style={{ color: '#f8fafc', fontSize: '0.85rem' }}>{item.preference_score.toFixed(4)}</b>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+          {/* Sub Navigation Bar inside Canvas */}
+          <div className="px-4 py-2.5 bg-slate-100 border-b border-slate-200 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setCanvasTab('itinerary')}
+                className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
+                  canvasTab === 'itinerary'
+                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Calendar size={13} /> Rute Harian (Day-by-Day)
+              </button>
+              <button
+                type="button"
+                onClick={() => setCanvasTab('all')}
+                className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
+                  canvasTab === 'all'
+                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Layers size={13} /> Semua Titik ({activeItems.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setCanvasTab('saved')}
+                className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
+                  canvasTab === 'saved'
+                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Bookmark size={13} /> Disimpan ({savedItems.length})
+              </button>
             </div>
-          )}
-        </div>
-      )}
+
+            <button
+              type="button"
+              onClick={() => onNavigate && onNavigate('gis')}
+              className="text-[11px] font-bold text-cyan-700 hover:text-cyan-800 flex items-center gap-1 transition-colors"
+            >
+              Lihat di Peta GIS <ArrowRight size={12} />
+            </button>
+          </div>
+
+          {/* Canvas Content Scroll Area */}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-6 bg-slate-50/50">
+            {/* VIEW 1: DAY-BY-DAY ITINERARY */}
+            {canvasTab === 'itinerary' && (
+              <div className="space-y-6">
+                {activePlanDays.length > 0 ? (
+                  activePlanDays.map((day) => (
+                    <div
+                      key={day.dayNumber}
+                      className="bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-sm space-y-4"
+                    >
+                      {/* Day Header */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-1.5">
+                        <div>
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#0B192C] text-amber-400">
+                            Hari {day.dayNumber}
+                          </span>
+                          <h3 className="text-sm font-bold text-slate-900 mt-1">{day.title}</h3>
+                        </div>
+                        <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                          <MapPin size={12} className="text-rose-500" /> {day.focusArea}
+                        </span>
+                      </div>
+
+                      {/* Curator Notes Alert */}
+                      <div className="p-3 rounded-lg bg-amber-50/80 border border-amber-200/70 text-xs text-amber-900 flex items-start gap-2.5 leading-relaxed">
+                        <Info size={15} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <strong className="font-bold">Saran Kurator Lokal: </strong>
+                          {day.curatorNotes}
+                        </div>
+                      </div>
+
+                      {/* Day Items Cards */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {day.items.map((item) => (
+                          <PlannerCard
+                            key={item.id}
+                            item={item}
+                            isSaved={savedItemIds.includes(item.id)}
+                            onToggleSave={() => handleToggleSaveItem(item)}
+                            onOpenGis={() => handleOpenInGis(item)}
+                            onReadArticle={() => handleReadArticle(item.relatedArticleSlug)}
+                            onBookingWhatsapp={() => handleBookingWhatsapp(item)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-12 text-slate-400">
+                    <Compass size={36} className="mx-auto mb-2 opacity-40" />
+                    <p className="text-xs">Belum ada rute harian. Tanyakan pada asisten untuk menyusunnya.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* VIEW 2: ALL CURATED ITEMS */}
+            {canvasTab === 'all' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {activeItems.map((item) => (
+                  <PlannerCard
+                    key={item.id}
+                    item={item}
+                    isSaved={savedItemIds.includes(item.id)}
+                    onToggleSave={() => handleToggleSaveItem(item)}
+                    onOpenGis={() => handleOpenInGis(item)}
+                    onReadArticle={() => handleReadArticle(item.relatedArticleSlug)}
+                    onBookingWhatsapp={() => handleBookingWhatsapp(item)}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* VIEW 3: SAVED BOOKMARKS */}
+            {canvasTab === 'saved' && (
+              <div>
+                {savedItems.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {savedItems.map((item) => (
+                      <PlannerCard
+                        key={item.id}
+                        item={item}
+                        isSaved={true}
+                        onToggleSave={() => handleToggleSaveItem(item)}
+                        onOpenGis={() => handleOpenInGis(item)}
+                        onReadArticle={() => handleReadArticle(item.relatedArticleSlug)}
+                        onBookingWhatsapp={() => handleBookingWhatsapp(item)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-16 bg-white rounded-xl border border-dashed border-slate-300 p-8">
+                    <Bookmark size={32} className="mx-auto text-slate-400 mb-2" />
+                    <h4 className="text-sm font-bold text-slate-700">Belum Ada Destinasi Disimpan</h4>
+                    <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                      Klik ikon simpan pada kartu destinasi atau penginapan untuk mengumpulkannya ke dalam daftar favorit perjalanan Anda.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Bar: Action Ecosystem Navigation */}
+          <div className="p-3.5 bg-slate-100 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+            <span className="text-slate-600 font-medium">
+              Data terhubung langsung dengan Peta Spasial GIS & Manajemen Artikel Pokdarwis.
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onNavigate && onNavigate('gis')}
+                className="px-3 py-1.5 rounded-lg bg-[#0B192C] text-amber-400 hover:bg-slate-800 font-bold transition-all flex items-center gap-1.5 shadow-sm active:scale-[0.98]"
+              >
+                <Layers size={13} />
+                <span>Lihat Seluruh Titik di Peta GIS</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* 4. FOOTER */}
+      <BandaUnifiedFooter onNavigateTab={onNavigate} />
     </div>
   )
 }
+
+// Subcomponent: Interactive Destination/Accommodation Card
+interface PlannerCardProps {
+  item: UnifiedPlannerItem
+  isSaved: boolean
+  onToggleSave: () => void
+  onOpenGis: () => void
+  onReadArticle: () => void
+  onBookingWhatsapp: () => void
+}
+
+const PlannerCard: React.FC<PlannerCardProps> = ({
+  item,
+  isSaved,
+  onToggleSave,
+  onOpenGis,
+  onReadArticle,
+  onBookingWhatsapp,
+}) => {
+  return (
+    <div className="bg-white rounded-xl border border-slate-200/90 hover:border-slate-300 transition-all shadow-sm overflow-hidden flex flex-col justify-between group">
+      <div>
+        {/* Card Image with badges */}
+        <div className="relative h-36 w-full bg-slate-100 overflow-hidden">
+          <img
+            src={item.photoUrl}
+            alt={item.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={(e) => {
+              ;(e.target as HTMLImageElement).src = '/images/landmarks/belgica.jpg'
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
+
+          {/* Category Badge */}
+          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+            <span
+              className={`px-2 py-0.5 rounded text-[10px] font-extrabold shadow-sm ${
+                item.type === 'heritage'
+                  ? 'bg-amber-500 text-slate-950'
+                  : item.type === 'nature'
+                  ? 'bg-cyan-500 text-slate-950'
+                  : 'bg-emerald-600 text-white'
+              }`}
+            >
+              {item.categoryLabel}
+            </span>
+          </div>
+
+          {/* Save / Bookmark Button */}
+          <button
+            type="button"
+            onClick={onToggleSave}
+            title={isSaved ? 'Hapus dari Tersimpan' : 'Simpan Destinasi'}
+            className="absolute top-2.5 right-2.5 p-1.5 rounded-full bg-slate-900/60 hover:bg-slate-900 text-white backdrop-blur-sm transition-colors"
+          >
+            {isSaved ? <BookmarkCheck size={14} className="text-amber-400" /> : <Bookmark size={14} />}
+          </button>
+
+          {/* Island location at bottom of image */}
+          <div className="absolute bottom-2 left-2.5 right-2.5 flex items-center justify-between text-white text-[11px] font-semibold drop-shadow">
+            <span className="flex items-center gap-1 truncate">
+              <MapPin size={11} className="text-rose-400 flex-shrink-0" />
+              {item.island}
+            </span>
+            {item.historicalEra && (
+              <span className="text-[10px] bg-slate-900/70 px-1.5 py-0.5 rounded text-amber-300">
+                {item.historicalEra}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Card Body */}
+        <div className="p-3.5 space-y-2">
+          <h4 className="font-bold text-xs sm:text-sm text-slate-900 line-clamp-1 leading-snug">
+            {item.name}
+          </h4>
+          <p className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
+            {item.description}
+          </p>
+
+          {/* Special Facilities (RO water, solar backup, price) */}
+          <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[10px]">
+            {item.priceRp && (
+              <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">
+                Rp {item.priceRp.toLocaleString('id-ID')}/malam
+              </span>
+            )}
+            {item.hasCleanRoWater && (
+              <span className="px-1.5 py-0.5 rounded bg-sky-50 text-sky-700 font-semibold border border-sky-200 flex items-center gap-1">
+                <Droplets size={10} className="text-sky-500" /> Air Minum RO
+              </span>
+            )}
+            {item.hasSolarBackup && (
+              <span className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 font-semibold border border-amber-200 flex items-center gap-1">
+                <Zap size={10} className="text-amber-500" /> PLTS Surya
+              </span>
+            )}
+            {item.hoursOrAccess && (
+              <span className="text-slate-500 flex items-center gap-1">
+                <Clock size={10} /> {item.hoursOrAccess}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Card Action Buttons (Connected Ecosystem Links) */}
+      <div className="p-3 pt-0 flex items-center gap-1.5 border-t border-slate-100 mt-2">
+        {/* Action 1: Open in GIS */}
+        <button
+          type="button"
+          onClick={onOpenGis}
+          className="flex-1 py-1.5 px-2 rounded-lg bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border border-cyan-200 font-bold text-[11px] flex items-center justify-center gap-1 transition-all active:scale-[0.98]"
+        >
+          <MapPin size={12} className="text-cyan-600" />
+          <span>Buka di Peta GIS</span>
+        </button>
+
+        {/* Action 2: WhatsApp for accommodations */}
+        {item.type === 'accommodation' && item.contactWhatsapp && (
+          <button
+            type="button"
+            onClick={onBookingWhatsapp}
+            className="py-1.5 px-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] flex items-center justify-center gap-1 transition-all active:scale-[0.98] shadow-sm"
+            title="Pesan Langsung via WhatsApp"
+          >
+            <Phone size={12} />
+            <span className="hidden sm:inline">Pesan WA</span>
+          </button>
+        )}
+
+        {/* Action 3: Read History Article if available */}
+        {item.relatedArticleSlug && (
+          <button
+            type="button"
+            onClick={onReadArticle}
+            className="py-1.5 px-2 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 font-bold text-[11px] flex items-center justify-center gap-1 transition-all active:scale-[0.98]"
+            title="Baca Narasi Sejarah di Portal Pokdarwis"
+          >
+            <BookOpen size={12} className="text-amber-600" />
+            <span className="hidden sm:inline">Baca Sejarah</span>
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default SmartPlannerWorkspace

@@ -1176,3 +1176,26 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Menyesuaikan batas minimum tinggi track scroll (`min-height: 100vh`) untuk memastikan tidak ada dead zone atau void kosong.
 - [x] 66.4 Harmonisasi Keseluruhan & Resolusi Integrasi Cabang:
   - Menggabungkan penyempurnaan aset gambar dan arsitektur galeri snap-rail dari cabang `feature/mobile-static-optimization` ke dalam `main` tanpa mengorbankan fitur Phase 62-65 (Pemetaan Aktor Desa, Peta Vektor SVG, Fullscreen GIS, dan Arsip Sejarah Pokdarwis).
+
+---
+
+## [Phase 67] - Transformasi Workspace Perencana Wisata Cerdas (Conversational AI Concierge) & Integrasi Spasial GIS Riil
+- [x] 67.1 Pembersihan Tuntas Jargon Teknis (SAW, DSS, W1-W5, Normalisasi Matriks):
+  - Mengeliminasi seluruh akronim kaku DSS/SAW dari bilah samping (`DashboardLayout.tsx`), footer (`BandaUnifiedFooter.tsx`), dan dashboard overview (`UserEcosystemDashboard.tsx`).
+  - Mengganti label menjadi "Perencana Wisata Cerdas" / "Asisten Rekomendasi Wisata".
+- [x] 67.2 Rombak Total `SmartPlannerWorkspace.tsx` Menjadi Asisten Percakapan Dua Panel (Split-Screen Workspace):
+  - Mengintegrasikan antarmuka dialog interaktif bergaya kurator lokal Banda Neira dengan quick prompt chips (Sejarah 3 Hari, Snorkeling Lava Flow & Hatta, Homestay Hemat Air RO, Island Hopping, Rute Jalan Kaki 1 Hari).
+  - Menghadirkan Kanvas Rencana Perjalanan (Trip Itinerary Canvas) di panel kanan dengan tab navigasi: Rute Harian (Day-by-Day), Semua Titik Rekomendasi, dan Titik Tersimpan (Bookmarks).
+- [x] 67.3 Integrasi Basis Data Riil (PostgreSQL GIS & Direktori Penginapan):
+  - Mengambil langsung 50 titik spasial aktif dari `GET /api/v1/gis/layers` (Cagar Budaya `LAYER_HERITAGE`, Bahari 4A `LAYER_TOURISM_4A`, Penginapan `LAYER_ACCOMMODATION`).
+  - Memadukan data 6 eco-stay terverifikasi dari `GET /api/v1/tourism/accommodations` (nomor WhatsApp resmi, harga riil, fasilitas air minum RO, dan PLTS tenaga surya).
+  - Menghubungkan titik cagar budaya dengan artikel narasi sejarah dari `community_contents`.
+- [x] 67.4 Interkoneksi Lintas Fitur Ekosistem (Ecosystem Bridge):
+  - Tombol **[Buka di Peta GIS]**: Mengarahkan langsung ke `/gis?feature_id=...&name=...`. Peta Leaflet di `InteractiveMapWorkspace.tsx` secara otomatis melakukan *flyTo* ke titik terpilih dan membuka drawer detail informasi titik tersebut.
+  - Tombol **[Pesan via WhatsApp]**: Membuka obrolan WhatsApp resmi dengan pesan pemesanan terformat otomatis.
+  - Tombol **[Baca Kisah Sejarah]**: Menavigasi langsung ke naskah artikel sejarah di `/sejarah/:slug`.
+  - Tombol **[Salin Rute]** & **[Cetak Rencana]**: Mengekspor ringkasan rencana perjalanan lengkap dengan catatan kurator untuk wisatawan.
+- [x] 67.5 Verifikasi Build & Automated Test:
+  - `npm --prefix frontend run build` lolos 100% tanpa error TypeScript (selesai dalam 7.92 detik).
+  - Test suite pytest backend lolos 100% (13 passed in 44.60 detik).
+
