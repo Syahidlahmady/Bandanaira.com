@@ -167,15 +167,26 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
   onOpenQuickLogin,
   currentUser,
 }) => {
-  const [articles, setArticles] = useState<CommunityContentItem[]>(FALLBACK_HISTORY_ARTICLES)
-  const [loading, setLoading] = useState<boolean>(true)
+  const [articles, setArticles] = useState<CommunityContentItem[]>(() => {
+    try {
+      const cached = localStorage.getItem('pokdarwis_articles_cache')
+      if (cached) {
+        const parsed = JSON.parse(cached)
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      }
+    } catch {
+      // ignore
+    }
+    return FALLBACK_HISTORY_ARTICLES
+  })
+  const [loading, setLoading] = useState<boolean>(false)
   const [selectedSlug, setSelectedSlug] = useState<string | null>(initialSlug || null)
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [selectedIsland, setSelectedIsland] = useState<string>('Semua Pulau')
   const [copiedLink, setCopiedLink] = useState<boolean>(false)
 
-  // Fetch articles from backend API
+  // Fetch articles from backend API with real-time sync
   useEffect(() => {
     let isMounted = true
     const fetchArticles = async () => {
@@ -183,24 +194,44 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
         setLoading(true)
         const data = await tourismService.listCommunityContents({ content_type: 'ARTICLE' })
         if (isMounted && Array.isArray(data) && data.length > 0) {
-          // Merge unique with fallback
-          const combined = [...data]
-          for (const fb of FALLBACK_HISTORY_ARTICLES) {
-            if (!combined.some((item) => item.slug === fb.slug)) {
-              combined.push(fb)
-            }
+          setArticles(data)
+          try {
+            localStorage.setItem('pokdarwis_articles_cache', JSON.stringify(data))
+          } catch {
+            // ignore
           }
-          setArticles(combined)
         }
       } catch {
-        // Fallback already preloaded
+        // Fallback already preloaded from cache or constant
       } finally {
         if (isMounted) setLoading(false)
       }
     }
     fetchArticles()
+
+    const handleSync = (e: any) => {
+      if (e?.detail && Array.isArray(e.detail)) {
+        if (isMounted) setArticles(e.detail)
+      } else {
+        try {
+          const cached = localStorage.getItem('pokdarwis_articles_cache')
+          if (cached) {
+            const parsed = JSON.parse(cached)
+            if (Array.isArray(parsed) && isMounted) setArticles(parsed)
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
+
+    window.addEventListener('banda_articles_updated', handleSync)
+    window.addEventListener('storage', handleSync)
+
     return () => {
       isMounted = false
+      window.removeEventListener('banda_articles_updated', handleSync)
+      window.removeEventListener('storage', handleSync)
     }
   }, [])
 

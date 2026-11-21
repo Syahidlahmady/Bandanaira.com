@@ -68,6 +68,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 63: Transformasi Section Visit Banda Neira Menjadi Peta Vektor Ringan & Pemindahan Peta Lengkap ke Workspace Khusus**
 - [x] **Phase 64: Peta Spasial GIS Fullscreen Edge-to-Edge, Navigasi Minimalis, Pembersihan Seeder, & Optimasi Lighthouse**
 - [x] **Phase 65: Fitur Artikel Sejarah Pokdarwis, Dedicated Public History Page, & Pokdarwis CMS Dashboard**
+- [x] **Phase 66: Sinkronisasi Penuh CRUD Artikel Sejarah antara Database PostgreSQL, CMS, Reader View, dan Dasbor Utama**
 ---
 
 ## Detailed Task Checklist

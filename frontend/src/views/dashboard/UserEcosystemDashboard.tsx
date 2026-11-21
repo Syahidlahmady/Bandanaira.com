@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   LineChart,
   Line,
@@ -47,7 +47,7 @@ import {
   BookOpen,
 } from 'lucide-react'
 import { NavTabType } from '../landing/BandanairaBeranda'
-import { setPreferredTourismSubTab } from '../../services/tourism'
+import { setPreferredTourismSubTab, tourismService } from '../../services/tourism'
 
 export type DashboardNavTab = NavTabType | 'landing' | 'dashboard'
 
@@ -1082,6 +1082,65 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
   const activeRoleKey: RoleKey = isAdmin ? selectedRoleKey : detectInitialRoleKey()
   const profile = ROLE_PROFILES[activeRoleKey] || ROLE_PROFILES.resident
 
+  // Real-time synchronization for Pokdarwis History Articles
+  const [pokdarwisArticles, setPokdarwisArticles] = useState<any[]>(() => {
+    try {
+      const cached = localStorage.getItem('pokdarwis_articles_cache')
+      if (cached) {
+        const parsed = JSON.parse(cached)
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      }
+    } catch {
+      // ignore
+    }
+    return POKDARWIS_ARTICLES_OVERVIEW
+  })
+
+  useEffect(() => {
+    if (activeRoleKey !== 'smart_tourism_admin') return
+
+    const loadTourismArticles = async () => {
+      try {
+        const data = await tourismService.listCommunityContents({ content_type: 'ARTICLE' })
+        if (Array.isArray(data) && data.length > 0) {
+          setPokdarwisArticles(data)
+          try {
+            localStorage.setItem('pokdarwis_articles_cache', JSON.stringify(data))
+          } catch {
+            // ignore
+          }
+        }
+      } catch {
+        // fallback already loaded from cache or default
+      }
+    }
+
+    loadTourismArticles()
+
+    const handleArticlesSync = (e: any) => {
+      if (e?.detail && Array.isArray(e.detail)) {
+        setPokdarwisArticles(e.detail)
+      } else {
+        try {
+          const cached = localStorage.getItem('pokdarwis_articles_cache')
+          if (cached) {
+            const parsed = JSON.parse(cached)
+            if (Array.isArray(parsed)) setPokdarwisArticles(parsed)
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
+
+    window.addEventListener('banda_articles_updated', handleArticlesSync)
+    window.addEventListener('storage', handleArticlesSync)
+    return () => {
+      window.removeEventListener('banda_articles_updated', handleArticlesSync)
+      window.removeEventListener('storage', handleArticlesSync)
+    }
+  }, [activeRoleKey])
+
   const getUserInitials = () => {
     const name = currentUser?.full_name || currentUser?.username || 'Warga Banda'
     const parts = name.trim().split(' ')
@@ -1277,7 +1336,7 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
                 <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block truncate">
                   Naskah Terbit
                 </span>
-                <p className="text-xl font-bold text-[#081D35] mt-0.5">4 Tulisan</p>
+                <p className="text-xl font-bold text-[#081D35] mt-0.5">{pokdarwisArticles.length} Tulisan</p>
                 <span className="text-[11px] text-emerald-600 font-semibold block mt-0.5 truncate">
                   Tayang di /sejarah &amp; beranda
                 </span>
@@ -1307,7 +1366,9 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
                 <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block truncate">
                   Topik Bahasan
                 </span>
-                <p className="text-xl font-bold text-[#081D35] mt-0.5">4 Kategori</p>
+                <p className="text-xl font-bold text-[#081D35] mt-0.5">
+                  {new Set(pokdarwisArticles.map((a: any) => a.priority_category || a.category)).size} Kategori
+                </p>
                 <span className="text-[11px] text-slate-500 font-semibold block mt-0.5 truncate">
                   Diplomasi, Benteng, Rempah, Tokoh
                 </span>
@@ -1322,9 +1383,11 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
                 <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block truncate">
                   Sebaran Cerita
                 </span>
-                <p className="text-xl font-bold text-[#081D35] mt-0.5">3 Pulau</p>
+                <p className="text-xl font-bold text-[#081D35] mt-0.5">
+                  {new Set(pokdarwisArticles.map((a: any) => a.island_name || a.island)).size} Pulau
+                </p>
                 <span className="text-[11px] text-slate-500 font-semibold block mt-0.5 truncate">
-                  P. Neira, Banda Besar, P. Rhun
+                  {Array.from(new Set(pokdarwisArticles.map((a: any) => a.island_name || a.island))).slice(0, 3).join(', ') || 'Kepulauan Banda'}
                 </span>
               </div>
             </div>
@@ -1354,58 +1417,64 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
               </div>
 
               <div className="space-y-3">
-                {POKDARWIS_ARTICLES_OVERVIEW.map((art, idx) => (
-                  <div
-                    key={idx}
-                    className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs hover:border-[#CBD5E1] transition flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between"
-                  >
-                    <div className="flex gap-3.5 items-start">
-                      <img
-                        src={art.cover}
-                        alt={art.title}
-                        className="size-16 rounded-xl object-cover shrink-0 border border-slate-200"
-                        onError={(e) => {
-                          ;(e.target as HTMLElement).style.display = 'none'
-                        }}
-                      />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 text-[10px] font-semibold">
-                            {art.island}
-                          </span>
-                          <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-medium">
-                            {art.category}
-                          </span>
-                          <span className="text-[10px] text-slate-400">• {art.readTime}</span>
+                {pokdarwisArticles.map((art: any, idx: number) => {
+                  const cover = art.media_url || art.cover || '/images/landmarks/belgica.jpg'
+                  const island = art.island_name || art.island || 'Pulau Neira'
+                  const category = art.priority_category || art.category || 'SEJARAH'
+                  const readTime = art.readTime || '5 menit baca'
+                  return (
+                    <div
+                      key={art.id || art.slug || idx}
+                      className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs hover:border-[#CBD5E1] transition flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between"
+                    >
+                      <div className="flex gap-3.5 items-start">
+                        <img
+                          src={cover}
+                          alt={art.title}
+                          className="size-16 rounded-xl object-cover shrink-0 border border-slate-200"
+                          onError={(e) => {
+                            ;(e.target as HTMLElement).style.display = 'none'
+                          }}
+                        />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 text-[10px] font-semibold">
+                              {island}
+                            </span>
+                            <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-medium">
+                              {category}
+                            </span>
+                            <span className="text-[10px] text-slate-400">• {readTime}</span>
+                          </div>
+                          <h3 className="text-sm font-bold text-[#081D35] leading-snug line-clamp-1">
+                            {art.title}
+                          </h3>
+                          <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">
+                            {art.summary}
+                          </p>
                         </div>
-                        <h3 className="text-sm font-bold text-[#081D35] leading-snug line-clamp-1">
-                          {art.title}
-                        </h3>
-                        <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">
-                          {art.summary}
-                        </p>
+                      </div>
+
+                      <div className="flex sm:flex-col gap-2 shrink-0 self-end sm:self-center w-full sm:w-auto">
+                        <button
+                          type="button"
+                          onClick={() => onNavigate('tourism')}
+                          className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition cursor-pointer"
+                        >
+                          Sunting Naskah
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onNavigate('sejarah')}
+                          className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#081D35] hover:bg-[#0F2C59] text-xs font-semibold text-white transition cursor-pointer"
+                        >
+                          <Eye size={12} className="text-[#F4B75E]" />
+                          <span>Lihat di Web</span>
+                        </button>
                       </div>
                     </div>
-
-                    <div className="flex sm:flex-col gap-2 shrink-0 self-end sm:self-center w-full sm:w-auto">
-                      <button
-                        type="button"
-                        onClick={() => onNavigate('tourism')}
-                        className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition cursor-pointer"
-                      >
-                        Sunting Naskah
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onNavigate('sejarah')}
-                        className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#081D35] hover:bg-[#0F2C59] text-xs font-semibold text-white transition cursor-pointer"
-                      >
-                        <Eye size={12} className="text-[#F4B75E]" />
-                        <span>Lihat di Web</span>
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
 
