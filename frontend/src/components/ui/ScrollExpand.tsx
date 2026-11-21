@@ -33,7 +33,7 @@ export interface ScrollExpandProps extends Omit<React.HTMLAttributes<HTMLDivElem
   style?: React.CSSProperties
 }
 
-export const ScrollExpand: React.FC<ScrollExpandProps> = ({
+const ScrollExpandComponent: React.FC<ScrollExpandProps> = ({
   src = '',
   mediaType = 'image',
   youtubeId = '',
@@ -289,6 +289,22 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
     typeof window !== 'undefined' ? window.innerWidth >= 1024 : false
   )
   const [iframeReady, setIframeReady] = useState<boolean>(false)
+  const [isIntersecting, setIsIntersecting] = useState<boolean>(true)
+
+  useEffect(() => {
+    const root = rootRef.current
+    if (!root) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        setIsIntersecting(entries[0]?.isIntersecting ?? true)
+      },
+      { rootMargin: '400px 0px' }
+    )
+
+    observer.observe(root)
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     const handleResize = () => {
@@ -327,7 +343,7 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
         className="absolute inset-0 w-full h-full object-cover -z-10"
         draggable={false}
       />
-      {iframeReady && (
+      {iframeReady && isIntersecting && (
         <iframe
           className="scroll-expand__youtube-iframe"
           src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}&playsinline=1&rel=0&disablekb=1&modestbranding=1&iv_load_policy=3&showinfo=0&fs=0`}
@@ -398,4 +414,5 @@ export const ScrollExpand: React.FC<ScrollExpandProps> = ({
   )
 }
 
+export const ScrollExpand = React.memo(ScrollExpandComponent)
 export default ScrollExpand

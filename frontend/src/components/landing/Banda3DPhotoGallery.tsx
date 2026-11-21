@@ -5,6 +5,7 @@ import { useLanguage } from '../../context/LanguageContext'
 export interface PhotoItem {
   id: string
   src: string
+  cardSrc?: string
   alt: string
   positions: {
     xxs: { left: string; top: string; z: number }
@@ -33,6 +34,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'belgica',
     src: '/images/landmarks/belgica.jpg',
+    cardSrc: '/images/landmarks/belgica-card.webp',
     alt: 'Benteng Belgica',
     positions: {
       xxs: { left: '-5%', top: '18%', z: -80 },
@@ -45,6 +47,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'gunung-api',
     src: '/images/landmarks/gunung-api.jpg',
+    cardSrc: '/images/landmarks/gunung-api-card.webp',
     alt: 'Gunung Api Banda',
     positions: {
       xxs: { left: '66%', top: '22%', z: -160 },
@@ -57,6 +60,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'istana-mini',
     src: '/images/landmarks/istana-mini.jpg',
+    cardSrc: '/images/landmarks/istana-mini-card.webp',
     alt: 'Istana Mini VOC',
     positions: {
       xxs: { left: '68%', top: '65%', z: -360 },
@@ -69,6 +73,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'lava-flow',
     src: '/images/landmarks/lava-flow.jpg',
+    cardSrc: '/images/landmarks/lava-flow-card.webp',
     alt: 'Lava Flow Coral Reef',
     positions: {
       xxs: { left: '-8%', top: '62%', z: -480 },
@@ -81,6 +86,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'pulau-rhun',
     src: '/images/landmarks/pulau-rhun.jpg',
+    cardSrc: '/images/landmarks/pulau-rhun-card.webp',
     alt: 'Pulau Rhun',
     positions: {
       xxs: { left: '-10%', top: '30%', z: -680 },
@@ -93,6 +99,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'pulau-hatta',
     src: '/images/landmarks/pulau-hatta.jpg',
+    cardSrc: '/images/landmarks/pulau-hatta-card.webp',
     alt: 'Pulau Hatta',
     positions: {
       xxs: { left: '76%', top: '38%', z: -840 },
@@ -105,6 +112,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'kebun-pala',
     src: '/images/landmarks/kebun-pala.jpg',
+    cardSrc: '/images/landmarks/kebun-pala-card.webp',
     alt: 'Perkebunan Pala Kuno',
     positions: {
       xxs: { left: '60%', top: '74%', z: -980 },
@@ -117,6 +125,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'nassau',
     src: '/images/landmarks/nassau.jpg',
+    cardSrc: '/images/landmarks/nassau-card.webp',
     alt: 'Benteng Nassau',
     positions: {
       xxs: { left: '-2%', top: '20%', z: -1150 },
@@ -129,6 +138,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'bung-hatta',
     src: '/images/landmarks/bung-hatta.jpg',
+    cardSrc: '/images/landmarks/bung-hatta-card.webp',
     alt: 'Rumah Pengasingan Bung Hatta',
     positions: {
       xxs: { left: '72%', top: '24%', z: -1380 },
@@ -141,6 +151,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'pulau-ay',
     src: '/images/landmarks/pulau-ay.jpg',
+    cardSrc: '/images/landmarks/pulau-ay-card.webp',
     alt: 'Pulau Ay',
     positions: {
       xxs: { left: '-10%', top: '34%', z: -1550 },
@@ -153,6 +164,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'pelabuhan',
     src: '/images/landmarks/pelabuhan.jpg',
+    cardSrc: '/images/landmarks/pelabuhan-card.webp',
     alt: 'Pelabuhan Banda Neira',
     positions: {
       xxs: { left: '55%', top: '58%', z: -1800 },
@@ -165,6 +177,7 @@ export const BANDA_3D_PHOTOS: PhotoItem[] = [
   {
     id: 'pohon-sejuta-umat',
     src: '/images/landmarks/pohon-sejuta-umat.webp',
+    cardSrc: '/images/landmarks/pohon-sejuta-umat-card.webp',
     alt: 'Pohon Sejuta Umat & Gunung Api Banda',
     positions: {
       xxs: { left: '10%', top: '42%', z: -1950 },
@@ -257,7 +270,7 @@ const PhotoCard = memo(({ item, breakpoint, registerElement }: PhotoCardProps) =
     >
       <div className="relative w-full h-full overflow-hidden shadow-[0_20px_45px_rgba(0,0,0,0.65)] rounded-2xl border border-white/25 bg-slate-900/40 group">
         <img
-          src={item.src}
+          src={item.cardSrc || item.src}
           alt={item.alt}
           width={350}
           height={220}
@@ -310,17 +323,15 @@ OrnamentCard.displayName = 'OrnamentCard'
 export const Banda3DPhotoGallery: React.FC = () => {
   const { t } = useLanguage()
   const sectionRef = useRef<HTMLElement>(null)
-  const elementsRef = useRef<HTMLDivElement[]>([])
+  const elementsRef = useRef<(HTMLDivElement | null)[]>([])
   const titleRef = useRef<HTMLDivElement>(null)
   const rafRef = useRef<number | null>(null)
   const lastScrollYRef = useRef<number>(0)
   const [breakpoint, setBreakpoint] = useState<BreakpointKey>('lg')
 
-  // Register card and ornament elements for 3D coordinate manipulation
-  const registerElement = useCallback((el: HTMLDivElement | null) => {
-    if (el && !elementsRef.current.includes(el)) {
-      elementsRef.current.push(el)
-    }
+  // Register card and ornament elements with deterministic indexed slots
+  const setElementRef = useCallback((index: number) => (el: HTMLDivElement | null) => {
+    elementsRef.current[index] = el
   }, [])
 
   // Responsive breakpoint tracking
@@ -339,7 +350,7 @@ export const Banda3DPhotoGallery: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Scroll effect driving 3D Z-flythrough and Depth-of-Field Blur (Reflow-free)
+  // Scroll effect driving 3D Z-flythrough
   const cachedBoundsRef = useRef({ activeStart: 0, activeEnd: 0, speedMultiplier: 1.2, isMobileDevice: false })
 
   useEffect(() => {
@@ -350,11 +361,12 @@ export const Banda3DPhotoGallery: React.FC = () => {
       const sectionTop = rect.top + scrollY
       const isMobile = window.innerWidth < 1024
       const isMobileDevice = window.innerWidth < 768
-      const travelPadding = isMobile ? 150 : 200
-      const activeStart = sectionTop - travelPadding
+      const activeStart = sectionTop
       const totalHeight = sectionRef.current.offsetHeight
-      const activeEnd = sectionTop + totalHeight - (isMobile ? 550 : 900)
-      const speedMultiplier = isMobile ? 2.8 : 1.2
+      const windowH = typeof window !== 'undefined' ? window.innerHeight : 900
+      const activeEnd = sectionTop + totalHeight - (isMobile ? 550 : windowH)
+      const totalTravel = Math.max(1, activeEnd - activeStart)
+      const speedMultiplier = isMobile ? 2.8 : 2600 / totalTravel
       cachedBoundsRef.current = { activeStart, activeEnd, speedMultiplier, isMobileDevice }
     }
 
@@ -378,18 +390,18 @@ export const Banda3DPhotoGallery: React.FC = () => {
 
         const { activeStart, activeEnd, speedMultiplier } = cachedBoundsRef.current
 
-        // Fast bail-out when offscreen
-        if (scrollY < activeStart - 500 || scrollY > activeEnd + 500) {
-          if (section.style.visibility !== 'hidden') section.style.visibility = 'hidden'
+        // Fast bail-out when completely offscreen (avoids layout thrashing)
+        if (scrollY < activeStart - 800 || scrollY > activeEnd + 800) {
           return
         }
-        if (section.style.visibility !== 'visible') section.style.visibility = 'visible'
 
         const isActive = scrollY >= activeStart && scrollY <= activeEnd
-        const progressDist = Math.max(0, scrollY - activeStart)
+        const progressDist = scrollY < activeStart ? 0 : Math.min(scrollY - activeStart, activeEnd - activeStart)
 
         // Animate photo cards & floating ornaments
-        for (const el of elementsRef.current) {
+        const elements = elementsRef.current
+        for (let i = 0; i < elements.length; i++) {
+          const el = elements[i]
           if (!el) continue
           const initialZ = Number(el.dataset.zinit || 0)
           let currentZ = initialZ
@@ -437,9 +449,8 @@ export const Banda3DPhotoGallery: React.FC = () => {
           let titleZ = initialTitleZ
           let titleOpacity = 1
 
-          if (isActive) {
+          if (progressDist > 0) {
             titleZ = initialTitleZ + speedMultiplier * 0.7 * progressDist
-            // Title dissolves smoothly as gallery items fly past
             titleOpacity = Math.max(0, 1 - progressDist / 600)
           } else if (scrollY > activeEnd) {
             titleOpacity = 0
@@ -495,8 +506,8 @@ export const Banda3DPhotoGallery: React.FC = () => {
       aria-label="Kompilasi Galeri Foto Banda Neira"
       className="relative z-10 w-full bg-[#081d35]"
     >
-      {/* Scroll track with generous height on desktop and mobile-optimized height */}
-      <div className="relative z-10 h-[1350px] w-full lg:h-[3500px]">
+      {/* Scroll track with punchy, lightweight flight on desktop and mobile */}
+      <div className="relative z-10 h-[1350px] w-full lg:h-[2200px]">
         {/* Sticky viewport stage with true 3D perspective */}
         <div
           className="sticky top-0 h-[100dvh] min-h-[100dvh] w-full overflow-hidden flex items-center justify-center"
@@ -506,22 +517,22 @@ export const Banda3DPhotoGallery: React.FC = () => {
           <div className="absolute inset-0 bg-[#081d35] bg-[radial-gradient(circle_at_50%_40%,#113a68_0%,#0c2b4e_50%,#081d35_90%)] pointer-events-none" />
 
           {/* Render all 3D floating photo cards (Clean, pure images) */}
-          {BANDA_3D_PHOTOS.map((item) => (
+          {BANDA_3D_PHOTOS.map((item, index) => (
             <PhotoCard
               key={item.id}
               item={item}
               breakpoint={breakpoint}
-              registerElement={registerElement}
+              registerElement={setElementRef(index)}
             />
           ))}
 
           {/* Render floating cultural motifs in 3D perspective space */}
-          {BANDA_3D_ORNAMENTS.map((item) => (
+          {BANDA_3D_ORNAMENTS.map((item, index) => (
             <OrnamentCard
               key={item.id}
               item={item}
               breakpoint={breakpoint}
-              registerElement={registerElement}
+              registerElement={setElementRef(BANDA_3D_PHOTOS.length + index)}
             />
           ))}
 
@@ -561,7 +572,6 @@ export const Banda3DPhotoGallery: React.FC = () => {
               <h2 className="text-4xl sm:text-6xl font-script font-normal text-white tracking-wide leading-tight drop-shadow-lg">
                 {t.gallery.title}
               </h2>
-
             </div>
           </div>
         </div>
