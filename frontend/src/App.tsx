@@ -1512,14 +1512,14 @@ export const App: React.FC = () => {
                       : 'bg-white/10 text-slate-200 hover:bg-white/20'
                   }`}
                 >
-                  🏡 Penginapan &amp; Cagar Budaya
+                  Penginapan &amp; Cagar Budaya
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('gis')}
                   className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/10 text-slate-200 hover:bg-white/20 transition cursor-pointer"
                 >
-                  🗺️ Peta Spasial 7-Layer
+                  Peta Spasial 7-Layer
                 </button>
                 <button
                   type="button"
@@ -1530,14 +1530,14 @@ export const App: React.FC = () => {
                       : 'bg-white/10 text-slate-200 hover:bg-white/20'
                   }`}
                 >
-                  🧭 Perencana Cerdas (SAW)
+                  Perencana Wisata
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowMarketplaceModal(true)}
                   className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/10 text-slate-200 hover:bg-white/20 transition cursor-pointer"
                 >
-                  🛍️ Etalase UMKM
+                  Etalase UMKM
                 </button>
                 <button
                   type="button"
