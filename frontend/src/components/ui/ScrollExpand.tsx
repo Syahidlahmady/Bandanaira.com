@@ -343,7 +343,7 @@ const ScrollExpandComponent: React.FC<ScrollExpandProps> = ({
         width={1920}
         height={1106}
         fetchPriority="high"
-        decoding="async"
+        decoding="sync"
         className="absolute inset-0 w-full h-full object-cover -z-10"
         draggable={false}
       />
@@ -380,7 +380,7 @@ const ScrollExpandComponent: React.FC<ScrollExpandProps> = ({
       width={1920}
       height={1106}
       fetchPriority="high"
-      decoding="async"
+      decoding="sync"
       draggable={false}
     />
   )

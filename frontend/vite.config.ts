@@ -30,6 +30,9 @@ export default defineConfig({
     },
   },
   build: {
+    target: 'es2020',
+    cssMinify: true,
+    minify: 'esbuild',
     chunkSizeWarningLimit: 800,
     rollupOptions: {
       output: {
@@ -39,5 +42,8 @@ export default defineConfig({
         },
       },
     },
+  },
+  esbuild: {
+    legalComments: 'none',
   },
 })
