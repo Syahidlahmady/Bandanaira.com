@@ -68,6 +68,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 63: Transformasi Section Visit Banda Neira Menjadi Peta Vektor Ringan & Pemindahan Peta Lengkap ke Workspace Khusus**
 - [x] **Phase 64: Peta Spasial GIS Fullscreen Edge-to-Edge, Navigasi Minimalis, Pembersihan Seeder, & Optimasi Lighthouse**
 - [x] **Phase 65: Fitur Artikel Sejarah Pokdarwis, Dedicated Public History Page, & Pokdarwis CMS Dashboard**
+- [x] **Phase 66: Galeri Pusaka Snap-Rail Seluler, Thumbnail WebP 12 Cagar Budaya, dan Integrasi Mobile Static Optimization**
 ---
 
 ## Detailed Task Checklist
@@ -1161,3 +1162,16 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Memperbarui integrasi API di `frontend/src/services/tourism.ts` dengan memanfaatkan base URL lingkungan (`import.meta.env.VITE_API_BASE_URL`) dan rute proksi relatif `/api/v1` guna mencegah kegagalan CORS/port.
   - Memasang mekanisme fallback cache di `PokdarwisHistoryCms.tsx` (`DEFAULT_SEED_ARTICLES` & `localStorage`) sehingga pengelola Pokdarwis selalu disajikan naskah lengkap secara instan dan dapat melakukan pengelolaan naskah tanpa kendala koneksi server awal.
 
+---
+
+## [Phase 66] - Galeri Pusaka Snap-Rail Seluler, Thumbnail WebP 12 Cagar Budaya, dan Integrasi Mobile Static Optimization
+- [x] 66.1 Optimasi Ukuran Payload Gambar Galeri (12 Thumbnail WebP 600w):
+  - Menghasilkan 12 varian WebP 600w (`*-card.webp`) pada `frontend/public/images/landmarks/`, memangkas ukuran total dari ~2.9 MB menjadi ~550 KB (-81% penghematan bandwidth).
+  - Mengintegrasikan atribut `cardSrc` pada 12 kartu pusaka di `Banda3DPhotoGallery.tsx` untuk mempercepat pemuatan gambar secara drastis pada seluler dan desktop.
+- [x] 66.2 Arsitektur Galeri Pusaka Ringan & Snap-Rail Seluler (`frontend/src/components/landing/Banda3DPhotoGallery.tsx`):
+  - Mengganti kalkulasi matriks 3D berbobot tinggi dan listener scroll loop tak berkesudahan dengan tata letak galeri statis yang bersih: 4-kolom responsif di desktop dan rel geser sentuh native (`scroll-snap-type: x mandatory`) di perangkat ponsel.
+  - Mempertahankan plakat ornamen budaya khas Banda Neira (buah pala dan ikan Banda) serta tipografi naskah yang terhubung dengan kamus dwibahasa `useLanguage()`.
+- [x] 66.3 Eliminasi Dead Zone Scroll pada `ScrollExpand.css`:
+  - Menyesuaikan batas minimum tinggi track scroll (`min-height: 100vh`) untuk memastikan tidak ada dead zone atau void kosong.
+- [x] 66.4 Harmonisasi Keseluruhan & Resolusi Integrasi Cabang:
+  - Menggabungkan penyempurnaan aset gambar dan arsitektur galeri snap-rail dari cabang `feature/mobile-static-optimization` ke dalam `main` tanpa mengorbankan fitur Phase 62-65 (Pemetaan Aktor Desa, Peta Vektor SVG, Fullscreen GIS, dan Arsip Sejarah Pokdarwis).

@@ -272,14 +272,44 @@ const ScrollExpandComponent: React.FC<ScrollExpandProps> = ({
     })
 
     const scroller = useWindowScroll ? window : root
-    scroller.addEventListener('scroll', onScroll, { passive: true })
+
+    let isAttached = false
+    const attach = () => {
+      if (!isAttached) {
+        scroller.addEventListener('scroll', onScroll, { passive: true })
+        isAttached = true
+        onScroll()
+      }
+    }
+    const detach = () => {
+      if (isAttached) {
+        scroller.removeEventListener('scroll', onScroll)
+        isAttached = false
+        if (raf) cancelAnimationFrame(raf)
+        if (scrollRaf) cancelAnimationFrame(scrollRaf)
+      }
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries[0]?.isIntersecting ?? false
+        setIsIntersecting(visible)
+        if (visible) {
+          attach()
+        } else {
+          detach()
+        }
+      },
+      { rootMargin: '400px 0px' }
+    )
+    observer.observe(root)
+
     window.addEventListener('resize', onResize)
 
     return () => {
       cancelAnimationFrame(initRaf)
-      if (raf) cancelAnimationFrame(raf)
-      if (scrollRaf) cancelAnimationFrame(scrollRaf)
-      scroller.removeEventListener('scroll', onScroll)
+      observer.disconnect()
+      detach()
       window.removeEventListener('resize', onResize)
     }
   }, [applyProgress, useWindowScroll])

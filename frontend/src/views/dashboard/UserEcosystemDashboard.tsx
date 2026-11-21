@@ -1043,7 +1043,6 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
   onNavigate,
   onOpenMarketplace,
   onPublicVerify,
-  onLogout,
   isOnline = true,
 }) => {
   const [quickVerifyInput, setQuickVerifyInput] = useState('')
