@@ -92,9 +92,13 @@ export interface GeocodingResponse {
 const getApiBase = () => {
   const envUrl = import.meta.env?.VITE_API_BASE_URL
   if (envUrl) return envUrl
-  return typeof window !== 'undefined'
-    ? `http://${window.location.hostname}:8005/api/v1`
-    : 'http://localhost:8005/api/v1'
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return `http://${window.location.hostname}:8005/api/v1`
+    }
+    return `${window.location.origin}/api/v1`
+  }
+  return 'http://localhost:8005/api/v1'
 }
 
 export const gisService = {
