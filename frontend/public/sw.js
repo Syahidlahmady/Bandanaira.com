@@ -40,6 +40,11 @@ self.addEventListener('activate', (event) => {
 })
 
 self.addEventListener('fetch', (event) => {
+  // Hanya proses permintaan skema http dan https (abaikan chrome-extension://, moz-extension://, data:, blob:, dll)
+  if (!event.request.url.startsWith('http://') && !event.request.url.startsWith('https://')) {
+    return
+  }
+
   const url = new URL(event.request.url)
 
   // Skip caching for backend API POST/PUT mutations (handled via IndexedDB Sync Queue)
