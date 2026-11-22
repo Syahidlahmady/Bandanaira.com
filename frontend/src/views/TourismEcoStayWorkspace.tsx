@@ -590,23 +590,11 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
     <div className="workspace-container animate-fade-in">
       {/* Workspace Header & Intro */}
       <div className="mb-6">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-200">
-            <Compass size={13} className="text-amber-700" />
-            <span>Ekosistem Wisata Banda Neira</span>
-          </span>
-          {currentUser && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-stone-100 text-stone-700 border border-stone-200">
-              <UserCheck size={12} />
-              <span>{currentUser.full_name || currentUser.username}</span>
-            </span>
-          )}
-        </div>
         <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#081D35] tracking-tight">
-          Direktori Destinasi, Cagar Budaya &amp; Penginapan
+          Destinasi &amp; Penginapan
         </h1>
-        <p className="mt-1.5 text-sm text-stone-600 max-w-3xl leading-relaxed">
-          Temukan 50 situs cagar budaya, benteng bersejarah, destinasi bahari, dan homestay ramah lingkungan di Kepulauan Banda yang terhubung langsung dengan titik koordinat Peta Spasial GIS.
+        <p className="mt-1 text-sm text-stone-600 max-w-2xl leading-relaxed">
+          Temukan tempat wisata bersejarah, pulau, titik bahari, dan penginapan di Kepulauan Banda.
         </p>
       </div>
 
@@ -623,7 +611,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
             }`}
           >
             <Landmark size={14} />
-            <span>Destinasi &amp; Cagar Budaya ({gisFeatures.length || 50})</span>
+            <span>Destinasi ({gisFeatures.length || 50})</span>
           </button>
 
           <button
@@ -636,7 +624,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
             }`}
           >
             <Home size={14} />
-            <span>Penginapan &amp; Eco-Stay ({accommodations.length})</span>
+            <span>Penginapan ({accommodations.length})</span>
           </button>
 
           <button
@@ -649,7 +637,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
             }`}
           >
             <Compass size={14} />
-            <span>Pemandu Wisata ({guides.length})</span>
+            <span>Pemandu ({guides.length})</span>
           </button>
 
           {canAccessBookings && (
@@ -795,8 +783,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
             {loadingGis ? (
               <div className="bg-white rounded-xl border border-stone-200 p-12 text-center text-stone-500">
                 <RefreshCw size={24} className="animate-spin text-amber-500 mx-auto mb-3" />
-                <p className="text-sm font-medium text-stone-700">Memuat titik spasial cagar budaya &amp; destinasi Banda Neira...</p>
-                <p className="text-xs text-stone-400 mt-1">Mengambil data spasial aktif dari basis data PostGIS</p>
+                <p className="text-sm font-medium text-stone-700">Memuat destinasi wisata...</p>
               </div>
             ) : filteredFeatures.length === 0 ? (
               <div className="bg-white rounded-xl border border-stone-200 p-12 text-center text-stone-500">
@@ -900,16 +887,16 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                           )}
                         </div>
 
-                        {/* Actions: GIS, History Story, WhatsApp Guide */}
+                        {/* Actions: Map, History Story, WhatsApp Guide */}
                         <div className="mt-5 pt-3 border-t border-stone-100 flex items-center justify-between gap-2 flex-wrap">
                           <button
                             type="button"
                             onClick={() => onNavigate?.('gis', `feature_id=${feat.properties.id}&name=${encodeURIComponent(feat.properties.name)}`)}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-[#081D35] hover:text-[#F4B75E] text-stone-800 text-xs font-semibold transition cursor-pointer"
-                            title="Tampilkan lokasi dan informasi spasial di Peta GIS"
+                            title="Lihat di peta"
                           >
                             <Compass size={13} />
-                            <span>Buka di Peta GIS</span>
+                            <span>Lihat di Peta</span>
                           </button>
 
                           <div className="flex items-center gap-1.5">
@@ -1125,10 +1112,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                             alignItems: 'center',
                             gap: '0.35rem',
                           }}
-                          title="Lihat lokasi di Peta Spasial GIS"
+                          title="Lihat di peta"
                         >
                           <Compass size={13} color="#D97706" />
-                          <span>Peta GIS</span>
+                          <span>Lihat Peta</span>
                         </button>
 
                         <a

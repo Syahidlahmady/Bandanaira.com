@@ -1526,7 +1526,7 @@ export const App: React.FC = () => {
                     </span>
                     <span className="hidden sm:inline text-stone-300">|</span>
                     <span className="hidden sm:inline text-xs font-serif font-medium text-stone-600">
-                      Direktori Wisata &amp; Penginapan
+                      Destinasi &amp; Penginapan
                     </span>
                   </div>
 
@@ -1537,7 +1537,7 @@ export const App: React.FC = () => {
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-stone-50 text-[#0c2340] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer shadow-xs"
                     >
                       <Compass size={13} />
-                      <span className="hidden sm:inline">Peta Spasial GIS</span>
+                      <span className="hidden sm:inline">Peta</span>
                     </button>
                     <button
                       type="button"
