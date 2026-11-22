@@ -15,10 +15,10 @@ SEED_COMMUNITY_CONTENTS: List[Dict[str, Any]] = [
         "title": "Menelusuri Benteng Belgica: Mahkota Pertahanan Segi Lima di Puncak Bukit Tabaleku",
         "slug": "menelusuri-benteng-belgica-mahkota-pertahanan-tabaleku",
         "content_type": "ARTICLE",
-        "priority_category": "DESTINASI",
+        "priority_category": "SEJARAH",
         "island_name": "Pulau Neira",
-        "author_name": "Reyhan Albar Fahryan",
-        "author_role": "Content Manager & Community Engagement",
+        "author_name": "Pokdarwis Banda Neira",
+        "author_role": "Pemandu Sejarah & Budaya",
         "summary": (
             "Panduan lengkap wisata sejarah Benteng Belgica (1611), spot matahari terbit terbaik menghadap "
             "Gunung Api Banda dan Selat Neira yang diabadikan pada uang kertas Rp 1.000."
@@ -34,6 +34,105 @@ SEED_COMMUNITY_CONTENTS: List[Dict[str, Any]] = [
         "media_url": "/images/landmarks/belgica.jpg",
         "latitude": -4.5265,
         "longitude": 129.9015,
+        "sop_stage": "PUBLIKASI",
+        "qc_accuracy": True,
+        "qc_language": True,
+        "qc_visual": True,
+        "qc_adat_ethics": True,
+        "qc_source_validated": True,
+        "qc_consent_copyright": True,
+        "is_published": True,
+    },
+    {
+        "content_code": "CNT-ART-005",
+        "title": "Pala yang Dicari Dunia: Emas Hijau dari Kepulauan Banda Neira",
+        "slug": "pala-yang-dicari-dunia-dan-jalur-rempah-nusantara",
+        "content_type": "ARTICLE",
+        "priority_category": "SEJARAH",
+        "island_name": "Pulau Banda Besar",
+        "author_name": "Pokdarwis Banda Neira",
+        "author_role": "Kurator Jalur Rempah",
+        "summary": (
+            "Dahulu, buah pala hanya tumbuh di tanah Banda. Aromanya yang khas dan khasiatnya yang langka membuat "
+            "bangsa-bangsa dari berbagai belahan bumi berlayar ribuan mil untuk mencarinya. Nilainya saat itu melampaui emas."
+        ),
+        "body_narrative": (
+            "Selama berabad-abad, pohon pala (Myristica fragrans) adalah rahasia alam paling berharga di bumi. "
+            "Tumbuh subur di tanah vulkanik Banda di bawah naungan pohon kenari kanopi tinggi, buah pala menghasilkan "
+            "dua rempah sekaligus: biji pala hitam mengilap dan bunga pala (fuli) merah membara. Pada abad pertengahan di Eropa, "
+            "segenggam pala bernilai cukup untuk membeli kapal dan seluruh perbekalannya, bahkan dipercaya sebagai penangkal "
+            "wabah maut hitam (Black Death). Monopoli inilah yang memicu bangsa Portugis, Spanyol, Inggris, hingga VOC Belanda "
+            "mengirim armada melintasi samudra tak bertepi demi menemukan Kepulauan Banda."
+        ),
+        "media_url": "/images/landmarks/kebun-pala.jpg",
+        "latitude": -4.5450,
+        "longitude": 129.9020,
+        "sop_stage": "PUBLIKASI",
+        "qc_accuracy": True,
+        "qc_language": True,
+        "qc_visual": True,
+        "qc_adat_ethics": True,
+        "qc_source_validated": True,
+        "qc_consent_copyright": True,
+        "is_published": True,
+    },
+    {
+        "content_code": "CNT-ART-006",
+        "title": "Pulau Rhun & Barter Manhattan: Perjanjian Breda 1667 yang Mengubah Peta Dunia",
+        "slug": "pulau-rhun-barter-manhattan-perjanjian-breda-1667",
+        "content_type": "ARTICLE",
+        "priority_category": "SEJARAH",
+        "island_name": "Pulau Rhun",
+        "author_name": "Pokdarwis Banda Neira",
+        "author_role": "Peneliti Sejarah Maritim",
+        "summary": (
+            "Sebuah pulau karang kecil di barat Banda pernah menjadi pusat sengketa antara Inggris dan Belanda. "
+            "Demi menguasai Pulau Rhun seutuhnya, Belanda rela menukarnya dengan koloni New Amsterdam yang kini dikenal sebagai Manhattan, New York."
+        ),
+        "body_narrative": (
+            "Pada tanggal 31 Juli 1667, sebuah perjanjian damai ditandatangani di kota Breda, Belanda. Perjanjian Breda "
+            "mengakhiri Perang Inggris-Belanda Kedua dengan klausul pertukaran teritori paling bersejarah: Kerajaan Inggris "
+            "menyerahkan klaim atas Pulau Rhun—sebuah pulau kecil seluas 3 x 1 kilometer di Kepulauan Banda—kepada VOC Belanda. "
+            "Sebagai gantinya, Belanda menyerahkan koloni New Amsterdam di pesisir timur Amerika Utara kepada Inggris. "
+            "Siapa sangka, pulau karang terpencil penghasil pala terbaik dunia tersebut pernah ditukar guling dengan Manhattan, "
+            "jantung finansial dunia saat ini."
+        ),
+        "media_url": "/images/landmarks/pulau-rhun.jpg",
+        "latitude": -4.5550,
+        "longitude": 129.7150,
+        "sop_stage": "PUBLIKASI",
+        "qc_accuracy": True,
+        "qc_language": True,
+        "qc_visual": True,
+        "qc_adat_ethics": True,
+        "qc_source_validated": True,
+        "qc_consent_copyright": True,
+        "is_published": True,
+    },
+    {
+        "content_code": "CNT-ART-007",
+        "title": "Pengasingan Bung Hatta & Sutan Sjahrir di Banda Neira: Merajut Gagasan Kemerdekaan",
+        "slug": "pengasingan-bung-hatta-dan-sjahrir-di-banda-neira",
+        "content_type": "ARTICLE",
+        "priority_category": "SEJARAH",
+        "island_name": "Pulau Neira",
+        "author_name": "Pokdarwis Banda Neira",
+        "author_role": "Pemandu Cagar Budaya",
+        "summary": (
+            "Di pulau yang tenang ini, Mohammad Hatta dan Sutan Sjahrir pernah diasingkan oleh kolonial Belanda (1936-1942). "
+            "Sambil mengajar anak-anak setempat, mereka terus menulis buku dan merajut gagasan besar tentang masa depan Indonesia."
+        ),
+        "body_narrative": (
+            "Setelah menjalani pembuangan di Boven Digoel Papua, Mohammad Hatta dan Sutan Sjahrir dipindahkan ke Banda Neira "
+            "pada awal tahun 1936. Alih-alih patah semangat di tanah pengasingan, Bung Hatta menyewa sebuah rumah sederhana "
+            "di Dwiwarna. Di paviliun belakang rumah, Hatta mendirikan sekolah sore cuma-cuma bagi anak-anak Banda, mengajarkan "
+            "membaca, berhitung, sejarah, dan bahasa Belanda. Bersama Sjahrir, Hatta rutin menerima kiriman buku dari Eropa "
+            "dan mendiskusikan konsep ekonomi kerakyatan (koperasi) serta dasar demokrasi Indonesia merdeka yang kelak dituangkan "
+            "dalam konstitusi Republik Indonesia."
+        ),
+        "media_url": "/images/landmarks/bung-hatta.jpg",
+        "latitude": -4.5260,
+        "longitude": 129.9025,
         "sop_stage": "PUBLIKASI",
         "qc_accuracy": True,
         "qc_language": True,

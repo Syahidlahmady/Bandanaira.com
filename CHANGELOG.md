@@ -9,6 +9,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Sinkronisasi Penuh CRUD Artikel Sejarah antara Backend, CMS, Reader View, dan Dasbor Utama (Phase 66)**:
+  - **Penerapan Migrasi Database & Seeding Nyata**: Menjalankan migrasi Alembic `014_community_contents_table` pada database PostgreSQL dan menyemai akun resmi `admin_wisata` (`smart_tourism_admin`).
+  - **Resolusi Entitas Fleksibel di Backend**: Memperbarui endpoint `PUT /api/v1/tourism/community-contents/{content_id}` dan `DELETE` untuk mendukung resolusi naskah melalui UUID, `content_code` (e.g. `CNT-ART-006`), maupun `slug`, sekaligus mempertahankan kompatibilitas validasi UUID (status 400/404).
+  - **Sinkronisasi Real-Time Lintas Komponen**:
+    - `PokdarwisHistoryCms.tsx`: Memancarkan event `banda_articles_updated` dan `storage` saat aksi simpan/sunting/hapus dieksekusi.
+    - `UserEcosystemDashboard.tsx`: Menjadikan metrik dan daftar ringkasan naskah dinamis terhadap data artikel yang aktif, terhubung langsung ke API dan event pembaruan.
+    - `HistoryArticlesWorkspace.tsx`: Memuat data naskah mutakhir dari cache seketika pada saat render awal dan mendengarkan event sinkronisasi real-time.
+- **Fitur Artikel Sejarah Pokdarwis, Public History Reader Workspace, & CMS Dashboard (Phase 65)**:
+  - **Penyederhanaan Total Dasbor Admin Wisata / Pokdarwis Khusus Draf Artikel Sejarah (`TourismEcoStayWorkspace.tsx`, `DashboardLayout.tsx`, `UserEcosystemDashboard.tsx`)**:
+    - Menghilangkan sepenuhnya kerumitan tampilan tab lama yang bercampur baur (Kurasi Cagar Budaya 6-QC, SOP 6-Tahap, Audio Guide 177 situs, tarif homestay, dan pencarian reservasi) saat aktor `smart_tourism_admin` / `admin_wisata` membuka dasbor.
+    - Mengubah ruang kerja Admin Wisata menjadi antarmuka ramping dan langsung terfokus 100% pada penulisan draf dan publikasi naskah artikel sejarah (`PokdarwisHistoryCms`).
+    - Memperbarui sidebar navigasi utama menjadi **"Draf Artikel Sejarah"** dengan ikon `BookOpen` dan pintasan cepat langsung menuju draf naskah dan pratinjau halaman pembaca `/sejarah`.
+    - **Pemurnian Sidebar Admin Wisata (Tepat 2 Menu Navigasi)**: Merestrukturisasi `DashboardLayout.tsx` sehingga pengguna `smart_tourism_admin` / `admin_wisata` secara eksklusif hanya melihat tepat 2 menu: `Dashboard` dan `Draf Artikel Sejarah`. Seluruh menu lain (`Permohonan Surat`, `Koperasi`, `Peta Spasial GIS`, `Smart DSS`, `IoT Cuaca`) dan utilitas bawaan (`Notification`, `Documents`, `Help`) dinonaktifkan untuk role ini guna menghadirkan antarmuka kerja yang bersih dan tanpa distraksi.
+    - **Penyempurnaan Seeder Idempoten & Manajemen Database Artikel**: Memperbarui `ensure_community_contents_seeded` di `backend/app/modules/tourism/router.py` dan `backend/scripts/demo_seed.py` untuk menjamin seluruh naskah sejarah terunggah ke database PostgreSQL tanpa terlewat, serta menambahkan fallback cache lokal di `PokdarwisHistoryCms.tsx` dan standardisasi URL API di `tourism.ts`.
+  - **Ruang Kerja Publik & Arsip Sejarah Otentik (`/sejarah`, `/sejarah/:slug`, `HistoryArticlesWorkspace.tsx`)**:
+    - Menghadirkan halaman publik khusus arsip sejarah dan cerita rempah Banda Neira dengan dua sub-tampilan: List Mode (direktori naskah dengan pencarian, filter kategori, filter pulau, estimasi waktu baca) dan Reader Mode (tampilan baca editorial berkelas majalah dengan tipografi serif, pull-quote kutipan, naskah narasi lengkap, rekomendasi cerita terkait, serta tombol bagikan WhatsApp & salin tautan).
+    - Mendukung format URL SEO-friendly (`/sejarah/:slug` dan `/sejarah?slug=:slug`), pemulihan riwayat peramban (popstate), serta deep-linking tanpa login.
+  - **Integrasi Langsung dengan Section Sejarah di Beranda (`HeritageSpiceSection.tsx`)**:
+    - Menghubungkan 4 cerita linimasa interaktif (Pala yang Dicari Dunia, Benteng Belgica, Pulau Rhun Manhattan, Pengasingan Bung Hatta) dengan tombol interaktif **"Baca Kisah Selengkapnya →"** pada tampilan desktop maupun seluler menuju slug artikel masing-masing.
+    - Menambahkan tombol CTA di kontrol linimasa beranda: **"Jelajahi Arsip Sejarah Selengkapnya →"** menuju arsip lengkap `/sejarah`.
+  - **Dasbor CMS Artikel Sejarah untuk Aktor Pokdarwis (`PokdarwisHistoryCms.tsx` & `TourismEcoStayWorkspace.tsx`)**:
+    - Menghadirkan panel CMS khusus untuk pengelola Pokdarwis (`smart_tourism_admin`) di dalam ruang kerja pariwisata pada sub-tab `Artikel Sejarah (Pokdarwis)`.
+    - Fitur CRUD lengkap: pembuatan artikel baru (judul, auto-slug generator, pemilihan pulau & kategori, narasi, foto cagar budaya), pengeditan artikel, penghapusan, penggantian status publikasi (is_published), dan pratinjau publik langsung ke halaman reader.
+  - **Endpoint Backend & Seeder Artikel Berkualitas**:
+    - Penambahan endpoint `GET /api/v1/tourism/community-contents/{identifier}` di `backend/app/modules/tourism/router.py` yang mendukung pencarian via UUID maupun lowercase slug.
+    - Pengayaan seeder narasi sejarah otentik dan kurasi Pokdarwis di `backend/app/modules/tourism/literacy_content_data.py`.
+
+- **Peta Spasial GIS Fullscreen Edge-to-Edge, Navigasi Minimalis, & Pembersihan Titik Seeder (Phase 64)**:
+  - **Peta GIS Fullscreen Seutuhnya (`/gis` & `InteractiveMapWorkspace.tsx`)**:
+    - Memisahkan tampilan publik `activeTab === 'gis'` dari shell template turis biasa; kini merender kanvas peta penuh `100vw` x `100dvh` dari ujung ke ujung tanpa terpotong header navbar atas, batasan kontainer `max-w-[1400px]`, maupun footer.
+    - Menghadirkan tombol navigasi kembali minimalis dan elegan (`← Kembali ke Beranda`) berbentuk floating pill frosted glass (`backdrop-blur-md bg-white/95`) di pojok kiri atas canvas peta, terintegrasi mulus dengan bilah pencarian spasial dan filter pulau.
+    - Sinkronisasi instan rendering ubin Leaflet (`map.invalidateSize()`) saat mode fullscreen aktif sehingga ubin peta ter-render sempurna tanpa jeda atau area abu-abu.
+  - **Pembersihan POI Duplikat/Keliru dari Database & Seeder**:
+    - Menghapus tuntas data dermaga `Dermaga Waer Banda Besar` dan `Dermaga Selamon Banda Besar` dari seluruh file seeder resmi: `gis_spatial_features.json`, `spatial_features_live_dump.json`, dan dump SQL `banda_db_live_backup.sql`.
+  - **Penataan Label Wilayah Peta Vektor Beranda (`PetaInteractiveSection.tsx`)**:
+    - Memposisikan teks label `Gunung Api`, `Pulau Neira`, `Pulau Banda Besar`, dan `Lonthoir & Sekitarnya` di area perairan bebas (open water) dengan halo pelindung kontur (`paintOrder="stroke fill"`), menjamin teks tidak lagi menabrak atau tertutup oleh daratan pulau.
+  - **Optimasi Kinerja Web Vitals & Lighthouse**:
+    - Mengoptimalkan pemuatan font Google Fonts di `frontend/index.html` menggunakan pola non-blocking (`media="print" onload="this.media='all'"`), mengeliminasi pemblokiran render pada First Contentful Paint (FCP).
+    - Memperbarui atribut `imagesizes` pada preload dan hero banner `<ScrollExpand />` agar perangkat seluler mengunduh aset gambar responsif ringan (`/banda-480.webp`), memangkas Largest Contentful Paint (LCP) dan latensi jaringan.
+
+- **Transformasi Section Visit Banda Neira Menjadi Peta Vektor Ringan & Pemindahan Peta Lengkap ke Workspace Khusus (Phase 63)**:
+  - **Peta Vektor Ringan di Beranda Utama (`PetaInteractiveSection.tsx` & `bandaVillagesSvg.ts`)**:
+    - Mengganti pemuatan langsung kanvas Leaflet di beranda utama dengan peta vektor native SVG 15 desa/pulau Kepulauan Banda Neira.
+    - Menghilangkan unduhan raster tile eksternal dan inisialisasi berat Leaflet pada halaman beranda, memangkas ukuran chunk menjadi hanya 41 kB (17.7 kB gzipped).
+    - Menghilangkan sepenuhnya konflik sentuhan gesture scroll pada perangkat seluler.
+    - Menyediakan panel "Info Wilayah" dan "Daftar Wilayah" interaktif dengan pemilihan wilayah instan.
+    - Tombol aksi navigasi dirancang lugas: label **"Buka Peta"** tanpa istilah teknis atau tambahan, serta bebas dari efek animasi pulse neon hijau.
+  - **Halaman Peta Lengkap Tetap Utuh 100% (`InteractiveMapWorkspace.tsx`)**:
+    - Seluruh fitur analisis spasial 7-layer GeoJSON, inspeksi POI cagar budaya & wisata, rute maritim, kualitas air, dan drawer Google Maps style tetap utuh dan aktif di halaman/workspace khusus (`onNavigate('gis')`).
+
 - **Optimasi Pemetaan Aktor: Kepala Desa, Poktan, Petani, dan Warga Berbasis NIK Terdaftar & Territorial Scoping (Phase 62)**:
   - **Pendaftaran Petani Poktan Wajib Berbasis NIK Terdaftar**:
     - Poktan (`farmer_group_admin`) kini tidak perlu lagi mengetik nama lengkap manual atau bingung memilih warga. Form pendaftaran petani anggota Poktan kini terintegrasi langsung dengan data kependudukan desa terverifikasi (`Resident` berstatus `verified`).

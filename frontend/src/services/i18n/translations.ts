@@ -44,6 +44,9 @@ export interface TranslationDictionary {
     loading: string
     description: string
     openFullMap: string
+    infoTitle: string
+    clickPrompt: string
+    legendTitle: string
   }
   tourismSaw: {
     tagline: string
@@ -324,11 +327,14 @@ export const translations: Record<Language, TranslationDictionary> = {
       title: 'Banda Neira',
     },
     mapSection: {
-      tagline: 'JELAJAHI DESTINASI DAN CAGAR BUDAYA UTAMA',
+      tagline: 'JELAJAHI KEPULAUAN BANDA NEIRA',
       heading: 'Visit Banda Neira',
-      loading: 'Menyiapkan Peta Spasial Banda Neira...',
-      description: 'Eksplorasi spasial cagar budaya, potensi bahari, penginapan warga, dan fasilitas pulau.',
-      openFullMap: 'Buka Peta Layar Penuh',
+      loading: 'Menyiapkan Peta Banda Neira...',
+      description: 'Peta wilayah desa dan pulau di Kepulauan Banda Neira.',
+      openFullMap: 'Buka Peta',
+      infoTitle: 'Info Wilayah',
+      clickPrompt: 'Pilih wilayah di peta untuk melihat ringkasan.',
+      legendTitle: 'Daftar Wilayah',
     },
     tourismSaw: {
       tagline: 'SPOTLIGHT KURASI BANDA',
@@ -607,11 +613,14 @@ export const translations: Record<Language, TranslationDictionary> = {
       title: 'Banda Neira',
     },
     mapSection: {
-      tagline: 'DISCOVER TOP DESTINATIONS AND ATTRACTIONS',
+      tagline: 'EXPLORE THE BANDA NEIRA ARCHIPELAGO',
       heading: 'Visit Banda Neira',
-      loading: 'Preparing Banda Neira Spatial Map...',
-      description: 'Spatial exploration of heritage sites, marine wonders, community lodgings, and island facilities.',
-      openFullMap: 'Open Fullscreen Map',
+      loading: 'Preparing Banda Neira Map...',
+      description: 'Map of villages and islands in the Banda Neira Archipelago.',
+      openFullMap: 'Open Map',
+      infoTitle: 'Area Information',
+      clickPrompt: 'Select an area on the map to view summary.',
+      legendTitle: 'Area List',
     },
     tourismSaw: {
       tagline: 'CURATED BANDA SPOTLIGHT',

@@ -79,9 +79,13 @@ function getApiBase(): string {
   if (envUrl && envUrl.startsWith('http')) {
     return envUrl.replace(/\/$/, '')
   }
-  const protocol = window.location.protocol
-  const host = window.location.hostname
-  return `${protocol}//${host}:8005/api/v1`
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return `http://${window.location.hostname}:8005/api/v1`
+    }
+    return `${window.location.origin}/api/v1`
+  }
+  return 'http://localhost:8005/api/v1'
 }
 
 export async function submitSurvey(payload: SurveyInput): Promise<SurveyItem> {

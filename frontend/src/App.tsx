@@ -43,10 +43,11 @@ const IslandTelemetryWorkspace = React.lazy(() => import('./views/IslandTelemetr
 const TourismEcoStayWorkspace = React.lazy(() => import('./views/TourismEcoStayWorkspace.tsx').then(m => ({ default: m.TourismEcoStayWorkspace })))
 const InteractiveMapWorkspace = React.lazy(() => import('./views/InteractiveMapWorkspace.tsx').then(m => ({ default: m.InteractiveMapWorkspace })))
 const SurveyEtlWorkspace = React.lazy(() => import('./views/SurveyEtlWorkspace.tsx').then(m => ({ default: m.SurveyEtlWorkspace })))
+const HistoryArticlesWorkspace = React.lazy(() => import('./views/HistoryArticlesWorkspace.tsx').then(m => ({ default: m.HistoryArticlesWorkspace })))
 import { LandingPortalWorkspace } from './views/LandingPortalWorkspace.tsx'
 const UserEcosystemDashboard = React.lazy(() => import('./views/dashboard/UserEcosystemDashboard.tsx').then(m => ({ default: m.UserEcosystemDashboard })))
 import { DashboardLayout } from './views/dashboard/DashboardLayout.tsx'
-import { BandaUnifiedFooter } from './components/common/BandaUnifiedFooter.tsx'
+import { ArrowLeft, Compass, Sparkles } from 'lucide-react'
 import { ErrorBoundary } from './components/common/ErrorBoundary.tsx'
 import { AccessRestrictedNotice } from './components/common/AccessRestrictedNotice.tsx'
 import { offlineDB } from './offline/db.ts'
@@ -77,6 +78,7 @@ export type TabId =
   | 'audit'
   | 'smart_planner'
   | 'survei'
+  | 'sejarah'
 
 export const TAB_ROUTES: Record<TabId, string> = {
   landing: '/',
@@ -93,6 +95,7 @@ export const TAB_ROUTES: Record<TabId, string> = {
   audit: '/audit',
   smart_planner: '/smart_planner',
   survei: '/survei',
+  sejarah: '/sejarah',
 }
 
 export const ROUTE_TO_TAB: Record<string, TabId> = {
@@ -132,15 +135,23 @@ export const ROUTE_TO_TAB: Record<string, TabId> = {
   '/planner': 'smart_planner',
   '/survei': 'survei',
   '/survey': 'survei',
+  '/sejarah': 'sejarah',
+  '/artikel': 'sejarah',
+  '/history': 'sejarah',
+  '/articles': 'sejarah',
 }
 
 /** Zona 1: Rute Eksplorasi Publik Wisatawan tanpa wajib login */
-export const PUBLIC_EXPLORER_TABS: TabId[] = ['tourism', 'gis', 'smart_planner']
+export const PUBLIC_EXPLORER_TABS: TabId[] = ['tourism', 'gis', 'smart_planner', 'sejarah']
 
 export const getInitialTab = (): TabId => {
   if (typeof window === 'undefined') return 'landing'
   const path = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/'
   if (path.startsWith('/verify')) return 'landing'
+
+  if (path === '/sejarah' || path.startsWith('/sejarah/') || path.startsWith('/artikel') || path.startsWith('/history')) {
+    return 'sejarah'
+  }
 
   const hasToken = Boolean(authService.getAccessToken())
   const savedTab = localStorage.getItem('banda_active_tab') as TabId | null
@@ -161,6 +172,15 @@ export const getInitialTab = (): TabId => {
   }
 
   return 'landing'
+}
+
+export const getInitialArticleSlug = (): string | null => {
+  if (typeof window === 'undefined') return null
+  const path = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/'
+  const match = path.match(/^\/(?:sejarah|artikel|history)\/([a-z0-9-]+)$/)
+  if (match) return match[1]
+  const params = new URLSearchParams(window.location.search)
+  return params.get('slug') || null
 }
 
 const ensureFarmPolygonGeoJSON = (
@@ -186,12 +206,47 @@ const ensureFarmPolygonGeoJSON = (
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTabState] = useState<TabId>(getInitialTab)
+  const [selectedArticleSlug, setSelectedArticleSlug] = useState<string | null>(getInitialArticleSlug)
+
+  const handleNavigateToSejarah = (slug?: string) => {
+    setSelectedArticleSlug(slug || null)
+    setActiveTabState('sejarah')
+    try {
+      localStorage.setItem('banda_active_tab', 'sejarah')
+      const targetPath = slug ? `/sejarah?slug=${encodeURIComponent(slug)}` : '/sejarah'
+      window.history.pushState({ tab: 'sejarah', slug }, '', targetPath)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch {
+      // ignore
+    }
+  }
+
+  const handleNavigateWithSlug = (tab: TabId, slug?: string) => {
+    if (tab === 'sejarah') {
+      handleNavigateToSejarah(slug)
+      return
+    }
+    setActiveTab(tab)
+    if (tab === 'gis' && slug) {
+      const q = slug.startsWith('?') ? slug : `?${slug}`
+      try {
+        window.history.pushState({ tab: 'gis' }, '', `/gis${q}`)
+      } catch {
+        // ignore
+      }
+    }
+  }
 
   const setActiveTab = (tab: TabId, replace: boolean = false) => {
+    if (tab !== 'sejarah') {
+      setSelectedArticleSlug(null)
+    }
     setActiveTabState(tab)
     try {
       localStorage.setItem('banda_active_tab', tab)
-      const targetPath = TAB_ROUTES[tab] || '/'
+      const targetPath = tab === 'sejarah' && selectedArticleSlug
+        ? `/sejarah?slug=${encodeURIComponent(selectedArticleSlug)}`
+        : TAB_ROUTES[tab] || '/'
       if (typeof window !== 'undefined' && window.location.pathname !== targetPath) {
         if (replace) {
           window.history.replaceState({ tab }, '', targetPath)
@@ -209,15 +264,34 @@ export const App: React.FC = () => {
     if (typeof window === 'undefined') return
     const currentPath = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/'
     if (!currentPath.startsWith('/verify')) {
-      const targetPath = TAB_ROUTES[activeTab] || '/'
-      if (currentPath !== targetPath) {
-        window.history.replaceState({ tab: activeTab }, '', targetPath)
+      if (activeTab === 'sejarah') {
+        const targetPath = selectedArticleSlug
+          ? `/sejarah?slug=${encodeURIComponent(selectedArticleSlug)}`
+          : '/sejarah'
+        if (currentPath !== targetPath && !currentPath.startsWith('/sejarah/')) {
+          window.history.replaceState({ tab: 'sejarah', slug: selectedArticleSlug }, '', targetPath)
+        }
+      } else {
+        const targetPath = TAB_ROUTES[activeTab] || '/'
+        if (currentPath !== targetPath) {
+          window.history.replaceState({ tab: activeTab }, '', targetPath)
+        }
       }
     }
 
     const handlePopState = () => {
       const p = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/'
       if (p.startsWith('/verify')) return
+      if (p === '/sejarah' || p.startsWith('/sejarah/') || p.startsWith('/artikel') || p.startsWith('/history')) {
+        const match = p.match(/^\/(?:sejarah|artikel|history)\/([a-z0-9-]+)$/)
+        const params = new URLSearchParams(window.location.search)
+        const slug = match ? match[1] : params.get('slug')
+        setSelectedArticleSlug(slug || null)
+        setActiveTabState('sejarah')
+        localStorage.setItem('banda_active_tab', 'sejarah')
+        return
+      }
+      setSelectedArticleSlug(null)
       const matchedTab = ROUTE_TO_TAB[p] || 'landing'
       setActiveTabState(matchedTab)
       localStorage.setItem('banda_active_tab', matchedTab)
@@ -225,7 +299,7 @@ export const App: React.FC = () => {
 
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
-  }, [activeTab])
+  }, [activeTab, selectedArticleSlug])
 
   const [health, setHealth] = useState<HealthResponse | null>(null)
   const [loadingHealth, setLoadingHealth] = useState<boolean>(true)
@@ -1287,11 +1361,15 @@ export const App: React.FC = () => {
             }
           >
             <LandingPortalWorkspace
-              onNavigate={(tab) =>
+              onNavigate={(tab, slug) => {
+                if (tab === 'sejarah') {
+                  handleNavigateToSejarah(slug)
+                  return
+                }
                 setActiveTab(
-                  tab === 'population' && currentUser ? getRoleDefaultTab(currentUser) : tab
+                  tab === 'population' && currentUser ? getRoleDefaultTab(currentUser) : (tab as TabId)
                 )
-              }
+              }}
               onOpenLogin={() => setActiveTab('population')}
               onOpenRegister={() => setActiveTab('register')}
               onOpenMarketplace={() => setShowMarketplaceModal(true)}
@@ -1348,117 +1426,145 @@ export const App: React.FC = () => {
         </React.Suspense>
       )}
 
-      {/* 3. Public Tourist Explorer (Zona 1 SRS: Eksplorasi Wisatawan Tanpa Login) */}
+      {/* 2C. Dedicated Edge-to-Edge Fullscreen GIS Workspace for Public Visitors */}
       {!currentUser &&
         !authService.getAccessToken() &&
-        PUBLIC_EXPLORER_TABS.includes(activeTab) && (
-        <div className="min-h-screen flex flex-col bg-[#F7F5F0] text-[#081D35]">
-          <header className="sticky top-0 z-40 bg-[#081D35] text-white border-b border-[#1E3A5F] shadow-md">
-            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3 flex-wrap">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('landing')}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[#F4B75E] text-xs font-semibold transition cursor-pointer"
-                >
-                  <span>&larr;</span>
-                  <span>Beranda Utama</span>
-                </button>
-                <span className="font-serif font-bold text-base tracking-tight text-white">
-                  bandanaira<span className="text-[#F4B75E]">.com</span>
-                </span>
-                <span className="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#F4B75E]/20 text-[#F4B75E] border border-[#F4B75E]/40">
-                  🧭 Mode Wisatawan Publik
-                </span>
-              </div>
-
-              <nav
-                aria-label="Navigasi eksplorasi wisatawan"
-                className="flex items-center gap-2 flex-wrap"
-              >
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('tourism')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
-                    activeTab === 'tourism'
-                      ? 'bg-[#F4B75E] text-[#081D35] font-bold shadow-sm'
-                      : 'bg-white/10 text-slate-200 hover:bg-white/20'
-                  }`}
-                >
-                  🏡 Penginapan &amp; Cagar Budaya
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('gis')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
-                    activeTab === 'gis'
-                      ? 'bg-[#F4B75E] text-[#081D35] font-bold shadow-sm'
-                      : 'bg-white/10 text-slate-200 hover:bg-white/20'
-                  }`}
-                >
-                  🗺️ Peta Spasial 7-Layer
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('smart_planner')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
-                    activeTab === 'smart_planner'
-                      ? 'bg-[#F4B75E] text-[#081D35] font-bold shadow-sm'
-                      : 'bg-white/10 text-slate-200 hover:bg-white/20'
-                  }`}
-                >
-                  🧭 Perencana Cerdas (SAW)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowMarketplaceModal(true)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/10 text-slate-200 hover:bg-white/20 transition cursor-pointer"
-                >
-                  🛍️ Etalase UMKM
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('dashboard')}
-                  className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white border border-[#F4B75E]/50 transition cursor-pointer"
-                >
-                  Masuk / Daftar Portal
-                </button>
-              </nav>
-            </div>
-          </header>
-
-          <main className="flex-1 w-full max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8">
-            <ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Eksplorasi Wisatawan">
-              <React.Suspense
-                fallback={
-                  <div className="p-8 text-center text-slate-500 font-medium">
-                    Memuat layanan eksplorasi wisata Banda Neira...
-                  </div>
-                }
-              >
-                {activeTab === 'tourism' && (
-                  <TourismEcoStayWorkspace
-                    currentUser={null}
-                    onOpenQuickLogin={() => setShowQuickLoginModal(true)}
-                  />
-                )}
-                {activeTab === 'gis' && <InteractiveMapWorkspace currentUser={null} />}
-                {activeTab === 'smart_planner' && <SmartPlannerWorkspace />}
-              </React.Suspense>
-            </ErrorBoundary>
-          </main>
-
-          <BandaUnifiedFooter
-            onNavigateTab={(tab) => setActiveTab(tab)}
-            onOpenRegister={() => setActiveTab('register')}
-            onOpenLogin={() => setActiveTab('population')}
-            onOpenQuickLogin={() => setShowQuickLoginModal(true)}
-          />
+        activeTab === 'gis' && (
+        <div className="fixed inset-0 w-screen h-[100dvh] overflow-hidden bg-slate-900 z-50 flex flex-col">
+          <ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Peta GIS Banda Neira">
+            <React.Suspense
+              fallback={
+                <div className="flex-1 flex items-center justify-center bg-slate-900 text-white font-medium text-sm">
+                  Memuat Peta Spasial Interaktif Banda Neira...
+                </div>
+              }
+            >
+              <InteractiveMapWorkspace
+                currentUser={null}
+                isPageFullscreen={true}
+                onBackToLanding={() => setActiveTab('landing')}
+              />
+            </React.Suspense>
+          </ErrorBoundary>
         </div>
       )}
 
+      {/* 2D. Dedicated Public & Visitor History Articles Workspace (Arsip Sejarah & Cerita Rempah) */}
+      {activeTab === 'sejarah' && (
+        <ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Arsip Sejarah Banda Neira">
+          <React.Suspense
+            fallback={
+              <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7] text-[#081D35] font-medium text-sm">
+                Memuat Arsip Sejarah &amp; Cerita Rempah Banda Neira...
+              </div>
+            }
+          >
+            <HistoryArticlesWorkspace
+              initialSlug={selectedArticleSlug}
+              onNavigateHome={() => {
+                setSelectedArticleSlug(null)
+                setActiveTab('landing')
+              }}
+              onNavigateToGis={() => setActiveTab('gis')}
+              onNavigateToTourism={() => setActiveTab('tourism')}
+              onNavigateToDashboard={() => setActiveTab('dashboard')}
+              onOpenQuickLogin={() => setShowQuickLoginModal(true)}
+              currentUser={currentUser}
+            />
+          </React.Suspense>
+        </ErrorBoundary>
+      )}
+
+      {/* 2E. Dedicated Edge-to-Edge Fullscreen Smart Planner Workspace for Public Visitors */}
+      {!currentUser &&
+        !authService.getAccessToken() &&
+        activeTab === 'smart_planner' && (
+        <div className="fixed inset-0 w-screen h-[100dvh] overflow-hidden bg-[#FDFBF7] z-50 flex flex-col">
+          <ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Perencana Wisata Banda Neira">
+            <React.Suspense
+              fallback={
+                <div className="flex-1 flex items-center justify-center bg-[#FDFBF7] text-[#081D35] font-medium text-sm">
+                  Memuat Perencana Wisata Banda Neira...
+                </div>
+              }
+            >
+              <SmartPlannerWorkspace
+                onNavigate={(tab, param) => handleNavigateWithSlug(tab as TabId, param)}
+                onBackToLanding={() => setActiveTab('landing')}
+              />
+            </React.Suspense>
+          </ErrorBoundary>
+        </div>
+      )}
+
+      {/* 3. Dedicated Public Tourism Workspace (Direktori Wisata & Penginapan) */}
+      {!currentUser &&
+        !authService.getAccessToken() &&
+        activeTab === 'tourism' && (
+        <ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Layanan Wisata Banda Neira">
+          <React.Suspense
+            fallback={
+              <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7] text-[#081D35] font-medium text-sm">
+                Memuat Direktori Wisata &amp; Penginapan Banda Neira...
+              </div>
+            }
+          >
+            <div className="min-h-screen bg-[#FDFBF7] text-[#081D35] flex flex-col selection:bg-[#F4B75E] selection:text-[#081D35]">
+              <header className="sticky top-0 z-30 bg-[#FDFBF7]/95 backdrop-blur-md border-b border-[#E8E2D5] px-4 sm:px-8 py-3">
+                <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('landing')}
+                      className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white hover:bg-[#F4B75E]/20 text-[#0c2340] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer shadow-xs active:scale-[0.98]"
+                    >
+                      <ArrowLeft size={14} />
+                      <span>Kembali ke Beranda</span>
+                    </button>
+                    <span className="font-serif font-bold text-sm tracking-tight text-[#0c2340]">
+                      bandanaira<span className="text-[#F4B75E]">.com</span>
+                    </span>
+                    <span className="hidden sm:inline text-stone-300">|</span>
+                    <span className="hidden sm:inline text-xs font-serif font-medium text-stone-600">
+                      Destinasi &amp; Penginapan
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('gis')}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-stone-50 text-[#0c2340] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer shadow-xs"
+                    >
+                      <Compass size={13} />
+                      <span className="hidden sm:inline">Peta</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('smart_planner')}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-stone-50 text-[#0c2340] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer shadow-xs"
+                    >
+                      <Sparkles size={13} className="text-amber-500" />
+                      <span className="hidden sm:inline">Perencana Wisata</span>
+                    </button>
+                  </div>
+                </div>
+              </header>
+
+              <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+                <TourismEcoStayWorkspace
+                  currentUser={null}
+                  onNavigate={(tab, param) => handleNavigateWithSlug(tab, param)}
+                  onOpenQuickLogin={() => setShowQuickLoginModal(true)}
+                />
+              </main>
+            </div>
+          </React.Suspense>
+        </ErrorBoundary>
+      )}
+
       {/* 2B. Loading State when restoring active user session with valid token */}
-      {!currentUser && Boolean(authService.getAccessToken()) && activeTab !== 'landing' && activeTab !== 'register' && (
+      {!currentUser && Boolean(authService.getAccessToken()) && activeTab !== 'landing' && activeTab !== 'register' && activeTab !== 'sejarah' && (
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#081D35] text-white p-6">
           <div className="w-12 h-12 border-4 border-[#F4B75E] border-t-transparent rounded-full animate-spin mb-4" />
           <h3 className="font-serif text-lg text-[#F4B75E] font-bold">Memulihkan Sesi Pengguna...</h3>
@@ -1470,7 +1576,7 @@ export const App: React.FC = () => {
           4. DASBOR EKOSISTEM DENGAN SIDEBAR NAVIGASI DI SAMPING (UNTUK USER LOGIN)
              Semua Ruang Kerja Operasional Terintegrasi di Dalam Dasbor Sesuai Hak Akses Role
       ====================================================================== */}
-      {currentUser && activeTab !== 'landing' && activeTab !== 'register' && (
+      {currentUser && activeTab !== 'landing' && activeTab !== 'register' && activeTab !== 'sejarah' && (
         <DashboardLayout
           currentUser={currentUser}
           activeTab={activeTab as any}
@@ -1643,7 +1749,11 @@ export const App: React.FC = () => {
 
           {/* TAB 6: SMART TOURISM, ECO-STAY & WARISAN BUDAYA */}
           {activeTab === 'tourism' && (
-            <TourismEcoStayWorkspace currentUser={currentUser} />
+            <TourismEcoStayWorkspace
+              currentUser={currentUser}
+              onNavigate={(tab, param) => handleNavigateWithSlug(tab, param)}
+              onOpenQuickLogin={() => setShowQuickLoginModal(true)}
+            />
           )}
 
           {/* TAB 7: PETA SPASIAL INTERAKTIF 7-LAYER */}
@@ -1651,9 +1761,12 @@ export const App: React.FC = () => {
             <InteractiveMapWorkspace currentUser={currentUser} />
           )}
 
-          {/* TAB 8: PERENCANA CERDAS SAW (DSS) */}
+          {/* TAB 8: ASISTEN PERENCANA WISATA CERDAS */}
           {activeTab === 'smart_planner' && (
-            <SmartPlannerWorkspace />
+            <SmartPlannerWorkspace
+              onNavigate={(tab, param) => handleNavigateWithSlug(tab as TabId, param)}
+              onBackToLanding={() => setActiveTab('landing')}
+            />
           )}
 
           {/* TAB 9: PUSAT KOMANDO TELEMETRI IoT & RESILIENSI PULAU */}
@@ -1700,11 +1813,6 @@ export const App: React.FC = () => {
               />
             )
           )}
-
-          {/* UNIFIED ECOSYSTEM FOOTER DI BAGIAN BAWAH KONTEN DASBOR */}
-          <div style={{ marginTop: '4rem', marginLeft: '-1rem', marginRight: '-1rem', marginBottom: '-1rem' }}>
-            <BandaUnifiedFooter />
-          </div>
           </React.Suspense>
           </ErrorBoundary>
         </DashboardLayout>

@@ -906,13 +906,23 @@ async def list_pemesanan_alias(
 # =======================================================================
 
 async def ensure_community_contents_seeded(db: AsyncSession):
-    """Menyemai otomatis Bank Konten Batch 1 (H7) & Karya Peserta Workshop (H11) secara idempoten."""
-    stmt = select(CommunityContent).limit(1)
-    res = await db.execute(stmt)
-    if not res.scalar_one_or_none():
-        for item in SEED_COMMUNITY_CONTENTS:
+    """Menyemai otomatis Bank Konten Batch 1 (H7), Artikel Sejarah, & Karya Komunitas secara idempoten."""
+    inserted = False
+    for item in SEED_COMMUNITY_CONTENTS:
+        stmt = select(CommunityContent).where(
+            (CommunityContent.content_code == item["content_code"]) |
+            (CommunityContent.slug == item["slug"])
+        ).limit(1)
+        res = await db.execute(stmt)
+        existing = res.scalar_one_or_none()
+        if not existing:
             content = CommunityContent(**item)
             db.add(content)
+            inserted = True
+        elif existing.content_type != item.get("content_type"):
+            existing.content_type = item["content_type"]
+            inserted = True
+    if inserted:
         await db.commit()
 
 
@@ -985,6 +995,41 @@ async def list_community_contents(
     return [_to_community_content_response(c) for c in items]
 
 
+@router.get(
+    "/community-contents/{identifier}",
+    response_model=CommunityContentItemResponse,
+    summary="Ambil Detail Konten / Artikel Berdasarkan ID atau Slug",
+)
+async def get_community_content(
+    identifier: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Mengambil satu artikel atau konten berdasarkan UUID atau Slug unik (SEO-friendly)."""
+    await ensure_community_contents_seeded(db)
+
+    content = None
+    try:
+        c_uuid = uuid.UUID(identifier)
+        stmt = select(CommunityContent).where(CommunityContent.id == c_uuid)
+        res = await db.execute(stmt)
+        content = res.scalar_one_or_none()
+    except ValueError:
+        pass
+
+    if not content:
+        stmt = select(CommunityContent).where(CommunityContent.slug == identifier.lower().strip())
+        res = await db.execute(stmt)
+        content = res.scalar_one_or_none()
+
+    if not content:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Artikel sejarah tidak ditemukan.",
+        )
+
+    return _to_community_content_response(content)
+
+
 @router.post(
     "/community-contents",
     response_model=CommunityContentItemResponse,
@@ -1051,15 +1096,28 @@ async def update_community_content(
     current_user: User = Depends(GUIDE_CMS_ROLES),
 ):
     """Memperbarui draf konten, mengubah tahapan SOP manajemen konten, atau memvalidasi 6-Point Quality Checklist."""
+    content = None
+    is_valid_uuid = False
     try:
         c_uuid = uuid.UUID(content_id)
+        is_valid_uuid = True
+        stmt = select(CommunityContent).where(CommunityContent.id == c_uuid)
+        res = await db.execute(stmt)
+        content = res.scalar_one_or_none()
     except ValueError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID Konten tidak valid.")
+        pass
 
-    stmt = select(CommunityContent).where(CommunityContent.id == c_uuid)
-    res = await db.execute(stmt)
-    content = res.scalar_one_or_none()
     if not content:
+        stmt = select(CommunityContent).where(
+            (CommunityContent.content_code == content_id.upper().strip()) |
+            (CommunityContent.slug == content_id.lower().strip())
+        )
+        res = await db.execute(stmt)
+        content = res.scalar_one_or_none()
+
+    if not content:
+        if not is_valid_uuid:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID Konten tidak valid.")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Konten tidak ditemukan.")
 
     update_data = payload.model_dump(exclude_unset=True)
@@ -1083,15 +1141,28 @@ async def delete_community_content(
     current_user: User = Depends(GUIDE_CMS_ROLES),
 ):
     """Menghapus item konten dari Bank Konten CMS (khusus admin / pengelola Smart Tourism)."""
+    content = None
+    is_valid_uuid = False
     try:
         c_uuid = uuid.UUID(content_id)
+        is_valid_uuid = True
+        stmt = select(CommunityContent).where(CommunityContent.id == c_uuid)
+        res = await db.execute(stmt)
+        content = res.scalar_one_or_none()
     except ValueError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID Konten tidak valid.")
+        pass
 
-    stmt = select(CommunityContent).where(CommunityContent.id == c_uuid)
-    res = await db.execute(stmt)
-    content = res.scalar_one_or_none()
     if not content:
+        stmt = select(CommunityContent).where(
+            (CommunityContent.content_code == content_id.upper().strip()) |
+            (CommunityContent.slug == content_id.lower().strip())
+        )
+        res = await db.execute(stmt)
+        content = res.scalar_one_or_none()
+
+    if not content:
+        if not is_valid_uuid:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID Konten tidak valid.")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Konten tidak ditemukan.")
 
     await db.delete(content)

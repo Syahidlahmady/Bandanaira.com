@@ -257,8 +257,10 @@ export interface LiteracyGovernanceResponse {
 import { authService } from './auth'
 
 const getApiBase = () => {
+  const envUrl = import.meta.env?.VITE_API_BASE_URL
+  if (envUrl) return envUrl
   return typeof window !== 'undefined'
-    ? `http://${window.location.hostname}:8005/api/v1`
+    ? `${window.location.origin}/api/v1`
     : 'http://localhost:8005/api/v1'
 }
 
@@ -450,6 +452,12 @@ export const tourismService = {
 
     const res = await fetch(`${getApiBase()}/tourism/community-contents?${q.toString()}`)
     if (!res.ok) throw new Error('Gagal memuat Bank Konten & Karya Komunitas.')
+    return res.json()
+  },
+
+  async getCommunityContentByIdOrSlug(idOrSlug: string): Promise<CommunityContentItem> {
+    const res = await fetch(`${getApiBase()}/tourism/community-contents/${encodeURIComponent(idOrSlug)}`)
+    if (!res.ok) throw new Error('Artikel sejarah tidak ditemukan.')
     return res.json()
   },
 

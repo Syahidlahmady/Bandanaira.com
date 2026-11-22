@@ -16,12 +16,23 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
   <!-- Preload responsive LCP hero image for instant discovery -->
-  <link rel="preload" href="/banda.webp" imagesrcset="/banda-480.webp 480w, /banda-960.webp 960w, /banda-1440.webp 1440w, /banda.webp 1920w" imagesizes="(max-width: 1024px) 100vw, 1920px" as="image" type="image/webp" fetchpriority="high" />
+  <link rel="preload" href="/banda.webp" imagesrcset="/banda-480.webp 480w, /banda-960.webp 960w, /banda-1440.webp 1440w, /banda.webp 1920w" imagesizes="(max-width: 640px) 70vw, (max-width: 1024px) 80vw, 1920px" as="image" type="image/webp" fetchpriority="high" />
 
-  <!-- Fast, preconnected font loading with font-display: swap -->
+  <!-- High-performance non-blocking font loading with font-display: swap -->
+  <link
+    rel="preload"
+    as="style"
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Style+Script&display=swap" />
   <link
     rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Style+Script&display=swap" />
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Style+Script&display=swap"
+    media="print"
+    onload="this.media='all'" />
+  <noscript>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Style+Script&display=swap" />
+  </noscript>
 
   <title>Visit Banda Naira : Official Banda Naira Website</title>
 
@@ -84,9 +95,9 @@
       <div class="critical-hero__frame">
         <img
           class="critical-hero__media"
-          src="/banda.webp"
+          src="/banda-480.webp"
           srcset="/banda-480.webp 480w, /banda-960.webp 960w, /banda-1440.webp 1440w, /banda.webp 1920w"
-          sizes="(max-width: 1024px) 100vw, 1920px"
+          sizes="(max-width: 640px) 70vw, (max-width: 1024px) 80vw, 1920px"
           alt="Pemandangan Banda Neira dari udara dengan laut dan pulau-pulau di sekitarnya"
           width="1920"
           height="1106"

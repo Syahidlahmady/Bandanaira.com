@@ -272,14 +272,44 @@ const ScrollExpandComponent: React.FC<ScrollExpandProps> = ({
     })
 
     const scroller = useWindowScroll ? window : root
-    scroller.addEventListener('scroll', onScroll, { passive: true })
+
+    let isAttached = false
+    const attach = () => {
+      if (!isAttached) {
+        scroller.addEventListener('scroll', onScroll, { passive: true })
+        isAttached = true
+        onScroll()
+      }
+    }
+    const detach = () => {
+      if (isAttached) {
+        scroller.removeEventListener('scroll', onScroll)
+        isAttached = false
+        if (raf) cancelAnimationFrame(raf)
+        if (scrollRaf) cancelAnimationFrame(scrollRaf)
+      }
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries[0]?.isIntersecting ?? false
+        setIsIntersecting(visible)
+        if (visible) {
+          attach()
+        } else {
+          detach()
+        }
+      },
+      { rootMargin: '400px 0px' }
+    )
+    observer.observe(root)
+
     window.addEventListener('resize', onResize)
 
     return () => {
       cancelAnimationFrame(initRaf)
-      if (raf) cancelAnimationFrame(raf)
-      if (scrollRaf) cancelAnimationFrame(scrollRaf)
-      scroller.removeEventListener('scroll', onScroll)
+      observer.disconnect()
+      detach()
       window.removeEventListener('resize', onResize)
     }
   }, [applyProgress, useWindowScroll])
@@ -373,9 +403,9 @@ const ScrollExpandComponent: React.FC<ScrollExpandProps> = ({
     <img
       ref={mediaRef as React.RefObject<HTMLImageElement>}
       className="scroll-expand__media"
-      src={src || poster || '/banda.webp'}
+      src={src || poster || '/banda-480.webp'}
       srcSet="/banda-480.webp 480w, /banda-960.webp 960w, /banda-1440.webp 1440w, /banda.webp 1920w"
-      sizes="(max-width: 1024px) 100vw, 1920px"
+      sizes="(max-width: 640px) 70vw, (max-width: 1024px) 80vw, 1920px"
       alt={alt}
       width={1920}
       height={1106}

@@ -15,6 +15,7 @@ export interface StoryItem {
   subtitle?: string
   description: string
   align: 'left' | 'right'
+  slug?: string
 }
 
 export const STORIES: StoryItem[] = [
@@ -24,6 +25,7 @@ export const STORIES: StoryItem[] = [
     description:
       'Dahulu, buah pala hanya tumbuh di tanah Banda. Aromanya yang khas dan khasiatnya yang langka membuat bangsa-bangsa dari berbagai belahan bumi berlayar ribuan mil untuk mencarinya. Nilainya saat itu bahkan melampaui emas.',
     align: 'right',
+    slug: 'pala-yang-dicari-dunia-dan-jalur-rempah-nusantara',
   },
   {
     id: 'belgica',
@@ -31,6 +33,7 @@ export const STORIES: StoryItem[] = [
     description:
       'Untuk mengamankan perdagangan pala, Belanda membangun benteng kokoh di atas perbukitan Neira. Dari benteng inilah seluruh perairan dan kapal-kapal niaga yang melintas di Laut Banda diawasi secara ketat selama ratusan tahun.',
     align: 'left',
+    slug: 'menelusuri-benteng-belgica-mahkota-pertahanan-tabaleku',
   },
   {
     id: 'rhun',
@@ -38,6 +41,7 @@ export const STORIES: StoryItem[] = [
     description:
       'Sebuah pulau karang kecil di Banda pernah menjadi pusat sengketa antara Inggris dan Belanda. Demi menguasai Pulau Rhun seutuhnya, Belanda rela menukarnya dengan koloni New Amsterdam di Amerika—wilayah yang kini dikenal sebagai Manhattan, New York.',
     align: 'right',
+    slug: 'pulau-rhun-barter-manhattan-perjanjian-breda-1667',
   },
   {
     id: 'hatta',
@@ -45,14 +49,15 @@ export const STORIES: StoryItem[] = [
     description:
       'Banda Neira juga menyimpan jejak perjuangan kemerdekaan. Di pulau yang tenang ini, Bung Hatta dan Sutan Sjahrir pernah diasingkan. Sambil mengajar anak-anak setempat, mereka terus menulis dan merajut gagasan tentang masa depan Indonesia.',
     align: 'left',
+    slug: 'pengasingan-bung-hatta-dan-sjahrir-di-banda-neira',
   },
 ]
 
 export interface HeritageSpiceSectionProps {
-  onNavigate: (tab: any) => void
+  onNavigate?: (tab: any, slug?: string) => void
 }
 
-export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
+export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = ({ onNavigate }) => {
   const { t, isEnglish } = useLanguage()
   const sectionRef = useRef<HTMLElement>(null)
   const postersRef = useRef<FlyingPostersHandle | null>(null)
@@ -66,6 +71,7 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
       subtitle: t.heritage.stories.pala.subtitle,
       description: t.heritage.stories.pala.desc,
       align: 'right',
+      slug: 'pala-yang-dicari-dunia-dan-jalur-rempah-nusantara',
     },
     {
       id: 'belgica',
@@ -73,6 +79,7 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
       subtitle: t.heritage.stories.belgica.subtitle,
       description: t.heritage.stories.belgica.desc,
       align: 'left',
+      slug: 'menelusuri-benteng-belgica-mahkota-pertahanan-tabaleku',
     },
     {
       id: 'rhun',
@@ -80,6 +87,7 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
       subtitle: t.heritage.stories.rhun.subtitle,
       description: t.heritage.stories.rhun.desc,
       align: 'right',
+      slug: 'pulau-rhun-barter-manhattan-perjanjian-breda-1667',
     },
     {
       id: 'hatta',
@@ -87,6 +95,7 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
       subtitle: t.heritage.stories.hatta.subtitle,
       description: t.heritage.stories.hatta.desc,
       align: 'left',
+      slug: 'pengasingan-bung-hatta-dan-sjahrir-di-banda-neira',
     },
   ]
 
@@ -328,6 +337,16 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
                   <p className="font-sans text-slate-100 text-sm sm:text-base leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
                     {story.description}
                   </p>
+                  {story.slug && (
+                    <button
+                      type="button"
+                      onClick={() => onNavigate?.('sejarah', story.slug)}
+                      className="mt-3.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-[#f4b75e] text-[#f4b75e] hover:text-[#081d35] border border-[#f4b75e]/30 text-xs font-semibold tracking-wide transition-all cursor-pointer pointer-events-auto"
+                    >
+                      <span>{isEnglish ? 'Read Full Story' : 'Baca Kisah Selengkapnya'}</span>
+                      <span aria-hidden="true">&rarr;</span>
+                    </button>
+                  )}
                 </div>
               )
             })}
@@ -358,6 +377,16 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
                   <p className="font-sans text-slate-100 text-sm sm:text-base leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.95)]">
                     {story.description}
                   </p>
+                  {story.slug && (
+                    <button
+                      type="button"
+                      onClick={() => onNavigate?.('sejarah', story.slug)}
+                      className="mt-3.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-[#f4b75e] text-[#f4b75e] hover:text-[#081d35] border border-[#f4b75e]/30 text-xs font-semibold tracking-wide transition-all cursor-pointer pointer-events-auto"
+                    >
+                      <span>{isEnglish ? 'Read Full Story' : 'Baca Kisah Selengkapnya'}</span>
+                      <span aria-hidden="true">&rarr;</span>
+                    </button>
+                  )}
                 </div>
               )
             })}
@@ -381,10 +410,20 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
           <p className="font-sans text-slate-100 text-xs leading-relaxed max-w-xs drop-shadow-md">
             {currentStory.description}
           </p>
+          {currentStory.slug && (
+            <button
+              type="button"
+              onClick={() => onNavigate?.('sejarah', currentStory.slug)}
+              className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 active:bg-[#f4b75e] text-[#f4b75e] active:text-[#081d35] border border-[#f4b75e]/30 text-[11px] font-semibold tracking-wide transition-all cursor-pointer"
+            >
+              <span>{isEnglish ? 'Read Full Story' : 'Baca Kisah Selengkapnya'}</span>
+              <span aria-hidden="true">&rarr;</span>
+            </button>
+          )}
         </div>
 
-        {/* BOTTOM CONTROLS: Clean Minimal Timeline Progress Bar (Button Removed) */}
-        <footer className="relative z-10 w-full max-w-7xl mx-auto px-6 pb-8 sm:pb-12 flex items-center justify-center shrink-0">
+        {/* BOTTOM CONTROLS: Clean Minimal Timeline Progress Bar & History Link */}
+        <footer className="relative z-10 w-full max-w-7xl mx-auto px-6 pb-8 sm:pb-12 flex flex-col sm:flex-row items-center justify-center gap-3 shrink-0">
           <div className="flex items-center gap-2.5 bg-slate-950/60 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/10 shadow-lg">
             {activeStories.map((story, i) => (
               <button
@@ -404,6 +443,15 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = () => {
               </button>
             ))}
           </div>
+
+          <button
+            type="button"
+            onClick={() => onNavigate?.('sejarah')}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-slate-950/70 hover:bg-[#f4b75e] text-[#f4b75e] hover:text-[#081d35] border border-[#f4b75e]/40 text-xs font-semibold backdrop-blur-md transition-all cursor-pointer shadow-lg group"
+          >
+            <span>{isEnglish ? 'Explore History Archives' : 'Jelajahi Arsip Sejarah Selengkapnya'}</span>
+            <span aria-hidden="true" className="group-hover:translate-x-1 transition-transform">&rarr;</span>
+          </button>
         </footer>
       </div>
     </section>
