@@ -70,6 +70,16 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 65: Fitur Artikel Sejarah Pokdarwis, Dedicated Public History Page, & Pokdarwis CMS Dashboard**
 - [x] **Phase 66: Galeri Pusaka Snap-Rail Seluler, Thumbnail WebP 12 Cagar Budaya, dan Integrasi Mobile Static Optimization**
 - [x] **Phase 67: Sinkronisasi Penuh CRUD Artikel Sejarah antara Database PostgreSQL, CMS, Reader View, dan Dasbor Utama**
+- [x] **Phase 83: Redesain & Perbaikan Fungsi Workspace Documents & Surat Desa (Official Documents & Village Letters Workspace)**
+- [x] **Phase 84: Redesain Antarmuka Marketplace Cerah, Estetik & Pemisahan Akses Etalase Publik vs Dashboard Admin**
+- [x] **Phase 85: Optimalisasi Navbar Landing Page Utama & Bahasa Compact Icon**
+- [x] **Phase 86: Pembersihan Item Sidebar Dokumen Redundan & Pemfungsian Penuh Workspace Help (Pusat Bantuan & Panduan Sistem)**
+- [x] **Phase 87: Penataan Responsif Navbar Saat User Login (Pemindahan Button Profil & Logout ke Menu Seluler)**
+- [x] **Phase 88: Transformasi Workspace Perencana Wisata Cerdas (Conversational AI Concierge) & Integrasi Spasial GIS Riil**
+- [x] **Phase 89: Optimasi Terpadu Sektor Pariwisata (Smart Tourism) & Kependudukan Desa (Community-Based Tourism)**
+- [x] **Phase 90: Penghapusan Fitur Registrasi Mandiri & Eliminasi DSS/SAW pada Ruang Kerja Warga**
+- [x] **Phase 91: Pembersihan Kolom Akses Akun pada Footer Ekosistem & Penyelarasan Layout Grid**
+- [x] **Phase 92: Pengetatan Hak Akses DSS/SAW Smart Planner Khusus Administrator Sistem**
 ---
 
 ## Detailed Task Checklist
@@ -1714,3 +1724,33 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - 100% build produksi frontend lolos tanpa error TypeScript (2.047 modul terkompilasi dalam 18.28s).
   - 100% automated test backend lolos (26 passed dalam 83.58s).
   - Backend dan frontend merespons HTTP 200 OK.
+
+---
+
+## [Phase 91] - Pembersihan Kolom Akses Akun pada Footer Ekosistem & Penyelarasan Layout Grid
+- [x] 91.1 Penghapusan Kolom Navigasi "Akses Akun" pada `BandaUnifiedFooter.tsx`:
+  - Menghapus kolom navigasi "Akses Akun" beserta link Masuk/Login dan Simulasi Peran Operator.
+  - Menyesuaikan pembungkus grid dari 3 kolom (`sm:grid-cols-3 max-w-[680px]`) menjadi 2 kolom proporsional (`grid-cols-2 max-w-[500px]`) untuk "Jelajahi Banda" dan "Ekosistem Pulau".
+- [x] 91.2 Pembersihan Grup Tautan "Akses akun" pada `LandingFooterSection.tsx`:
+  - Menghapus kelompok tautan `Akses akun` dari `defaultFooterLinkGroups` dan `activeGroups`.
+  - Menyelaraskan tata letak grid menjadi 2 kolom responsif (`grid-cols-2 max-w-[500px]`).
+- [x] 91.3 Pengujian & Verifikasi:
+  - Build produksi frontend Vite sukses 100% (2.059 modul ter-bundle dalam 24.51s).
+  - Test suite backend lulus 26/26 tests dalam 96.37s.
+
+---
+
+## [Phase 92] - Pengetatan Hak Akses DSS/SAW Smart Planner Khusus Administrator Sistem
+- [x] 92.1 Restriksi Navigasi Sidebar Dashboard (`DashboardLayout.tsx`):
+  - Mengubah visibilitas item menu `smart_planner` pada bilah samping menjadi hanya untuk peran Administrator (`visible: isAdmin`).
+  - Menghilangkan akses menu perencana cerdas DSS dari seluruh peran admin lain (Petugas Desa, Pokdarwis / Admin Wisata, Pengelola Koperasi, Ketua Poktan, Operator Homestay, dan Surveyor Lapangan).
+- [x] 92.2 Proteksi Guard Akses Tab Dashboard (`App.tsx`):
+  - Memproteksi rute Tab 8 `smart_planner` pada dashboard terotentikasi dengan guard `isAdmin ? <SmartPlannerWorkspace /> : <AccessRestrictedNotice />`.
+- [x] 92.3 Pengisolasian Tombol Peluncur Cepat di Modal Launchpad (`UserEcosystemDashboard.tsx`):
+  - Membungkus kartu peluncur cepat "Smart Planner SAW / Kalkulator DSS cerdas" dengan syarat `{isAdmin && ( ... )}`.
+- [x] 92.4 Pembersihan Label dan Widget DSS/SAW pada Dasbor Peran:
+  - Mengganti kartu evaluasi SAW di `SmartTourismDashboardView.tsx` menjadi analitik literasi sejarah dan budaya.
+  - Mengganti tagline dan tombol perencana rute SAW di `TouristDashboardView.tsx` menjadi navigasi langsung ke direktori cagar budaya.
+- [x] 92.5 Pengujian & Verifikasi:
+  - Build produksi frontend sukses (2.059 modul terkompilasi dalam 25.77s).
+  - 100/100 automated test suite backend lulus 100% (321.84s).
