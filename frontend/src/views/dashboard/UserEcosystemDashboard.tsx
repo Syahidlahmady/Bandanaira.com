@@ -617,19 +617,21 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
               <p className="text-[11px] text-slate-500 mt-0.5">177 Situs &amp; akomodasi</p>
             </button>
 
-            {/* 8. DSS SAW Smart Planner */}
-            <button
-              type="button"
-              onClick={() => {
-                onNavigate('smart_planner')
-                setShowModuleLaunchpad(false)
-              }}
-              className="p-3.5 rounded-xl bg-slate-50 hover:bg-indigo-50/60 border border-slate-200 hover:border-indigo-300 text-left transition cursor-pointer group"
-            >
-              <Activity size={18} className="text-indigo-600 mb-2 group-hover:scale-110 transition-transform" />
-              <p className="text-xs font-bold text-[#081D35]">Smart Planner SAW</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">Kalkulator DSS cerdas</p>
-            </button>
+            {/* 8. DSS SAW Smart Planner (Hanya untuk Administrator) */}
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => {
+                  onNavigate('smart_planner')
+                  setShowModuleLaunchpad(false)
+                }}
+                className="p-3.5 rounded-xl bg-slate-50 hover:bg-indigo-50/60 border border-slate-200 hover:border-indigo-300 text-left transition cursor-pointer group"
+              >
+                <Activity size={18} className="text-indigo-600 mb-2 group-hover:scale-110 transition-transform" />
+                <p className="text-xs font-bold text-[#081D35]">Smart Planner SAW</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Kalkulator DSS cerdas</p>
+              </button>
+            )}
 
             {/* 9. Telemetri IoT 4 Stasiun */}
             <button

@@ -39,7 +39,7 @@ export const touristProfile: RoleDashboardProfile = {
     key: 'tourist',
     name: 'Wisatawan & Pengunjung',
     shortBadge: 'Wisatawan',
-    tagline: 'Eksplorasi Cagar Budaya, Reservasi Eco-Stay & Perencana Cerdas SAW',
+    tagline: 'Eksplorasi Cagar Budaya, Reservasi Eco-Stay & Panduan Wisata Bahari',
     kpis: [
       { title: 'DESTINASI CAGAR BUDAYA', value: '177 Situs', trend: '▲ 100% Dilengkapi Audio Guide', icon: Home, color: '#2563EB' },
       { title: 'PENGINAPAN ECO-STAY', value: '18 Mitra', trend: '▲ WhatsApp Booking Langsung', icon: Luggage, color: '#059669' },
@@ -80,8 +80,8 @@ export const touristProfile: RoleDashboardProfile = {
     },
     workspace1: {
       title: 'DESTINASI WAJIB KUNJUNG BANDA',
-      buttonText: 'Rencanakan Rute dengan SAW',
-      targetTab: 'smart_planner',
+      buttonText: 'Jelajahi Cagar Budaya',
+      targetTab: 'tourism',
       items: [
         { id: 1, name: 'Benteng Belgica (Matahari Terbenam)', stat: 'Sangat Direkomendasikan', percent: 96 },
         { id: 2, name: 'Pulau Hatta (Pantai & Snorkeling)', stat: 'Terumbu Karang Prima', percent: 90 },

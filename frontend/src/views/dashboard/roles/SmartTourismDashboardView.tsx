@@ -123,13 +123,13 @@ export const smartTourismProfile: RoleDashboardProfile = {
     subtext: 'Titik Nol Jalur Rempah Dunia',
   },
   workspace3: {
-    title: 'EVALUASI REKOMENDASI CERDAS SAW',
-    subtitle: 'Indeks Kepuasan Rute Wisatawan',
+    title: 'DISTRIBUSI ARTIKEL SEJARAH & EDUKASI',
+    subtitle: 'Kunjungan Halaman Literasi Budaya',
     mainValue: '94,8%',
-    trend: '▲ 3,4% akurasi multikriteria',
+    trend: '▲ 3,4% pembaca aktif',
     badgeText: 'Optimal',
-    buttonText: 'Buka Perencana SAW',
-    targetTab: 'smart_planner',
+    buttonText: 'Buka CMS Artikel',
+    targetTab: 'tourism',
     bars: [
       { label: 'Jan', value: 86 },
       { label: 'Feb', value: 89 },

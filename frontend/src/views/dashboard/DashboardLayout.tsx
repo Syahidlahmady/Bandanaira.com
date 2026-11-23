@@ -567,10 +567,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     },
     {
       id: 'smart_planner',
-      label: 'Perencana Wisata Cerdas',
-      shortLabel: 'Perencana Wisata',
+      label: 'Perencana Wisata Cerdas DSS',
+      shortLabel: 'Smart DSS',
       icon: Compass,
-      visible: !isSmartTourismAdmin && !isResident && !isFarmer && !isFarmerGroupAdmin && !isCoopManager,
+      visible: isAdmin,
     },
     {
       id: 'iot',

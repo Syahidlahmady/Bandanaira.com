@@ -1833,12 +1833,22 @@ export const App: React.FC = () => {
             <InteractiveMapWorkspace currentUser={currentUser} />
           )}
 
-          {/* TAB 8: ASISTEN PERENCANA WISATA CERDAS */}
+          {/* TAB 8: ASISTEN PERENCANA WISATA CERDAS (HANYA ADMINISTRATOR) */}
           {activeTab === 'smart_planner' && (
-            <SmartPlannerWorkspace
-              onNavigate={(tab, param) => handleNavigateWithSlug(tab as TabId, param)}
-              onBackToLanding={() => setActiveTab('landing')}
-            />
+            isAdmin ? (
+              <SmartPlannerWorkspace
+                onNavigate={(tab, param) => handleNavigateWithSlug(tab as TabId, param)}
+                onBackToLanding={() => setActiveTab('landing')}
+              />
+            ) : (
+              <AccessRestrictedNotice
+                workspaceTitle="Perencana Wisata Cerdas DSS"
+                roleTitle="Administrator Sistem"
+                currentRole={currentRoleTitle}
+                onBackToDashboard={() => setActiveTab('dashboard')}
+                onOpenQuickSwitch={() => setShowQuickLoginModal(true)}
+              />
+            )
           )}
 
           {/* TAB 9: PUSAT KOMANDO TELEMETRI IoT & RESILIENSI PULAU */}
