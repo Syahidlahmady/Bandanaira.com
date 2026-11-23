@@ -84,24 +84,24 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     >
       {/* 1. FIXED TOP NAVBAR (Hides during resting/expansion, smoothly emerges once fully expanded) */}
       <div
-        className={`fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 lg:px-12 pt-3 sm:pt-5 transition-all duration-500 ease-out ${
+        className={`fixed top-0 left-0 right-0 z-50 px-3 sm:px-8 lg:px-12 pt-2.5 sm:pt-5 transition-all duration-500 ease-out ${
           navVisible
             ? 'opacity-100 translate-y-0 pointer-events-auto'
             : 'opacity-0 -translate-y-8 pointer-events-none'
         }`}
       >
         <header
-          className="flex h-16 sm:h-20 items-center justify-between px-4 sm:px-6 py-0 w-full max-w-7xl mx-auto rounded-2xl overflow-visible border border-solid border-white/20 transition-all duration-300 backdrop-blur-sm bg-[#081d35f2] shadow-2xl pointer-events-auto will-change-transform transform-gpu"
+          className="flex h-14 sm:h-20 items-center justify-between px-3.5 sm:px-6 py-0 w-full max-w-7xl mx-auto rounded-xl sm:rounded-2xl overflow-visible border border-solid border-white/20 transition-all duration-300 backdrop-blur-md bg-[#081d35f2] shadow-xl pointer-events-auto will-change-transform transform-gpu"
         >
           {/* Brand Logo */}
           <a
             href="#beranda"
             onClick={() => setActiveNav('#beranda')}
             aria-label="bandanaira.com, kembali ke Beranda"
-            className="inline-flex items-center gap-2.5 relative flex-[0_0_auto]"
+            className="inline-flex items-center gap-2 sm:gap-2.5 relative flex-[0_0_auto]"
           >
-            <NutmegLogoIcon />
-            <span className="relative w-fit font-normal text-white text-[20px] sm:text-[23px] tracking-[-0.90px] leading-[normal]">
+            <NutmegLogoIcon className="w-6 h-6 sm:w-7 sm:h-7" />
+            <span className="relative w-fit font-normal text-white text-[17px] sm:text-[23px] tracking-tight leading-none">
               bandanaira.com
             </span>
           </a>
@@ -138,15 +138,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </nav>
 
           {/* Right Action Buttons */}
-          <div className="inline-flex items-center gap-2 sm:gap-3 relative flex-[0_0_auto]">
+          <div className="inline-flex items-center gap-1.5 sm:gap-3 relative flex-[0_0_auto]">
             {currentUser ? (
-              <div className="inline-flex items-center gap-2">
+              <div className="inline-flex items-center gap-1.5 sm:gap-2">
                 <button
                   type="button"
                   onClick={() => onNavigate('dashboard')}
-                  className="inline-flex h-[38px] sm:h-[42px] items-center px-4 py-0 bg-amber-500/20 hover:bg-amber-500/30 rounded-lg border border-solid border-[#f4b75e] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e]"
+                  className="inline-flex h-9 sm:h-[42px] items-center px-3 sm:px-4 py-0 bg-amber-500/20 hover:bg-amber-500/30 rounded-lg border border-solid border-[#f4b75e] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e]"
                 >
-                  <span className="font-semibold text-white text-xs tracking-[0] relative w-fit leading-[normal]">
+                  <span className="font-semibold text-white text-xs tracking-[0] relative w-fit leading-none truncate max-w-[110px] sm:max-w-none">
                     {currentUser.full_name || currentUser.username}
                   </span>
                 </button>
@@ -154,7 +154,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   <button
                     type="button"
                     onClick={onLogout}
-                    className="inline-flex h-[38px] sm:h-[42px] items-center px-3 py-0 bg-rose-500/20 hover:bg-rose-500/35 rounded-lg border border-solid border-rose-400/50 text-white text-xs font-semibold transition-colors cursor-pointer"
+                    className="inline-flex h-9 sm:h-[42px] items-center px-2.5 sm:px-3 py-0 bg-rose-500/20 hover:bg-rose-500/35 rounded-lg border border-solid border-rose-400/50 text-white text-xs font-semibold transition-colors cursor-pointer"
                     title="Keluar dari Akun"
                   >
                     {t.navbar.signOut}
@@ -162,14 +162,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 )}
               </div>
             ) : (
-              <div className="inline-flex items-center gap-2">
+              <div className="inline-flex items-center gap-1.5 sm:gap-2">
                 {onOpenRegister && (
                   <button
                     type="button"
                     onClick={onOpenRegister}
-                    className="hidden sm:inline-flex h-[38px] sm:h-[42px] items-center px-4 py-0 bg-amber-600 hover:bg-amber-500 rounded-lg border border-solid border-[#f4b75e] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e] cursor-pointer"
+                    className="hidden sm:inline-flex h-9 sm:h-[42px] items-center px-4 py-0 bg-amber-600 hover:bg-amber-500 rounded-lg border border-solid border-[#f4b75e] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e] cursor-pointer"
                   >
-                    <span className="font-semibold text-white text-xs tracking-[0] relative w-fit leading-[normal]">
+                    <span className="font-semibold text-white text-xs tracking-[0] relative w-fit leading-none">
                       {t.navbar.register}
                     </span>
                   </button>
@@ -177,9 +177,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 <button
                   type="button"
                   onClick={onOpenLogin}
-                  className="inline-flex h-[38px] sm:h-[42px] items-center px-4 sm:px-5 py-0 bg-[#d9770626] hover:bg-[#d9770640] rounded-lg border border-solid border-[#f4b75e] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e] cursor-pointer"
+                  className="inline-flex h-9 sm:h-[42px] items-center px-3.5 sm:px-5 py-0 bg-[#d9770626] hover:bg-[#d9770640] rounded-lg border border-solid border-[#f4b75e] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e] cursor-pointer active:scale-95"
                 >
-                  <span className="font-semibold text-white text-xs tracking-[0] relative w-fit leading-[normal]">
+                  <span className="font-semibold text-white text-xs tracking-[0] relative w-fit leading-none">
                     {t.navbar.signIn}
                   </span>
                 </button>
@@ -189,8 +189,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             {/* Divider vertikal pemisah rapi */}
             <div className="hidden sm:block w-px h-6 bg-white/20" />
 
-            {/* Dropdown Pemilihan Bahasa (Paling kanan, tidak menutupi tombol login) */}
-            <LanguageSwitcher variant="dropdown" />
+            {/* Dropdown Pemilihan Bahasa (Desktop only di navbar; di mobile sudah ada di dalam drawer) */}
+            <div className="hidden sm:block">
+              <LanguageSwitcher variant="dropdown" />
+            </div>
 
             {/* Mobile Menu Hamburger */}
             <button
@@ -198,7 +200,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               onClick={() => setMobileMenuOpen((prev) => !prev)}
               aria-label={mobileMenuOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
               aria-expanded={mobileMenuOpen}
-              className="inline-flex lg:hidden h-[38px] w-[38px] items-center justify-center rounded-lg border border-solid border-white/20 bg-slate-900/60 text-white cursor-pointer"
+              className="inline-flex lg:hidden h-9 w-9 items-center justify-center rounded-lg border border-solid border-white/20 bg-slate-900/60 text-white cursor-pointer active:scale-95"
             >
               {mobileMenuOpen ? (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
@@ -215,8 +217,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
         {/* Mobile Navigation Dropdown */}
         {mobileMenuOpen && (
-          <div className="relative z-50 w-full max-w-7xl mx-auto mt-2 rounded-2xl bg-[#081d35f2] border border-solid border-white/20 backdrop-blur-xl p-5 lg:hidden pointer-events-auto shadow-2xl">
-            <nav aria-label="Navigasi seluler" className="flex flex-col gap-3">
+          <div className="relative z-50 w-full max-w-7xl mx-auto mt-2 rounded-2xl bg-[#081d35f2] border border-solid border-white/20 backdrop-blur-xl p-4 sm:p-5 lg:hidden pointer-events-auto shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200">
+            <nav aria-label="Navigasi seluler" className="flex flex-col gap-2.5">
               {/* Mobile Language Switcher */}
               <LanguageSwitcher variant="mobile" />
 
@@ -228,16 +230,19 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     setActiveNav(item.href)
                     setMobileMenuOpen(false)
                   }}
-                  className={`text-sm font-medium py-1.5 transition-colors ${activeNav === item.href ? 'text-[#f4b75e]' : 'text-white/90'
-                    }`}
+                  className={`text-sm font-medium py-2 px-3 rounded-lg transition-colors ${
+                    activeNav === item.href
+                      ? 'text-[#f4b75e] bg-white/10 font-semibold'
+                      : 'text-white/90 hover:bg-white/5'
+                  }`}
                 >
                   {item.label}
                 </a>
               ))}
               {!currentUser && (
                 <>
-                  <div className="h-px bg-white/15 my-2" />
-                  <div className="flex flex-wrap gap-2 pt-1">
+                  <div className="h-px bg-white/15 my-1.5" />
+                  <div className="grid grid-cols-2 gap-2 pt-1">
                     {onOpenRegister && (
                       <button
                         type="button"
@@ -245,7 +250,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                           setMobileMenuOpen(false)
                           onOpenRegister()
                         }}
-                        className="h-10 px-4 rounded-lg bg-amber-600 border border-[#f4b75e] text-white text-xs font-semibold"
+                        className="h-10 px-3 rounded-lg bg-amber-600 border border-[#f4b75e] text-white text-xs font-semibold flex items-center justify-center active:scale-95"
                       >
                         {t.navbar.register}
                       </button>
@@ -256,7 +261,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         setMobileMenuOpen(false)
                         onOpenLogin()
                       }}
-                      className="h-10 px-4 rounded-lg bg-[#d9770626] border border-[#f4b75e] text-white text-xs font-semibold"
+                      className="h-10 px-3 rounded-lg bg-[#d9770626] border border-[#f4b75e] text-white text-xs font-semibold flex items-center justify-center active:scale-95"
                     >
                       {t.navbar.signIn}
                     </button>
@@ -268,20 +273,19 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         )}
       </div>
 
-      {/* 2. SCROLL EXPAND COMPONENT INTEGRATION (YouTube for Desktop, Pure Image for Mobile) */}
+      {/* 2. SCROLL EXPAND COMPONENT INTEGRATION (Pure WebP Image for Ultra 60-120fps Performance) */}
       <ScrollExpand
-        mediaType={isMobile ? 'image' : 'youtube'}
-        youtubeId={isMobile ? '' : 'bVvv6oNiFnw'}
+        mediaType="image"
         poster={HERO_IMAGE_URL}
         src={HERO_IMAGE_URL}
         alt="Pemandangan Banda Neira dari udara dengan laut dan pulau-pulau di sekitarnya"
         useWindowScroll
-        startWidth={isMobile ? 70 : 44}
-        startHeight={isMobile ? 52 : 58}
-        startRadius={isMobile ? 18 : 24}
+        startWidth={isMobile ? 74 : 44}
+        startHeight={isMobile ? 54 : 58}
+        startRadius={isMobile ? 16 : 24}
         endRadius={0}
-        mediaZoom={isMobile ? 1.05 : 1.22}
-        scrollDistance={isMobile ? 0.28 : 0.75}
+        mediaZoom={isMobile ? 1.05 : 1.15}
+        scrollDistance={isMobile ? 0.35 : 0.75}
         holdDistance={isMobile ? 0.05 : 0.15}
         smoothing={0}
         overlayScrim={0.4}
@@ -295,34 +299,34 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         }
       >
         {/* OVERLAY CONTENT (Fades in once frame expands to full bleed) */}
-        <div className="w-full max-w-7xl mx-auto flex flex-col justify-center h-full pt-20 sm:pt-24 pb-6 sm:pb-8 pointer-events-auto">
+        <div className="w-full max-w-7xl mx-auto flex flex-col justify-center h-full pt-16 sm:pt-24 pb-6 sm:pb-8 px-4 sm:px-6 pointer-events-auto">
           {/* MAIN EDITORIAL HERO NARRATIVE (Asymmetric Left-Aligned Layout) */}
-          <main className="flex flex-col items-start gap-4 sm:gap-6 max-w-[850px] my-auto">
+          <main className="flex flex-col items-start gap-3.5 sm:gap-6 max-w-[850px] my-auto">
             {/* Display Headline */}
             <h1
               id="banda-hero-title"
-              className="text-white text-3xl sm:text-5xl lg:text-7xl font-sans font-bold tracking-tight leading-[1.08] drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)]"
+              className="text-white text-2xl sm:text-5xl lg:text-7xl font-sans font-bold tracking-tight leading-[1.1] drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)]"
             >
               <span>{t.hero.headlineLine1}</span>
               <br />
-              <span className="font-script font-normal text-amber-200 text-4xl sm:text-6xl lg:text-8xl leading-[1.05] drop-shadow-[0_4px_28px_rgba(0,0,0,0.9)]">
+              <span className="font-script font-normal text-amber-200 text-3xl sm:text-6xl lg:text-8xl leading-[1.08] drop-shadow-[0_4px_28px_rgba(0,0,0,0.9)]">
                 {t.hero.headlineLine2}
               </span>
             </h1>
 
             {/* Narrative Paragraph with Frosted Glass Plate for Crisp Readability */}
-            <div className="max-w-[580px] p-4 sm:p-5 rounded-2xl bg-black/55 backdrop-blur-md border border-white/15 shadow-2xl">
-              <p className="text-white/95 text-sm sm:text-base lg:text-[17px] leading-relaxed font-sans font-normal antialiased">
+            <div className="max-w-[580px] p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-black/60 backdrop-blur-md border border-white/15 shadow-xl">
+              <p className="text-white/95 text-xs sm:text-base lg:text-[17px] leading-relaxed font-sans font-normal antialiased">
                 {t.hero.description}
               </p>
             </div>
 
             {/* Dual Action CTAs */}
-            <div className="inline-flex flex-wrap items-center gap-3 pt-2">
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-1 sm:pt-2 w-full sm:w-auto">
               <a
                 href="#wisata"
                 onClick={() => setActiveNav('#wisata')}
-                className="inline-flex h-[46px] sm:h-[52px] items-center gap-3 px-5 sm:px-6 bg-amber-600 hover:bg-amber-500 transition-colors rounded-xl border border-amber-400 font-semibold text-white text-xs sm:text-sm tracking-wide shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="flex-1 sm:flex-initial inline-flex h-11 sm:h-[52px] items-center justify-center gap-2 sm:gap-3 px-5 sm:px-6 bg-amber-600 hover:bg-amber-500 transition-colors rounded-xl border border-amber-400 font-semibold text-white text-xs sm:text-sm tracking-wide shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white active:scale-95"
               >
                 <span>{t.hero.ctaExplore}</span>
                 <ArrowUpRightIcon className="w-4 h-4 text-white" />
@@ -331,7 +335,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               <button
                 type="button"
                 onClick={() => onNavigate('gis')}
-                className="inline-flex h-[46px] sm:h-[52px] items-center gap-3 px-5 sm:px-6 bg-white/10 hover:bg-white/20 transition-colors rounded-xl border border-white/25 backdrop-blur-md font-semibold text-white text-xs sm:text-sm tracking-wide focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="flex-1 sm:flex-initial inline-flex h-11 sm:h-[52px] items-center justify-center gap-2 sm:gap-3 px-5 sm:px-6 bg-white/10 hover:bg-white/20 transition-colors rounded-xl border border-white/25 backdrop-blur-md font-semibold text-white text-xs sm:text-sm tracking-wide focus:outline-none focus-visible:ring-2 focus-visible:ring-white active:scale-95"
               >
                 <span>{t.hero.ctaMap}</span>
                 <ArrowUpRightIcon className="w-4 h-4 text-white" />

@@ -206,7 +206,7 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
         className="absolute -bottom-32 right-0 w-[500px] h-[500px] rounded-full bg-sky-500/10 blur-3xl pointer-events-none"
       />
 
-      <div className="relative max-w-7xl mx-auto flex flex-col lg:flex-row items-center lg:items-stretch gap-12 lg:gap-16">
+      <div className="relative max-w-7xl mx-auto flex flex-col lg:flex-row items-center lg:items-stretch gap-8 lg:gap-16">
         {/* Left Column: Spotlight Editorial Controller (Ala indonesia.travel) */}
         <div className="flex flex-col justify-between items-start w-full lg:w-[42%] lg:max-w-[460px] flex-shrink-0 z-10">
           <div>
@@ -279,7 +279,7 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
                 <span className="text-sm text-slate-400">
                   / {String(PUBLIC_SAW_DESTINATIONS.length).padStart(2, '0')}
                 </span>
-                <span className="ml-3 text-xs text-amber-300/80 font-sans tracking-wide">
+                <span className="ml-2 sm:ml-3 text-[11px] sm:text-xs text-amber-300/80 font-sans tracking-wide truncate max-w-[130px] sm:max-w-xs">
                   {activeDest.name}
                 </span>
               </div>
