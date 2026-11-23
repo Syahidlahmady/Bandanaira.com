@@ -7,7 +7,6 @@ export interface BandaUnifiedNavbarProps {
   activeTab?: string
   onNavigateTab: (tab: any) => void
   onOpenLogin?: () => void
-  onOpenRegister?: () => void
   onOpenMarketplace?: () => void
   onLogout?: () => void
   isOnline?: boolean
@@ -18,7 +17,6 @@ export const BandaUnifiedNavbar: React.FC<BandaUnifiedNavbarProps> = ({
   activeTab = 'landing',
   onNavigateTab,
   onOpenLogin,
-  onOpenRegister: _onOpenRegister,
   onLogout,
 }) => {
   const [mobileOpen, setMobileOpen] = useState(false)

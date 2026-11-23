@@ -32,7 +32,6 @@ export type NavTabType =
 export interface BandanairaBerandaProps {
   onNavigate: (tab: NavTabType, slugOrParam?: string) => void
   onOpenLogin: () => void
-  onOpenRegister?: () => void
   onOpenMarketplace: () => void
   onPublicVerify: (token: string) => void
   currentUser: any
@@ -51,7 +50,6 @@ export interface BandanairaBerandaProps {
 export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
   onNavigate,
   onOpenLogin,
-  onOpenRegister,
   onOpenMarketplace,
   onPublicVerify,
   currentUser,
@@ -116,12 +114,11 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
   }, [])
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-start bg-[#f7f5f0] text-[#0f2c59] selection:bg-[#f4b75e] selection:text-[#081d35]">
+    <div className="flex min-h-[100dvh] w-full flex-col items-start bg-[#f7f5f0] text-[#0f2c59] selection:bg-[#f4b75e] selection:text-[#081d35] overflow-x-clip">
       {/* 1. Hero & Navbar Section */}
       <HeroSection
         onNavigate={onNavigate}
         onOpenLogin={onOpenLogin}
-        onOpenRegister={onOpenRegister}
         currentUser={currentUser}
         onLogout={onLogout}
         activeNav={activeNav}
@@ -206,7 +203,6 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
           <LandingFooterSection
             onNavigate={onNavigate}
             onOpenLogin={onOpenLogin}
-            onOpenRegister={onOpenRegister}
             onOpenQuickLogin={onOpenQuickLogin}
             setActiveNav={setActiveNav}
           />

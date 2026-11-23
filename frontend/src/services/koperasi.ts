@@ -91,11 +91,7 @@ export const WATER_STATIONS = [
   { code: 'RO-STATION-AY-CENTRAL', name: 'Stasiun SWRO Pulau Ay Terpadu' },
 ]
 
-const getApiBase = () => {
-  return typeof window !== 'undefined'
-    ? `http://${window.location.hostname}:8005/api/v1`
-    : 'http://localhost:8005/api/v1'
-}
+import { getApiBase } from './apiConfig'
 
 export const koperasiService = {
   async getCitizenProfile(nik: string): Promise<CitizenCoopProfileResponse> {

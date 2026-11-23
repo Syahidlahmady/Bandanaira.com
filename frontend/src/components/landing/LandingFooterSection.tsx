@@ -37,7 +37,6 @@ export const defaultFooterLinkGroups: FooterLinkGroup[] = [
   {
     title: 'Akses akun',
     links: [
-      { label: 'Daftar Akun Baru', action: 'register' },
       { label: 'Masuk / Login', action: 'login' },
       { label: 'Penduduk', tab: 'letters' },
       { label: 'Mitra homestay', tab: 'tourism' },
@@ -49,7 +48,6 @@ export const defaultFooterLinkGroups: FooterLinkGroup[] = [
 export interface LandingFooterSectionProps {
   onNavigate: (tab: any) => void
   onOpenLogin: () => void
-  onOpenRegister?: () => void
   onOpenQuickLogin?: () => void
   setActiveNav?: (href: string) => void
   footerGroups?: FooterLinkGroup[]
@@ -58,7 +56,6 @@ export interface LandingFooterSectionProps {
 export const LandingFooterSection: React.FC<LandingFooterSectionProps> = ({
   onNavigate,
   onOpenLogin,
-  onOpenRegister,
   onOpenQuickLogin,
   setActiveNav,
   footerGroups,
@@ -191,11 +188,9 @@ export const LandingFooterSection: React.FC<LandingFooterSectionProps> = ({
                     key={link.label}
                     type="button"
                     onClick={() =>
-                      link.action === 'register' && onOpenRegister
-                        ? onOpenRegister()
-                        : link.action === 'quicklogin' && onOpenQuickLogin
-                          ? onOpenQuickLogin()
-                          : onOpenLogin()
+                      link.action === 'quicklogin' && onOpenQuickLogin
+                        ? onOpenQuickLogin()
+                        : onOpenLogin()
                     }
                     className="relative w-fit font-normal text-[#c1ced8] hover:text-[#f4b75e] transition-colors text-xs tracking-[0] leading-[normal] text-left"
                   >
@@ -211,7 +206,7 @@ export const LandingFooterSection: React.FC<LandingFooterSectionProps> = ({
       <div className="flex flex-col items-start gap-6 relative self-stretch w-full flex-[0_0_auto]">
         <div className="relative self-stretch w-full h-px bg-[#ffffff38]" />
         <div className="flex flex-wrap items-center justify-between gap-4 relative self-stretch w-full flex-[0_0_auto]">
-          <p className="relative w-fit mt-[-1.00px] font-normal text-[#c1ced8] text-[10px] tracking-[0] leading-[normal] whitespace-nowrap">
+          <p className="relative w-fit mt-[-1.00px] font-normal text-[#c1ced8] text-[10px] tracking-[0] leading-[normal] whitespace-normal sm:whitespace-nowrap">
             © 2026 bandanaira.com. {t.footer.allRightsReserved}
           </p>
           <p className="w-fit mt-[-1.00px] font-serif font-normal italic text-[#f4b75e] text-[17px] tracking-[0] relative leading-[normal]">

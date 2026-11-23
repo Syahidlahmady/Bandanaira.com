@@ -136,6 +136,9 @@ export const CitizenPortalWorkspace: React.FC<CitizenPortalWorkspaceProps> = ({
                 <option value="Surat Keterangan Usaha Petani Rempah Pala & Cengkeh (SKU)">Surat Keterangan Usaha Petani Rempah Pala &amp; Cengkeh (SKU)</option>
                 <option value="Surat Keterangan Usaha Nelayan Tradisional Banda (SKU-N)">Surat Keterangan Usaha Nelayan Tradisional Banda (SKU-N)</option>
                 <option value="Surat Keterangan Usaha Pengolah / Pedagang Fuli Merah">Surat Keterangan Usaha Pengolah / Pedagang Fuli Merah</option>
+                <option value="Surat Izin / Rekomendasi Usaha Homestay & Penginapan Desa">Surat Izin / Rekomendasi Usaha Homestay &amp; Penginapan Desa</option>
+                <option value="Surat Keterangan Pemandu Wisata Lokal Terdaftar (Tour Guide Komunitas)">Surat Keterangan Pemandu Wisata Lokal Terdaftar (Tour Guide Komunitas)</option>
+                <option value="Surat Lapor Kedatangan & Domisili Tamu Wisatawan (Wajib Lapor 1x24 Jam)">Surat Lapor Kedatangan &amp; Domisili Tamu Wisatawan (Wajib Lapor 1x24 Jam)</option>
                 <option value="Surat Keterangan Domisili Tempat Tinggal">Surat Keterangan Domisili Tempat Tinggal</option>
                 <option value="Surat Pengantar Pembuatan KTP / Kartu Keluarga">Surat Pengantar Pembuatan KTP / Kartu Keluarga</option>
               </select>

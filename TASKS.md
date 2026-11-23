@@ -69,6 +69,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 64: Peta Spasial GIS Fullscreen Edge-to-Edge, Navigasi Minimalis, Pembersihan Seeder, & Optimasi Lighthouse**
 - [x] **Phase 65: Fitur Artikel Sejarah Pokdarwis, Dedicated Public History Page, & Pokdarwis CMS Dashboard**
 - [x] **Phase 66: Galeri Pusaka Snap-Rail Seluler, Thumbnail WebP 12 Cagar Budaya, dan Integrasi Mobile Static Optimization**
+- [x] **Phase 67: Sinkronisasi Penuh CRUD Artikel Sejarah antara Database PostgreSQL, CMS, Reader View, dan Dasbor Utama**
 ---
 
 ## Detailed Task Checklist
@@ -1651,11 +1652,65 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 87.4 Pengujian Kompilasi Produksi:
   - Menjalankan `npm --prefix frontend run build` (`tsc && vite build`) lolos 100% tanpa error TypeScript (2.059 modul ter-bundle dalam 12.14s).
 
+---
 
+## [Phase 88] - Transformasi Workspace Perencana Wisata Cerdas (Conversational AI Concierge) & Integrasi Spasial GIS Riil
+- [x] 88.1 Pembersihan Tuntas Jargon Teknis (SAW, DSS, W1-W5, Normalisasi Matriks):
+  - Mengeliminasi seluruh akronim kaku DSS/SAW dari bilah samping (`DashboardLayout.tsx`), footer (`BandaUnifiedFooter.tsx`), dan dashboard overview (`UserEcosystemDashboard.tsx`).
+  - Mengganti label menjadi "Perencana Wisata Cerdas" / "Asisten Rekomendasi Wisata".
+- [x] 88.2 Rombak Total `SmartPlannerWorkspace.tsx` Menjadi Asisten Percakapan Dua Panel (Split-Screen Workspace):
+  - Mengintegrasikan antarmuka dialog interaktif bergaya kurator lokal Banda Neira dengan quick prompt chips (Sejarah 3 Hari, Snorkeling Lava Flow & Hatta, Homestay Hemat Air RO, Island Hopping, Rute Jalan Kaki 1 Hari).
+  - Menghadirkan Kanvas Rencana Perjalanan (Trip Itinerary Canvas) di panel kanan dengan tab navigasi: Rute Harian (Day-by-Day), Semua Titik Rekomendasi, dan Titik Tersimpan (Bookmarks).
+- [x] 88.3 Integrasi Basis Data Riil (PostgreSQL GIS & Direktori Penginapan):
+  - Mengambil langsung 50 titik spasial aktif dari `GET /api/v1/gis/layers` (Cagar Budaya `LAYER_HERITAGE`, Bahari 4A `LAYER_TOURISM_4A`, Penginapan `LAYER_ACCOMMODATION`).
+  - Memadukan data 6 eco-stay terverifikasi dari `GET /api/v1/tourism/accommodations` (nomor WhatsApp resmi, harga riil, fasilitas air minum RO, dan PLTS tenaga surya).
+  - Menghubungkan titik cagar budaya dengan artikel narasi sejarah dari `community_contents`.
+- [x] 88.4 Interkoneksi Lintas Fitur Ekosistem (Ecosystem Bridge):
+  - Tombol **[Buka di Peta GIS]**: Mengarahkan langsung ke `/gis?feature_id=...&name=...`. Peta Leaflet di `InteractiveMapWorkspace.tsx` secara otomatis melakukan *flyTo* ke titik terpilih dan membuka drawer detail informasi titik tersebut.
+  - Tombol **[Pesan via WhatsApp]**: Membuka obrolan WhatsApp resmi dengan pesan pemesanan terformat otomatis.
+  - Tombol **[Baca Kisah Sejarah]**: Menavigasi langsung ke naskah artikel sejarah di `/sejarah/:slug`.
+  - Tombol **[Salin Rute]** & **[Cetak Rencana]**: Mengekspor ringkasan rencana perjalanan lengkap dengan catatan kurator untuk wisatawan.
+- [x] 88.5 Verifikasi Build & Automated Test:
+  - `npm --prefix frontend run build` lolos 100% tanpa error TypeScript (selesai dalam 7.92 detik).
+  - Test suite pytest backend lolos 100% (13 passed in 44.60 detik).
 
+---
 
+## [Phase 89] - Optimasi Terpadu Sektor Pariwisata (Smart Tourism) & Kependudukan Desa (Community-Based Tourism)
+- [x] 89.1 Integrasi Profesi Pariwisata di Master Data Kependudukan (`OccupationBadge.tsx` & `ResidentsWorkspace.tsx`):
+  - Menambahkan profesi spesifik pariwisata: `'Pengelola Homestay & Eco-Stay'` (🏡), `'Pemandu Wisata Sejarah & Bahari'` (⛵), dan `'Pelaku Usaha Wisata & Cinderamata'` (🎁) ke master `BANDA_OCCUPATIONS`.
+  - Menambahkan filter chip profesi dan visual badge khusus pada dasbor kependudukan agar Kepala Desa dapat memetakan pelaku pariwisata di desanya dalam 1-klik.
+- [x] 89.2 Layanan Administrasi Surat Pariwisata Desa (`CitizenPortalWorkspace.tsx` & `LettersWorkspace.tsx`):
+  - Menambahkan jenis permohonan surat pariwisata desa pada formulir mandiri warga: *Surat Izin / Rekomendasi Usaha Homestay & Penginapan Desa*, *Surat Keterangan Pemandu Wisata Lokal Terdaftar*, dan *Surat Lapor Kedatangan & Domisili Tamu Wisatawan (Wajib Lapor 1x24 Jam)*.
+  - Memperbarui template cetak surat resmi desa di `LettersWorkspace` untuk mendukung rekomendasi usaha pariwisata warga.
+- [x] 89.3 Parameter Lingkup Desa & Pencarian pada API Penginapan (`GET /tourism/accommodations` & `/penginapan`):
+  - Menambahkan parameter query `village` dan `search` dengan operator SQL `or_` pada alamat, nama, dan deskripsi penginapan.
+- [x] 89.4 Pengawasan Reservasi Tamu Desa (Wajib Lapor 1x24 Jam) pada API Pemesanan (`GET /tourism/bookings` & `/pemesanan`):
+  - Menerapkan territorial scoping bagi aparatur desa (`ROLE_VILLAGE_OFFICER` / Kepala Desa) yang terikat ke desa tertentu (`current_user.village`).
+  - Menambahkan parameter query `search` pada buku reservasi tamu untuk pelacakan tamu menginap berdasarkan nama atau kode booking.
+- [x] 89.5 Pencarian Pemandu Wisata Lokal (`GET /tourism/guides`):
+  - Menambahkan parameter query `search` untuk pencarian pemandu berlisensi berdasarkan nama, keahlian khusus, bahasa, atau biografi.
+- [x] 89.6 Antarmuka Penginapan, Tamu & Pemandu (`TourismEcoStayWorkspace.tsx`):
+  - Menambahkan filter chip desa (*Semua Desa, Nassau, Dwiwarna, Rajawali, Lonthoir, Kampung Baru/Hatta, Pulau Ay*) dan search bar kata kunci pada katalog penginapan.
+  - Menambahkan search bar dan widget monitoring *Lingkup Wilayah Desa* pada tab reservasi tamu khusus bagi operator/kepala desa.
+  - Menambahkan search bar kata kunci pada katalog direktori pemandu wisata.
+- [x] 89.7 Pengujian & Verifikasi Menyeluruh:
+  - Menambahkan pengujian di `backend/tests/test_tourism.py` (`test_filter_accommodations_by_village_and_search`, `test_list_bookings_village_scoping_and_search`, `test_list_tour_guides_search`).
+  - 100% tes pariwisata (16 passed) dan kependudukan (10 passed) lulus sempurna.
+  - Build produksi frontend Vite sukses 100% (2.044 modul, exit code 0).
 
+---
 
-
-
-
+## [Phase 90] - Penghapusan Fitur Registrasi Mandiri & Eliminasi DSS/SAW pada Ruang Kerja Warga
+- [x] 90.1 Penghapusan Fitur Registrasi Mandiri (Zero Self-Register):
+  - Menghapus komponen `RegisterSection.tsx` secara permanen.
+  - Menghapus tipe `register`, rute `/register`, dan `/daftar` (otomatis dialihkan ke login kependudukan `/population`).
+  - Menghapus seluruh tombol pendaftaran akun baru pada `HeroSection.tsx`, `BandaUnifiedNavbar.tsx`, `BandaUnifiedFooter.tsx`, dan `LandingFooterSection.tsx`.
+  - Memperbarui `LoginSection.tsx` dengan penegasan resmi: *"Akun kependudukan terintegrasi NIK diterbitkan secara resmi melalui Kantor Desa."*
+- [x] 90.2 Eliminasi DSS/SAW pada Ruang Kerja Warga Desa:
+  - Menyembunyikan menu *Perencana Wisata Cerdas* (`smart_planner`) dari bilah samping `DashboardLayout.tsx` khusus untuk peran Warga (`isResident`), Petani, dan Poktan.
+  - Membersihkan istilah teknis "DSS SAW" dari kartu transparansi kependudukan di `UserEcosystemDashboard.tsx`.
+- [x] 90.3 Pengujian & Verifikasi Menyeluruh:
+  - 100% build produksi frontend lolos tanpa error TypeScript (2.047 modul terkompilasi dalam 18.28s).
+  - 100% automated test backend lolos (26 passed dalam 83.58s).
+  - Backend dan frontend merespons HTTP 200 OK.

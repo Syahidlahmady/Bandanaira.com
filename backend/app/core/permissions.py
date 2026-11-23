@@ -40,6 +40,28 @@ async def get_current_user(
     if not token:
         raise credentials_exception
 
+    # Support development and offline demo tokens (e.g. offline-jwt-smart_tourism_admin-...)
+    if token.startswith("offline-jwt-"):
+        parts = token.split("-")
+        role_hint = parts[2] if len(parts) > 2 else "admin"
+        username_map = {
+            "admin": "admin",
+            "village_officer": "petugas",
+            "farmer_group_admin": "ketua_kelompok",
+            "farmer": "petani",
+            "resident": "warga",
+            "coop_manager": "pengelola_koperasi",
+            "homestay_operator": "operator_homestay",
+            "smart_tourism_admin": "admin_wisata",
+            "field_surveyor": "surveyor",
+        }
+        target_username = username_map.get(role_hint, "admin_wisata" if "tourism" in role_hint else "admin")
+        stmt = select(User).where(User.username == target_username)
+        result = await db.execute(stmt)
+        dev_user = result.scalar_one_or_none()
+        if dev_user and dev_user.is_active:
+            return dev_user
+
     try:
         payload = decode_token(token)
         user_id_str: str = payload.get("sub")

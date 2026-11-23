@@ -403,6 +403,9 @@ async def create_spatial_feature(
 
 
 @router.post("/seed-reset")
+@router.get("/seed-reset")
+@peta_alias_router.post("/seed-reset")
+@peta_alias_router.get("/seed-reset")
 async def reset_gis_seeds(
     db: AsyncSession = Depends(get_db),
 ) -> Dict[str, Any]:

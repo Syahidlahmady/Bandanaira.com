@@ -1,4 +1,6 @@
 import { offlineDB } from '../offline/db'
+import { getApiBase } from './apiConfig'
+import { FALLBACK_SPATIAL_FEATURES } from '../data/bandaFeaturesData'
 
 export interface GeoJSONGeometry {
   type: string
@@ -9,7 +11,7 @@ export interface GeoJSONProperties {
   id: string
   name: string
   layer_type: string
-  category: 'publik' | 'resiliensi'
+  category: 'publik' | 'resiliensi' | 'zona_wilayah'
   island_name: string
   description?: string
   latitude: number
@@ -89,14 +91,6 @@ export interface GeocodingResponse {
   results: GeocodingResult[]
 }
 
-const getApiBase = () => {
-  const envUrl = import.meta.env?.VITE_API_BASE_URL
-  if (envUrl) return envUrl
-  return typeof window !== 'undefined'
-    ? `http://${window.location.hostname}:8005/api/v1`
-    : 'http://localhost:8005/api/v1'
-}
-
 export const gisService = {
   getLayers: async (params?: {
     layers?: string
@@ -117,7 +111,7 @@ export const gisService = {
       const data: GeoJSONFeatureCollection = await res.json()
 
       // Automatically cache full dataset in IndexedDB for seamless offline availability
-      if (isFullDataset) {
+      if (isFullDataset && data && data.features && data.features.length > 0) {
         try {
           await offlineDB.cacheData('gis_layers_all', data)
         } catch (cacheErr) {
@@ -127,13 +121,22 @@ export const gisService = {
 
       return data
     } catch (networkErr) {
-      // Offline fallback: try reading from IndexedDB
-      console.warn('Network fetch GIS gagal atau offline, mencoba membaca cache offline IndexedDB...', networkErr)
-      const cached = await offlineDB.getCachedData<GeoJSONFeatureCollection>('gis_layers_all')
-      if (cached && cached.features) {
-        return cached
+      // Offline fallback: try reading from IndexedDB or authentic fallback features
+      console.warn('Network fetch GIS gagal atau offline, menggunakan cache IndexedDB atau data autentik...', networkErr)
+      try {
+        const cached = await offlineDB.getCachedData<GeoJSONFeatureCollection>('gis_layers_all')
+        if (cached && cached.features && cached.features.length > 0) {
+          return cached
+        }
+      } catch {}
+
+      // Fallback to 89 authentic calibrated features so points NEVER disappear
+      return {
+        type: 'FeatureCollection',
+        features: FALLBACK_SPATIAL_FEATURES,
+        total_features: FALLBACK_SPATIAL_FEATURES.length,
+        active_layers: Array.from(new Set(FALLBACK_SPATIAL_FEATURES.map((f) => f.properties.layer_type))),
       }
-      throw new Error('Peta tidak dapat dimuat: Anda sedang offline dan data belum tersimpan di cache lokal perangkat.')
     }
   },
 
@@ -179,8 +182,15 @@ export const gisService = {
       body: JSON.stringify(data),
     })
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      throw new Error(err.detail || 'Gagal menambahkan titik spasial')
+      const text = await res.text().catch(() => '')
+      let detail = ''
+      try {
+        const json = JSON.parse(text)
+        detail = json.detail || json.message
+      } catch {
+        detail = text
+      }
+      throw new Error(detail || `Gagal menambahkan titik spasial (${res.status})`)
     }
     return res.json()
   },
@@ -195,8 +205,15 @@ export const gisService = {
       body: JSON.stringify(data),
     })
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      throw new Error(err.detail || 'Gagal memperbarui titik spasial')
+      const text = await res.text().catch(() => '')
+      let detail = ''
+      try {
+        const json = JSON.parse(text)
+        detail = json.detail || json.message
+      } catch {
+        detail = text
+      }
+      throw new Error(detail || `Gagal memperbarui titik spasial (${res.status})`)
     }
     return res.json()
   },
@@ -209,8 +226,15 @@ export const gisService = {
       },
     })
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      throw new Error(err.detail || 'Gagal menghapus titik spasial')
+      const text = await res.text().catch(() => '')
+      let detail = ''
+      try {
+        const json = JSON.parse(text)
+        detail = json.detail || json.message
+      } catch {
+        detail = text
+      }
+      throw new Error(detail || `Gagal menghapus titik spasial (${res.status})`)
     }
     return res.json()
   },

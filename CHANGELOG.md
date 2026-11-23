@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Sinkronisasi Penuh CRUD Artikel Sejarah antara Backend, CMS, Reader View, dan Dasbor Utama (Phase 66)**:
+  - **Penerapan Migrasi Database & Seeding Nyata**: Menjalankan migrasi Alembic `014_community_contents_table` pada database PostgreSQL dan menyemai akun resmi `admin_wisata` (`smart_tourism_admin`).
+  - **Resolusi Entitas Fleksibel di Backend**: Memperbarui endpoint `PUT /api/v1/tourism/community-contents/{content_id}` dan `DELETE` untuk mendukung resolusi naskah melalui UUID, `content_code` (e.g. `CNT-ART-006`), maupun `slug`, sekaligus mempertahankan kompatibilitas validasi UUID (status 400/404).
+  - **Sinkronisasi Real-Time Lintas Komponen**:
+    - `PokdarwisHistoryCms.tsx`: Memancarkan event `banda_articles_updated` dan `storage` saat aksi simpan/sunting/hapus dieksekusi.
+    - `UserEcosystemDashboard.tsx`: Menjadikan metrik dan daftar ringkasan naskah dinamis terhadap data artikel yang aktif, terhubung langsung ke API dan event pembaruan.
+    - `HistoryArticlesWorkspace.tsx`: Memuat data naskah mutakhir dari cache seketika pada saat render awal dan mendengarkan event sinkronisasi real-time.
 - **Fitur Artikel Sejarah Pokdarwis, Public History Reader Workspace, & CMS Dashboard (Phase 65)**:
   - **Penyederhanaan Total Dasbor Admin Wisata / Pokdarwis Khusus Draf Artikel Sejarah (`TourismEcoStayWorkspace.tsx`, `DashboardLayout.tsx`, `UserEcosystemDashboard.tsx`)**:
     - Menghilangkan sepenuhnya kerumitan tampilan tab lama yang bercampur baur (Kurasi Cagar Budaya 6-QC, SOP 6-Tahap, Audio Guide 177 situs, tarif homestay, dan pencarian reservasi) saat aktor `smart_tourism_admin` / `admin_wisata` membuka dasbor.

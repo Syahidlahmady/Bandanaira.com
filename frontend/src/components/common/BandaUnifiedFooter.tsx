@@ -2,14 +2,12 @@ import React from 'react'
 
 export interface BandaUnifiedFooterProps {
   onNavigateTab?: (tab: any) => void
-  onOpenRegister?: () => void
   onOpenLogin?: () => void
   onOpenQuickLogin?: () => void
 }
 
 export const BandaUnifiedFooter: React.FC<BandaUnifiedFooterProps> = ({
   onNavigateTab,
-  onOpenRegister,
   onOpenLogin,
   onOpenQuickLogin,
 }) => {
@@ -72,7 +70,7 @@ export const BandaUnifiedFooter: React.FC<BandaUnifiedFooterProps> = ({
                   Peta Spasial Vektor
                 </button>
                 <button type="button" onClick={() => onNavigateTab && onNavigateTab('smart_planner')} className="text-left hover:text-white transition-colors">
-                  Kalkulator SAW Wisata
+                  Perencana Wisata Cerdas
                 </button>
                 <button type="button" onClick={() => onNavigateTab && onNavigateTab('tourism')} className="text-left hover:text-white transition-colors">
                   Direktori Eco-Stay
@@ -105,11 +103,6 @@ export const BandaUnifiedFooter: React.FC<BandaUnifiedFooterProps> = ({
                 Akses Akun
               </h4>
               <nav className="flex flex-col gap-2 text-xs text-[#c1ced8]">
-                {onOpenRegister && (
-                  <button type="button" onClick={onOpenRegister} className="text-left hover:text-white transition-colors font-medium text-amber-300">
-                    Daftar Akun Baru
-                  </button>
-                )}
                 {onOpenLogin && (
                   <button type="button" onClick={onOpenLogin} className="text-left hover:text-white transition-colors">
                     Masuk / Login

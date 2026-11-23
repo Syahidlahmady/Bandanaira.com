@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.app.database.session import get_db
 from backend.app.core.permissions import (
@@ -230,19 +230,37 @@ async def ensure_tour_guides_seeded(db: AsyncSession):
 )
 async def list_accommodations(
     island: Optional[str] = Query(None, description="Filter nama pulau"),
+    village: Optional[str] = Query(None, description="Filter nama desa"),
+    search: Optional[str] = Query(None, description="Pencarian kata kunci"),
     type: Optional[str] = Query(None, description="HOMESTAY, HOTEL, VILA, CABIN"),
     max_price: Optional[float] = Query(None, description="Batas harga maksimal per malam"),
     has_ro_water: Optional[bool] = Query(None, description="Filter fasilitas air RO"),
     has_solar: Optional[bool] = Query(None, description="Filter panel surya"),
     db: AsyncSession = Depends(get_db),
 ):
-    """Mengambil katalog penginapan terverifikasi dengan fitur filter ramah lingkungan."""
+    """Mengambil katalog penginapan terverifikasi dengan fitur filter ramah lingkungan dan lingkup desa."""
     await ensure_accommodations_seeded(db)
 
     query = select(Accommodation).order_by(Accommodation.price_per_night_rp)
 
-    if island:
+    if isinstance(island, str) and island:
         query = query.where(Accommodation.island_name == island)
+    if isinstance(village, str) and village:
+        query = query.where(
+            or_(
+                Accommodation.address.ilike(f"%{village}%"),
+                Accommodation.name.ilike(f"%{village}%"),
+                Accommodation.description.ilike(f"%{village}%"),
+            )
+        )
+    if isinstance(search, str) and search:
+        query = query.where(
+            or_(
+                Accommodation.name.ilike(f"%{search}%"),
+                Accommodation.address.ilike(f"%{search}%"),
+                Accommodation.description.ilike(f"%{search}%"),
+            )
+        )
     if type:
         query = query.where(Accommodation.type == type.upper())
     if max_price:
@@ -544,23 +562,53 @@ async def get_booking_by_code(
 )
 async def list_bookings(
     accommodation_id: Optional[str] = Query(None, description="Filter berdasarkan ID penginapan"),
+    search: Optional[str] = Query(None, description="Filter nama tamu, kode booking, atau penginapan"),
     limit: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(BOOKINGS_VIEW_ROLES),
 ):
-    """Mengambil riwayat dan daftar reservasi penginapan yang masuk (khusus operator/admin terautentikasi)."""
+    """Mengambil riwayat dan daftar reservasi penginapan yang masuk (khusus operator/admin terautentikasi dengan lingkup desa)."""
     stmt = (
         select(Booking, Accommodation.name)
         .join(Accommodation, Booking.accommodation_id == Accommodation.id)
         .order_by(desc(Booking.created_at))
         .limit(limit)
     )
+
+    user_role_names = {r.name for r in current_user.roles}
+    is_village_officer = (
+        ROLE_VILLAGE_OFFICER in user_role_names
+        or "kepala_desa" in user_role_names
+        or "petugas_desa" in user_role_names
+    )
+    is_admin = (
+        current_user.is_superuser
+        or ROLE_ADMIN in user_role_names
+        or ROLE_SMART_TOURISM_ADMIN in user_role_names
+    )
+    if is_village_officer and not is_admin and current_user.village:
+        stmt = stmt.where(
+            or_(
+                Accommodation.address.ilike(f"%{current_user.village}%"),
+                Accommodation.name.ilike(f"%{current_user.village}%"),
+            )
+        )
+
     if accommodation_id:
         try:
             acc_uuid = uuid.UUID(accommodation_id)
             stmt = stmt.where(Booking.accommodation_id == acc_uuid)
         except ValueError:
             pass
+
+    if isinstance(search, str) and search:
+        stmt = stmt.where(
+            or_(
+                Booking.booking_code.ilike(f"%{search}%"),
+                Booking.guest_name.ilike(f"%{search}%"),
+                Accommodation.name.ilike(f"%{search}%"),
+            )
+        )
     res = await db.execute(stmt)
     rows = res.all()
     results = []
@@ -616,6 +664,7 @@ async def get_heritage_catalog(
 )
 async def list_tour_guides(
     island: Optional[str] = Query(None, description="Filter berdasarkan pulau basis"),
+    search: Optional[str] = Query(None, description="Pencarian nama, keahlian, atau bahasa"),
     is_verified: Optional[bool] = Query(None, description="Filter status verifikasi"),
     db: AsyncSession = Depends(get_db),
 ):
@@ -625,6 +674,16 @@ async def list_tour_guides(
     stmt = select(TourGuide).order_by(desc(TourGuide.rating))
     if island:
         stmt = stmt.where(TourGuide.island_base.ilike(f"%{island}%"))
+    if search:
+        stmt = stmt.where(
+            or_(
+                TourGuide.name.ilike(f"%{search}%"),
+                TourGuide.specialties.ilike(f"%{search}%"),
+                TourGuide.languages.ilike(f"%{search}%"),
+                TourGuide.bio.ilike(f"%{search}%"),
+                TourGuide.island_base.ilike(f"%{search}%"),
+            )
+        )
     if is_verified is not None:
         stmt = stmt.where(TourGuide.is_verified == is_verified)
 
@@ -787,6 +846,8 @@ penginapan_alias_router = APIRouter(tags=["Penginapan & Pemesanan (SRS 11)"])
 )
 async def list_penginapan_alias(
     island: Optional[str] = Query(None),
+    village: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
     type: Optional[str] = Query(None),
     max_price: Optional[float] = Query(None),
     has_ro_water: Optional[bool] = Query(None),
@@ -795,6 +856,8 @@ async def list_penginapan_alias(
 ):
     return await list_accommodations(
         island=island,
+        village=village,
+        search=search,
         type=type,
         max_price=max_price,
         has_ro_water=has_ro_water,
@@ -823,11 +886,18 @@ async def create_pemesanan_alias(
 )
 async def list_pemesanan_alias(
     accommodation_id: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
     limit: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(BOOKINGS_VIEW_ROLES),
 ):
-    return await list_bookings(accommodation_id=accommodation_id, limit=limit, db=db, current_user=current_user)
+    return await list_bookings(
+        accommodation_id=accommodation_id,
+        search=search,
+        limit=limit,
+        db=db,
+        current_user=current_user
+    )
 
 
 # =======================================================================
@@ -1026,15 +1096,28 @@ async def update_community_content(
     current_user: User = Depends(GUIDE_CMS_ROLES),
 ):
     """Memperbarui draf konten, mengubah tahapan SOP manajemen konten, atau memvalidasi 6-Point Quality Checklist."""
+    content = None
+    is_valid_uuid = False
     try:
         c_uuid = uuid.UUID(content_id)
+        is_valid_uuid = True
+        stmt = select(CommunityContent).where(CommunityContent.id == c_uuid)
+        res = await db.execute(stmt)
+        content = res.scalar_one_or_none()
     except ValueError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID Konten tidak valid.")
+        pass
 
-    stmt = select(CommunityContent).where(CommunityContent.id == c_uuid)
-    res = await db.execute(stmt)
-    content = res.scalar_one_or_none()
     if not content:
+        stmt = select(CommunityContent).where(
+            (CommunityContent.content_code == content_id.upper().strip()) |
+            (CommunityContent.slug == content_id.lower().strip())
+        )
+        res = await db.execute(stmt)
+        content = res.scalar_one_or_none()
+
+    if not content:
+        if not is_valid_uuid:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID Konten tidak valid.")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Konten tidak ditemukan.")
 
     update_data = payload.model_dump(exclude_unset=True)
@@ -1058,15 +1141,28 @@ async def delete_community_content(
     current_user: User = Depends(GUIDE_CMS_ROLES),
 ):
     """Menghapus item konten dari Bank Konten CMS (khusus admin / pengelola Smart Tourism)."""
+    content = None
+    is_valid_uuid = False
     try:
         c_uuid = uuid.UUID(content_id)
+        is_valid_uuid = True
+        stmt = select(CommunityContent).where(CommunityContent.id == c_uuid)
+        res = await db.execute(stmt)
+        content = res.scalar_one_or_none()
     except ValueError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID Konten tidak valid.")
+        pass
 
-    stmt = select(CommunityContent).where(CommunityContent.id == c_uuid)
-    res = await db.execute(stmt)
-    content = res.scalar_one_or_none()
     if not content:
+        stmt = select(CommunityContent).where(
+            (CommunityContent.content_code == content_id.upper().strip()) |
+            (CommunityContent.slug == content_id.lower().strip())
+        )
+        res = await db.execute(stmt)
+        content = res.scalar_one_or_none()
+
+    if not content:
+        if not is_valid_uuid:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID Konten tidak valid.")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Konten tidak ditemukan.")
 
     await db.delete(content)

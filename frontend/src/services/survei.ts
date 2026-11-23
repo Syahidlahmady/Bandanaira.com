@@ -74,15 +74,7 @@ export interface SurveyStats {
   by_island: Record<string, number>
 }
 
-function getApiBase(): string {
-  const envUrl = import.meta.env.VITE_API_BASE_URL
-  if (envUrl && envUrl.startsWith('http')) {
-    return envUrl.replace(/\/$/, '')
-  }
-  const protocol = window.location.protocol
-  const host = window.location.hostname
-  return `${protocol}//${host}:8005/api/v1`
-}
+import { getApiBase } from './apiConfig'
 
 export async function submitSurvey(payload: SurveyInput): Promise<SurveyItem> {
   const resp = await fetch(`${getApiBase()}/survei/mentah`, {

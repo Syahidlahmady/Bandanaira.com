@@ -65,11 +65,7 @@ export interface CitizenSecureProfile {
   blind_index_algorithm: string
 }
 
-const getApiBase = () => {
-  return typeof window !== 'undefined'
-    ? `http://${window.location.hostname}:8005/api/v1`
-    : 'http://localhost:8005/api/v1'
-}
+import { getApiBase } from './apiConfig'
 
 export const securityService = {
   getAuditReport: async (): Promise<SecurityAuditReport> => {

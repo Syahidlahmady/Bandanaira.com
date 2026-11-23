@@ -19,7 +19,6 @@ export interface LoginSectionProps {
   onOpenTourism?: () => void
   onOpenGIS?: () => void
   onOpenSurvei?: () => void
-  onOpenRegister?: () => void
   onBackToHome?: () => void
   loading: boolean
   error: string | null
@@ -326,7 +325,6 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
   setPassword,
   onLogin,
   onQuickLogin,
-  onOpenRegister,
   onBackToHome,
   loading,
   error,
@@ -508,15 +506,8 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
           </button>
         </form>
 
-        <p className="relative self-stretch h-11 flex items-center justify-center gap-1.5 font-normal text-[13px] text-center tracking-[0] leading-[22.1px]">
-          <span className="text-[#627085]">Belum punya akun? </span>
-          <button
-            type="button"
-            onClick={onOpenRegister}
-            className="font-semibold text-[#0f2c59] hover:underline bg-transparent border-0 p-0 cursor-pointer"
-          >
-            Daftar sekarang
-          </button>
+        <p className="relative self-stretch py-2 px-3 rounded-lg bg-slate-50 border border-slate-200/80 flex items-center justify-center text-[12px] text-center text-[#627085] leading-relaxed my-2">
+          <span>Akun kependudukan terintegrasi NIK diterbitkan secara resmi melalui Kantor Desa.</span>
         </p>
 
         <div className="gap-4 pt-[22px] pb-0 px-0 border-t border-solid border-slate-200 flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">

@@ -58,8 +58,10 @@ import {
   TourismSubTab,
   getPreferredTourismSubTab,
   setPreferredTourismSubTab,
+  CommunityContentItem,
 } from '../services/tourism'
-import { PUBLIC_SAW_DESTINATIONS } from '../components/landing/TourismSawSection'
+import { gisService, GeoJSONFeature } from '../services/gis'
+import { getFeatureMedia } from './InteractiveMapWorkspace'
 
 export interface TourismEcoStayWorkspaceProps {
   currentUser?: any
@@ -76,6 +78,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
   const [activeTab, setActiveTab] = useState<TourismSubTab>(() => getPreferredTourismSubTab())
   const [destIslandFilter, setDestIslandFilter] = useState<string>('')
   const [destCategoryFilter, setDestCategoryFilter] = useState<string>('')
+  const [destSearchQuery, setDestSearchQuery] = useState<string>('')
+  const [gisFeatures, setGisFeatures] = useState<GeoJSONFeature[]>([])
+  const [loadingGis, setLoadingGis] = useState<boolean>(true)
+  const [articles, setArticles] = useState<CommunityContentItem[]>([])
 
   // Role permissions
   const userRoleNames: string[] = currentUser
@@ -92,6 +98,8 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
   const [accommodations, setAccommodations] = useState<AccommodationItem[]>([])
   const [loadingAccs, setLoadingAccs] = useState<boolean>(true)
   const [islandFilter, setIslandFilter] = useState<string>('')
+  const [villageFilter, setVillageFilter] = useState<string>('')
+  const [accSearch, setAccSearch] = useState<string>('')
   const [typeFilter, setTypeFilter] = useState<string>('')
   const [filterRoOnly, setFilterRoOnly] = useState<boolean>(false)
   const [filterSolarOnly, setFilterSolarOnly] = useState<boolean>(false)
@@ -100,6 +108,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
   const [guides, setGuides] = useState<TourGuideItem[]>([])
   const [loadingGuides, setLoadingGuides] = useState<boolean>(false)
   const [guideIslandFilter, setGuideIslandFilter] = useState<string>('')
+  const [guideSearch, setGuideSearch] = useState<string>('')
+
+  // Bookings State
+  const [bookingSearch, setBookingSearch] = useState<string>('')
 
   // CMS State
   const [cmsSubTab, setCmsSubTab] = useState<'accommodations' | 'guides' | 'community_contents' | 'history_articles'>('accommodations')
@@ -173,7 +185,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
 
   // Derived KPI Metrics
   const kpiStats = useMemo(() => {
-    const totalDestinations = PUBLIC_SAW_DESTINATIONS.length
+    const totalDestinations = gisFeatures.length || 50
     const totalHeritage = heritageSites.length > 0 ? heritageSites.length : 177
     const totalAccs = accommodations.length
     const totalRooms = accommodations.reduce((acc, curr) => acc + (curr.rooms_available || 0), 0)
@@ -270,19 +282,39 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
     return () => window.removeEventListener('banda:tourism-subtab', handleSubTabChange)
   }, [])
 
+  const loadGisAndArticles = async () => {
+    setLoadingGis(true)
+    try {
+      const [layersRes, artRes] = await Promise.all([
+        gisService.getLayers({ layers: 'LAYER_HERITAGE,LAYER_TOURISM_4A' }).catch(() => ({ type: 'FeatureCollection' as const, features: [] })),
+        tourismService.listCommunityContents({ content_type: 'ARTICLE' }).catch(() => []),
+      ])
+      setGisFeatures(layersRes.features || [])
+      setArticles(artRes || [])
+    } catch (err) {
+      console.warn('Gagal memuat titik GIS spasial:', err)
+    } finally {
+      setLoadingGis(false)
+    }
+  }
+
   useEffect(() => {
+    loadGisAndArticles()
     loadAccommodations()
     loadHeritage()
     loadGuides()
     if (canAccessBookings) {
       loadBookings()
     }
-  }, [islandFilter, typeFilter, filterRoOnly, filterSolarOnly, heritageCategory, guideIslandFilter, canAccessBookings])
+  }, [islandFilter, villageFilter, accSearch, typeFilter, filterRoOnly, filterSolarOnly, heritageCategory, guideIslandFilter, guideSearch, bookingSearch, canAccessBookings])
 
   const loadGuides = async () => {
     setLoadingGuides(true)
     try {
-      const data = await tourismService.listTourGuides({ island: guideIslandFilter || undefined })
+      const data = await tourismService.listTourGuides({
+        island: guideIslandFilter || undefined,
+        search: guideSearch || undefined,
+      })
       setGuides(data)
     } catch {
       // ignore
@@ -295,7 +327,9 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
     if (!canAccessBookings) return
     setLoadingBookings(true)
     try {
-      const data = await tourismService.listBookings()
+      const data = await tourismService.listBookings({
+        search: bookingSearch || undefined,
+      })
       setBookings(data)
     } catch {
       // ignore
@@ -309,6 +343,8 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
     try {
       const data = await tourismService.listAccommodations({
         island: islandFilter || undefined,
+        village: villageFilter || undefined,
+        search: accSearch || undefined,
         type: typeFilter || undefined,
         has_ro_water: filterRoOnly ? true : undefined,
         has_solar: filterSolarOnly ? true : undefined,
@@ -728,7 +764,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
           }`}
         >
-          <MapPin size={14} /> 🏝️ Tempat Wisata ({PUBLIC_SAW_DESTINATIONS.length})
+          <MapPin size={14} /> 🏝️ Tempat Wisata ({gisFeatures.length || 50})
         </button>
 
         <button
@@ -1031,184 +1067,264 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
             ))}
           </div>
         </div>
+
+        <button
+          type="button"
+          onClick={() => handleSelectSubTab('lookup')}
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+            activeTab === 'lookup'
+              ? 'bg-amber-100 text-amber-900 font-bold border border-amber-300'
+              : 'text-stone-500 hover:text-stone-800 hover:bg-stone-50'
+          }`}
+        >
+          <Search size={13} />
+          <span>Lacak Kode Reservasi</span>
+        </button>
       </div>
 
-      {/* TAB 0: TEMPAT WISATA & DESTINASI UNGGULAN */}
+      {/* TAB 0: DESTINASI & CAGAR BUDAYA (DATA SPASIAL POSTGIS RIIL) */}
       {activeTab === 'destinations' && (() => {
-        const filteredDestinations = PUBLIC_SAW_DESTINATIONS.filter((d) => {
-          if (destIslandFilter && d.island !== destIslandFilter) return false
-          if (destCategoryFilter && d.category !== destCategoryFilter) return false
+        const filteredFeatures = gisFeatures.filter((feat) => {
+          const name = feat.properties.name || ''
+          const island = feat.properties.island_name || ''
+          const layer = feat.properties.layer_type || ''
+          const desc = feat.properties.description || ''
+
+          if (destIslandFilter && island !== destIslandFilter) return false
+          if (destCategoryFilter) {
+            if (destCategoryFilter === 'HERITAGE' && layer !== 'LAYER_HERITAGE') return false
+            if (destCategoryFilter === 'TOURISM' && layer !== 'LAYER_TOURISM_4A') return false
+          }
+          if (destSearchQuery) {
+            const q = destSearchQuery.toLowerCase()
+            if (!name.toLowerCase().includes(q) && !desc.toLowerCase().includes(q) && !island.toLowerCase().includes(q)) {
+              return false
+            }
+          }
           return true
         })
 
         return (
-          <div>
-            {/* Filter Bar */}
-            <div className="card" style={{ padding: '1rem 1.25rem', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '14px', marginBottom: '1.25rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', boxShadow: '0 2px 8px rgba(8, 29, 53, 0.04)' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#081D35', textTransform: 'uppercase' }}>
+          <div className="space-y-5">
+            {/* Filter & Search Bar */}
+            <div className="bg-white p-4 rounded-xl border border-stone-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2 flex-1 min-w-[240px] max-w-md">
+                <div className="relative w-full">
+                  <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+                  <input
+                    type="text"
+                    value={destSearchQuery}
+                    onChange={(e) => setDestSearchQuery(e.target.value)}
+                    placeholder="Cari cagar budaya, benteng, spot selam..."
+                    className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-stone-300 focus:outline-none focus:border-[#081D35] focus:ring-1 focus:ring-[#081D35] bg-stone-50/50"
+                  />
+                  {destSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setDestSearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 text-xs"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 mr-1">
+                  Kategori:
+                </span>
+                {[
+                  { label: 'Semua', val: '' },
+                  { label: 'Cagar Budaya & Benteng', val: 'HERITAGE' },
+                  { label: 'Bahari & Alam', val: 'TOURISM' },
+                ].map((cat) => (
+                  <button
+                    type="button"
+                    key={cat.val || 'all'}
+                    onClick={() => setDestCategoryFilter(cat.val)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer ${
+                      destCategoryFilter === cat.val
+                        ? 'bg-[#081D35] text-[#F4B75E]'
+                        : 'bg-stone-100 hover:bg-stone-200 text-stone-700'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Island Filter Pills */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 shrink-0">
                 Pulau:
               </span>
               {['', 'Pulau Neira', 'Banda Api', 'Banda Besar', 'Pulau Hatta', 'Pulau Ai', 'Pulau Rhun'].map((isl) => (
                 <button
                   type="button"
-                  key={isl || 'semua-pulau'}
+                  key={isl || 'all-island'}
                   onClick={() => setDestIslandFilter(isl)}
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.35rem 0.75rem',
-                    borderRadius: '20px',
-                    border: destIslandFilter === isl ? '1px solid #081D35' : '1px solid #E2E8F0',
-                    background: destIslandFilter === isl ? '#081D35' : '#F8FAFC',
-                    color: destIslandFilter === isl ? '#F4B75E' : '#64748B',
-                    cursor: 'pointer',
-                    fontWeight: 700,
-                    transition: 'all 0.15s ease',
-                  }}
+                  className={`px-3 py-1 rounded-full shrink-0 font-medium transition cursor-pointer ${
+                    destIslandFilter === isl
+                      ? 'bg-amber-500 text-[#081D35] font-bold shadow-xs'
+                      : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'
+                  }`}
                 >
                   {isl || 'Semua Pulau'}
                 </button>
               ))}
-
-              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#081D35', textTransform: 'uppercase', marginLeft: '0.5rem' }}>
-                Kategori:
-              </span>
-              {['', 'Bahari & Selam', 'Sejarah & Benteng', 'Alam & Rempah'].map((cat) => (
-                <button
-                  type="button"
-                  key={cat || 'semua-kategori'}
-                  onClick={() => setDestCategoryFilter(cat)}
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.35rem 0.75rem',
-                    borderRadius: '20px',
-                    border: destCategoryFilter === cat ? '1px solid #081D35' : '1px solid #E2E8F0',
-                    background: destCategoryFilter === cat ? '#081D35' : '#F8FAFC',
-                    color: destCategoryFilter === cat ? '#F4B75E' : '#64748B',
-                    cursor: 'pointer',
-                    fontWeight: 700,
-                    transition: 'all 0.15s ease',
-                  }}
-                >
-                  {cat || 'Semua Kategori'}
-                </button>
-              ))}
             </div>
 
-            {filteredDestinations.length === 0 ? (
-              <div className="card" style={{ textAlign: 'center', padding: '2.5rem 1rem', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '16px' }}>
-                <MapPin size={36} color="#64748B" style={{ margin: '0 auto 0.6rem' }} />
-                <h3 style={{ margin: 0, color: '#081D35', fontSize: '1.05rem' }}>Tidak Ada Destinasi untuk Filter Ini</h3>
-                <p style={{ margin: '0.35rem 0 1rem', color: '#64748B', fontSize: '0.82rem' }}>
-                  Silakan pilih kombinasi pulau atau kategori wisata lainnya.
-                </p>
+            {/* Loading State */}
+            {loadingGis ? (
+              <div className="bg-white rounded-xl border border-stone-200 p-12 text-center text-stone-500">
+                <RefreshCw size={24} className="animate-spin text-amber-500 mx-auto mb-3" />
+                <p className="text-sm font-medium text-stone-700">Memuat destinasi wisata...</p>
+              </div>
+            ) : filteredFeatures.length === 0 ? (
+              <div className="bg-white rounded-xl border border-stone-200 p-12 text-center text-stone-500">
+                <Landmark size={32} className="text-stone-400 mx-auto mb-3" />
+                <h3 className="text-base font-bold text-stone-800">Tidak ada destinasi yang cocok</h3>
+                <p className="text-xs text-stone-500 mt-1">Coba ubah kata kunci pencarian atau filter pulau.</p>
                 <button
                   type="button"
                   onClick={() => {
                     setDestIslandFilter('')
                     setDestCategoryFilter('')
+                    setDestSearchQuery('')
                   }}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    borderRadius: '10px',
-                    border: 'none',
-                    background: '#081D35',
-                    color: '#F4B75E',
-                    fontSize: '0.78rem',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                  }}
+                  className="mt-4 px-4 py-2 rounded-lg bg-[#081D35] text-[#F4B75E] text-xs font-bold transition hover:bg-[#0c2340] cursor-pointer"
                 >
-                  Tampilkan Semua Destinasi
+                  Reset Filter
                 </button>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
-                {filteredDestinations.map((dest) => (
-                  <div
-                    key={dest.id}
-                    className="card"
-                    style={{
-                      padding: 0,
-                      overflow: 'hidden',
-                      background: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
-                      borderRadius: '16px',
-                      boxShadow: '0 4px 16px rgba(8, 29, 53, 0.05)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                    }}
-                  >
-                    <div style={{ height: '170px', position: 'relative', overflow: 'hidden', background: '#F1F5F9' }}>
-                      <img
-                        src={dest.image}
-                        alt={dest.name}
-                        loading="lazy"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                      <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-                        <span className="badge badge-emerald" style={{ fontSize: '0.68rem', padding: '0.2rem 0.5rem' }}>
-                          {dest.category}
-                        </span>
-                        <span className="badge badge-blue" style={{ fontSize: '0.68rem', padding: '0.2rem 0.5rem' }}>
-                          {dest.island}
-                        </span>
-                      </div>
-                    </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredFeatures.map((feat) => {
+                  const media = getFeatureMedia(feat)
+                  const isHeritage = feat.properties.layer_type === 'LAYER_HERITAGE'
+                  const island = feat.properties.island_name || 'Kepulauan Banda'
+                  const propsMeta = (feat.properties.properties_meta as any) || {}
+                  const nameLower = (feat.properties.name || '').toLowerCase()
 
-                    <div style={{ padding: '1.15rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.72rem', color: '#0369A1', fontWeight: 700, marginBottom: '0.25rem' }}>
-                        <MapPin size={12} /> {dest.island} &bull; ±{dest.travelMinutes} menit akses
-                      </div>
+                  // Cari apakah ada narasi sejarah yang relevan di bank artikel
+                  const relatedArticle = articles.find((art) => {
+                    const artTitle = art.title.toLowerCase()
+                    const artSlug = art.slug.toLowerCase()
+                    return (
+                      nameLower.includes(artTitle) ||
+                      artTitle.includes(nameLower) ||
+                      (nameLower.includes('belgica') && artSlug.includes('belgica')) ||
+                      (nameLower.includes('rhun') && artSlug.includes('rhun')) ||
+                      (nameLower.includes('hatta') && artSlug.includes('hatta')) ||
+                      (nameLower.includes('pala') && artSlug.includes('pala'))
+                    )
+                  })
 
-                      <h3 style={{ margin: '0 0 0.45rem', fontSize: '1.05rem', fontWeight: 800, color: '#081D35' }}>
-                        {dest.name}
-                      </h3>
-
-                      <p style={{ margin: '0 0 0.85rem', color: '#475569', fontSize: '0.78rem', lineHeight: 1.45, flex: 1 }}>
-                        {dest.description}
-                      </p>
-
-                      {/* Highlights */}
-                      <div style={{ display: 'flex', gap: '0.35rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
-                        {dest.highlights.map((hl) => (
-                          <span key={hl} style={{ fontSize: '0.68rem', color: '#081D35', background: '#F1F5F9', padding: '0.2rem 0.5rem', borderRadius: '6px', fontWeight: 600 }}>
-                            {hl}
+                  return (
+                    <div
+                      key={feat.properties.id || feat.properties.name}
+                      className="bg-white rounded-2xl border border-stone-200/90 overflow-hidden shadow-xs hover:shadow-md transition-shadow flex flex-col group"
+                    >
+                      {/* Image Banner */}
+                      <div className="relative h-48 bg-stone-100 overflow-hidden">
+                        <img
+                          src={media.imageUrl}
+                          alt={feat.properties.name}
+                          loading="lazy"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute top-3 left-3 flex items-center gap-1.5 flex-wrap">
+                          <span
+                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold tracking-tight shadow-xs ${
+                              isHeritage
+                                ? 'bg-amber-500 text-[#081D35]'
+                                : 'bg-sky-600 text-white'
+                            }`}
+                          >
+                            {isHeritage ? 'Cagar Budaya' : 'Bahari & Selam'}
                           </span>
-                        ))}
+                          <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-black/60 backdrop-blur-xs text-white">
+                            {island}
+                          </span>
+                        </div>
                       </div>
 
-                      {/* Scores */}
-                      <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: '0.7rem', color: '#0369A1', background: '#E0F2FE', padding: '0.2rem 0.45rem', borderRadius: '6px', border: '1px solid #BAE6FD', fontWeight: 600 }}>
-                          Fasilitas {dest.facilityScore}/100
-                        </span>
-                        <span style={{ fontSize: '0.7rem', color: '#B45309', background: '#FEF3C7', padding: '0.2rem 0.45rem', borderRadius: '6px', border: '1px solid #FDE68A', fontWeight: 600 }}>
-                          Daya Tarik {dest.attractionScore}/100
-                        </span>
-                      </div>
-
-                      {/* Cost & Guide Link */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #F1F5F9', paddingTop: '0.85rem' }}>
+                      {/* Content */}
+                      <div className="p-5 flex-1 flex flex-col justify-between">
                         <div>
-                          <div style={{ fontSize: '0.68rem', color: '#64748B' }}>Estimasi biaya / retribusi:</div>
-                          <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#081D35' }}>
-                            Rp {dest.costRp.toLocaleString('id-ID')}
+                          <div className="flex items-center gap-1.5 text-xs text-stone-500 mb-1.5">
+                            <MapPin size={13} className="text-amber-600 shrink-0" />
+                            <span className="font-medium truncate">{island}, Kepulauan Banda</span>
                           </div>
+
+                          <h3 className="font-serif font-bold text-lg text-[#081D35] leading-snug group-hover:text-amber-700 transition-colors">
+                            {feat.properties.name}
+                          </h3>
+
+                          <p className="mt-2 text-xs text-stone-600 line-clamp-3 leading-relaxed">
+                            {feat.properties.description || 'Situs warisan otentik dan daya tarik alam unggulan Kepulauan Banda dengan nilai sejarah dan keanekaragaman bahari tinggi.'}
+                          </p>
+
+                          {/* Historical or Diving Specs */}
+                          {(propsMeta.period || propsMeta.historical_period || propsMeta.depth_meters) && (
+                            <div className="mt-3 flex items-center gap-2 flex-wrap text-[11px]">
+                              {(propsMeta.period || propsMeta.historical_period) && (
+                                <span className="px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 font-medium">
+                                  Era: {propsMeta.period || propsMeta.historical_period}
+                                </span>
+                              )}
+                              {propsMeta.depth_meters && (
+                                <span className="px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 font-medium">
+                                  Kedalaman: {propsMeta.depth_meters}m
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
 
-                        <a
-                          href={`https://wa.me/${dest.guideWhatsapp}?text=${encodeURIComponent(`Halo Pemandu Banda Neira, saya ingin informasi kunjungan ke destinasi ${dest.name}.`)}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="btn btn-primary"
-                          style={{ padding: '0.5rem 0.95rem', fontSize: '0.78rem', fontWeight: 800, background: 'linear-gradient(135deg, #F4B75E 0%, #E0A24A 100%)', color: '#081D35', border: 'none', boxShadow: '0 4px 12px rgba(244, 183, 94, 0.3)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
-                        >
-                          <MessageCircle size={14} /> Hubungi Pemandu
-                        </a>
+                        {/* Actions: Map, History Story, WhatsApp Guide */}
+                        <div className="mt-5 pt-3 border-t border-stone-100 flex items-center justify-between gap-2 flex-wrap">
+                          <button
+                            type="button"
+                            onClick={() => onNavigate?.('gis', `feature_id=${feat.properties.id}&name=${encodeURIComponent(feat.properties.name)}`)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-[#081D35] hover:text-[#F4B75E] text-stone-800 text-xs font-semibold transition cursor-pointer"
+                            title="Lihat di peta"
+                          >
+                            <Compass size={13} />
+                            <span>Lihat di Peta</span>
+                          </button>
+
+                          <div className="flex items-center gap-1.5">
+                            {relatedArticle && (
+                              <button
+                                type="button"
+                                onClick={() => onNavigate?.('sejarah', relatedArticle.slug)}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-semibold transition cursor-pointer"
+                                title={`Baca kisah sejarah: ${relatedArticle.title}`}
+                              >
+                                <BookOpen size={12} />
+                                <span>Kisah Sejarah</span>
+                              </button>
+                            )}
+
+                            <a
+                              href={`https://wa.me/6281234567891?text=${encodeURIComponent(`Halo Pemandu Banda Neira, saya ingin menanyakan informasi kunjungan ke destinasi ${feat.properties.name}.`)}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold transition"
+                              title="Tanya pemandu via WhatsApp"
+                            >
+                              <MessageCircle size={12} />
+                              <span className="hidden sm:inline">Pemandu</span>
+                            </a>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </div>
@@ -1293,6 +1409,57 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 <Sun size={13} color="#D97706" /> Ada Listrik Surya
               </label>
             </div>
+
+            {/* Row 2: Filter Desa & Search Penginapan */}
+            <div style={{ width: '100%', borderTop: '1px solid #F1F5F9', paddingTop: '0.75rem', marginTop: '0.25rem', display: 'flex', gap: '0.65rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#081D35', textTransform: 'uppercase' }}>
+                Desa:
+              </span>
+              {['', 'Nassau', 'Dwiwarna', 'Rajawali', 'Lonthoir', 'Kampung Baru', 'Pulau Ay'].map((vil) => (
+                <button
+                  type="button"
+                  key={vil}
+                  onClick={() => setVillageFilter(vil)}
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.3rem 0.7rem',
+                    borderRadius: '20px',
+                    border: villageFilter === vil ? '1px solid #2563EB' : '1px solid #E2E8F0',
+                    background: villageFilter === vil ? '#2563EB' : '#F8FAFC',
+                    color: villageFilter === vil ? '#FFFFFF' : '#64748B',
+                    cursor: 'pointer',
+                    fontWeight: 700,
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {vil ? `Desa ${vil}` : 'Semua Desa'}
+                </button>
+              ))}
+
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.45rem', alignItems: 'center', minWidth: '240px' }}>
+                <div style={{ position: 'relative', width: '100%' }}>
+                  <input
+                    type="text"
+                    placeholder="Cari penginapan atau alamat..."
+                    value={accSearch}
+                    onChange={(e) => setAccSearch(e.target.value)}
+                    className="form-control"
+                    style={{ paddingLeft: '2.2rem', fontSize: '0.78rem', height: '34px', borderRadius: '8px' }}
+                  />
+                  <Search size={14} color="#94A3B8" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+                </div>
+                {accSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setAccSearch('')}
+                    className="btn btn-secondary btn-sm"
+                    style={{ height: '34px', fontSize: '0.75rem', padding: '0 0.6rem' }}
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Accommodation Cards Grid */}
@@ -1366,7 +1533,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     </div>
 
                     {/* Price & Action */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #F1F5F9', paddingTop: '0.85rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #F1F5F9', paddingTop: '0.85rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                       <div>
                         <div style={{ fontSize: '0.68rem', color: '#64748B' }}>Mulai dari:</div>
                         <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#081D35' }}>
@@ -1375,14 +1542,61 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                         </div>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => handleOpenBookingModal(acc)}
-                        className="btn btn-primary"
-                        style={{ padding: '0.5rem 0.95rem', fontSize: '0.8rem', fontWeight: 800, background: 'linear-gradient(135deg, #F4B75E 0%, #E0A24A 100%)', color: '#081D35', border: 'none', boxShadow: '0 4px 12px rgba(244, 183, 94, 0.3)' }}
-                      >
-                        <MessageCircle size={14} /> Pesan Kamar
-                      </button>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          onClick={() => onNavigate?.('gis', `name=${encodeURIComponent(acc.name)}`)}
+                          className="btn"
+                          style={{
+                            padding: '0.45rem 0.75rem',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            background: '#F1F5F9',
+                            color: '#081D35',
+                            border: '1px solid #CBD5E1',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                          }}
+                          title="Lihat di peta"
+                        >
+                          <Compass size={13} color="#D97706" />
+                          <span>Lihat Peta</span>
+                        </button>
+
+                        <a
+                          href={`https://wa.me/${acc.contact_whatsapp}?text=${encodeURIComponent(`Halo ${acc.name}, saya ingin reservasi kamar di penginapan Anda di Banda Neira.`)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="btn"
+                          style={{
+                            padding: '0.45rem 0.75rem',
+                            fontSize: '0.75rem',
+                            fontWeight: 800,
+                            background: '#10B981',
+                            color: '#FFFFFF',
+                            border: 'none',
+                            borderRadius: '8px',
+                            textDecoration: 'none',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                          }}
+                        >
+                          <MessageCircle size={13} /> WA
+                        </a>
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenBookingModal(acc)}
+                          className="btn btn-primary"
+                          style={{ padding: '0.45rem 0.85rem', fontSize: '0.75rem', fontWeight: 800, background: 'linear-gradient(135deg, #F4B75E 0%, #E0A24A 100%)', color: '#081D35', border: 'none', borderRadius: '8px', boxShadow: '0 4px 12px rgba(244, 183, 94, 0.3)' }}
+                        >
+                          Pesan
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1668,6 +1882,20 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 Kamar Ramah Lingkungan &amp; Air RO
               </div>
             </div>
+
+            {currentUser?.village && (
+              <div className="card" style={{ padding: '1.25rem', background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '14px', boxShadow: '0 2px 8px rgba(8, 29, 53, 0.04)' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#166534', textTransform: 'uppercase' }}>
+                  Lingkup Wilayah Desa
+                </div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#14532D', marginTop: '0.25rem' }}>
+                  Desa {currentUser.village}
+                </div>
+                <div style={{ fontSize: '0.72rem', color: '#15803D', marginTop: '0.35rem', fontWeight: 600 }}>
+                  Wajib Lapor Tamu 1x24 Jam Aktif
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Action Header */}
@@ -1685,6 +1913,31 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
               <RefreshCw size={13} className={loadingBookings ? 'animate-spin' : ''} />
               {loadingBookings ? 'Menyinkronkan...' : 'Perbarui Data'}
             </button>
+          </div>
+
+          {/* Search Bar Reservasi Tamu */}
+          <div style={{ marginBottom: '1.15rem', display: 'flex', gap: '0.65rem', alignItems: 'center' }}>
+            <div style={{ position: 'relative', flex: 1, maxWidth: '420px' }}>
+              <input
+                type="text"
+                placeholder="Cari nama tamu, kode booking, atau penginapan..."
+                value={bookingSearch}
+                onChange={(e) => setBookingSearch(e.target.value)}
+                className="form-control"
+                style={{ paddingLeft: '2.2rem', fontSize: '0.82rem', height: '36px', borderRadius: '10px' }}
+              />
+              <Search size={14} color="#94A3B8" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+            </div>
+            {bookingSearch && (
+              <button
+                type="button"
+                onClick={() => setBookingSearch('')}
+                className="btn btn-secondary btn-sm"
+                style={{ height: '36px', fontSize: '0.75rem' }}
+              >
+                Reset
+              </button>
+            )}
           </div>
 
           {/* Bookings List */}
@@ -1829,6 +2082,30 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                 {isl || 'Semua Pulau'}
               </button>
             ))}
+
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.45rem', alignItems: 'center', minWidth: '240px' }}>
+              <div style={{ position: 'relative', width: '100%' }}>
+                <input
+                  type="text"
+                  placeholder="Cari nama pemandu atau keahlian..."
+                  value={guideSearch}
+                  onChange={(e) => setGuideSearch(e.target.value)}
+                  className="form-control"
+                  style={{ paddingLeft: '2.2rem', fontSize: '0.78rem', height: '34px', borderRadius: '8px' }}
+                />
+                <Search size={14} color="#94A3B8" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+              </div>
+              {guideSearch && (
+                <button
+                  type="button"
+                  onClick={() => setGuideSearch('')}
+                  className="btn btn-secondary btn-sm"
+                  style={{ height: '34px', fontSize: '0.75rem', padding: '0 0.6rem' }}
+                >
+                  Reset
+                </button>
+              )}
+            </div>
           </div>
 
           {loadingGuides ? (

@@ -7,6 +7,8 @@ export const BANDA_OCCUPATIONS = [
   'Pengolah & Pengering Fuli Merah',
   'Pedagang Rempah & Hasil Laut',
   'Pemandu Wisata Sejarah & Bahari',
+  'Pengelola Homestay & Eco-Stay',
+  'Pelaku Usaha Wisata & Cinderamata',
   'Aparatur Desa / ASN',
   'Pendidik / Guru Sekolah',
   'Ibu Rumah Tangga',
@@ -97,6 +99,48 @@ export const getOccupationBadge = (occ?: string): React.ReactNode => {
         }}
       >
         🌺 {occ}
+      </span>
+    )
+  }
+  if (lower.includes('homestay') || lower.includes('penginapan') || lower.includes('lodge')) {
+    return (
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.35rem',
+          background: 'rgba(245, 158, 11, 0.15)',
+          color: '#fbbf24',
+          border: '1px solid rgba(245, 158, 11, 0.35)',
+          padding: '0.2rem 0.6rem',
+          borderRadius: '12px',
+          fontSize: '0.75rem',
+          fontWeight: 700,
+          boxShadow: '0 0 10px rgba(245, 158, 11, 0.1)',
+        }}
+      >
+        🏡 {occ}
+      </span>
+    )
+  }
+  if (lower.includes('cinderamata') || lower.includes('souvenir') || lower.includes('kerajinan')) {
+    return (
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.35rem',
+          background: 'rgba(236, 72, 153, 0.15)',
+          color: '#f472b6',
+          border: '1px solid rgba(236, 72, 153, 0.35)',
+          padding: '0.2rem 0.6rem',
+          borderRadius: '12px',
+          fontSize: '0.75rem',
+          fontWeight: 700,
+          boxShadow: '0 0 10px rgba(236, 72, 153, 0.1)',
+        }}
+      >
+        🎁 {occ}
       </span>
     )
   }

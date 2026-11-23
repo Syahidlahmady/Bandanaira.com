@@ -58,6 +58,7 @@ import {
   VILLAGE_DETAILS,
   VillageInfo,
 } from '../data/bandaVillagesData'
+import { FALLBACK_SPATIAL_FEATURES } from '../data/bandaFeaturesData'
 
 export interface InteractiveMapWorkspaceProps {
   currentUser?: any
@@ -722,7 +723,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   const isOfficerOrAdmin = isSuperuser || userRoleNames.some((r) => ['admin', 'village_officer'].includes(r))
 
   // State
-  const [features, setFeatures] = useState<GeoJSONFeature[]>([])
+  const [features, setFeatures] = useState<GeoJSONFeature[]>(() => FALLBACK_SPATIAL_FEATURES)
   const [loading, setLoading] = useState<boolean>(true)
   const [selectedFeature, setSelectedFeature] = useState<GeoJSONFeature | null>(null)
   const [is360ModalOpen, setIs360ModalOpen] = useState<boolean>(false)
@@ -753,7 +754,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   // Spatial Feature Form States
   const [formName, setFormName] = useState<string>('')
   const [formLayer, setFormLayer] = useState<string>('LAYER_TOURISM_4A')
-  const [formCategory, setFormCategory] = useState<'publik' | 'resiliensi'>('publik')
+  const [formCategory, setFormCategory] = useState<'publik' | 'resiliensi' | 'zona_wilayah'>('publik')
   const [formIsland, setFormIsland] = useState<string>('Pulau Neira')
   const [formLat, setFormLat] = useState<number>(-4.5261)
   const [formLng, setFormLng] = useState<number>(129.8989)
@@ -1898,7 +1899,10 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
     setIsDeletingFeature(true)
     try {
-      await gisService.deleteFeature(featureId, token)
+      if (featureId && !featureId.startsWith('feat-')) {
+        await gisService.deleteFeature(featureId, token)
+      }
+      setFeatures((prev) => prev.filter((f) => f.id !== featureId && f.properties?.id !== featureId))
       setNotificationMsg({
         type: 'info',
         text: `Titik '${featureName}' berhasil dihapus dari database PostGIS.`,
@@ -2246,6 +2250,38 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
       }
     }
   }
+
+  // Auto-focus feature if requested via URL query params (e.g. from Smart Planner)
+  useEffect(() => {
+    if (!features || features.length === 0) return
+    const params = new URLSearchParams(window.location.search)
+    const targetFeatureId = params.get('feature_id')
+    const targetName = params.get('name')
+    const targetLat = params.get('lat')
+    const targetLng = params.get('lng')
+
+    let matched: GeoJSONFeature | undefined
+    if (targetFeatureId) {
+      matched = features.find((f) => String(f.id) === targetFeatureId || String(f.properties?.id) === targetFeatureId)
+    }
+    if (!matched && targetName) {
+      const q = targetName.toLowerCase()
+      matched = features.find((f) => f.properties?.name?.toLowerCase().includes(q))
+    }
+
+    if (matched) {
+      handleFocusFeature(matched)
+      if (matched.properties?.layer_type) {
+        setSelectedLayers((prev) => new Set([...prev, matched!.properties.layer_type]))
+      }
+    } else if (targetLat && targetLng && mapInstanceRef.current) {
+      const lat = parseFloat(targetLat)
+      const lng = parseFloat(targetLng)
+      if (!isNaN(lat) && !isNaN(lng)) {
+        mapInstanceRef.current.setView([lat, lng], 16, { animate: true })
+      }
+    }
+  }, [features])
 
   // Copy Coordinates to Clipboard with user feedback
   const handleCopyCoordinates = async () => {

@@ -19,7 +19,6 @@ export const defaultNavigationItems = [
 export interface HeroSectionProps {
   onNavigate: (tab: any) => void
   onOpenLogin: () => void
-  onOpenRegister?: () => void
   currentUser: any
   onLogout?: () => void
   activeNav?: string
@@ -29,7 +28,6 @@ export interface HeroSectionProps {
 export const HeroSection: React.FC<HeroSectionProps> = ({
   onNavigate,
   onOpenLogin,
-  onOpenRegister: _onOpenRegister,
   currentUser,
   onLogout,
   activeNav: externalActiveNav,
@@ -305,20 +303,19 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         )}
       </div>
 
-      {/* 2. SCROLL EXPAND COMPONENT INTEGRATION (YouTube for Desktop, Pure Image for Mobile) */}
+      {/* 2. SCROLL EXPAND COMPONENT INTEGRATION (Pure WebP Image for Ultra 60-120fps Performance) */}
       <ScrollExpand
-        mediaType={isMobile ? 'image' : 'youtube'}
-        youtubeId={isMobile ? '' : 'bVvv6oNiFnw'}
+        mediaType="image"
         poster={HERO_IMAGE_URL}
         src={HERO_IMAGE_URL}
         alt="Pemandangan Banda Neira dari udara dengan laut dan pulau-pulau di sekitarnya"
         useWindowScroll
-        startWidth={isMobile ? 70 : 44}
-        startHeight={isMobile ? 52 : 58}
-        startRadius={isMobile ? 18 : 24}
+        startWidth={isMobile ? 74 : 44}
+        startHeight={isMobile ? 54 : 58}
+        startRadius={isMobile ? 16 : 24}
         endRadius={0}
-        mediaZoom={isMobile ? 1.05 : 1.22}
-        scrollDistance={isMobile ? 0.28 : 0.75}
+        mediaZoom={isMobile ? 1.05 : 1.15}
+        scrollDistance={isMobile ? 0.35 : 0.75}
         holdDistance={isMobile ? 0.05 : 0.15}
         smoothing={0}
         overlayScrim={0.4}
@@ -332,34 +329,34 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         }
       >
         {/* OVERLAY CONTENT (Fades in once frame expands to full bleed) */}
-        <div className="w-full max-w-7xl mx-auto flex flex-col justify-center h-full pt-20 sm:pt-24 pb-6 sm:pb-8 pointer-events-auto">
+        <div className="w-full max-w-7xl mx-auto flex flex-col justify-center h-full pt-16 sm:pt-24 pb-6 sm:pb-8 px-4 sm:px-6 pointer-events-auto">
           {/* MAIN EDITORIAL HERO NARRATIVE (Asymmetric Left-Aligned Layout) */}
-          <main className="flex flex-col items-start gap-4 sm:gap-6 max-w-[850px] my-auto">
+          <main className="flex flex-col items-start gap-3.5 sm:gap-6 max-w-[850px] my-auto">
             {/* Display Headline */}
             <h1
               id="banda-hero-title"
-              className="text-white text-3xl sm:text-5xl lg:text-7xl font-sans font-bold tracking-tight leading-[1.08] drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)]"
+              className="text-white text-2xl sm:text-5xl lg:text-7xl font-sans font-bold tracking-tight leading-[1.1] drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)]"
             >
               <span>{t.hero.headlineLine1}</span>
               <br />
-              <span className="font-script font-normal text-amber-200 text-4xl sm:text-6xl lg:text-8xl leading-[1.05] drop-shadow-[0_4px_28px_rgba(0,0,0,0.9)]">
+              <span className="font-script font-normal text-amber-200 text-3xl sm:text-6xl lg:text-8xl leading-[1.08] drop-shadow-[0_4px_28px_rgba(0,0,0,0.9)]">
                 {t.hero.headlineLine2}
               </span>
             </h1>
 
             {/* Narrative Paragraph with Frosted Glass Plate for Crisp Readability */}
-            <div className="max-w-[580px] p-4 sm:p-5 rounded-2xl bg-black/55 backdrop-blur-md border border-white/15 shadow-2xl">
-              <p className="text-white/95 text-sm sm:text-base lg:text-[17px] leading-relaxed font-sans font-normal antialiased">
+            <div className="max-w-[580px] p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-black/60 backdrop-blur-md border border-white/15 shadow-xl">
+              <p className="text-white/95 text-xs sm:text-base lg:text-[17px] leading-relaxed font-sans font-normal antialiased">
                 {t.hero.description}
               </p>
             </div>
 
             {/* Dual Action CTAs */}
-            <div className="inline-flex flex-wrap items-center gap-3 pt-2">
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-1 sm:pt-2 w-full sm:w-auto">
               <a
                 href="#wisata"
                 onClick={() => setActiveNav('#wisata')}
-                className="inline-flex h-[46px] sm:h-[52px] items-center gap-3 px-5 sm:px-6 bg-amber-600 hover:bg-amber-500 transition-colors rounded-xl border border-amber-400 font-semibold text-white text-xs sm:text-sm tracking-wide shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="flex-1 sm:flex-initial inline-flex h-11 sm:h-[52px] items-center justify-center gap-2 sm:gap-3 px-5 sm:px-6 bg-amber-600 hover:bg-amber-500 transition-colors rounded-xl border border-amber-400 font-semibold text-white text-xs sm:text-sm tracking-wide shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white active:scale-95"
               >
                 <span>{t.hero.ctaExplore}</span>
                 <ArrowUpRightIcon className="w-4 h-4 text-white" />
@@ -368,7 +365,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               <button
                 type="button"
                 onClick={() => onNavigate('gis')}
-                className="inline-flex h-[46px] sm:h-[52px] items-center gap-3 px-5 sm:px-6 bg-white/10 hover:bg-white/20 transition-colors rounded-xl border border-white/25 backdrop-blur-md font-semibold text-white text-xs sm:text-sm tracking-wide focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                className="flex-1 sm:flex-initial inline-flex h-11 sm:h-[52px] items-center justify-center gap-2 sm:gap-3 px-5 sm:px-6 bg-white/10 hover:bg-white/20 transition-colors rounded-xl border border-white/25 backdrop-blur-md font-semibold text-white text-xs sm:text-sm tracking-wide focus:outline-none focus-visible:ring-2 focus-visible:ring-white active:scale-95"
               >
                 <span>{t.hero.ctaMap}</span>
                 <ArrowUpRightIcon className="w-4 h-4 text-white" />

@@ -59,11 +59,7 @@ export interface CrisisPriorityWeights {
   weight_padam_listrik?: number
 }
 
-const getApiBase = () => {
-  return typeof window !== 'undefined'
-    ? `http://${window.location.hostname}:8005/api/v1`
-    : 'http://localhost:8005/api/v1'
-}
+import { getApiBase } from './apiConfig'
 
 export const dssService = {
   async getTourismAlternatives(): Promise<SAWAlternativeInput[]> {
