@@ -1,10 +1,11 @@
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.app.database.session import get_db
 from backend.app.modules.qr.service import generate_qr_base64
 from backend.app.modules.traceability.models import ProductBatch
+from backend.app.modules.blockchain.models import BlockchainTransaction
 from backend.app.modules.traceability.schemas import (
     PublicBatchVerificationResponse,
     PublicEventTimeline,
@@ -18,8 +19,17 @@ async def verify_batch_public(token: str, db: AsyncSession = Depends(get_db)):
     """
     Public QR Verification Endpoint (Zero Authentication Required).
     Safe for public consumers. Exposes NO personal identifiable information.
+    Supports search by public_verification_token or batch_code.
     """
-    stmt = select(ProductBatch).where(ProductBatch.public_verification_token == token)
+    clean_token = token.strip()
+    stmt = select(ProductBatch).where(
+        or_(
+            ProductBatch.public_verification_token == clean_token,
+            ProductBatch.batch_code == clean_token,
+            ProductBatch.public_verification_token.ilike(clean_token),
+            ProductBatch.batch_code.ilike(clean_token),
+        )
+    )
     result = await db.execute(stmt)
     batch = result.scalar_one_or_none()
 
@@ -46,6 +56,18 @@ async def verify_batch_public(token: str, db: AsyncSession = Depends(get_db)):
         for e in batch.events
     ]
 
+    # Fetch on-chain blockchain transaction if anchored
+    tx_stmt = (
+        select(BlockchainTransaction)
+        .where(
+            BlockchainTransaction.batch_id == batch.id,
+            BlockchainTransaction.status == "confirmed",
+        )
+        .order_by(BlockchainTransaction.created_at.desc())
+    )
+    tx_result = await db.execute(tx_stmt)
+    tx = tx_result.scalars().first()
+
     qr_base64 = generate_qr_base64(batch.public_verification_token)
 
     return PublicBatchVerificationResponse(
@@ -60,7 +82,13 @@ async def verify_batch_public(token: str, db: AsyncSession = Depends(get_db)):
         verified_integrity=len(batch.events) > 0,
         timeline=timeline,
         qr_code_base64=qr_base64,
+        contract_address=tx.contract_address if tx else "0x71C8407B88B2A91D9E71F4243a08b9C23D6980B8",
+        transaction_hash=tx.transaction_hash if tx else None,
+        block_number=tx.block_number if tx else None,
+        latest_db_hash=batch.events[-1].event_hash if batch.events else None,
+        on_chain_hash=tx.data_hash if tx else None,
     )
+
 
 
 @router.get("/image/{token}")

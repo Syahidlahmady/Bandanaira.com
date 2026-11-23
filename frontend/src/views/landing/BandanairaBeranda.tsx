@@ -27,6 +27,7 @@ export type NavTabType =
   | 'smart_planner'
   | 'survei'
   | 'sejarah'
+  | 'marketplace'
 
 export interface BandanairaBerandaProps {
   onNavigate: (tab: NavTabType, slugOrParam?: string) => void

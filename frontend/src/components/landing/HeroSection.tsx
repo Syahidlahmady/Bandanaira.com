@@ -3,6 +3,7 @@ import { NutmegLogoIcon, ArrowUpRightIcon } from './LandingIcons'
 import { ScrollExpand } from '../ui/ScrollExpand'
 import { useLanguage } from '../../context/LanguageContext'
 import LanguageSwitcher from '../common/LanguageSwitcher'
+import { LogIn, LogOut, LayoutDashboard, User } from 'lucide-react'
 
 const HERO_IMAGE_URL = '/banda.webp'
 
@@ -28,7 +29,7 @@ export interface HeroSectionProps {
 export const HeroSection: React.FC<HeroSectionProps> = ({
   onNavigate,
   onOpenLogin,
-  onOpenRegister,
+  onOpenRegister: _onOpenRegister,
   currentUser,
   onLogout,
   activeNav: externalActiveNav,
@@ -84,24 +85,24 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     >
       {/* 1. FIXED TOP NAVBAR (Hides during resting/expansion, smoothly emerges once fully expanded) */}
       <div
-        className={`fixed top-0 left-0 right-0 z-50 px-4 sm:px-8 lg:px-12 pt-3 sm:pt-5 transition-all duration-500 ease-out ${
+        className={`fixed top-0 left-0 right-0 z-50 px-2 sm:px-8 lg:px-12 pt-2 sm:pt-5 transition-all duration-500 ease-out ${
           navVisible
             ? 'opacity-100 translate-y-0 pointer-events-auto'
             : 'opacity-0 -translate-y-8 pointer-events-none'
         }`}
       >
         <header
-          className="flex h-16 sm:h-20 items-center justify-between px-4 sm:px-6 py-0 w-full max-w-7xl mx-auto rounded-2xl overflow-visible border border-solid border-white/20 transition-all duration-300 backdrop-blur-sm bg-[#081d35f2] shadow-2xl pointer-events-auto will-change-transform transform-gpu"
+          className="flex h-14 sm:h-20 items-center justify-between px-2.5 sm:px-6 py-0 w-full max-w-7xl mx-auto rounded-xl sm:rounded-2xl overflow-visible border border-solid border-white/20 transition-all duration-300 backdrop-blur-md bg-[#081d35f2] shadow-2xl pointer-events-auto will-change-transform transform-gpu"
         >
           {/* Brand Logo */}
           <a
             href="#beranda"
             onClick={() => setActiveNav('#beranda')}
             aria-label="bandanaira.com, kembali ke Beranda"
-            className="inline-flex items-center gap-2.5 relative flex-[0_0_auto]"
+            className="inline-flex items-center gap-1.5 sm:gap-2.5 relative shrink min-w-0"
           >
             <NutmegLogoIcon />
-            <span className="relative w-fit font-normal text-white text-[20px] sm:text-[23px] tracking-[-0.90px] leading-[normal]">
+            <span className="font-semibold text-white text-[15px] sm:text-[20px] md:text-[23px] tracking-tight truncate leading-none">
               bandanaira.com
             </span>
           </a>
@@ -138,15 +139,16 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </nav>
 
           {/* Right Action Buttons */}
-          <div className="inline-flex items-center gap-2 sm:gap-3 relative flex-[0_0_auto]">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2.5 relative shrink-0">
             {currentUser ? (
-              <div className="inline-flex items-center gap-2">
+              <div className="hidden lg:inline-flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => onNavigate('dashboard')}
-                  className="inline-flex h-[38px] sm:h-[42px] items-center px-4 py-0 bg-amber-500/20 hover:bg-amber-500/30 rounded-lg border border-solid border-[#f4b75e] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e]"
+                  className="inline-flex h-[38px] sm:h-[40px] items-center gap-2 px-3.5 sm:px-4 py-0 bg-amber-500/20 hover:bg-amber-500/30 rounded-xl border border-solid border-[#f4b75e] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e] cursor-pointer"
                 >
-                  <span className="font-semibold text-white text-xs tracking-[0] relative w-fit leading-[normal]">
+                  <span className="w-2 h-2 rounded-full bg-[#f4b75e] shrink-0" />
+                  <span className="font-semibold text-white text-xs tracking-[0] relative w-fit leading-[normal] truncate max-w-[160px]">
                     {currentUser.full_name || currentUser.username}
                   </span>
                 </button>
@@ -154,43 +156,29 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   <button
                     type="button"
                     onClick={onLogout}
-                    className="inline-flex h-[38px] sm:h-[42px] items-center px-3 py-0 bg-rose-500/20 hover:bg-rose-500/35 rounded-lg border border-solid border-rose-400/50 text-white text-xs font-semibold transition-colors cursor-pointer"
+                    className="inline-flex h-[38px] sm:h-[40px] items-center gap-1.5 px-3 py-0 bg-rose-500/20 hover:bg-rose-500/35 rounded-xl border border-solid border-rose-400/50 text-white text-xs font-semibold transition-colors cursor-pointer"
                     title="Keluar dari Akun"
                   >
-                    {t.navbar.signOut}
+                    <LogOut size={13} className="shrink-0" />
+                    <span>{t.navbar.signOut}</span>
                   </button>
                 )}
               </div>
             ) : (
-              <div className="inline-flex items-center gap-2">
-                {onOpenRegister && (
-                  <button
-                    type="button"
-                    onClick={onOpenRegister}
-                    className="hidden sm:inline-flex h-[38px] sm:h-[42px] items-center px-4 py-0 bg-amber-600 hover:bg-amber-500 rounded-lg border border-solid border-[#f4b75e] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e] cursor-pointer"
-                  >
-                    <span className="font-semibold text-white text-xs tracking-[0] relative w-fit leading-[normal]">
-                      {t.navbar.register}
-                    </span>
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={onOpenLogin}
-                  className="inline-flex h-[38px] sm:h-[42px] items-center px-4 sm:px-5 py-0 bg-[#d9770626] hover:bg-[#d9770640] rounded-lg border border-solid border-[#f4b75e] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e] cursor-pointer"
-                >
-                  <span className="font-semibold text-white text-xs tracking-[0] relative w-fit leading-[normal]">
-                    {t.navbar.signIn}
-                  </span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={onOpenLogin}
+                className="inline-flex h-[34px] sm:h-[40px] items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-0 bg-gradient-to-r from-amber-500 to-[#F4B75E] hover:from-amber-400 hover:to-[#f6c276] rounded-lg sm:rounded-xl border border-amber-300/40 text-[#081D35] text-xs sm:text-sm font-bold shadow-xs hover:shadow-[0_0_15px_rgba(244,183,94,0.35)] transition-all active:scale-[0.98] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e]"
+              >
+                <LogIn size={13} className="shrink-0 text-[#081D35] sm:w-[14px] sm:h-[14px]" />
+                <span className="tracking-wide">
+                  {t.navbar.signIn}
+                </span>
+              </button>
             )}
 
-            {/* Divider vertikal pemisah rapi */}
-            <div className="hidden sm:block w-px h-6 bg-white/20" />
-
-            {/* Dropdown Pemilihan Bahasa (Paling kanan, tidak menutupi tombol login) */}
-            <LanguageSwitcher variant="dropdown" />
+            {/* Switcher Bahasa Ikon Murni (Hemat ruang & responsif di semua frame termasuk mobile) */}
+            <LanguageSwitcher variant="icon" />
 
             {/* Mobile Menu Hamburger */}
             <button
@@ -198,14 +186,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               onClick={() => setMobileMenuOpen((prev) => !prev)}
               aria-label={mobileMenuOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
               aria-expanded={mobileMenuOpen}
-              className="inline-flex lg:hidden h-[38px] w-[38px] items-center justify-center rounded-lg border border-solid border-white/20 bg-slate-900/60 text-white cursor-pointer"
+              className="inline-flex lg:hidden h-[34px] w-[34px] sm:h-[40px] sm:w-[40px] items-center justify-center rounded-lg sm:rounded-xl border border-solid border-white/20 bg-slate-900/60 text-white cursor-pointer hover:bg-slate-900/80 transition-colors shrink-0"
             >
               {mobileMenuOpen ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               )}
@@ -215,50 +203,99 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
         {/* Mobile Navigation Dropdown */}
         {mobileMenuOpen && (
-          <div className="relative z-50 w-full max-w-7xl mx-auto mt-2 rounded-2xl bg-[#081d35f2] border border-solid border-white/20 backdrop-blur-xl p-5 lg:hidden pointer-events-auto shadow-2xl">
+          <div className="relative z-50 w-full max-w-7xl mx-auto mt-2 rounded-xl sm:rounded-2xl bg-[#081d35f8] border border-solid border-white/20 backdrop-blur-xl p-4 sm:p-5 lg:hidden pointer-events-auto shadow-2xl">
             <nav aria-label="Navigasi seluler" className="flex flex-col gap-3">
               {/* Mobile Language Switcher */}
               <LanguageSwitcher variant="mobile" />
 
-              {navigationItems.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  onClick={() => {
-                    setActiveNav(item.href)
-                    setMobileMenuOpen(false)
-                  }}
-                  className={`text-sm font-medium py-1.5 transition-colors ${activeNav === item.href ? 'text-[#f4b75e]' : 'text-white/90'
-                    }`}
-                >
-                  {item.label}
-                </a>
-              ))}
-              {!currentUser && (
-                <>
-                  <div className="h-px bg-white/15 my-2" />
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {onOpenRegister && (
+              {/* 1. JIKA USER TELAH LOGIN: TAMPILKAN USER PROFILE & AKSI LOGOUT DI DALAM MENU SESUAI PERMINTAAN */}
+              {currentUser && (
+                <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/25 to-amber-600/35 border border-[#F4B75E]/60 text-[#F4B75E] font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
+                      <User size={18} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        Masuk Sebagai
+                      </div>
+                      <div className="text-sm font-bold text-white truncate">
+                        {currentUser.full_name || currentUser.username}
+                      </div>
+                      {currentUser.role && (
+                        <div className="text-[10px] font-semibold text-[#F4B75E] uppercase tracking-wide">
+                          {currentUser.role}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false)
+                        onNavigate('dashboard')
+                      }}
+                      className="w-full h-10 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-[#F4B75E] text-[#081D35] font-bold text-xs shadow-md active:scale-[0.98] transition-all cursor-pointer"
+                    >
+                      <LayoutDashboard size={15} />
+                      <span>Buka Dashboard Komando</span>
+                    </button>
+
+                    {onLogout && (
                       <button
                         type="button"
                         onClick={() => {
                           setMobileMenuOpen(false)
-                          onOpenRegister()
+                          onLogout()
                         }}
-                        className="h-10 px-4 rounded-lg bg-amber-600 border border-[#f4b75e] text-white text-xs font-semibold"
+                        className="w-full h-10 flex items-center justify-center gap-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-400/50 text-rose-200 hover:text-white font-semibold text-xs active:scale-[0.98] transition-all cursor-pointer"
                       >
-                        {t.navbar.register}
+                        <LogOut size={15} />
+                        <span>{t.navbar.signOut}</span>
                       </button>
                     )}
+                  </div>
+                </div>
+              )}
+
+              {/* Navigation Items */}
+              <div className="flex flex-col gap-1 py-1">
+                {navigationItems.map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    onClick={() => {
+                      setActiveNav(item.href)
+                      setMobileMenuOpen(false)
+                    }}
+                    className={`text-sm font-medium py-2 px-2.5 rounded-lg transition-colors ${
+                      activeNav === item.href
+                        ? 'text-[#f4b75e] bg-white/10 font-bold'
+                        : 'text-white/90 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+
+              {/* JIKA BELUM LOGIN: TAMPILKAN TOMBOL MASUK */}
+              {!currentUser && (
+                <>
+                  <div className="h-px bg-white/15 my-1" />
+                  <div className="pt-1">
                     <button
                       type="button"
                       onClick={() => {
                         setMobileMenuOpen(false)
                         onOpenLogin()
                       }}
-                      className="h-10 px-4 rounded-lg bg-[#d9770626] border border-[#f4b75e] text-white text-xs font-semibold"
+                      className="w-full h-11 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-[#F4B75E] text-[#081D35] font-bold text-sm shadow-md hover:brightness-105 active:scale-[0.98] transition-all cursor-pointer"
                     >
-                      {t.navbar.signIn}
+                      <LogIn size={16} />
+                      <span>{t.navbar.signIn}</span>
                     </button>
                   </div>
                 </>

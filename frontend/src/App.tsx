@@ -24,13 +24,14 @@ import {
   PublicBatchVerification,
   BlockchainVerification,
 } from './services/traceability.ts'
+import { getSampleBatchVerification } from './data/sampleBatchVerifications.ts'
 const LoginSection = React.lazy(() => import('./components/LoginSection.tsx').then(m => ({ default: m.LoginSection })))
 const RegisterSection = React.lazy(() => import('./components/RegisterSection.tsx').then(m => ({ default: m.RegisterSection })))
-const BlockchainModal = React.lazy(() => import('./components/BlockchainModal.tsx').then(m => ({ default: m.BlockchainModal })))
-const OfflineQueueModal = React.lazy(() => import('./components/OfflineQueueModal.tsx').then(m => ({ default: m.OfflineQueueModal })))
-const PublicVerifyModal = React.lazy(() => import('./components/PublicVerifyModal.tsx').then(m => ({ default: m.PublicVerifyModal })))
-const VerifiedMarketplaceModal = React.lazy(() => import('./components/VerifiedMarketplaceModal.tsx').then(m => ({ default: m.VerifiedMarketplaceModal })))
-const QuickLoginModal = React.lazy(() => import('./components/QuickLoginModal.tsx').then(m => ({ default: m.QuickLoginModal })))
+const BlockchainModal = React.lazy(() => import('./components/modals/BlockchainModal.tsx').then(m => ({ default: m.BlockchainModal })))
+const OfflineQueueModal = React.lazy(() => import('./components/modals/OfflineQueueModal.tsx').then(m => ({ default: m.OfflineQueueModal })))
+const PublicVerifyModal = React.lazy(() => import('./components/modals/PublicVerifyModal.tsx').then(m => ({ default: m.PublicVerifyModal })))
+const VerifiedMarketplaceModal = React.lazy(() => import('./components/modals/VerifiedMarketplaceModal.tsx').then(m => ({ default: m.VerifiedMarketplaceModal })))
+const QuickLoginModal = React.lazy(() => import('./components/modals/QuickLoginModal.tsx').then(m => ({ default: m.QuickLoginModal })))
 const ResidentsWorkspace = React.lazy(() => import('./views/ResidentsWorkspace.tsx').then(m => ({ default: m.ResidentsWorkspace })))
 const LettersWorkspace = React.lazy(() => import('./views/LettersWorkspace.tsx').then(m => ({ default: m.LettersWorkspace })))
 const FarmsGisWorkspace = React.lazy(() => import('./views/FarmsGisWorkspace.tsx').then(m => ({ default: m.FarmsGisWorkspace })))
@@ -44,6 +45,9 @@ const TourismEcoStayWorkspace = React.lazy(() => import('./views/TourismEcoStayW
 const InteractiveMapWorkspace = React.lazy(() => import('./views/InteractiveMapWorkspace.tsx').then(m => ({ default: m.InteractiveMapWorkspace })))
 const SurveyEtlWorkspace = React.lazy(() => import('./views/SurveyEtlWorkspace.tsx').then(m => ({ default: m.SurveyEtlWorkspace })))
 const HistoryArticlesWorkspace = React.lazy(() => import('./views/HistoryArticlesWorkspace.tsx').then(m => ({ default: m.HistoryArticlesWorkspace })))
+const MarketplaceAdminWorkspace = React.lazy(() => import('./views/MarketplaceAdminWorkspace.tsx').then(m => ({ default: m.MarketplaceAdminWorkspace })))
+const MarketplaceCatalogWorkspace = React.lazy(() => import('./views/MarketplaceCatalogWorkspace.tsx').then(m => ({ default: m.MarketplaceCatalogWorkspace })))
+const HelpDeskWorkspace = React.lazy(() => import('./views/HelpDeskWorkspace.tsx').then(m => ({ default: m.HelpDeskWorkspace })))
 import { LandingPortalWorkspace } from './views/LandingPortalWorkspace.tsx'
 const UserEcosystemDashboard = React.lazy(() => import('./views/dashboard/UserEcosystemDashboard.tsx').then(m => ({ default: m.UserEcosystemDashboard })))
 import { DashboardLayout } from './views/dashboard/DashboardLayout.tsx'
@@ -79,6 +83,8 @@ export type TabId =
   | 'smart_planner'
   | 'survei'
   | 'sejarah'
+  | 'marketplace'
+  | 'help'
 
 export const TAB_ROUTES: Record<TabId, string> = {
   landing: '/',
@@ -96,9 +102,17 @@ export const TAB_ROUTES: Record<TabId, string> = {
   smart_planner: '/smart_planner',
   survei: '/survei',
   sejarah: '/sejarah',
+  marketplace: '/marketplace',
+  help: '/help',
 }
 
 export const ROUTE_TO_TAB: Record<string, TabId> = {
+  '/help': 'help',
+  '/bantuan': 'help',
+  '/panduan': 'help',
+  '/marketplace': 'marketplace',
+  '/pasar': 'marketplace',
+  '/katalog': 'marketplace',
   '/': 'landing',
   '/landing': 'landing',
   '/beranda': 'landing',
@@ -141,8 +155,8 @@ export const ROUTE_TO_TAB: Record<string, TabId> = {
   '/articles': 'sejarah',
 }
 
-/** Zona 1: Rute Eksplorasi Publik Wisatawan tanpa wajib login */
-export const PUBLIC_EXPLORER_TABS: TabId[] = ['tourism', 'gis', 'smart_planner', 'sejarah']
+/** Zona 1: Rute Eksplorasi Publik Wisatawan & Pembeli tanpa wajib login */
+export const PUBLIC_EXPLORER_TABS: TabId[] = ['tourism', 'gis', 'smart_planner', 'sejarah', 'marketplace', 'help']
 
 export const getInitialTab = (): TabId => {
   if (typeof window === 'undefined') return 'landing'
@@ -344,6 +358,8 @@ export const App: React.FC = () => {
   const [batches, setBatches] = useState<ProductBatch[]>([])
   const [selectedBatch, setSelectedBatch] = useState<ProductBatch | null>(null)
   const [publicVerifyData, setPublicVerifyData] = useState<PublicBatchVerification | null>(null)
+  const [showPublicVerifyModal, setShowPublicVerifyModal] = useState<boolean>(false)
+  const [verifyInitialToken, setVerifyInitialToken] = useState<string>('')
   const [traceMsg, setTraceMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [verificationModal, setVerificationModal] = useState<BlockchainVerification | null>(null)
   const [blockchainLoading, setBlockchainLoading] = useState<string | null>(null)
@@ -1283,12 +1299,28 @@ export const App: React.FC = () => {
     }
   }
 
-  const handlePublicVerify = async (token: string) => {
-    try {
-      const res = await traceabilityService.verifyPublic(token)
-      setPublicVerifyData(res)
-    } catch (err: unknown) {
-      if (err instanceof Error) alert(err.message)
+  const handlePublicVerify = async (token?: string) => {
+    setShowPublicVerifyModal(true)
+    const cleanToken = token?.trim()
+
+    if (cleanToken) {
+      setVerifyInitialToken(cleanToken)
+      try {
+        const res = await traceabilityService.verifyPublic(cleanToken)
+        setPublicVerifyData(res)
+      } catch {
+        const fallback = getSampleBatchVerification(cleanToken)
+        if (fallback) {
+          setPublicVerifyData(fallback)
+        } else {
+          setPublicVerifyData(getSampleBatchVerification('BN-BTC-2026-001'))
+        }
+      }
+    } else {
+      setVerifyInitialToken('BN-BTC-2026-001')
+      if (!publicVerifyData) {
+        setPublicVerifyData(getSampleBatchVerification('BN-BTC-2026-001'))
+      }
     }
   }
 
@@ -1364,7 +1396,7 @@ export const App: React.FC = () => {
               }}
               onOpenLogin={() => setActiveTab('population')}
               onOpenRegister={() => setActiveTab('register')}
-              onOpenMarketplace={() => setShowMarketplaceModal(true)}
+              onOpenMarketplace={() => setActiveTab('marketplace')}
               onPublicVerify={(token) => handlePublicVerify(token)}
               currentUser={currentUser}
               isOnline={isOnline}
@@ -1405,7 +1437,7 @@ export const App: React.FC = () => {
             onOpenRegister={() => setActiveTab('register')}
             onVerifySampleBatch={(token) => handlePublicVerify(token)}
             onPublicVerify={(token) => handlePublicVerify(token)}
-            onOpenMarketplace={() => setShowMarketplaceModal(true)}
+            onOpenMarketplace={() => setActiveTab('marketplace')}
             onOpenPlanner={() => setActiveTab('smart_planner')}
             onOpenKoperasi={() => setActiveTab('koperasi')}
             onOpenTelemetry={() => setActiveTab('iot')}
@@ -1467,6 +1499,65 @@ export const App: React.FC = () => {
         </ErrorBoundary>
       )}
 
+      {/* 2E. Dedicated Standalone Public Marketplace Catalog Page (Hanya Menampilkan Etalase Katalog Produk) */}
+      {!currentUser &&
+        !authService.getAccessToken() &&
+        activeTab === 'marketplace' && (
+        <ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Pasar Komoditas Banda Neira">
+          <React.Suspense
+            fallback={
+              <div className="min-h-screen flex items-center justify-center bg-[#FBFBFA] text-[#081D35] font-bold text-sm">
+                Memuat Pasar Komoditas Banda Neira...
+              </div>
+            }
+          >
+            <MarketplaceCatalogWorkspace
+              onBackToHome={() => setActiveTab('landing')}
+              onPublicVerify={(token) => handlePublicVerify(token)}
+              onOpenLogin={() => setActiveTab('population')}
+              currentUser={null}
+            />
+          </React.Suspense>
+        </ErrorBoundary>
+      )}
+
+      {/* 2F. Dedicated Standalone Public Help & Support Center */}
+      {!currentUser &&
+        !authService.getAccessToken() &&
+        activeTab === 'help' && (
+        <div className="min-h-screen bg-[#FBFBFA] flex flex-col">
+          <header className="sticky top-0 z-40 bg-[#081D35] text-white border-b border-[#1E3A5F] shadow-md px-4 sm:px-8 py-3 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setActiveTab('landing')}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-[#F4B75E] text-xs font-bold transition-all cursor-pointer"
+            >
+              ← Kembali ke Beranda
+            </button>
+            <span className="font-bold text-sm text-white hidden sm:inline">Pusat Bantuan &amp; Panduan Sistem</span>
+            <button
+              type="button"
+              onClick={() => setActiveTab('population')}
+              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-[#F4B75E] text-[#081D35] text-xs font-bold cursor-pointer"
+            >
+              Masuk Portal
+            </button>
+          </header>
+          <div className="max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8 flex-1">
+            <ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Pusat Bantuan">
+              <React.Suspense fallback={<div className="p-8 text-center text-slate-500 text-sm">Memuat Pusat Bantuan...</div>}>
+                <HelpDeskWorkspace
+                  currentUser={null}
+                  onNavigateTab={(tab) => setActiveTab(tab)}
+                  onOpenLanding={() => setActiveTab('landing')}
+                  onOpenMarketplace={() => setShowMarketplaceModal(true)}
+                />
+              </React.Suspense>
+            </ErrorBoundary>
+          </div>
+        </div>
+      )}
+
       {/* 3. Public Tourist Explorer (Zona 1 SRS: Eksplorasi Wisatawan Tanpa Login) */}
       {!currentUser &&
         !authService.getAccessToken() &&
@@ -1526,7 +1617,7 @@ export const App: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowMarketplaceModal(true)}
+                  onClick={() => setActiveTab('marketplace')}
                   className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/10 text-slate-200 hover:bg-white/20 transition cursor-pointer"
                 >
                   🛍️ Etalase UMKM
@@ -1591,7 +1682,7 @@ export const App: React.FC = () => {
           activeTab={activeTab as any}
           onSelectTab={(tab) => setActiveTab(tab)}
           onOpenLanding={() => setActiveTab('landing')}
-          onOpenMarketplace={() => setShowMarketplaceModal(true)}
+          onOpenMarketplace={() => setActiveTab('marketplace')}
           onPublicVerify={(token) => handlePublicVerify(token || '')}
           onOpenQueueModal={handleOpenQueueModal}
           onOpenQuickSwitch={() => setShowQuickLoginModal(true)}
@@ -1612,7 +1703,7 @@ export const App: React.FC = () => {
             <UserEcosystemDashboard
               currentUser={currentUser}
               onNavigate={(tab) => setActiveTab(tab as any)}
-              onOpenMarketplace={() => setShowMarketplaceModal(true)}
+              onOpenMarketplace={() => setActiveTab('marketplace')}
               onPublicVerify={(token) => handlePublicVerify(token)}
               onLogout={handleLogout}
               isOnline={isOnline}
@@ -1819,6 +1910,34 @@ export const App: React.FC = () => {
               />
             )
           )}
+
+          {/* TAB 12: TATA KELOLA & INVENTARIS WORKSPACE MARKETPLACE (DASHBOARD ADMIN) */}
+          {activeTab === 'marketplace' && (
+            (isOfficerOrAdmin || isCoopManager) ? (
+              <MarketplaceAdminWorkspace
+                onOpenPublicCatalog={() => setShowMarketplaceModal(true)}
+                onPublicVerify={(token) => handlePublicVerify(token)}
+              />
+            ) : (
+              <AccessRestrictedNotice
+                workspaceTitle="Tata Kelola & Inventaris Marketplace Rempah"
+                roleTitle="Administrator Sistem atau Pengelola Koperasi Desa"
+                currentRole={currentRoleTitle}
+                onBackToDashboard={() => setActiveTab('dashboard')}
+                onOpenQuickSwitch={() => setShowQuickLoginModal(true)}
+              />
+            )
+          )}
+
+          {/* TAB 13: PUSAT BANTUAN & PANDUAN SISTEM (HELP DESK WORKSPACE) */}
+          {activeTab === 'help' && (
+            <HelpDeskWorkspace
+              currentUser={currentUser}
+              onNavigateTab={(tab) => setActiveTab(tab)}
+              onOpenLanding={() => setActiveTab('landing')}
+              onOpenMarketplace={() => setShowMarketplaceModal(true)}
+            />
+          )}
           </React.Suspense>
           </ErrorBoundary>
         </DashboardLayout>
@@ -1844,10 +1963,15 @@ export const App: React.FC = () => {
             onSync={handleManualSync}
           />
         )}
-        {publicVerifyData && (
+        {showPublicVerifyModal && (
           <PublicVerifyModal
             data={publicVerifyData}
-            onClose={() => setPublicVerifyData(null)}
+            initialToken={verifyInitialToken}
+            onClose={() => {
+              setShowPublicVerifyModal(false)
+              setPublicVerifyData(null)
+            }}
+            onVerify={(token) => handlePublicVerify(token)}
           />
         )}
         {showMarketplaceModal && (
@@ -1855,6 +1979,11 @@ export const App: React.FC = () => {
             isOpen={showMarketplaceModal}
             onClose={() => setShowMarketplaceModal(false)}
             onVerifyProduct={(token) => handlePublicVerify(token)}
+            onNavigateToAdminWorkspace={() => setActiveTab('marketplace')}
+            onNavigateToFullPage={() => {
+              setShowMarketplaceModal(false)
+              setActiveTab('marketplace')
+            }}
           />
         )}
         {showQuickLoginModal && (

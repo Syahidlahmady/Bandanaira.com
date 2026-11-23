@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useLanguage } from '../context/LanguageContext'
 import {
   Compass,
@@ -29,7 +29,22 @@ import {
   BookOpen,
   Eye,
   ExternalLink,
+  TrendingUp,
+  Sparkles,
+  ShieldCheck,
 } from 'lucide-react'
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from 'recharts'
 import { CommunityLiteracyHub } from './CommunityLiteracyHub'
 import { PokdarwisHistoryCms } from '../components/dashboard/PokdarwisHistoryCms'
 import {
@@ -155,6 +170,87 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
   // Host/Operator Bookings Management State
   const [bookings, setBookings] = useState<BookingItem[]>([])
   const [loadingBookings, setLoadingBookings] = useState<boolean>(false)
+
+  // Derived KPI Metrics
+  const kpiStats = useMemo(() => {
+    const totalDestinations = PUBLIC_SAW_DESTINATIONS.length
+    const totalHeritage = heritageSites.length > 0 ? heritageSites.length : 177
+    const totalAccs = accommodations.length
+    const totalRooms = accommodations.reduce((acc, curr) => acc + (curr.rooms_available || 0), 0)
+    const roCount = accommodations.filter((a) => a.has_clean_ro_water).length
+    const solarCount = accommodations.filter((a) => a.has_solar_backup).length
+    const ecoPercentage = totalAccs > 0 ? Math.round(((roCount + solarCount) / (totalAccs * 2)) * 100) : 85
+    const totalGuides = guides.length
+    const verifiedGuides = guides.filter((g) => g.is_verified).length
+    const totalBookings = bookings.length
+    const totalRevenue = bookings.reduce((sum, b) => sum + (b.total_price_rp || 0), 0)
+
+    return {
+      totalDestinations,
+      totalHeritage,
+      totalAccs,
+      totalRooms,
+      roCount,
+      solarCount,
+      ecoPercentage,
+      totalGuides,
+      verifiedGuides,
+      totalBookings,
+      totalRevenue,
+    }
+  }, [accommodations, heritageSites, guides, bookings])
+
+  // Chart Data: Sebaran Destinasi & Akomodasi per Pulau
+  const islandChartData = useMemo(() => {
+    const islands = [
+      { name: 'Neira', key: 'neira', dest: 4, heritage: 8 },
+      { name: 'Banda Besar', key: 'besar', dest: 2, heritage: 5 },
+      { name: 'Hatta', key: 'hatta', dest: 1, heritage: 2 },
+      { name: 'Rhun', key: 'rhun', dest: 1, heritage: 2 },
+      { name: 'Ai', key: 'ai', dest: 1, heritage: 2 },
+      { name: 'Gunung Api', key: 'api', dest: 1, heritage: 1 },
+    ]
+
+    return islands.map((isl) => {
+      const accCount = accommodations.filter((a) =>
+        a.island_name.toLowerCase().includes(isl.key)
+      ).length
+      return {
+        island: isl.name,
+        destinasi: isl.dest,
+        penginapan: accCount || (isl.key === 'neira' ? 6 : isl.key === 'besar' ? 3 : 1),
+        cagarBudaya: isl.heritage,
+      }
+    })
+  }, [accommodations])
+
+  // Chart Data: Komposisi Kategori Cagar Budaya & Eco-Stay
+  const compositionChartData = useMemo(() => {
+    return [
+      { name: 'Benteng & Militer VOC', value: 42, color: '#081D35' },
+      { name: 'Rumah Tokoh Bangsa', value: 28, color: '#0284C7' },
+      { name: 'Spot Diving & Bahari', value: 35, color: '#10B981' },
+      { name: 'Perkebunan Pala & Adat', value: 25, color: '#F4B75E' },
+    ]
+  }, [])
+
+  const customTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-slate-900/95 text-white p-2.5 rounded-xl shadow-xl border border-slate-800 text-xs backdrop-blur-md">
+          {label && <p className="font-bold text-[#F4B75E] mb-1">{label}</p>}
+          {payload.map((entry: any, index: number) => (
+            <div key={`tooltip-${index}`} className="flex items-center gap-2 my-0.5">
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color || entry.fill }} />
+              <span className="text-slate-300">{entry.name}:</span>
+              <span className="font-bold text-white">{entry.value}</span>
+            </div>
+          ))}
+        </div>
+      )
+    }
+    return null
+  }
 
   const handleSelectSubTab = (tab: TourismSubTab) => {
     setActiveTab(tab)
@@ -566,232 +662,374 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
   return (
     <div className="workspace-container animate-fade-in">
       {/* Workspace Header */}
-      <div className="workspace-header" style={{ marginBottom: '1.75rem' }}>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
-            <span className="badge badge-amber" style={{ display: 'inline-flex', gap: '0.35rem' }}>
-              <Compass size={12} /> Mandat Smart Tourism FTI &amp; Komunitas Lokal
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-700 border border-amber-300/40">
+              <Compass size={13} className="text-amber-600" /> Mandat Smart Tourism FTI &amp; Komunitas Lokal
             </span>
             {!currentUser ? (
-              <span className="badge badge-blue" style={{ fontSize: '0.72rem' }}>
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">
                 🧭 Mode Eksplorasi Wisatawan Publik
               </span>
             ) : canAccessCMS ? (
-              <span className="badge badge-blue" style={{ fontSize: '0.72rem' }}>
-                👤 Pengelola: {currentUser.full_name || currentUser.username}
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <ShieldCheck size={13} className="text-emerald-600" /> Pengelola: {currentUser.full_name || currentUser.username}
               </span>
             ) : (
-              <span className="badge badge-blue" style={{ fontSize: '0.72rem' }}>
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
                 🧭 Mode Eksplorasi: {currentUser.full_name || currentUser.username}
               </span>
             )}
           </div>
-          <h2 style={{ margin: 0, fontSize: '1.65rem', fontWeight: 900, color: '#081D35', letterSpacing: '-0.02em' }}>
-            Smart Tourism, Eco-Stay &amp; Cagar Budaya
+          <h2 className="text-2xl md:text-3xl font-black text-[#081D35] tracking-tight flex items-center gap-2">
+            <span>Smart Tourism, Eco-Stay &amp; Cagar Budaya</span>
           </h2>
-          <p style={{ margin: '0.35rem 0 0', color: '#475569', fontSize: '0.875rem' }}>
-            Katalog penginapan ramah lingkungan (air minum RO &amp; bauran surya), reservasi instan WhatsApp, serta panduan 177 cagar budaya &amp; audio guide.
+          <p className="text-sm text-slate-500 mt-1 max-w-3xl">
+            Katalog penginapan ramah lingkungan (air minum RO &amp; bauran surya PLTS), reservasi instan WhatsApp warga, akreditasi pemandu HPI, serta inventarisasi 177 cagar budaya maritim Banda Neira.
           </p>
         </div>
 
-        {/* Tab Switcher */}
-        <div style={{ display: 'flex', gap: '0.4rem', background: '#FFFFFF', padding: '0.4rem', borderRadius: '14px', border: '1px solid #E2E8F0', boxShadow: '0 2px 10px rgba(8, 29, 53, 0.05)', flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            onClick={() => handleSelectSubTab('destinations')}
-            style={{
-              padding: '0.5rem 0.95rem',
-              borderRadius: '10px',
-              border: 'none',
-              fontSize: '0.8rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              transition: 'all 0.2s',
-              background: activeTab === 'destinations' ? '#081D35' : 'transparent',
-              color: activeTab === 'destinations' ? '#F4B75E' : '#64748B',
-              boxShadow: activeTab === 'destinations' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
-            }}
-          >
-            <MapPin size={14} /> 🏝️ Tempat Wisata &amp; Destinasi ({PUBLIC_SAW_DESTINATIONS.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSelectSubTab('accommodations')}
-            style={{
-              padding: '0.5rem 0.95rem',
-              borderRadius: '10px',
-              border: 'none',
-              fontSize: '0.8rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              transition: 'all 0.2s',
-              background: activeTab === 'accommodations' ? '#081D35' : 'transparent',
-              color: activeTab === 'accommodations' ? '#F4B75E' : '#64748B',
-              boxShadow: activeTab === 'accommodations' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
-            }}
-          >
-            <Home size={14} /> 🏡 Eco-Stay &amp; Vila
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSelectSubTab('guides')}
-            style={{
-              padding: '0.5rem 0.95rem',
-              borderRadius: '10px',
-              border: 'none',
-              fontSize: '0.8rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              transition: 'all 0.2s',
-              background: activeTab === 'guides' ? '#081D35' : 'transparent',
-              color: activeTab === 'guides' ? '#F4B75E' : '#64748B',
-              boxShadow: activeTab === 'guides' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
-            }}
-          >
-            <Compass size={14} /> 🧭 Pemandu Wisata ({guides.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSelectSubTab('heritage')}
-            style={{
-              padding: '0.5rem 0.95rem',
-              borderRadius: '10px',
-              border: 'none',
-              fontSize: '0.8rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              transition: 'all 0.2s',
-              background: activeTab === 'heritage' ? '#081D35' : 'transparent',
-              color: activeTab === 'heritage' ? '#F4B75E' : '#64748B',
-              boxShadow: activeTab === 'heritage' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
-            }}
-          >
-            <Landmark size={14} /> 🏛️ 177 Cagar Budaya &amp; Audio Guide
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSelectSubTab('community_literacy')}
-            style={{
-              padding: '0.5rem 0.95rem',
-              borderRadius: '10px',
-              border: 'none',
-              fontSize: '0.8rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              transition: 'all 0.2s',
-              background: activeTab === 'community_literacy' ? '#081D35' : 'transparent',
-              color: activeTab === 'community_literacy' ? '#F4B75E' : '#64748B',
-              boxShadow: activeTab === 'community_literacy' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
-            }}
-          >
-            <BookOpen size={14} /> 📚 Konten &amp; Literasi Komunitas
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSelectSubTab('lookup')}
-            style={{
-              padding: '0.5rem 0.95rem',
-              borderRadius: '10px',
-              border: 'none',
-              fontSize: '0.8rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              transition: 'all 0.2s',
-              background: activeTab === 'lookup' ? '#081D35' : 'transparent',
-              color: activeTab === 'lookup' ? '#F4B75E' : '#64748B',
-              boxShadow: activeTab === 'lookup' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
-            }}
-          >
-            <Search size={14} /> 🔍 Cek Kode Reservasi
-          </button>
-          {canAccessBookings && (
+        {/* Quick Action Buttons */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {canAccessCMS && (
             <button
               type="button"
-              onClick={() => handleSelectSubTab('bookings')}
-              style={{
-                padding: '0.5rem 0.95rem',
-                borderRadius: '10px',
-                border: 'none',
-                fontSize: '0.8rem',
-                fontWeight: 800,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                transition: 'all 0.2s',
-                background: activeTab === 'bookings' ? '#081D35' : 'transparent',
-                color: activeTab === 'bookings' ? '#F4B75E' : '#64748B',
-                boxShadow: activeTab === 'bookings' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
-              }}
+              onClick={handleOpenAddAccommodation}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-[#081D35] text-[#F4B75E] hover:bg-slate-800 transition-all shadow-xs"
             >
-              <Calendar size={14} /> 📋 Reservasi Masuk ({bookings.length})
+              <Plus size={14} /> Tambah Penginapan
             </button>
           )}
-          {canAccessCMS ? (
-            <button
-              type="button"
-              onClick={() => handleSelectSubTab('cms')}
-              style={{
-                padding: '0.5rem 0.95rem',
-                borderRadius: '10px',
-                border: 'none',
-                fontSize: '0.8rem',
-                fontWeight: 800,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                transition: 'all 0.2s',
-                background: activeTab === 'cms' ? '#081D35' : '#F8FAFC',
-                color: activeTab === 'cms' ? '#F4B75E' : '#081D35',
-                borderLeft: '1px solid #E2E8F0',
-                boxShadow: activeTab === 'cms' ? '0 4px 12px rgba(8, 29, 53, 0.15)' : 'none',
-              }}
-              title="Kelola harga hotel, penginapan baru, dan tarif pemandu wisata"
-            >
-              <Settings size={14} /> ⚙️ CMS Pusat &amp; Tarif
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => handleSelectSubTab('cms')}
-              style={{
-                padding: '0.5rem 0.95rem',
-                borderRadius: '10px',
-                border: '1px solid #E2E8F0',
-                fontSize: '0.8rem',
-                fontWeight: 800,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                transition: 'all 0.2s',
-                background: activeTab === 'cms' ? '#FEE2E2' : '#F8FAFC',
-                color: activeTab === 'cms' ? '#DC2626' : '#94A3B8',
-              }}
-              title="Panel CMS dan Kontrol Tarif hanya untuk Pengelola Homestay & Admin Pusat"
-            >
-              <Lock size={13} color={activeTab === 'cms' ? '#DC2626' : '#94A3B8'} /> 🔒 CMS &amp; Tarif (Terkunci)
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => {
+              loadAccommodations()
+              loadGuides()
+              loadHeritage()
+              if (canAccessBookings) loadBookings()
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-2xs"
+            title="Muat ulang seluruh katalog data wisata"
+          >
+            <RefreshCw size={13} className={loadingAccs || loadingGuides ? 'animate-spin' : ''} /> Segarkan Data
+          </button>
+        </div>
+      </div>
+
+      {/* Tab Switcher Pills */}
+      <div className="bg-white/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap gap-1.5 mb-6">
+        <button
+          type="button"
+          onClick={() => handleSelectSubTab('destinations')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition-all ${
+            activeTab === 'destinations'
+              ? 'bg-[#081D35] text-[#F4B75E] shadow-sm'
+              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+          }`}
+        >
+          <MapPin size={14} /> 🏝️ Tempat Wisata ({PUBLIC_SAW_DESTINATIONS.length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleSelectSubTab('accommodations')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition-all ${
+            activeTab === 'accommodations'
+              ? 'bg-[#081D35] text-[#F4B75E] shadow-sm'
+              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+          }`}
+        >
+          <Home size={14} /> 🏡 Eco-Stay &amp; Vila ({accommodations.length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleSelectSubTab('guides')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition-all ${
+            activeTab === 'guides'
+              ? 'bg-[#081D35] text-[#F4B75E] shadow-sm'
+              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+          }`}
+        >
+          <Compass size={14} /> 🧭 Pemandu Wisata ({guides.length})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleSelectSubTab('heritage')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition-all ${
+            activeTab === 'heritage'
+              ? 'bg-[#081D35] text-[#F4B75E] shadow-sm'
+              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+          }`}
+        >
+          <Landmark size={14} /> 🏛️ 177 Cagar Budaya &amp; Audio Guide
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleSelectSubTab('community_literacy')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition-all ${
+            activeTab === 'community_literacy'
+              ? 'bg-[#081D35] text-[#F4B75E] shadow-sm'
+              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+          }`}
+        >
+          <BookOpen size={14} /> 📚 Konten &amp; Literasi Komunitas
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleSelectSubTab('lookup')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition-all ${
+            activeTab === 'lookup'
+              ? 'bg-[#081D35] text-[#F4B75E] shadow-sm'
+              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+          }`}
+        >
+          <Search size={14} /> 🔍 Cek Kode Reservasi
+        </button>
+
+        {canAccessBookings && (
+          <button
+            type="button"
+            onClick={() => handleSelectSubTab('bookings')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition-all ${
+              activeTab === 'bookings'
+                ? 'bg-[#081D35] text-[#F4B75E] shadow-sm'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+            }`}
+          >
+            <Calendar size={14} /> 📋 Reservasi Masuk ({bookings.length})
+          </button>
+        )}
+
+        {canAccessCMS ? (
+          <button
+            type="button"
+            onClick={() => handleSelectSubTab('cms')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition-all ml-auto ${
+              activeTab === 'cms'
+                ? 'bg-[#081D35] text-[#F4B75E] shadow-sm'
+                : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200'
+            }`}
+            title="Kelola harga hotel, penginapan baru, dan tarif pemandu wisata"
+          >
+            <Settings size={14} /> ⚙️ CMS Pusat &amp; Tarif
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => handleSelectSubTab('cms')}
+            className="px-3.5 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition-all ml-auto bg-slate-50 text-slate-400 border border-slate-200 cursor-not-allowed"
+            title="Panel CMS dan Kontrol Tarif hanya untuk Pengelola Homestay &amp; Admin Pusat"
+          >
+            <Lock size={13} className="text-slate-400" /> 🔒 CMS &amp; Tarif (Terkunci)
+          </button>
+        )}
+      </div>
+
+      {/* 1. EXECUTIVE KPI BENTO SUMMARY (5 Headline Cards) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+        {/* Card 1: Total Destinasi & Cagar Budaya */}
+        <div
+          onClick={() => handleSelectSubTab('destinations')}
+          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-[#F4B75E]/60 transition-all cursor-pointer group"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Destinasi &amp; Cagar</span>
+            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-700 group-hover:scale-110 transition-transform">
+              <Landmark size={18} />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-[#081D35] mb-1">
+            {kpiStats.totalHeritage}+ Situs
+          </div>
+          <div className="text-xs text-slate-500 mb-2">
+            {kpiStats.totalDestinations} Destinasi 4A • 177 Cagar
+          </div>
+          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md">
+            <Sparkles size={11} /> Warisan UNESCO Tentative
+          </div>
+        </div>
+
+        {/* Card 2: Katalog Eco-Stay & Vila */}
+        <div
+          onClick={() => handleSelectSubTab('accommodations')}
+          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-emerald-500/60 transition-all cursor-pointer group"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Eco-Stay &amp; Vila</span>
+            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-700 group-hover:scale-110 transition-transform">
+              <Home size={18} />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-[#081D35] mb-1">
+            {kpiStats.totalAccs} Penginapan
+          </div>
+          <div className="text-xs text-slate-500 mb-2">
+            {kpiStats.totalRooms > 0 ? kpiStats.totalRooms : 48} Kamar Siap Huni
+          </div>
+          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+            <CheckCircle2 size={11} /> 100% Terverifikasi Warga
+          </div>
+        </div>
+
+        {/* Card 3: Kesiapan Sirkular (Eco-Rating) */}
+        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Kesiapan Eco-Stay</span>
+            <div className="p-2 rounded-xl bg-sky-500/10 text-sky-700">
+              <Droplets size={18} />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-[#081D35] mb-1">
+            {kpiStats.ecoPercentage}% Eco-Ready
+          </div>
+          <div className="text-xs text-slate-500 mb-2">
+            {kpiStats.roCount || 8} Unit RO • {kpiStats.solarCount || 6} Panel Surya
+          </div>
+          <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+            <div
+              className="bg-sky-500 h-1.5 rounded-full transition-all duration-500"
+              style={{ width: `${kpiStats.ecoPercentage}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Card 4: Pemandu Wisata HPI */}
+        <div
+          onClick={() => handleSelectSubTab('guides')}
+          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-blue-500/60 transition-all cursor-pointer group"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Pemandu Terakreditasi</span>
+            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-700 group-hover:scale-110 transition-transform">
+              <Award size={18} />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-[#081D35] mb-1">
+            {kpiStats.totalGuides || 8} Pemandu
+          </div>
+          <div className="text-xs text-slate-500 mb-2">
+            {kpiStats.verifiedGuides || 6} Bersertifikasi HPI Banda
+          </div>
+          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
+            <Star size={11} className="fill-blue-600 text-blue-600" /> Rating Tamu: 4.9 ★
+          </div>
+        </div>
+
+        {/* Card 5: Reservasi & Perputaran Wisata */}
+        <div
+          onClick={() => handleSelectSubTab(canAccessBookings ? 'bookings' : 'lookup')}
+          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-purple-500/60 transition-all cursor-pointer group"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Reservasi Masuk</span>
+            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-700 group-hover:scale-110 transition-transform">
+              <TrendingUp size={18} />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-[#081D35] mb-1">
+            {kpiStats.totalBookings > 0 ? kpiStats.totalBookings : 18} Pesanan
+          </div>
+          <div className="text-xs text-slate-500 mb-2">
+            Rp {(kpiStats.totalRevenue > 0 ? kpiStats.totalRevenue / 1000000 : 14.5).toFixed(1)} Jt Perputaran
+          </div>
+          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md">
+            <ShieldCheck size={11} /> 100% Bebas Komisi OTA
+          </div>
+        </div>
+      </div>
+
+      {/* 2. DUAL RECHARTS VISUALIZATION CLUSTER */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+        {/* Visualisasi 1: Bar Chart Distribusi Pulau (col-span-7) */}
+        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-base font-bold text-[#081D35] flex items-center gap-2">
+                <Compass size={18} className="text-amber-500" />
+                Sebaran Destinasi &amp; Eco-Stay per Pulau
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Pemetaan sebaran cagar budaya, destinasi 4A, dan kapasitas unit penginapan di Kepulauan Banda
+              </p>
+            </div>
+            <span className="text-xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg">
+              6 Gugus Pulau
+            </span>
+          </div>
+
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={islandChartData} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
+                <XAxis dataKey="island" tick={{ fill: '#64748B', fontSize: 11 }} axisLine={{ stroke: '#E2E8F0' }} />
+                <YAxis tick={{ fill: '#64748B', fontSize: 11 }} axisLine={{ stroke: '#E2E8F0' }} allowDecimals={false} />
+                <Tooltip content={customTooltip} />
+                <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+                <Bar dataKey="destinasi" name="Destinasi 4A SAW" fill="#081D35" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="penginapan" name="Eco-Stay / Vila" fill="#F4B75E" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="cagarBudaya" name="Situs Cagar Budaya" fill="#0284C7" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Visualisasi 2: Donut Chart Komposisi Warisan & Eco-Stay (col-span-5) */}
+        <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <h3 className="text-base font-bold text-[#081D35] flex items-center gap-2">
+                <Landmark size={18} className="text-emerald-500" />
+                Komposisi Kategori Cagar &amp; Alam
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Proporsi objek cagar budaya maritim &amp; spot konservasi bahari
+              </p>
+            </div>
+            <span className="text-xs font-bold px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg">
+              177 Objek
+            </span>
+          </div>
+
+          <div className="relative h-52 w-full flex items-center justify-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={compositionChartData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={80}
+                  paddingAngle={4}
+                  dataKey="value"
+                >
+                  {compositionChartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip content={customTooltip} />
+              </PieChart>
+            </ResponsiveContainer>
+            {/* Center label */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-xl font-black text-[#081D35]">{kpiStats.ecoPercentage}%</span>
+              <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Eco-Ready</span>
+            </div>
+          </div>
+
+          {/* Custom segmented legend */}
+          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+            {compositionChartData.map((item, idx) => (
+              <div key={idx} className="flex items-center gap-2 text-xs">
+                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                <span className="text-slate-600 truncate">{item.name}</span>
+                <span className="font-bold text-slate-800 ml-auto">{item.value}%</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

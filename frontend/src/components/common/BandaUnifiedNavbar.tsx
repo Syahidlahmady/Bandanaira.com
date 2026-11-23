@@ -18,7 +18,7 @@ export const BandaUnifiedNavbar: React.FC<BandaUnifiedNavbarProps> = ({
   activeTab = 'landing',
   onNavigateTab,
   onOpenLogin,
-  onOpenRegister,
+  onOpenRegister: _onOpenRegister,
   onLogout,
 }) => {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -41,13 +41,13 @@ export const BandaUnifiedNavbar: React.FC<BandaUnifiedNavbarProps> = ({
   ]
 
   return (
-    <header className="sticky top-0 z-40 w-full px-4 sm:px-8 py-3 bg-[#081d35]/90 backdrop-blur-md border-b border-white/10 text-white transition-all">
-      <div className="max-w-[1280px] mx-auto flex items-center justify-between gap-4">
+    <header className="sticky top-0 z-40 w-full px-2.5 sm:px-8 py-2.5 sm:py-3 bg-[#081d35]/90 backdrop-blur-md border-b border-white/10 text-white transition-all">
+      <div className="max-w-[1280px] mx-auto flex items-center justify-between gap-2 sm:gap-4">
         {/* Brand Logo */}
         <button
           type="button"
           onClick={() => onNavigateTab(currentUser ? 'dashboard' : 'landing')}
-          className="inline-flex items-center gap-2.5 text-left focus:outline-none"
+          className="inline-flex items-center gap-1.5 sm:gap-2.5 text-left focus:outline-none min-w-0 shrink"
         >
           {/* Nutmeg Gold Logo */}
           <svg
@@ -117,7 +117,7 @@ export const BandaUnifiedNavbar: React.FC<BandaUnifiedNavbarProps> = ({
         {/* Right User State & Actions */}
         <div className="flex items-center gap-2.5 sm:gap-3">
           {currentUser ? (
-            <div className="flex items-center gap-2">
+            <div className="hidden lg:flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => onNavigateTab('dashboard')}
@@ -139,39 +139,25 @@ export const BandaUnifiedNavbar: React.FC<BandaUnifiedNavbarProps> = ({
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-2">
-              {onOpenRegister && (
-                <button
-                  type="button"
-                  onClick={onOpenRegister}
-                  className="hidden sm:inline-flex px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition-colors shadow-sm cursor-pointer"
-                >
-                  {t.navbar.register}
-                </button>
-              )}
-              {onOpenLogin && (
-                <button
-                  type="button"
-                  onClick={onOpenLogin}
-                  className="px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-semibold transition-colors cursor-pointer"
-                >
-                  {t.navbar.signIn}
-                </button>
-              )}
-            </div>
+            onOpenLogin && (
+              <button
+                type="button"
+                onClick={onOpenLogin}
+                className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-gradient-to-r from-amber-500 to-[#F4B75E] hover:from-amber-400 hover:to-[#f6c276] text-[#081D35] text-xs font-bold transition-all shadow-xs hover:shadow-[0_0_12px_rgba(244,183,94,0.35)] active:scale-[0.98] cursor-pointer"
+              >
+                {t.navbar.signIn}
+              </button>
+            )
           )}
 
-          {/* Divider vertikal pemisah */}
-          <div className="hidden sm:block w-px h-6 bg-white/20" />
-
-          {/* Switcher Bahasa Global Dropdown (Paling kanan sebelum drawer) */}
-          <LanguageSwitcher variant="dropdown" className="hidden sm:inline-flex" />
+          {/* Switcher Bahasa Ikon Murni */}
+          <LanguageSwitcher variant="icon" />
 
           {/* Mobile Menu Button */}
           <button
             type="button"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="lg:hidden w-8 h-8 rounded-lg bg-white/10 text-white flex items-center justify-center text-sm"
+            className="lg:hidden h-[34px] w-[34px] sm:w-8 sm:h-8 rounded-lg bg-white/10 text-white flex items-center justify-center text-sm shrink-0"
             aria-label="Toggle menu"
           >
             {mobileOpen ? '✕' : '☰'}
@@ -183,16 +169,35 @@ export const BandaUnifiedNavbar: React.FC<BandaUnifiedNavbarProps> = ({
       {mobileOpen && (
         <div className="lg:hidden pt-4 pb-2 border-t border-white/10 mt-3 flex flex-col gap-2">
           {currentUser && (
-            <button
-              type="button"
-              onClick={() => {
-                onNavigateTab('dashboard')
-                setMobileOpen(false)
-              }}
-              className="text-left py-1 text-sm font-bold text-amber-400"
-            >
-              📊 {t.navbar.myDashboard}
-            </button>
+            <div className="p-3 rounded-xl bg-white/5 border border-white/10 mb-2 space-y-2">
+              <div className="text-xs font-bold text-white truncate">
+                {currentUser.full_name || currentUser.username}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onNavigateTab('dashboard')
+                    setMobileOpen(false)
+                  }}
+                  className="py-2 text-center rounded-lg bg-gradient-to-r from-amber-500 to-[#F4B75E] text-[#081D35] text-xs font-bold cursor-pointer"
+                >
+                  Dashboard
+                </button>
+                {onLogout && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false)
+                      onLogout()
+                    }}
+                    className="py-2 text-center rounded-lg bg-rose-500/20 text-rose-200 text-xs font-semibold border border-rose-400/40 cursor-pointer"
+                  >
+                    {t.navbar.signOut}
+                  </button>
+                )}
+              </div>
+            </div>
           )}
 
           {navLinks.map((link) => (
@@ -214,16 +219,16 @@ export const BandaUnifiedNavbar: React.FC<BandaUnifiedNavbarProps> = ({
           {/* Mobile Language Switcher */}
           <LanguageSwitcher variant="mobile" className="mt-1 mb-1" />
 
-          {!currentUser && onOpenRegister && (
+          {!currentUser && onOpenLogin && (
             <button
               type="button"
               onClick={() => {
-                onOpenRegister()
+                onOpenLogin()
                 setMobileOpen(false)
               }}
-              className="mt-2 py-2 text-center rounded-lg bg-amber-600 text-white text-xs font-bold"
+              className="mt-2 py-2.5 text-center rounded-xl bg-gradient-to-r from-amber-500 to-[#F4B75E] text-[#081D35] text-xs font-bold transition-all shadow-xs"
             >
-              {t.navbar.register}
+              {t.navbar.signIn}
             </button>
           )}
         </div>

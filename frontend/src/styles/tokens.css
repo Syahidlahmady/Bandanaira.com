@@ -71,3 +71,28 @@
   --font-serif: 'Intro Script', 'Cormorant Garamond', Georgia, serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
+
+/* Nautical Dark Theme (Deep Oceanic Obsidian & Spice Gold) */
+.dark, html.dark {
+  --bg-color: #040D1A;
+  --bg-surface: #081D35;
+  --bg-surface-elevated: #0F2C59;
+  --surface-color: #081D35;
+
+  --card-bg: #081D35;
+  --card-border: #1E3A5F;
+  --card-hover-border: #F4B75E;
+
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  --text-light: #64748B;
+  --border-color: #1E3A5F;
+  --border-focus: #F4B75E;
+
+  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 10px 25px -4px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 18px 36px -6px rgba(0, 0, 0, 0.7);
+  --shadow-xl: 0 24px 50px -8px rgba(0, 0, 0, 0.8);
+}
+

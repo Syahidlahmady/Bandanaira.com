@@ -1175,3 +1175,487 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Menyesuaikan batas minimum tinggi track scroll (`min-height: 100vh`) untuk memastikan tidak ada dead zone atau void kosong.
 - [x] 66.4 Harmonisasi Keseluruhan & Resolusi Integrasi Cabang:
   - Menggabungkan penyempurnaan aset gambar dan arsitektur galeri snap-rail dari cabang `feature/mobile-static-optimization` ke dalam `main` tanpa mengorbankan fitur Phase 62-65 (Pemetaan Aktor Desa, Peta Vektor SVG, Fullscreen GIS, dan Arsip Sejarah Pokdarwis).
+
+---
+
+## [Phase 67] - Inventarisasi Ruang Kerja (workspace.md) & Modularisasi Dashboard per Peran (roles/)
+- [x] 67.1 Dokumentasi Menyeluruh Ekosistem Ruang Kerja (`workspace.md`):
+  - Mengompilasi inventarisasi komprehensif seluruh 15 modul workspace dan sub-workspace di repository ke dalam dokumen acuan `workspace.md`.
+  - Memetakan Matriks Hak Akses Peran Pengguna (10 Peran x 15 Ruang Kerja).
+  - Menyusun rincian detail fitur per workspace (tujuan, file komponen, backend service, entitas database/PostGIS, dan batas wewenang).
+  - Mendokumentasikan alur integrasi data lintas ruang kerja (Rantai Pasok Pala, Pariwisata & Cagar Budaya, Administrasi Desa & Surat Warga, Survei Geospasial).
+- [x] 67.2 Modularisasi Penuh Dasbor per Peran Mandiri (`frontend/src/views/dashboard/roles/`):
+  - Memecah kode monolitik `UserEcosystemDashboard.tsx` (~2.207 baris) menjadi 10 modul dasbor independen yang 100% mandiri (*self-contained*).
+  - Setiap berkas peran memuat definisi data profil metrik, dataset grafik Recharts, item ringkasan ruang kerja, transparansi data, dan kode render JSX lengkap miliknya sendiri:
+    - `FarmerDashboardView.tsx` (`farmer` - Petani Rempah Mandiri)
+    - `FarmerGroupDashboardView.tsx` (`farmer_group_admin` - Ketua Poktan)
+    - `VillageOfficerDashboardView.tsx` (`village_officer` - Aparatur Pemerintah Desa)
+    - `CoopManagerDashboardView.tsx` (`coop_manager` - Pengelola Koperasi Banda)
+    - `HomestayOperatorDashboardView.tsx` (`homestay_operator` - Operator Homestay & Eco-Stay)
+    - `FieldSurveyorDashboardView.tsx` (`field_surveyor` - Surveyor Geospasial & Lapangan)
+    - `ResidentDashboardView.tsx` (`resident` - Warga Desa Kepulauan)
+    - `SmartTourismDashboardView.tsx` (`smart_tourism_admin` - Redaksi Naskah Pokdarwis CMS)
+    - `TouristDashboardView.tsx` (`tourist` - Wisatawan Bahari & Sejarah)
+    - `AdminDashboardView.tsx` (`admin` - Administrator Sistem Kepulauan)
+  - Mengeliminasi file monolitik perantara, menyatukan ekspor melalui `index.ts`.
+  - Merampingkan `frontend/src/views/dashboard/UserEcosystemDashboard.tsx` menjadi ~530 baris yang bersih dan bertindak sebagai orchestrator/layout router.
+  - Memverifikasi build frontend (`npm --prefix frontend run build`) lulus 100% tanpa error TypeScript (2.059 modul ter-bundle dalam 9,3 detik).
+- [x] 67.3 Arsitektur Sidebar Super Administrator 5 Pilar Komando (Collapsible Accordion Dropdown di `DashboardLayout.tsx`):
+  - Mengelompokkan seluruh ruang kerja Super Administrator ke dalam sistem dropdown accordion 5 pilar komando terpadu:
+    1. **Tata Kelola Kependudukan**: Verifikasi NIK & Penduduk (`population`), Approval & Pelayanan Surat (`letters`).
+    2. **Pertanian & Traceability**: Plot Kebun GIS Poktan (`farming`), Panen & Batch Blockchain (`traceability`), Peta Spasial GIS 7-Layer (`gis`).
+    3. **Keuangan & Koperasi**: Kasir Koperasi Hatta (`koperasi`).
+    4. **Pariwisata & Budaya**: Cagar Budaya & Eco-Stay (`tourism`), CMS Draf Artikel Sejarah (`tourism` subtab `cms`), Perencana Wisata Cerdas DSS (`smart_planner`).
+    5. **IoT & Keamanan Sistem**: Telemetri IoT 4 Stasiun (`iot`), Jejak Audit & Ledger EVM (`audit`), Survei Lapangan & Spatial ETL (`survei`).
+  - Menjaga menu utama atas "Dashboard Komando" sebagai akses cepat sentral.
+  - Menambahkan fitur auto-open accordion group berdasarkan tab yang sedang aktif serta animasi rotasi `ChevronDown`.
+  - Mempertahankan tampilan flat minimalis yang bersih untuk peran non-admin (Warga, Petani, Pokdarwis, dll.).
+  - Memverifikasi build frontend lulus 100% tanpa kendala (`npm --prefix frontend run build`).
+
+---
+
+## [Phase 68] - Pembersihan Berkas Shim Modal di frontend/src/components/
+- [x] 68.1 Pembersihan Berkas Shim Modal & Restrukturisasi Impor (`frontend/src/App.tsx`):
+  - Memutakhirkan lazy import di `App.tsx` agar langsung merujuk ke modul aslinya di `components/modals/` (`BlockchainModal`, `OfflineQueueModal`, `PublicVerifyModal`, `VerifiedMarketplaceModal`, `QuickLoginModal`).
+  - Menghapus 5 berkas shim proxy satu-baris redundan di `frontend/src/components/`.
+  - Memverifikasi build frontend lulus 100% tanpa regresi (2.054 modul ter-bundle sempurna).
+
+---
+
+## [Phase 69] - Redesain Antarmuka Workspace Kependudukan (Residents Workspace Modernization & KPI Integration)
+- [x] 69.1 Redesain Total Antarmuka Kependudukan Desa (`frontend/src/views/ResidentsWorkspace.tsx`):
+  - Menerapkan panduan `kpi-dashboard-design` dan `frontend-design` dengan tone *Warm Heritage Nautical & Civic Clarity* (palet Warm Linen, Deep Ocean Navy, Spice Gold, dan Maluku Emerald).
+  - Mengintegrasikan 5 kartu bento KPI utama: Total Penduduk Terdaftar, Identitas Terverifikasi Sah, Antrean Verifikasi (Pending), Rasio Gender Demografi (dengan visual bar L/P), serta Klaster Profesi Khas Banda.
+  - Menambahkan klaster analitik ganda Recharts interaktif:
+    - Bar Chart distribusi 6 mata pencaharian tradisional utama di Kepulauan Banda (bisa diklik untuk menyaring tabel seketika).
+    - Donut Chart komposisi status verifikasi identitas (Terverifikasi, Menunggu, Ditolak).
+  - Menyediakan form registrasi warga baru modern dalam drawer lipat (*collapsible drawer*) dengan indikator digit NIK (16 digit), validasi jenis kelamin, profesi, RT/RW, dan auto-save draft di browser.
+  - Memperbarui tabel data induk kependudukan dengan visual avatar inisial, salin NIK satu-klik (clipboard), badge profesi kepulauan, filter segmented status instan, dan pencarian cepat.
+  - Menyediakan modal pratinjau KTP Digital Warga (*Kartu Identitas Digital Kepulauan*) lengkap dengan stempel verifikasi, simulasi QR Code, dan tombol cetak lembar warga.
+  - Memverifikasi build frontend (`npm --prefix frontend run build`) lulus 100% tanpa error kompilasi TypeScript (2.054 modul ter-bundle).
+
+---
+
+## [Phase 70] - Redesain Antarmuka Workspace Panen & Mutu Rempah (Harvest & Traceability Workspace)
+- [x] 70.1 Redesain Total Workspace Panen & Mutu Rempah (`frontend/src/views/HarvestGradingWorkspace.tsx`):
+  - Menerapkan panduan `kpi-dashboard-design` dan `frontend-design` dengan tone *Warm Heritage Agrarian & Cryptographic Spice Traceability* (palet Deep Ocean Navy, Warm Linen, Spice Gold, Maluku Emerald, dan Royal Purple EVM).
+  - Mengintegrasikan 5 kartu bento KPI utama: Total Hasil Panen (kg & ton), Batch Kemasan QR Terdaftar, Tingkat Jangkar Blockchain EVM On-Chain, Rasio Mutu Grade A Super, serta Cakupan Lahan Kebun Terdata.
+  - Menambahkan klaster analitik ganda Recharts interaktif:
+    - Bar Chart Distribusi Volume Panen per Komoditas (Pala Banda, Fuli Merah, Cengkeh, Daging Buah).
+    - Donut Chart Komposisi Mutu & Kualitas Sortasi (Grade A Super, Fuli Merah Murni, Grade B Standar) dengan indikator sentral Grade A.
+  - Menyediakan form drawer lipat interaktif terpisah: Formulir Pencatatan Panen Petani (offline-first resilient) dan Formulir Penerbitan Batch Kemasan Berlabel QR.
+  - Memperbarui tabel riwayat panen masuk dengan pencarian kode/kebun instan, filter jenis komoditas, dan pratinjau batch QR.
+  - Memperbarui tampilan kartu batch kemasan dengan stempel verifikasi, timeline rantai peristiwa mutu (SHA-256 hash timeline), tombol penjangkaran EVM on-chain, tombol verifikasi on-chain, dan tombol sertifikat QR publik.
+  - Memperbarui modal pratinjau stiker label QR berstandar indikasi geografis resmi dengan tombol salin token, cetak stiker peramban (`window.print()`), dan unduh PNG resolusi tinggi.
+  - Memverifikasi build frontend (`npm --prefix frontend run build`) lulus 100% tanpa error TypeScript (2.054 modul ter-bundle).
+
+---
+
+## [Phase 71] - Redesain Antarmuka Workspace Plot & Kebun Pala GIS (Farms GIS Workspace)
+- [x] 71.1 Redesain Total Workspace Pemetaan Lahan & Kebun GIS (`frontend/src/views/FarmsGisWorkspace.tsx`):
+  - Menerapkan panduan `kpi-dashboard-design` dan `frontend-design` dengan tone *Warm Heritage Agrarian & Geodesic GIS Clarity* (palet Deep Ocean Navy, Warm Linen, Spice Gold, Maluku Emerald, dan Ocean Blue PostGIS).
+  - Mengintegrasikan 5 kartu bento KPI utama: Total Luas Lahan (Ha & m² PostGIS geodesik), Plot Terdaftar (dengan persentase verifikasi desa), Petani Penggarap Terdaftar (terhubung NIK desa), Kelompok Tani (Poktan), serta Antrean Verifikasi Lahan Desa.
+  - Menambahkan klaster analitik ganda Recharts interaktif:
+    - Bar Chart Distribusi Luas Lahan per Komoditas (Pala Banda, Cengkih, Kayu Manis dalam satuan Hektar & m²).
+    - Donut Chart Status Verifikasi & Legalitas Plot Lahan Adat (Disahkan, Menunggu Persetujuan, Ditolak).
+  - Menyediakan kanvas peta satelit terpadu dengan Leaflet, batas wilayah resmi desa GeoJSON, dan kontrol navigasi.
+  - Menyediakan formulir pemetaan 3 langkah dalam *collapsible drawer*:
+    - Langkah 1: Lokasi & Batas Lahan dari Peta Satelit (GPS perangkat otomatis, uji tumpang tindih poligon PostGIS).
+    - Langkah 2: Identitas Kebun & Pemilik Lahan (Pencarian NIK warga terdaftar desa, pendaftaran cepat petani anggota Poktan, kode plot, komoditas, dan luas).
+    - Langkah 3: Dusun & Input Koordinat Manual Geodesik (opsional).
+  - Memperbarui tabel master plot kebun dengan filter status pill (Semua, Menunggu, Disetujui), pencarian instan, deteksi pelanggaran batas desa, dan tombol fokus peta ("Lihat di Peta") serta tombol pengesahan aparat desa.
+  - Memverifikasi build frontend (`npm --prefix frontend run build`) lulus 100% tanpa error TypeScript (2.054 modul ter-bundle).
+
+---
+
+## [Phase 72] - Redesain Antarmuka Workspace Kasir Koperasi Hatta (Cooperative Cashier & Circular Economy Workspace)
+- [x] 72.1 Redesain Total Workspace Kasir Koperasi Hatta & Ekonomi Sirkular Pulau (`frontend/src/views/KoperasiKasirWorkspace.tsx`):
+  - Menerapkan panduan `kpi-dashboard-design` dan `frontend-design` dengan tone *Warm Heritage Nautical & Circular Economy Governance* (palet Deep Ocean Navy `#081D35`, Warm Linen `#F7F5F0`, Spice Gold `#F4B75E`, Maluku Emerald `#10B981`, Ocean Blue `#0284C7`, dan Sky Cyan).
+  - Mengintegrasikan 5 kartu bento KPI utama:
+    - Rekening Anggota Aktif (kartu saldo digital warga terhubung NIK).
+    - Cadangan Air Bersih RO Terkendali (kapasitas tangki terintegrasi sensor solenoid valve).
+    - Bank Sampah Plastik Terkumpul (metrik kilogram daur ulang bernilai ekonomi).
+    - Total Omzet Transaksi Kasir (perputaran rupiah tunai & non-tunai hari ini).
+    - Perputaran Saldo Kas Koperasi (likuiditas kas cadangan operasional pulau).
+  - Menambahkan klaster visualisasi analitik Recharts ganda yang dinamis:
+    - Bar Chart Volume Komoditas & Sirkularitas Harian (perbandingan kg komoditas rempah vs kg sampah plastik).
+    - Donut Chart Alokasi Kas & Sirkularitas Ekonomi (Pencairan Kas Tani, Deposito Saldo RO, Kas Sampah Plastik).
+  - Menyediakan Kartu Pintar Warga (Citizen Smart Card) dengan pencarian NIK/Nama cepat, informasi status keanggotaan aktif, nomor rekening, dan kartu debit digital visual desa.
+  - Menyusun antarmuka aksi operasional kasir dalam tab terorganisir:
+    - Timbangan Komoditas & Pembayaran Panen (timbang pala basah/kering, fuli, cengkih dengan kalkulasi instan, konfirmasi timbangan, dan receipt preview).
+    - Setor Sampah Plastik Sirkular (timbang botol PET, plastik keras, kantong kresek dengan konversi saldo rekening warga atau kas tunai).
+    - Dispenser Air Minum RO Cerdas (pemilihan volume 5L/19L Galon, potong saldo otomatis, simulasi durasi buka katup solenoid valve valve-opening timer dengan countdown animasi).
+  - Menyediakan tabel buku besar mutasi transaksi (Ledger Table) dengan filter kategori (Semua, Komoditas, Air RO, Sampah), pencarian, badge status transaksi, verifikasi SHA-256 hash off-chain, dan modal detail transaksi.
+  - Memverifikasi build frontend (`npm --prefix frontend run build`) lulus 100% tanpa error TypeScript (2.054 modul ter-bundle).
+
+---
+
+## [Phase 73] - Redesain Antarmuka Workspace Master Data Wisata, Eco-Stay & Cagar Budaya (Tourism & Heritage Workspace)
+- [x] 73.1 Redesain Total Workspace Master Data Wisata & Eco-Stay (`frontend/src/views/TourismEcoStayWorkspace.tsx`):
+  - Menerapkan panduan `kpi-dashboard-design` dan `frontend-design` dengan tone *Warm Heritage Nautical & Island Hospitality Governance* (palet Deep Ocean Navy `#081D35`, Warm Linen `#F7F5F0`, Spice Gold `#F4B75E`, Maluku Emerald `#10B981`, Ocean Blue `#0284C7`, dan Sky Cyan).
+  - Mengintegrasikan 5 kartu bento KPI utama:
+    - Destinasi 4A & Cagar Budaya (177+ situs cagar budaya maritim, destinasi SAW, pengakuan warisan dunia UNESCO tentative).
+    - Katalog Eco-Stay & Vila (unit penginapan terdaftar, kapasitas kamar siap huni, dan verifikasi warga).
+    - Kesiapan Sirkular (Eco-Rating) (persentase adopsi air minum RO & energi surya PLTS terbarukan dengan progress bar interaktif).
+    - Pemandu Wisata Terakreditasi (total pemandu, rasio berlisensi HPI Banda, dan skor kepuasan wisatawan).
+    - Reservasi Masuk & Perputaran Wisata (total pesanan masuk, nominal perputaran ekonomi langsung ke warga tanpa potongan OTA).
+  - Menambahkan klaster visualisasi analitik Recharts ganda:
+    - Bar Chart Sebaran Destinasi & Eco-Stay per Gugus Pulau (Neira, Banda Besar/Lonthoir, Hatta, Rhun, Ai, Gunung Api).
+    - Donut Chart Komposisi Kategori Cagar Budaya & Eco-Stay (Benteng & Militer VOC, Rumah Tokoh Kemerdekaan, Spot Diving & Bahari, Perkebunan Pala & Adat).
+  - Memodernisasi header ruang kerja dan navigasi segmented tab pills (Tempat Wisata, Eco-Stay & Vila, Pemandu Wisata, 177 Cagar Budaya, Konten Literasi Komunitas, Cek Kode Reservasi, Reservasi Masuk, CMS Pusat & Tarif).
+  - Mengintegrasikan aksi interaktif pada kartu KPI untuk navigasi cepat (*click-to-navigate*) antar tab.
+  - Memverifikasi build frontend (`npm --prefix frontend run build`) lulus 100% tanpa error TypeScript (2.054 modul ter-bundle dalam 7.24s).
+
+---
+
+## [Phase 74] - Redesain Antarmuka Pusat Komando Telemetri IoT & Cuaca (Island Telemetry & Weather IoT Workspace)
+- [x] 74.1 Redesain Total Pusat Komando Telemetri IoT & Resiliensi Pulau (`frontend/src/views/IslandTelemetryWorkspace.tsx`):
+  - Menerapkan panduan `kpi-dashboard-design` dan `frontend-design` dengan tone *Warm Heritage Nautical & Island Governance* (palet Deep Ocean Navy `#081D35`, Warm Linen `#F7F5F0`, Spice Gold `#F4B75E`, Maluku Emerald `#10B981`, Ocean Blue `#0284C7`, dan Sky Cyan).
+  - Mengintegrasikan 5 kartu bento KPI utama (Barometer Resiliensi Pulau):
+    - Kesiapan Resiliensi Pulau (status kesehatan operasional 4 stasiun, alert aktif, kepatuhan mandat FTI 100%).
+    - Air Minum Konsumsi Terdistribusi (total volume liter air minum RO terdistribusi hari ini dari 4 stasiun).
+    - Rata-Rata Kemurnian TDS (sensor kualitas air PPM terkalibrasi berstandar WHO < 100 PPM).
+    - Bauran Energi Bersih PLTS (persentase daya surya aktif terhadap konsumsi stasiun dan cadangan tandon air).
+    - Penghematan BBM Solar PLTD (estimasi liter solar dihemat dan reduksi emisi karbon ~385 kg CO₂e).
+  - Menambahkan klaster visualisasi analitik Recharts ganda:
+    - Area Chart Dinamika Fluktuasi Kualitas Air (TDS PPM) & Daya Stasiun (Watt) berbasis aliran log telemetri 24 jam dengan gradien warna.
+    - Bar Chart Komparasi Level Tandon Air (%) & Cadangan Baterai (SoC %) per stasiun pulau.
+  - Memodernisasi 4 kartu pemantauan stasiun IoT pulau (Neira, Lonthoir Banda Besar, Pulau Ay, Pulau Rhun) dengan indikator denyut beacon langsung, panel kualitas air RO, panel daya energi surya, dan status katup solenoid.
+  - Memperbarui tabel log aliran paket telemetri ESP32 dengan filter stasiun pulau, pencarian instan, dan badge status alert.
+  - Memverifikasi build frontend (`npm --prefix frontend run build`) lulus 100% tanpa error TypeScript (2.054 modul ter-bundle dalam 8.13s).
+
+---
+
+## [Phase 75] - Redesain Antarmuka Kotak Masuk Pelayanan Surat Desa (Village Administrative Letters Workspace)
+- [x] 75.1 Redesain Total Kotak Masuk Pelayanan & Verifikasi Surat Warga (`frontend/src/views/LettersWorkspace.tsx`):
+  - Menerapkan panduan `kpi-dashboard-design` dan `frontend-design` dengan tone *Warm Heritage Nautical & Village Administrative Governance* (palet Deep Ocean Navy `#081D35`, Warm Linen `#F7F5F0`, Royal Blue `#2563EB`, Maluku Emerald `#10B981`, Amber Gold `#F59E0B`, dan Crimson Red `#EF4444`).
+  - Mengintegrasikan 5 kartu bento KPI utama:
+    - Total Permohonan Masuk (total berkas pengajuan warga 6 dusun terhubung NIK).
+    - Antrean Menunggu Verifikasi (antrean permohonan surat aktif yang memerlukan validasi perangkat desa).
+    - Surat Disetujui & Diterbitkan (surat resmi siap cetak dengan tanda tangan Kepala Desa).
+    - Berkas Ditolak / Perlu Revisi (permohonan ditolak dengan catatan alasan transparan).
+    - Tingkat Kelulusan SLA Pelayanan (persentase kelulusan berkas desa dengan rata-rata waktu proses < 24 jam).
+  - Menambahkan klaster visualisasi analitik Recharts ganda:
+    - Bar Chart Distribusi Permohonan Surat per Kategori Profesi Warga (Petani Pala, Nelayan, Operator Homestay, Pengrajin, Pemandu Wisata) dengan komparasi status Disetujui vs Menunggu.
+    - Donut Chart Komposisi Status Pelayanan Surat Desa (Disetujui Sah, Menunggu Verifikasi, Ditolak).
+  - Memperbarui tabel permohonan surat master dengan avatar inisial warga, salin NIK instan satu-klik (clipboard), badge profesi kepulauan, pencarian cepat, tombol aksi cepat persetujuan/penolakan, serta tombol cetak surat resmi.
+  - Mempertahankan modal pratinjau surat resmi desa (*Kop Surat Resmi Kantor Kepala Desa Banda Neira*, nomor registrasi, format hukum, tanda tangan kades M. Syafi'i Baadilla, dan stempel digital terverifikasi).
+  - Memverifikasi build frontend (`npm --prefix frontend run build`) lulus 100% tanpa error TypeScript (2.054 modul ter-bundle dalam 8.28s).
+
+---
+
+## [Phase 76] - Redesain Antarmuka Pemetaan Masalah Lapangan & Pipa ETL Spasial (Survey & ETL Workspace)
+- [x] 76.1 Redesain Total Ruang Kerja Survei Lapangan & Pipa ETL Hybrid Spasial (`frontend/src/views/SurveyEtlWorkspace.tsx`):
+  - Menerapkan panduan `kpi-dashboard-design` dan `frontend-design` dengan tone *Warm Heritage Nautical & Geospatial Field Intelligence Governance* (palet Deep Ocean Navy `#081D35`, Warm Linen `#F7F5F0`, Spice Gold `#F4B75E`, Maluku Emerald `#10B981`, Ocean Blue `#0284C7`, Sky Cyan, Purple Indigo, dan Crimson Red).
+  - Mengintegrasikan 5 kartu bento KPI utama:
+    - Dokumen Survei Lapangan (total berkas temuan lapangan tersimpan di MongoDB NoSQL).
+    - Pending Migrasi ETL (catatan survei lapangan siap diproses dan dikonversi ke fitur spasial PostGIS).
+    - Fitur Spasial PostGIS 7-Layer (total entitas titik geografis tervalidasi yang aktif di peta spasial kepulauan).
+    - Rasio Sukses Pipa ETL (persentase integritas transformasi hybrid NoSQL ke Relasional/PostGIS).
+    - Cakupan Wilayah Pemetaan (sebaran gugus pulau yang telah disurvei dengan indikator akurasi GPS).
+  - Menambahkan klaster visualisasi analitik Recharts ganda:
+    - Bar Chart Distribusi Isu Lapangan per Kategori Domain (Infrastruktur, Akses Air Bersih, Kerusakan Cagar Budaya, Tanaman Pala/Pertanian, Sanitasi & Lingkungan) dengan komparasi status Migrasi PostGIS vs Pending NoSQL.
+    - Donut Chart Komposisi Tingkat Urgensi Masalah Lapangan (Darurat/Kritis, Tinggi, Sedang, Rendah).
+  - Menyusun 2 tab kerja utama yang bersih, modern, dan intuitif:
+    - Tab 1: Formulir Input Temuan Lapangan NoSQL (pemilihan kategori domain, tingkat urgensi, koordinat GPS terintegrasi pin peta, deskripsi masalah, status perbaikan, dan editor pasangan dinamis Key-Value metadata).
+    - Tab 2: Manajer Pipa ETL & Fitur PostGIS (tombol eksekusi pipa migrasi ETL NoSQL->PostGIS, tabel fitur spasial 7-layer dengan filter, pencarian, tautan navigasi langsung ke peta spasial, dan modal inspeksi payload GeoJSON).
+  - Memverifikasi build frontend (`npm --prefix frontend run build`) lulus 100% tanpa error TypeScript (2.054 modul ter-bundle dalam 8.49s).
+
+---
+
+## [Phase 77] - Redesain Antarmuka Jejak Audit & Validasi Kriptografi Ekosistem (Audit Trail & Verification Workspace)
+- [x] 77.1 Redesain Total Ruang Kerja Jejak Audit & Validasi Kriptografi Ekosistem (`frontend/src/views/AuditTrailWorkspace.tsx`):
+  - Menerapkan panduan `kpi-dashboard-design` dan `frontend-design` dengan tone *Warm Heritage Nautical & Cryptographic Governance* (palet Deep Ocean Navy `#081D35`, Warm Linen `#F7F5F0`, Nutmeg Gold `#F4B75E`, Maluku Emerald `#10B981`, Ocean Blue `#0284C7`, Royal Indigo `#6366F1`, Sky Cyan, dan Crimson Red).
+  - Mengintegrasikan 5 kartu bento KPI utama:
+    - Total Mutasi Sistem (total riwayat aktivitas audit operator desa tervalidasi SHA-256).
+    - Skor Kepatuhan OWASP & UU PDP (pengerasan NFR-02, AES-256-GCM, HMAC Blind Indexing, dan 98.5% skor kepatuhan).
+    - Rantai Pasok Blockchain EVM (batch terverifikasi di ledger konsorsium dengan model Zero-PII on-chain).
+    - Kependudukan Desa (rasio warga terverifikasi dengan blind indexing O(1) B-Tree kebal analisa frekuensi).
+    - Pelayanan Surat Warga (dokumen administrasi SKU & domisili berstempel sah dan bertanda tangan digital).
+  - Menambahkan klaster visualisasi analitik Recharts ganda:
+    - Bar Chart Volume Aktivitas Audit per Entitas Ekosistem (Kependudukan, Lahan Pala, Panen Rempah, Rantai Pasok Batch, Pelayanan Surat, Jejak Audit Sistem) dengan komparasi total mutasi vs data terverifikasi/sah.
+    - Donut Chart Komposisi Tipe Aksi Sistem (CREATE/INPUT, VERIFY/APPROVE, UPDATE/MUTASI, ANCHOR/EVM HASH, REJECT/DELETE).
+  - Merombak panel OWASP Top 10 Security & Cryptographic Hardening:
+    - 4 Pilar Pengerasan: AES-256-GCM At-Rest (256-Bit Master Key), HMAC-SHA256 Blind Index (64-char Hex), Anti-Brute Force Rate Limiting (Maks 20 Req/Menit), dan Zero-PII On-Chain Blockchain (Off-chain PII hash only).
+    - Kotak Pasir Kriptografi Interaktif (Live Crypto Sandbox Playground): Uji langsung enkripsi NIK dengan pilihan preset contoh NIK, tombol salin 1-klik untuk masked NIK, blind index hash, dan ciphertext Base64.
+  - Memodernisasi Buku Besar Log Audit Terpusat (Audit Trail Ledger):
+    - Bilah filter komprehensif: dropdown entitas, chip filter aksi cepat (CREATE, VERIFY, UPDATE, ANCHOR, REJECT), pencarian kata kunci, dan tombol ekspor CSV.
+    - Tabel audit dengan penanda waktu WIT, profil operator, badge aksi berkode warna, badge entitas berikon, tombol salin ID sasaran 1-klik, dan tombol inspeksi payload.
+    - Modal inspeksi detail payload JSON dengan syntax styling dan tombol salin JSON.
+    - Modal cetak Laporan Rekapitulasi Resmi Tahunan Ekosistem Desa (Kop Surat Resmi Kantor Kepala Desa Banda Neira, tabel rekapitulasi 7 pilar, tanda tangan Kades & Sekdes, serta tombol cetak/simpan PDF).
+  - Memverifikasi build frontend (`npm --prefix frontend run build`) lulus 100% tanpa error TypeScript (2.054 modul ter-bundle dalam 10.16s).
+
+---
+
+## [Phase 78] - Redesain Pusat Pemberitahuan Ekosistem & Eliminasi Tombol Notifikasi Ganda (Dashboard Notifications Overhaul)
+- [x] 78.1 Eliminasi Tombol Notifikasi Ganda di Sidebar (`frontend/src/views/dashboard/DashboardLayout.tsx`):
+  - Menghapus tombol notifikasi redundan di panel sidebar navigasi sesuai arahan pengguna.
+  - Mempertahankan dan memfokuskan pusat interaksi notifikasi satu pintu pada bilah atas (*topbar workspace header*).
+  - Menghapus komponen toast pop-up lama yang hanya menampilkan jumlah angka notifikasi tanpa keterangan rincian.
+- [x] 78.2 Redesain Pusat Pemberitahuan Ekosistem Terpadu (Notification Center Popover):
+  - Menerapkan panduan `frontend-design`, `kpi-dashboard-design`, dan `design-system` dengan estetika *Warm Heritage Nautical & Executive Island Governance*.
+  - Menyediakan tombol lonceng interaktif di topbar dengan badge jumlah notifikasi belum dibaca (*unread count*) beranimasi pulse.
+  - Mengembangkan popover drawer/menu mengambang elegan (`bg-white rounded-2xl border-slate-200/90 shadow-2xl`):
+    - **Header**: Judul *Pemberitahuan Ekosistem*, badge status baru, tombol *Tandai Semua Dibaca* (`CheckCheck`), dan tombol tutup (`X`).
+    - **Filter Cepat**: Tab chip *Semua*, *Belum Dibaca*, *Layanan Desa* (Surat & Lahan), serta *IoT & Sistem* (Telemetri 4 Stasiun, Blockchain, Jaringan).
+    - **Daftar Notifikasi Kaya Keterangan**: Setiap item menampilkan indikator belum dibaca, badge kategori berikon (*Surat, Lahan Pala, Telemetri IoT, Koperasi Hatta, Rantai Pasok EVM, Status Jaringan Offline*), judul aktivitas, deskripsi lengkap, penanda waktu (*time-ago*), tombol *Tandai Dibaca*, tombol hapus notifikasi, serta tombol aksi cepat (*Buka Berkas*, *Validasi Lahan*, *Pantau IoT*, dll.) yang langsung berpindah tab ke ruang kerja terkait.
+    - **Status Kosong Elegan**: Tampilan ramah dan rapi dengan ikon centang emerald ketika seluruh notifikasi telah selesai ditindaklanjuti.
+    - **Footer**: Indikator status real-time sinkronisasi kepulauan dan tombol *Bersihkan* notifikasi.
+  - Memverifikasi interaksi klik di luar area (*click-outside detection*) menutup popover secara mulus.
+  - Memverifikasi build frontend produksi (`npm --prefix frontend run build`) lulus 100% tanpa error TypeScript (2.054 modul ter-bundle dalam 10.84s).
+
+---
+
+## [Phase 79] - Redesain Menyeluruh Ruang Kerja Dasbor Ekosistem Utama (User Ecosystem Dashboard Overhaul)
+- [x] 79.1 Redesain Arsitektur Dasbor Komando Terpadu (`frontend/src/views/dashboard/UserEcosystemDashboard.tsx`):
+  - Menerapkan panduan `kpi-dashboard-design`, `frontend-design`, dan `design-system` dengan estetika *Warm Heritage Nautical & Island Governance*.
+  - Mengintegrasikan Banner Komando Eksekutif dengan sambutan personal nama pengguna, pill badge status ekosistem (4 Stasiun IoT Aktif, UU PDP No. 27/2022, SHA-256 Immutability), serta jam digital WIT tersinkronisasi real-time.
+  - Membangun 5 Kartu Bento KPI Utama (Barometer Ekosistem Kepulauan Banda Neira):
+    1. Kependudukan Desa (1.842 Jiwa, 98.5% NIK Terenkripsi AES-256 + Blind Index O(1)).
+    2. Lahan Perkebunan Rempah (42 Plot Kebun, 48.5 Ha Lahan Adat, 5 Poktan Binaan).
+    3. Produksi Panen & Rantai Pasok (15.4 Ton Panen Pala Super & Fuli Grade A, 14 Batch EVM On-Chain).
+    4. Koperasi Hatta & Air Minum RO (Rp 48.6 Juta Kas Tani, 1.250 Liter Air RO, Bank Sampah Sirkular).
+    5. Kesiapan IoT 4 Stasiun & Desa (4/4 Stasiun Normal, 38 PPM Kemurnian Air WHO, 100% SLA Surat).
+  - Menyediakan Bilah Verifikasi Publik Mandiri (*Zero-Trust Quick Verification Bar*) untuk pengecekan cepat NIK, kode batch rempah, dan hash transaksi blockchain.
+  - Mengintegrasikan Peluncur Cepat 11 Ruang Kerja Operasional (*Bento Fast-Launchpad*) yang dikelompokkan ke dalam 5 Pilar Tata Kelola Desa Kepulauan.
+  - Memperbarui Footer Banner Siluet Lanskap Tradisional Banda Neira (Benteng Belgica, Gunung Api Banda, Pohon Pala, Perahu Kora-Kora) dengan palet warm navy yang seragam.
+- [x] 79.2 Kalibrasi Data Realistis Super Administrator Banda Neira (`frontend/src/views/dashboard/roles/AdminDashboardView.tsx`):
+  - Mengganti seluruh data dummy makro nasional usang pada `adminProfile` dengan metrik riil kepulauan Banda Neira (1.842 Warga Terverifikasi, Rp 1,48 Miliar Perputaran Rempah & Koperasi, 68.4% Okupansi Eco-Stay & 177 Cagar Budaya, 42 Plot Kebun Pala).
+  - Menyelaraskan grafik analitik tren mutasi bulanan dan grafik donut komposisi sektor prioritas desa (Pala 42%, Wisata 28%, Perikanan 18%, Koperasi 12%).
+  - Memverifikasi build frontend produksi (`npm --prefix frontend run build`) lulus 100% tanpa error TypeScript (2.054 modul ter-bundle dalam 16.38s).
+
+---
+
+## [Phase 80] - Implementasi Theme Switcher & Arsitektur Dark Mode Ekosistem (Nautical Obsidian Dark Mode)
+- [x] 80.1 Konfigurasi Tailwind CSS Dark Mode (`frontend/tailwind.config.js`):
+  - Mengonfigurasi `darkMode: 'class'` agar seluruh class utilitas Tailwind `dark:...` bereaksi terhadap class `.dark` pada elemen root `<html>`.
+- [x] 80.2 Desain Sistem Token CSS Tema Gelap Kepulauan (`frontend/src/styles/tokens.css`):
+  - Menerapkan palet warna *Nautical Dark / Oceanic Obsidian* berstandar WCAG 2.2 AAA:
+    - `--bg-color: #040D1A` (Deep Oceanic Night).
+    - `--bg-surface: #081D35` (Banda Deep Ocean Navy).
+    - `--bg-surface-elevated: #0F2C59` (Banda Royal Navy).
+    - `--card-bg: #081D35` & `--card-border: #1E3A5F`.
+    - `--text-main: #F8FAFC` & `--text-muted: #94A3B8`.
+    - Bayangan elevasi kontras gelap dan border slate nautikal.
+- [x] 80.3 Penyesuaian Global Styles & Utility Adapter (`frontend/src/styles/global.css`):
+  - Memetakan token `.dark` ke elemen inti: `body`, `.app-card`, `.card`, `.stat-card`, `.data-table`, `.form-control`, `.form-select`, `.modal-content`.
+  - Mengonfigurasi custom scrollbar bertema obsidian untuk peramban webkit & firefox.
+  - Memastikan kontras teks tidak bertabrakan pada komponen legacy dan komponen modern.
+- [x] 80.4 Komponen Theme Switcher & State Persistence (`frontend/src/views/dashboard/DashboardLayout.tsx`):
+  - Menyediakan toggle switcher di bilah navigasi atas (*topbar*) berdampingan dengan Pusat Notifikasi dan Akun Pengguna.
+  - Mengintegrasikan persistensi tema ke `localStorage` (`banda_theme_mode`) dengan deteksi preferensi sistem operasi pengguna (`prefers-color-scheme: dark`) sebagai fallback otomatis.
+  - Menambahkan animasi micro-interaction halus pada ikon matahari (`Sun`) dan bulan (`Moon`) lengkap dengan status badge visual dan label bantuan ramah aksesibilitas.
+- [x] 80.5 Sinkronisasi Mode Gelap Antar-Komponen (`frontend/src/views/dashboard/UserEcosystemDashboard.tsx`):
+  - Memastikan 5 Kartu Bento KPI, Bilah Verifikasi Cepat Zero-Trust, dan Peluncur 11 Ruang Kerja menyesuaikan warna latar, teks, dan aksen secara otomatis saat mode gelap diaktifkan.
+  - Memverifikasi build frontend produksi (`npm --prefix frontend run build`) lulus 100% tanpa error TypeScript.
+
+---
+
+## [Phase 81] - Aktivasi & Redesain Fitur Verifikasi Batch Blockchain (Zero-Trust Cryptographic Certificate & Multi-Modal Verification Suite)
+- [x] 81.1 Penguatan Backend QR & Multi-Identifier Batch Resolution (`backend/app/modules/qr/router.py` & `schemas.py`):
+  - Memperluas endpoint `/api/v1/public/verify/{token}` agar mengenali `public_verification_token` maupun `batch_code` (case-insensitive).
+  - Menghubungkan transaksi blockchain (`BlockchainTransaction`) ke respons verifikasi publik: `contract_address`, `transaction_hash`, `block_number`, `latest_db_hash`, `on_chain_hash`.
+- [x] 81.2 Dataset Presets & Ketahanan Offline Kepulauan (`frontend/src/data/sampleBatchVerifications.ts`):
+  - Menyediakan dataset autentik komoditas unggulan Banda Neira:
+    - `BN-BTC-2026-001`: Pala Banda Kering Grade A Super (Lonthoir & Boiyauw).
+    - `BN-BTC-2026-002`: Fuli Banda Super Merah (Belgica & Selamon).
+    - `BN-BTC-2026-003`: Pala Organik Pulau Ai Grade AA (Eco-Certified).
+  - Menjamin fitur verifikasi tetap beroperasi secara tangguh bahkan saat jaringan kepulauan offline.
+- [x] 81.3 Redesain Arsitektur Antarmuka Verifikasi Batch Blockchain (`frontend/src/components/modals/PublicVerifyModal.tsx`):
+  - Menerapkan 3 panduan skill: `design-system` (token architecture, nested radii konsentris, typography monospace, dark mode), `kpi-dashboard-design` (4 barometer KPI bento, drilldown tabs), dan `frontend-design` (Warm Heritage Nautical & Cryptographic Oceanic Cyber).
+  - Mengintegrasikan Bilah Pencarian Interaktif & Chip Tag Preset 1-Klik di header modal.
+  - Menyediakan Simulator Kamera Pemindai QR Fisik dengan animasi garis laser pemindaian interaktif.
+  - Membangun 3 Tab Utama:
+    1. 📜 Sertifikat Indikasi Geografis (GI Certificate) resmi Pemkab Maluku Tengah & Kesultanan Adat Banda Neira dengan stempel digital, tabel mutu, dan unduh QR code PNG.
+    2. 🔗 Jejak Rantai Pasok Kriptografis (Audit Trail Timeline) bertahap dari panen hingga pengemasan vakum dengan kode hash SHA-256.
+    3. 🛡️ Konsensus Smart Contract EVM (Perbandingan side-by-side SHA-256 Lokal vs On-Chain, Blok, TxID, dan Validator Node Konsorsium).
+  - Menyediakan Fitur Cetak Dokumen Resmi A4 format sertifikat ekspor internasional berstandar cetak presisi.
+- [x] 81.4 Modernisasi Modal Konsensus EVM (`frontend/src/components/modals/BlockchainModal.tsx`):
+  - Penyelarasan styling token dark mode, concentric radii, dan tombol salin hash 1-klik.
+- [x] 81.5 Integrasi Aplikasi & Pengaktifan Pemicu Universal (`frontend/src/App.tsx` & `UserEcosystemDashboard.tsx`):
+  - Mengaktifkan pemicu modal dari seluruh titik akses: tombol topbar quick actions, bilah pencarian global, sidebar tools, widget peran, bilah verifikasi zero-trust, dan landing portal.
+  - Memverifikasi build frontend produksi (`npm --prefix frontend run build`) lulus 100% tanpa error TypeScript (2.055 modul ter-bundle dalam 15.71s).
+
+---
+
+## [Phase 82] - Desain Sistem Marketplace Katalog Komoditas & Ruang Kerja Tata Kelola Admin (Marketplace Catalog & Admin Management Workspace)
+- [x] 82.1 Service & Model Data Terpadu Marketplace (`frontend/src/services/marketplace.ts`):
+  - Mengembangkan model produk komoditas (`MarketplaceProduct`), buku besar inquiry pesanan (`OrderInquiry`), dan metrik analitik (`MarketplaceStats`).
+  - Menyediakan 8 produk komoditas unggulan terverifikasi Indikasi Geografis dan Smart Contract EVM (Pala Grade A Super Lonthoir, Fuli Belgica Selamon, Ikan Asar Tradisional, Tuna Sashimi Handline, Sirup Pala, Minyak Atsiri Hatta, Manisan Pala Boiyauw, Pala Organik Ai).
+  - Mengintegrasikan persistensi lokal (`banda_marketplace_products_v1` & `banda_marketplace_orders_v1`) dengan event listener sinkronisasi real-time lintas-komponen.
+- [x] 82.2 Redesain Modal Katalog Marketplace Publik (`frontend/src/components/modals/VerifiedMarketplaceModal.tsx`):
+  - Menerapkan panduan `design-system` dan `design-taste-frontend`:
+    - Penerapan Anti-Emoji Policy: Mengganti seluruh emoji menjadi ikon semantik Lucide (`Sprout`, `Sparkles`, `Fish`, `Droplets`, `Coffee`, `Award`, `Sun`).
+    - Tipografi deterministik: Angka harga, bobot, kuantitas stok, dan kode batch dalam `font-mono tabular-nums`.
+    - Tata letak asimetris dengan concentric nested radii, header piagam maritim, bilah pencarian multi-kriteria, filter kategori, dropdown filter desa asal, dan kontrol pengurutan harga/stok.
+    - Integrasi verifikasi QR langsung ke suite verifikasi batch blockchain dan tombol pesan WhatsApp terstruktur.
+    - Dukungan menyeluruh Light Mode & Dark Mode (*Nautical Obsidian*).
+- [x] 82.3 Ruang Kerja Tata Kelola Marketplace Admin (`frontend/src/views/MarketplaceAdminWorkspace.tsx`):
+  - Menerapkan prinsip `kpi-dashboard-design` dan `frontend-design`:
+    - **5 Headline Barometer KPI**: Total Omzet (Rp 184,5 Jt, +14,2% MoM), Katalog Aktif (18 Komoditas), Pesanan Masuk (142 Transaksi, 98,6% Terpenuhi), Integritas Smart Contract (100% Sah EVM), dan Mitra Produsen (34 Poktan & Nelayan di 6 Desa).
+    - **Tab 1 - Inventaris & Manajemen Katalog**: Tabel komoditas interaktif dengan thumbnail, badge kategori, toggle status tampil/draf, indikator stok menipis, modal form tambah/sunting komoditas, dan ekspor CSV.
+    - **Tab 2 - Buku Besar Pesanan & Inquiry**: Rekapitulasi pesanan pembeli ekspor & domestik, kontak langsung WhatsApp, dan pembaruan alur status logistik (Pending -> Processing -> Shipped via Pelni -> Completed).
+    - **Tab 3 - Analitik Pasar & Distribusi**: Visualisasi Recharts BarChart volume omzet per kategori komoditas dan PieChart pangsa tujuan distribusi pasar.
+- [x] 82.4 Integrasi Sistem Navigasi & Peluncur Komando (`frontend/src/App.tsx`, `DashboardLayout.tsx`, `UserEcosystemDashboard.tsx`):
+  - Mendaftarkan rute tab `'marketplace'` (`/marketplace`, `/pasar`, `/katalog`) pada router dan navigasi sidebar di bawah pilar "Keuangan & Koperasi".
+  - Menambahkan kartu peluncur cepat ke-13 pada peluncur komando dasbor utama.
+  - Memverifikasi build frontend produksi (`npm --prefix frontend run build`) lulus 100% tanpa error TypeScript (2.057 modul ter-bundle dalam 11.76s).
+- [x] 82.5 Redesain & Perbaikan Tata Kelola Workspace Marketplace (`frontend/src/views/MarketplaceAdminWorkspace.tsx`):
+  - Menghapus tombol redundan Theme Switcher / Dark Mode toggle di action header sesuai arahan agar kontrol tema terpusat di topbar dasbor utama.
+  - Menerapkan prinsip `kpi-dashboard-design` dan `frontend-design`:
+    - **Executive KPI Barometer**: Target progres bar Kuartal (Rp 200Jt • 92,3%), indikator real-time on-chain, status logistik pesanan, dan rasio bagi hasil produsen (78,5% royalti petani/nelayan).
+    - **Operational Stock Alert Bar**: Banner peringatan otomatis untuk komoditas dengan stok menipis (&le; 20 unit) dilengkapi tombol 1-klik filter stok kritis.
+    - **Tab 1 (Katalog & Inventaris)**: Chip filter kategori cepat dengan badge jumlah real-time, visual stock level bar, tombol aksi cepat restock inline (`+10` unit), serta tombol 1-klik salin kode batch hash.
+    - **Tab 2 (Buku Besar Pesanan & Logistik)**: Filter alur status pengiriman (Pending, Processing Gudang, Shipped Kapal Pelni, Selesai), tautan cepat WhatsApp dengan templat konfirmasi otomatis ter-encode, dan kontrol status pesanan.
+    - **Tab 3 (Analitik Pasar & Sebaran Desa Provenance)**: 4 kartu metrik analitik agregat, visualisasi Recharts BarChart & PieChart responsif, serta tabel geografi asal pasokan poktan di 6 desa binaan (Lonthoir, Selamon, Pulau Ai, Boiyauw).
+    - **Modal Tambah/Sunting Komoditas**: Pilihan desa sentra autentik Kepulauan Banda, tombol generator batch code deterministik, dan validasi input.
+  - Memverifikasi build frontend produksi (`npm --prefix frontend run build`) sukses tanpa error TypeScript.
+
+---
+
+## [Phase 84] - Redesain Antarmuka Marketplace Cerah, Estetik & Pemisahan Akses Etalase Publik vs Dashboard Admin
+- [x] 84.1 Penataan Akses Etalase Publik Murni (`frontend/src/views/MarketplaceCatalogWorkspace.tsx`):
+  - Memisahkan etalase publik secara total sehingga pengunjung publik **hanya melihat etalase katalog produk saja** tanpa opsi atau switcher tata kelola/investasi/admin.
+  - Mendaftarkan rute publik `'marketplace'` (`/marketplace`, `/pasar`, `/katalog`) ke dalam `PUBLIC_EXPLORER_TABS` pada `frontend/src/App.tsx`.
+  - Header halaman publik bersih dan elegan: menyajikan tombol kembali ke beranda, branding Indikasi Geografis & Blockchain, serta tombol masuk portal desa bagi pengunjung non-login.
+  - Menampilkan layout 2-kolom: Sidebar Filter kiri (Kategori, Rentang Harga Min-Max, Desa Asal, Rating Pills, Shipping Options), Grid 4-kolom produk, serta 2 tombol aksi eksklusif (Verifikasi Produk & Hubungi via WhatsApp).
+- [x] 84.2 Pengisolasian Fitur Tata Kelola & Inventaris Khusus di Dashboard Admin (`frontend/src/views/MarketplaceAdminWorkspace.tsx`):
+  - Menjamin fitur **Tata Kelola & Inventaris** (manajemen produk, restock, status publikasi, buku besar pesanan logistik, dan analitik sebaran desa provenance) hanya dapat diakses di dalam **Halaman Dashboard Admin pada Workspace Marketplace**.
+  - Mengamankan rute Tab 12 di dalam `DashboardLayout` dengan verifikasi otorisasi `(isOfficerOrAdmin || isCoopManager)`, menyajikan `AccessRestrictedNotice` bagi peran tanpa wewenang.
+  - Menyediakan tombol "Lihat Katalog Publik" di header admin untuk meninjau etalase belanja publik.
+- [x] 84.3 Penerapan Palet Warna Cerah & Harmonisasi Desain Sistem (`frontend-design` & `ui-tokens`):
+  - Mengeliminasi kesan gelap/suram:
+    - **Kanvas Utama**: Latar belakang linen bersih bernuansa hangat (`#FBFBFA` / `bg-white`) yang sejalan dengan estetika keseluruhan web portal Banda Neira.
+    - **Banner Promosi**: Gradasi cerah keemasan dan hijau zamrud (`from-amber-500/10 via-emerald-500/10 to-teal-500/10 border-amber-200/70`), tipografi berwibawa `text-[#081D35]`, serta badge verifikasi kontras tinggi.
+    - **Sidebar Filter**: Panel putih bersih (`bg-white border-slate-200/90`), chip filter aktif hijau zamrud lembut (`bg-emerald-50 text-emerald-800 border-emerald-200`), dan checkmark emerald.
+    - **Etalase Produk (Showcase Box)**: Wadah foto produk berwarna abu-abu mutiara terang (`bg-slate-100/90`) dengan efek pembesaran saat kursor diarahkan, tombol wishlist hati, dan badge kategori.
+    - **Dua Tombol Aksi Bawah Eksklusif (Mandat Pengguna)**:
+      1. **Verifikasi Produk**: Deep ocean navy `#081D35` dengan ikon perisai emas `ShieldCheck`.
+      2. **Hubungi via WhatsApp**: Hijau zamrud cerah `#059669` dengan ikon `MessageCircle`.
+- [x] 84.4 Pembaruan Terpadu Modal Katalog Publik (`frontend/src/components/modals/VerifiedMarketplaceModal.tsx`):
+  - Menyelaraskan modal katalog menjadi bertema cerah senada dengan halaman utuh.
+  - Menambahkan tombol "Buka Halaman Utuh" untuk transisi instan dari popup ke subhalaman marketplace penuh.
+- [x] 84.5 Verifikasi Kualitas & Kompilasi TypeScript:
+  - Menguji kompilasi produksi frontend (`npm --prefix frontend run build`) lolos 100% tanpa error TypeScript (2.058 modul ter-bundle dalam 13.75s).
+
+- [x] 82.6 Harmonisasi Palet Warna & Visual Sistem Workspace Marketplace (`frontend/src/views/MarketplaceAdminWorkspace.tsx`):
+  - Menyelaraskan seluruh token warna antarmuka dengan workspace ekosistem lainnya (`AuditTrailWorkspace`, `HarvestGradingWorkspace`, `KoperasiKasirWorkspace`, `FarmsGisWorkspace`):
+    - **Header Banner**: Palet latar putih bersih ber-border lembut (`bg-white border-slate-200/80 shadow-xs`), aksen radial gradasi halus (`bg-radial from-emerald-100/40 via-amber-50/20`), kotak ikon deep navy keemasan (`bg-[#081D35] text-[#F4B75E]`), serta tipografi judul presisi `text-[#081D35]`.
+    - **5 Top Bento Barometer**: Background `bg-white`, teks metrik utama `text-2xl font-black text-[#081D35]`, dan kontainer ikon & tag berpadu serasi (`emerald-50/700`, `amber-50/800`, `sky-50/700`, `indigo-50/700`, `purple-50/700`).
+    - **Alert Bar**: Mengadopsi styling `bg-amber-50/80 border-amber-200/90 text-amber-900` dengan tombol aksi `bg-amber-700 hover:bg-amber-800 text-white`.
+    - **Tab Segmented Navigation**: Desain kapsul melengkung `bg-slate-100 p-1.5 rounded-2xl border border-slate-200/80` dengan status aktif navy keemasan `bg-[#081D35] text-[#F4B75E]`.
+    - **Tabel & Form Modal**: Pembersihan class dark-mode hardcoded yang bentrok, mengadopsi struktur slate netral (`bg-slate-50/80 border-slate-200/80`) dengan fokus ring tema Banda `#081D35`.
+    - **Visualisasi Recharts**: Tooltip seragam `customTooltip` dengan backdrop blur `bg-slate-900/95 border-slate-800 text-[#F4B75E]`, grid slate `stroke="#e2e8f0"`, dan bar rempah `#059669`.
+  - Verifikasi build produksi frontend (`npm --prefix frontend run build`) lolos 100%.
+
+---
+
+## [Phase 83] - Redesain & Perbaikan Fungsi Workspace Documents & Surat Desa (Official Documents & Village Letters Workspace)
+- [x] 83.1 Pengaktifan Navigasi Penuh Sidebar Documents (`frontend/src/views/dashboard/DashboardLayout.tsx`):
+  - Memperbaiki event klik tombol *Documents* di sidebar agar langsung mengarahkan ke tab workspace `'letters'` (`onSelectTab('letters')`), menggantikan pemicu modal verifikasi lama.
+  - Mengintegrasikan indikator status aktif berupa garis vertikal keemasan `#F4B75E`, warna ikon dinamis, serta latar floating `#0F2C59` saat tab dokumen aktif.
+- [x] 83.2 Redesain Arsitektur Antarmuka Pusat Dokumen Resmi & Surat Desa (`frontend/src/views/LettersWorkspace.tsx`):
+  - Menerapkan prinsip `kpi-dashboard-design` dan `frontend-design` Warm Heritage:
+    - **Header Banner**: Format kartu putih bersih dengan aksen radial biru laut dan keemasan rempah, kotak ikon maritim `w-14 h-14 bg-[#081D35] text-[#F4B75E]`, stempel desa, tombol ekspor rekapitulasi CSV, dan peluncur modal penerbitan surat baru.
+    - **5 Top Bento Barometer**: Total Berkas Surat (148 Berkas, target kuartal 150), Antrean Verifikasi (2 Antrean, indikator tindakan perangkat), Dokumen Sah Terbit (142 Surat), Rasio Waktu SLA (< 2 Jam, 96,8% kepatuhan), dan Repositori Arsip Regulasi Desa.
+    - **Operational SLA Alert Bar**: Peringatan otomatis jika terdapat permohonan warga yang menunggu tanda tangan dan verifikasi aparatur desa lengkap dengan tombol filter instan.
+    - **Tab 1 (Kotak Masuk Permohonan Surat Warga)**: Filter cepat, pencarian multi-kriteria (pemohon, NIK, jenis surat, catatan), tombol 1-klik salin NIK, persetujuan/penolakan instan, dan pratinjau cetak.
+    - **Tab 2 (Repositori Arsip Dokumen Resmi)**: Arsip dokumen legal autentik Kepulauan Banda (Sertifikat Indikasi Geografis Pala Banda Kemenkumham, Perdes No. 04/2026 Konservasi Laut, SK Pokdarwis, Uji Mutu SWRO, Register Tanah Adat Kebun Belgica, dan Berita Acara RKPDes) lengkap dengan hash SHA-256 dan tombol unduh.
+    - **Tab 3 (Analitik Layanan & Kinerja SLA)**: 4 kartu metrik efisiensi layanan, BarChart Recharts distribusi surat per profesi warga, dan Donut Chart komposisi penyelesaian berkas.
+    - **Modal Penerbitan Surat Baru Langsung**: Form penerbitan instan di loket kantor desa tanpa harus menunggu pengajuan portal seluler.
+    - **Modal Format Kop Surat Resmi Desa Banda Neira**: Berstandar A4 Pemkab Maluku Tengah siap cetak/unduh PDF dengan tanda tangan Kepala Desa dan tanda verifikasi keabsahan digital (Anti-Emoji).
+  - Memverifikasi build frontend produksi (`npm --prefix frontend run build`) sukses tanpa error TypeScript.
+
+---
+
+## [Phase 84] - Redesain Antarmuka Marketplace Cerah, Estetik & Pemisahan Akses Etalase Publik vs Dashboard Admin
+- [x] 84.1 Penataan Akses Etalase Publik Murni (`frontend/src/views/MarketplaceCatalogWorkspace.tsx`):
+  - Memisahkan etalase publik secara total sehingga pengunjung publik **hanya melihat etalase katalog produk saja** tanpa opsi atau switcher tata kelola/investasi/admin.
+  - Mendaftarkan rute publik `'marketplace'` (`/marketplace`, `/pasar`, `/katalog`) ke dalam `PUBLIC_EXPLORER_TABS` pada `frontend/src/App.tsx`.
+  - Header halaman publik bersih dan elegan: menyajikan tombol kembali ke beranda, branding Indikasi Geografis & Blockchain, serta tombol masuk portal desa bagi pengunjung non-login.
+  - Menampilkan layout 2-kolom: Sidebar Filter kiri (Kategori, Rentang Harga Min-Max, Desa Asal, Rating Pills, Shipping Options), Grid 4-kolom produk, serta 2 tombol aksi eksklusif (Verifikasi Produk & Hubungi via WhatsApp).
+- [x] 84.2 Pengisolasian Fitur Tata Kelola & Inventaris Khusus di Dashboard Admin (`frontend/src/views/MarketplaceAdminWorkspace.tsx`):
+  - Menjamin fitur **Tata Kelola & Inventaris** (manajemen produk, restock, status publikasi, buku besar pesanan logistik, dan analitik sebaran desa provenance) hanya dapat diakses di dalam **Halaman Dashboard Admin pada Workspace Marketplace**.
+  - Mengamankan rute Tab 12 di dalam `DashboardLayout` dengan verifikasi otorisasi `(isOfficerOrAdmin || isCoopManager)`, menyajikan `AccessRestrictedNotice` bagi peran tanpa wewenang.
+  - Menyediakan tombol "Lihat Katalog Publik" di header admin untuk meninjau etalase belanja publik.
+- [x] 84.3 Penerapan Palet Warna Cerah & Harmonisasi Desain Sistem (`frontend-design` & `ui-tokens`):
+  - Mengeliminasi kesan gelap/suram:
+    - **Kanvas Utama**: Latar belakang linen bersih bernuansa hangat (`#FBFBFA` / `bg-white`) yang sejalan dengan estetika keseluruhan web portal Banda Neira.
+    - **Banner Promosi**: Gradasi cerah keemasan dan hijau zamrud (`from-amber-500/10 via-emerald-500/10 to-teal-500/10 border-amber-200/70`), tipografi berwibawa `text-[#081D35]`, serta badge verifikasi kontras tinggi.
+    - **Sidebar Filter**: Panel putih bersih (`bg-white border-slate-200/90`), chip filter aktif hijau zamrud lembut (`bg-emerald-50 text-emerald-800 border-emerald-200`), dan checkmark emerald.
+    - **Etalase Produk (Showcase Box)**: Wadah foto produk berwarna abu-abu mutiara terang (`bg-slate-100/90`) dengan efek pembesaran saat kursor diarahkan, tombol wishlist hati, dan badge kategori.
+    - **Dua Tombol Aksi Bawah Eksklusif (Mandat Pengguna)**:
+      1. **Verifikasi Produk**: Deep ocean navy `#081D35` dengan ikon perisai emas `ShieldCheck`.
+      2. **Hubungi via WhatsApp**: Hijau zamrud cerah `#059669` dengan ikon `MessageCircle`.
+- [x] 84.4 Pembaruan Terpadu Modal Katalog Publik (`frontend/src/components/modals/VerifiedMarketplaceModal.tsx`):
+  - Menyelaraskan modal katalog menjadi bertema cerah senada dengan halaman utuh.
+  - Menambahkan tombol "Buka Halaman Utuh" untuk transisi instan dari popup ke subhalaman marketplace penuh.
+- [x] 84.5 Verifikasi Kualitas & Kompilasi TypeScript:
+  - Menguji kompilasi produksi frontend (`npm --prefix frontend run build`) lolos 100% tanpa error TypeScript (2.058 modul ter-bundle dalam 13.75s).
+
+## Phase 85: Optimalisasi Navbar Landing Page Utama & Bahasa Compact Icon
+- [x] 85.1 Penghapusan Button "Daftar" pada Navbar:
+  - Menghapus button "Daftar" (`onOpenRegister`) dari navbar desktop di `frontend/src/components/landing/HeroSection.tsx` dan `BandaUnifiedNavbar.tsx`.
+  - Menghapus button "Daftar" dari menu seluler/drawer mobile agar tidak memakan ruang dan alur registrasi dialihkan via dialog login/auth terpusat.
+- [x] 85.2 Penyelarasan Button "Masuk" (Primary Action Call-to-Action):
+  - Memperbarui gaya button "Masuk" menggunakan token desain sistem (`tokens.css`, `frontend-design`, `ui-tokens`): gradasi hangat amber (`from-amber-500 to-[#F4B75E]`), teks kontras tinggi `#081D35` font-bold, radius `rounded-xl`, ikon `LogIn`, dan micro-interaction `active:scale-[0.98]`.
+  - Menyediakan responsivitas proporsional pada mobile (tombol full-width yang nyaman ditekan ibu jari di drawer seluler).
+- [x] 85.3 Tombol Ganti Bahasa Berbasis Ikon Murni (`variant="icon"`):
+  - Menambahkan varian `'icon'` pada `frontend/src/components/common/LanguageSwitcher.tsx`: tombol ikon bulat/kotak halus (`w-[38px] h-[38px] sm:w-[40px] sm:h-[40px] rounded-xl`) dengan ikon `Globe` Lucide.
+  - Mengeliminasi teks label dan flag yang memakan ruang horizontal, sehingga navbar sangat hemat tempat dan pas di semua viewport (mulai dari mobile 360px hingga layar desktop ultra-wide).
+  - Dropdown popup tetap mempertahankan pilihan lengkap Bahasa Indonesia dan English dengan flag, subtitle negara, dan checkmark aktif.
+- [x] 85.4 Verifikasi Kualitas & Kompilasi TypeScript:
+  - Menjalankan `npm --prefix frontend run build` lolos 100% tanpa error TypeScript (2.058 modul ter-transformasi dalam 18.54s).
+- [x] 85.5 Optimalisasi Responsivitas Mobile Penuh (Resolusi Overflow Navbar pada Viewport Ponsel):
+  - Mengatasi masalah visual overflow horizontal di mana tombol hamburger terdorong dan terpotong di tepi kanan container navbar pada layar ponsel (< 400px / 360px viewport).
+  - Menyesuaikan padding luar container (`px-2 sm:px-8 pt-2 sm:pt-5`) dan padding dalam header (`px-2.5 sm:px-6 h-14 sm:h-20 rounded-xl sm:rounded-2xl`).
+  - Mengoptimalkan tipografi logo brand pada mobile (`text-[15px] sm:text-[20px] md:text-[23px]` dengan `truncate min-w-0 shrink`) serta merampingkan tombol aksi kanan (`h-[34px] sm:h-[40px]` dengan `gap-1.5 sm:gap-2.5`).
+  - Menyelaraskan tombol switcher bahasa ikon murni menjadi `h-[34px] w-[34px] sm:h-[40px] sm:w-[40px] rounded-lg sm:rounded-xl` dengan ikon Globe skala proporsional.
+  - Menjalankan pengujian build produksi frontend `npm --prefix frontend run build` lolos 100% tanpa kendala (8.57s).
+
+## Phase 86: Pembersihan Item Sidebar Dokumen Redundan & Pemfungsian Penuh Workspace Help (Pusat Bantuan & Panduan Sistem)
+- [x] 86.1 Pembersihan Item Sidebar Dokumen Redundan (`frontend/src/views/dashboard/DashboardLayout.tsx`):
+  - Menghapus item tombol "Documents" dari bagian paling bawah sidebar karena modul pelayanan surat dan dokumen resmi sudah terpusat pada workspace "Permohonan Surat" (`letters`) di atas.
+  - Menghilangkan impor `FileText` yang sudah tidak terpakai sehingga mematuhi aturan strict TypeScript.
+- [x] 86.2 Pemfungsian Penuh Tombol Sidebar "Help" (`DashboardLayout.tsx`):
+  - Mengubah aksi klik tombol "Help" di sidebar agar memicu navigasi tab `'help'` (`onSelectTab('help')`), menggantikan pemicu lama yang hanya membuka halaman beranda.
+  - Mengintegrasikan indikator aktif berupa garis vertikal keemasan `#F4B75E`, sorotan latar `#0F2C59`, serta label tooltip "Pusat Bantuan & Panduan Sistem".
+- [x] 86.3 Pembangunan Ruang Kerja Pusat Bantuan Komprehensif (`frontend/src/views/HelpDeskWorkspace.tsx`):
+  - Mengimplementasikan workspace modern berbasis prinsip `design-system`, `frontend-design`, `ui-tokens`, dan `21st-cli-use`:
+    - **Header Banner**: Kartu putih beraksen radial lembut, kotak ikon maritim `LifeBuoy` emas `#F4B75E`, badge status dukungan kepulauan, dan tombol aksi pengajuan tiket aduan.
+    - **4 Top Bento Barometer**: Infrastruktur Jaringan (100% Aktif, 4 Stasiun IoT & SWRO), Modul Dokumentasi (14 Ruang Kerja SOP Terpadu), Artikel Bantuan (28 Topik FAQ), dan Respon Aduan Warga (< 15 Menit).
+    - **Pencarian Real-Time & 7 Filter Kategori**: Filter instan untuk topik surat, kebun, blockchain, kasir koperasi, pariwisata, dan offline sync.
+    - **Tab 1: Tanya Jawab Resmi (FAQ Accordion)**: 8 artikel tanya jawab esensial dengan fitur salin teks, umpan balik kebermanfaatan (thumbs up/down), serta tombol pintasan langsung menuju ruang kerja terkait.
+    - **Tab 2: Panduan Modul SOP**: Standar Operasional Prosedur multi-peran dengan tahapan langkah-demi-langkah (Surat Keterangan, Grading Mutu Pala, Kasir Koperasi POS, dan Penanganan Kondisi Darurat Jaringan).
+    - **Tab 3: Tiket Aduan & Bantuan Teknis**: Formulir pelaporan masalah interaktif lengkap dengan pemilihan kategori, tingkat urgensi, registrasi nomor tiket otomatis (`TKT-BN-2026-XXX`), dan kartu kontak darurat kantor desa.
+    - **Tab 4: Diagnostik Jaringan & Perangkat**: Uji mandiri konektivitas BTS, cache IndexedDB offline PWA, sensor GPS perangkat, API backend FastAPI, dan ledger blockchain EVM.
+- [x] 86.4 Pendaftaran Rute & Routing Publik (`frontend/src/App.tsx` & `workspace.md`):
+  - Menambahkan tipe `'help'` ke dalam `DashboardNavTab` dan `TabId`.
+  - Mendaftarkan rute publik `/help`, `/bantuan`, `/panduan` pada `TAB_ROUTES` dan `ROUTE_TO_TAB` serta memasukkannya ke dalam `PUBLIC_EXPLORER_TABS` dengan header navigasi publik elegan.
+  - Memutakhirkan dokumentasi arsitektur `workspace.md` pada Seksi 3.16.
+- [x] 86.5 Pengujian Build & Verifikasi Kompilasi Produksi:
+  - Menguji `npm --prefix frontend run build` (`tsc && vite build`) lolos 100% dengan status sukses (2.059 modul ter-bundle dalam 11.30s).
+
+## Phase 87: Penataan Responsif Navbar Saat User Login (Pemindahan Button Profil & Logout ke Menu Seluler)
+- [x] 87.1 Eliminasi Kepadatan (*Overcrowding*) Tombol User & Logout pada Bar Navbar Ponsel:
+  - Menghilangkan tombol user ("Admin...") dan tombol logout ("Keluar") dari bar header navbar mobile di `frontend/src/components/landing/HeroSection.tsx` dan `BandaUnifiedNavbar.tsx` dengan menyetel `hidden lg:inline-flex`.
+  - Pada layar ponsel, bar atas saat pengguna login kini hanya menampilkan Logo Brand `bandanaira.com` (utuh tanpa terpotong), ikon Switcher Bahasa `variant="icon"`, dan tombol Hamburger Menu.
+- [x] 87.2 Perancangan Kartu Profil Pengguna & Aksi Terpadu di Dalam Menu Drawer Hamburger (`HeroSection.tsx`):
+  - Mengintegrasikan kartu profil pengguna elegan di dalam drawer menu seluler:
+    - Avatar pengguna beraksen keemasan pala (`size-10 bg-gradient-to-br from-amber-500/25 to-amber-600/35 border border-[#F4B75E]/60 text-[#F4B75E] font-bold`).
+    - Informasi nama pengguna lengkap (`currentUser.full_name || currentUser.username`) dan peran hak akses.
+    - Tombol primer "Buka Dashboard Komando" bergradasi keemasan dengan ikon `LayoutDashboard`.
+    - Tombol sekunder "Keluar dari Akun" bernuansa rose lembut dengan ikon `LogOut`.
+- [x] 87.3 Sinkronisasi Navbar Alternatif (`BandaUnifiedNavbar.tsx`):
+  - Menyelaraskan status login pada mobile drawer `BandaUnifiedNavbar` dengan kartu info pengguna dan tombol dashboard + logout.
+- [x] 87.4 Pengujian Kompilasi Produksi:
+  - Menjalankan `npm --prefix frontend run build` (`tsc && vite build`) lolos 100% tanpa error TypeScript (2.059 modul ter-bundle dalam 12.14s).
+
+
+
+
+
+
+
+
+

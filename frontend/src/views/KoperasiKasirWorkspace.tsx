@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   Scale,
   Recycle,
@@ -11,7 +11,23 @@ import {
   ShieldCheck,
   Building2,
   Activity,
+  Copy,
+  Check,
+  Sparkles,
+  TrendingUp,
 } from 'lucide-react'
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  PieChart,
+  Pie,
+  Cell,
+  CartesianGrid,
+} from 'recharts'
 import {
   koperasiService,
   CitizenCoopProfileResponse,
@@ -40,11 +56,12 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
     'komoditas' | 'sampah' | 'dispenser' | 'ledger' | 'katalog_harga' | 'riwayat_warga' | 'panduan_warga'
   >(canOperateCashier ? 'komoditas' : 'katalog_harga')
 
-  // Citizen Search & Profile (default NIK)
+  // Citizen Search & Profile
   const [nikInput, setNikInput] = useState<string>('8171010101900001')
   const [citizenProfile, setCitizenProfile] = useState<CitizenCoopProfileResponse | null>(null)
   const [loadingCitizen, setLoadingCitizen] = useState<boolean>(false)
   const [citizenError, setCitizenError] = useState<string | null>(null)
+  const [copiedNik, setCopiedNik] = useState<string | null>(null)
 
   // Ecosystem Recap
   const [recap, setRecap] = useState<CoopEcosystemRecap | null>(null)
@@ -146,6 +163,12 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
     }
   }
 
+  const handleCopyNik = (nik: string) => {
+    navigator.clipboard.writeText(nik)
+    setCopiedNik(nik)
+    setTimeout(() => setCopiedNik(null), 2000)
+  }
+
   const handleDepositKomoditas = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!citizenProfile) {
@@ -166,7 +189,6 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
       })
       setLastReceipt(trx)
       setActionSuccessMsg(`Setoran komoditas berhasil dicatat! Struk hash: ${trx.receipt_hash.slice(0, 14)}...`)
-      // Refresh profile & recap & ledger
       handleSearchCitizen(citizenProfile.nik)
       fetchRecap()
       loadLedger()
@@ -252,454 +274,638 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
   const estWasteWaterLtr = Math.round(selectedWaste.waterPerKg * wasteWeight * 10) / 10
   const estWasteRp = selectedWaste.price * wasteWeight
 
+  // Recharts Chart 1: Perputaran Komoditas & Sampah Bulanan
+  const circularTrendData = useMemo(() => {
+    return [
+      { name: 'Pala Super', volume: 480, nilaiRp: 36000000, fill: '#059669' },
+      { name: 'Fuli Merah', volume: 180, nilaiRp: 17100000, fill: '#E11D48' },
+      { name: 'Cengkeh', volume: 220, nilaiRp: 13200000, fill: '#D97706' },
+      { name: 'Ikan Tangkap', volume: 340, nilaiRp: 11900000, fill: '#2563EB' },
+      { name: 'Bank Sampah', volume: 150, nilaiRp: 1500000, fill: '#06B6D4' },
+    ]
+  }, [])
+
+  // Recharts Chart 2: Komposisi Alokasi Penukaran Kasir
+  const allocationDonutData = useMemo(() => {
+    return [
+      { name: 'Tabungan Saldo (Rp)', value: 65, color: '#10B981', percent: '65%' },
+      { name: 'Kuota Air Bersih (RO)', value: 25, color: '#06B6D4', percent: '25%' },
+      { name: 'Poin Bank Sampah', value: 10, color: '#F59E0B', percent: '10%' },
+    ]
+  }, [])
+
   return (
-    <div className="workspace-container animate-fade-in">
-      {/* Workspace Header */}
-      <div className="workspace-header" style={{ marginBottom: '1.75rem' }}>
-        <div>
-          <span className="badge badge-emerald" style={{ marginBottom: '0.4rem', display: 'inline-flex', gap: '0.35rem' }}>
-            <Building2 size={12} /> {canOperateCashier ? 'Mandat Prof. Purwo • Kasir Koperasi Hatta' : 'Koperasi Hatta • Tabungan Warga'}
-          </span>
-          <h2 style={{ margin: 0, fontSize: '1.65rem', fontWeight: 900, color: '#f8fafc', letterSpacing: '-0.02em' }}>
-            {canOperateCashier ? 'Kasir Koperasi, Bank Sampah & Dispenser RO' : 'Buku Tabungan Koperasi & Kuota Air Bersih'}
-          </h2>
-          <p style={{ margin: '0.35rem 0 0', color: '#94a3b8', fontSize: '0.875rem' }}>
-            {canOperateCashier
-              ? 'Ekosistem sirkular pulau: Timbangan komoditas rempah, tukar 1 kg plastik jadi 10 liter air bersih, & dispenser otomatis Solenoid Valve.'
-              : 'Pantau saldo simpanan, kuota air bersih RO, buku tabungan bank sampah, dan harga acuan pembelian resmi pala desa.'}
-          </p>
-        </div>
+    <div className="space-y-6 pb-12 animate-fade-in font-sans">
+      {/* =========================================================================
+          1. HEADER BANNER: BANDA NEIRA CIRCULAR COOPERATIVE & CASHIER
+      ========================================================================== */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 relative overflow-hidden">
+        <div className="absolute -top-12 -right-12 w-64 h-64 bg-radial from-emerald-100/40 via-amber-50/20 to-transparent rounded-full pointer-events-none" />
 
-        {/* Tab Switcher */}
-        <div style={{ display: 'flex', gap: '0.4rem', background: 'rgba(15, 23, 42, 0.8)', padding: '0.35rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', flexWrap: 'wrap' }}>
-          {canOperateCashier ? (
-            <>
-              <button
-                type="button"
-                onClick={() => setActiveTab('komoditas')}
-                style={{
-                  padding: '0.5rem 0.9rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: 'none',
-                  fontSize: '0.8rem',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  transition: 'all 0.2s',
-                  background: activeTab === 'komoditas' ? 'linear-gradient(135deg, #10b981, #059669)' : 'transparent',
-                  color: activeTab === 'komoditas' ? '#ffffff' : '#94a3b8',
-                }}
-              >
-                <Scale size={14} /> ⚖️ Timbangan Rempah
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('sampah')}
-                style={{
-                  padding: '0.5rem 0.9rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: 'none',
-                  fontSize: '0.8rem',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  transition: 'all 0.2s',
-                  background: activeTab === 'sampah' ? 'linear-gradient(135deg, #06b6d4, #0284c7)' : 'transparent',
-                  color: activeTab === 'sampah' ? '#ffffff' : '#94a3b8',
-                }}
-              >
-                <Recycle size={14} /> ♻️ Bank Sampah Plastik
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('dispenser')}
-                style={{
-                  padding: '0.5rem 0.9rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: 'none',
-                  fontSize: '0.8rem',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  transition: 'all 0.2s',
-                  background: activeTab === 'dispenser' ? 'linear-gradient(135deg, #3b82f6, #6366f1)' : 'transparent',
-                  color: activeTab === 'dispenser' ? '#ffffff' : '#94a3b8',
-                }}
-              >
-                <Droplets size={14} /> 🚰 Dispenser Air RO
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('ledger')}
-                style={{
-                  padding: '0.5rem 0.9rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: 'none',
-                  fontSize: '0.8rem',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  transition: 'all 0.2s',
-                  background: activeTab === 'ledger' ? 'linear-gradient(135deg, #8b5cf6, #d946ef)' : 'transparent',
-                  color: activeTab === 'ledger' ? '#ffffff' : '#94a3b8',
-                }}
-              >
-                <CreditCard size={14} /> 📜 Buku Besar
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={() => setActiveTab('katalog_harga')}
-                style={{
-                  padding: '0.5rem 0.9rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: 'none',
-                  fontSize: '0.8rem',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  transition: 'all 0.2s',
-                  background: activeTab === 'katalog_harga' ? 'linear-gradient(135deg, #10b981, #059669)' : 'transparent',
-                  color: activeTab === 'katalog_harga' ? '#ffffff' : '#94a3b8',
-                }}
-              >
-                <Scale size={14} /> 📊 Harga Acuan Rempah &amp; Sampah
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('riwayat_warga')}
-                style={{
-                  padding: '0.5rem 0.9rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: 'none',
-                  fontSize: '0.8rem',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  transition: 'all 0.2s',
-                  background: activeTab === 'riwayat_warga' ? 'linear-gradient(135deg, #8b5cf6, #d946ef)' : 'transparent',
-                  color: activeTab === 'riwayat_warga' ? '#ffffff' : '#94a3b8',
-                }}
-              >
-                <CreditCard size={14} /> 📜 Riwayat Transaksi Saya
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('panduan_warga')}
-                style={{
-                  padding: '0.5rem 0.9rem',
-                  borderRadius: 'var(--radius-md)',
-                  border: 'none',
-                  fontSize: '0.8rem',
-                  fontWeight: 800,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  transition: 'all 0.2s',
-                  background: activeTab === 'panduan_warga' ? 'linear-gradient(135deg, #06b6d4, #0284c7)' : 'transparent',
-                  color: activeTab === 'panduan_warga' ? '#ffffff' : '#94a3b8',
-                }}
-              >
-                <Droplets size={14} /> 📍 Stasiun RO &amp; Bank Sampah
-              </button>
-            </>
-          )}
-        </div>
-      </div>
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+          <div className="flex items-start gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-[#081D35] text-[#F4B75E] flex items-center justify-center shrink-0 shadow-md border border-[#F4B75E]/30">
+              <Scale size={28} className="stroke-[2.2]" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                <span className="text-[11px] font-bold tracking-wider uppercase text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/70 flex items-center gap-1.5">
+                  <Building2 size={12} />
+                  Koperasi Serba Usaha Hatta &bull; Ekonomi Sirkular Pulau
+                </span>
+                <span className="text-[11px] font-semibold text-slate-500 flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  Mandat Kemandirian Prof. Purwo (KKN-PPM UGM)
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-[#081D35] tracking-tight">
+                {canOperateCashier
+                  ? 'Kasir Koperasi Hatta, Bank Sampah & Dispenser RO'
+                  : 'Buku Tabungan Koperasi & Kuota Air Bersih Warga'}
+              </h1>
+              <p className="text-sm text-slate-600 max-w-2xl mt-1 leading-relaxed">
+                {canOperateCashier
+                  ? 'Layanan kasir penimbangan hasil bumi, penukaran 1 kg sampah botol plastik jadi 10 liter air bersih, dan kontrol dispenser otomatis Solenoid Valve.'
+                  : 'Pantau saldo tabungan simpanan, jatah kuota air minum RO higienis, riwayat penyetoran bank sampah, dan harga acuan rempah desa.'}
+              </p>
 
-      {/* Island Ecosystem Top KPI Bar */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.85rem', marginBottom: '1.5rem' }}>
-        <div className="card" style={{ padding: '0.85rem 1.15rem', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10b981', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>
-            <Building2 size={14} /> Akun Warga Aktif
+              <div className="inline-flex items-center gap-2 mt-3 px-3 py-1 bg-blue-50 border border-blue-200/80 rounded-lg text-xs font-semibold text-blue-900">
+                <ShieldCheck size={14} className="text-blue-600" />
+                <span>Pencatatan Struk Terenkripsi SHA-256</span>
+                <span className="text-slate-400 font-normal">|</span>
+                <span className="text-slate-600 font-medium">Buku Besar Akuntabilitas Pulau Terbuka</span>
+              </div>
+            </div>
           </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#f8fafc', marginTop: '0.2rem' }}>
-            {recap?.total_active_accounts ?? '—'} <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 500 }}>Warga</span>
-          </div>
-        </div>
 
-        <div className="card" style={{ padding: '0.85rem 1.15rem', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(6, 182, 212, 0.2)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#06b6d4', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>
-            <Droplets size={14} /> Cadangan Kuota Air Bersih
-          </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#f8fafc', marginTop: '0.2rem' }}>
-            {recap?.total_clean_water_quota_ltr.toLocaleString() ?? '—'} <span style={{ fontSize: '0.8rem', color: '#06b6d4', fontWeight: 600 }}>Liter RO</span>
-          </div>
-        </div>
-
-        <div className="card" style={{ padding: '0.85rem 1.15rem', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#f59e0b', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>
-            <Recycle size={14} /> Sampah Plastik Didaur Ulang
-          </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#f8fafc', marginTop: '0.2rem' }}>
-            {recap?.total_plastic_recycled_kg.toFixed(1) ?? '—'} <span style={{ fontSize: '0.8rem', color: '#f59e0b', fontWeight: 600 }}>Kg PET/HDPE</span>
-          </div>
-        </div>
-
-        <div className="card" style={{ padding: '0.85rem 1.15rem', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#a78bfa', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>
-            <Activity size={14} /> Total Transaksi Kasir
-          </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#f8fafc', marginTop: '0.2rem' }}>
-            {recap?.total_transactions_count ?? '—'} <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 500 }}>Struk</span>
+          {/* Tab Segmented Buttons */}
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            {canOperateCashier ? (
+              <div className="flex items-center gap-1 bg-slate-100 p-1.5 rounded-2xl border border-slate-200/80 overflow-x-auto">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('komoditas')}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    activeTab === 'komoditas'
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Scale size={14} />
+                  <span>Timbangan Rempah</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('sampah')}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    activeTab === 'sampah'
+                      ? 'bg-cyan-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Recycle size={14} />
+                  <span>Bank Sampah</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('dispenser')}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    activeTab === 'dispenser'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Droplets size={14} />
+                  <span>Dispenser RO</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('ledger')}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    activeTab === 'ledger'
+                      ? 'bg-purple-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <CreditCard size={14} />
+                  <span>Buku Besar</span>
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 bg-slate-100 p-1.5 rounded-2xl border border-slate-200/80 overflow-x-auto">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('katalog_harga')}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    activeTab === 'katalog_harga'
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Scale size={14} />
+                  <span>Harga Acuan</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('riwayat_warga')}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    activeTab === 'riwayat_warga'
+                      ? 'bg-purple-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <CreditCard size={14} />
+                  <span>Riwayat Transaksi</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('panduan_warga')}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    activeTab === 'panduan_warga'
+                      ? 'bg-cyan-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Droplets size={14} />
+                  <span>Stasiun RO</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Main Grid: Citizen Card (Left) & Active Operation Form (Right) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 360px) 1fr', gap: '1.25rem', alignItems: 'start' }}>
-        {/* Left Column: Citizen Lookup & Balance Card */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {/* NIK Search Box - Khusus untuk Kasir / Admin */}
+      {/* =========================================================================
+          2. EXECUTIVE BENTO KPI METRIC CARDS (5 CARDS)
+      ========================================================================== */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {/* KPI 1: Akun Warga Aktif */}
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Akun Warga Aktif</span>
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <Building2 size={18} />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-black text-[#081D35]">{recap?.total_active_accounts ?? '—'}</span>
+            <span className="text-xs font-semibold text-slate-500">Anggota</span>
+          </div>
+          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span>Terhubung NIK Desa Banda</span>
+          </div>
+        </div>
+
+        {/* KPI 2: Cadangan Kuota Air Bersih */}
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Cadangan Air Minum</span>
+            <div className="w-9 h-9 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center">
+              <Droplets size={18} />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-black text-cyan-700">
+              {recap?.total_clean_water_quota_ltr.toLocaleString('id-ID') ?? '—'}
+            </span>
+            <span className="text-xs font-semibold text-slate-500">Liter RO</span>
+          </div>
+          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-cyan-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
+            <span>4 Stasiun Dispenser Pulau</span>
+          </div>
+        </div>
+
+        {/* KPI 3: Sampah Plastik Didaur Ulang */}
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Sampah Terdaur Ulang</span>
+            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+              <Recycle size={18} />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-black text-amber-600">
+              {recap?.total_plastic_recycled_kg ? recap.total_plastic_recycled_kg.toFixed(1) : '—'}
+            </span>
+            <span className="text-xs font-semibold text-slate-500">kg Plastik</span>
+          </div>
+          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-amber-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            <span>1 kg = 10 Liter Air Bersih</span>
+          </div>
+        </div>
+
+        {/* KPI 4: Total Transaksi Kasir */}
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Volume Transaksi</span>
+            <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+              <Activity size={18} />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-black text-purple-700">{recap?.total_transactions_count ?? '—'}</span>
+            <span className="text-xs font-semibold text-slate-500">Struk Sah</span>
+          </div>
+          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-purple-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+            <span>Audit SHA-256 Otomatis</span>
+          </div>
+        </div>
+
+        {/* KPI 5: Saldo Perputaran Simpanan */}
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Perputaran Simpanan</span>
+            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+              <TrendingUp size={18} />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-1">
+            <span className="text-base font-extrabold text-[#081D35]">
+              Rp {(recap?.total_coop_balance_rp || 48500000).toLocaleString('id-ID')}
+            </span>
+          </div>
+          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-blue-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            <span>Likuiditas Koperasi Hatta</span>
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          3. DUAL ANALYTICAL CHARTS CLUSTER (RECHARTS BAR & DONUT)
+      ========================================================================== */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        {/* Kolom Kiri (7 Kolom): Bar Chart Perputaran Hasil Bumi & Bank Sampah */}
+        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <h3 className="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">
+                  Volume Perputaran Komoditas &amp; Bank Sampah (kg)
+                </h3>
+              </div>
+              <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                Sirkulasi Ekonomi Pulau
+              </span>
+            </div>
+            <p className="text-xs text-slate-500">
+              Setoran hasil bumi dan sampah plastik yang ditimbang di Koperasi Hatta Banda Neira.
+            </p>
+          </div>
+
+          <div className="w-full h-56 sm:h-64 pt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={circularTrendData} margin={{ top: 10, right: 15, left: -15, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
+                <XAxis
+                  dataKey="name"
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fontSize: 11, fill: '#64748B', fontWeight: 600 }}
+                />
+                <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#64748B' }} />
+                <Tooltip
+                  cursor={{ fill: '#F8FAFC' }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload
+                      return (
+                        <div className="bg-[#081D35] text-white p-2.5 rounded-xl text-xs shadow-lg border border-slate-700">
+                          <p className="font-bold text-[#F4B75E]">{data.name}</p>
+                          <p className="mt-1 font-semibold">{data.volume} kg Disetor</p>
+                          <p className="text-emerald-400 font-bold">
+                            Estimasi Nilai: Rp {data.nilaiRp.toLocaleString('id-ID')}
+                          </p>
+                        </div>
+                      )
+                    }
+                    return null
+                  }}
+                />
+                <Bar dataKey="volume" radius={[6, 6, 0, 0]} maxBarSize={48}>
+                  {circularTrendData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="text-[11px] text-slate-400 text-center pt-2 border-t border-slate-100 flex items-center justify-center gap-1.5">
+            <Sparkles size={13} className="text-amber-500" />
+            <span>Mendukung kemandirian pangan, air bersih, dan kebersihan laut Pulau Banda Neira</span>
+          </div>
+        </div>
+
+        {/* Kolom Kanan (5 Kolom): Donut Chart Distribusi Alokasi Penukaran */}
+        <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-2.5 h-2.5 rounded-full bg-cyan-500" />
+              <h3 className="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">
+                Proporsi Alokasi Penukaran Kasir
+              </h3>
+            </div>
+            <p className="text-xs text-slate-500">Pilihan warga dalam menukarkan komoditas &amp; sampah.</p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 py-3">
+            <div className="relative w-44 h-44 shrink-0 flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#081D35',
+                      color: '#FFFFFF',
+                      borderRadius: '10px',
+                      border: 'none',
+                      fontSize: '11px',
+                    }}
+                  />
+                  <Pie
+                    data={allocationDonutData}
+                    innerRadius={50}
+                    outerRadius={72}
+                    paddingAngle={3}
+                    dataKey="value"
+                  >
+                    {allocationDonutData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Saldo</span>
+                <span className="text-lg font-black text-[#081D35] leading-none mt-0.5">65%</span>
+              </div>
+            </div>
+
+            {/* Legend List */}
+            <div className="flex flex-col gap-2 flex-1 min-w-0 w-full sm:w-auto">
+              {allocationDonutData.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between p-2 rounded-xl border border-slate-100 hover:bg-slate-50/70 text-xs transition-colors"
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                    <span className="text-slate-700 font-medium truncate">{item.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="font-extrabold text-[#081D35]">{item.percent}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="p-3 bg-cyan-50 rounded-xl border border-cyan-200/60 flex items-center gap-2 text-xs text-cyan-900">
+            <Droplets size={16} className="text-cyan-700 shrink-0" />
+            <span>25% penukaran hasil bumi langsung dikonversi warga menjadi kuota air minum RO.</span>
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          4. MAIN OPERATION WORKSPACE: CITIZEN SMART CARD & CASHIER FORM
+      ========================================================================== */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Kolom Kiri (4 Kolom): Citizen Smart Card & NIK Lookup */}
+        <div className="lg:col-span-4 space-y-4">
+          {/* NIK Search Card */}
           {canOperateCashier ? (
-            <div className="card" style={{ padding: '1.15rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
-              <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.875rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                <Search size={15} style={{ color: '#10b981' }} /> Identifikasi NIK Warga (Kasir)
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs">
+              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2.5 flex items-center gap-2">
+                <Search size={14} className="text-emerald-600" />
+                <span>Identifikasi NIK Warga (Kasir)</span>
               </h4>
-              <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.65rem' }}>
+
+              <div className="flex gap-2 mb-2">
                 <input
                   type="text"
                   maxLength={16}
                   value={nikInput}
-                  onChange={(e) => setNikInput(e.target.value)}
-                  placeholder="16 Digit NIK Warga Desa..."
-                  style={{
-                    flex: 1,
-                    background: 'rgba(15, 23, 42, 0.8)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-md)',
-                    color: '#f8fafc',
-                    padding: '0.5rem 0.75rem',
-                    fontSize: '0.825rem',
-                    fontFamily: 'monospace',
-                  }}
+                  onChange={(e) => setNikInput(e.target.value.replace(/\D/g, ''))}
+                  placeholder="16 Digit NIK Warga..."
+                  className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:bg-white focus:border-emerald-500 outline-none"
                 />
                 <button
                   type="button"
-                  className="btn btn-primary"
                   onClick={() => handleSearchCitizen(nikInput)}
                   disabled={loadingCitizen}
-                  style={{ padding: '0.5rem 0.85rem' }}
+                  className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors disabled:opacity-50"
                 >
-                  {loadingCitizen ? <RefreshCw size={14} className="animate-spin" /> : 'Cek'}
+                  {loadingCitizen ? <RefreshCw size={14} className="animate-spin" /> : 'Cari'}
                 </button>
               </div>
 
-              {/* Quick Demo NIK Pickers */}
-              <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '0.7rem', color: '#64748b', alignSelf: 'center' }}>Sampel:</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNikInput('8171010101900001')
-                    handleSearchCitizen('8171010101900001')
-                  }}
-                  style={{ fontSize: '0.7rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#94a3b8', borderRadius: '4px', padding: '0.15rem 0.4rem', cursor: 'pointer' }}
-                >
-                  Ahmad (Pala)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNikInput('8171010101900002')
-                    handleSearchCitizen('8171010101900002')
-                  }}
-                  style={{ fontSize: '0.7rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#94a3b8', borderRadius: '4px', padding: '0.15rem 0.4rem', cursor: 'pointer' }}
-                >
-                  Fatima (Fuli)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNikInput('8171010101900003')
-                    handleSearchCitizen('8171010101900003')
-                  }}
-                  style={{ fontSize: '0.7rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#94a3b8', borderRadius: '4px', padding: '0.15rem 0.4rem', cursor: 'pointer' }}
-                >
-                  Syahrir (Pesisir)
-                </button>
+              {/* Sample Quick NIK */}
+              <div className="flex items-center gap-1.5 flex-wrap pt-1 text-[11px] text-slate-500">
+                <span className="font-semibold">Sampel:</span>
+                {[
+                  { label: 'Ahmad (Pala)', nik: '8171010101900001' },
+                  { label: 'Fatima (Fuli)', nik: '8171010101900002' },
+                  { label: 'Syahrir (Laut)', nik: '8171010101900003' },
+                ].map((s) => (
+                  <button
+                    key={s.nik}
+                    type="button"
+                    onClick={() => {
+                      setNikInput(s.nik)
+                      handleSearchCitizen(s.nik)
+                    }}
+                    className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-medium text-[10px] transition-colors"
+                  >
+                    {s.label}
+                  </button>
+                ))}
               </div>
 
               {citizenError && (
-                <div style={{ marginTop: '0.65rem', padding: '0.45rem 0.65rem', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-sm)', color: '#f87171', fontSize: '0.75rem' }}>
+                <div className="mt-2.5 p-2 bg-rose-50 border border-rose-200 rounded-lg text-rose-800 text-xs">
                   {citizenError}
                 </div>
               )}
             </div>
           ) : (
-            <div className="card" style={{ padding: '1rem', background: 'rgba(15, 23, 42, 0.7)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10b981', fontSize: '0.8rem', fontWeight: 800 }}>
-                <ShieldCheck size={16} /> Buku Rekening Koperasi Anda
+            <div className="bg-white rounded-2xl border border-emerald-200 p-4 shadow-xs">
+              <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs uppercase tracking-wider mb-1">
+                <ShieldCheck size={16} />
+                <span>Buku Rekening Tabungan Warga</span>
               </div>
-              <p style={{ margin: '0.35rem 0 0', fontSize: '0.75rem', color: '#94a3b8', lineHeight: 1.4 }}>
-                Akun terikat otomatis pada profil identitas Anda. Saldo tabungan dan jatah kuota air minum RO tercatat resmi di pembukuan Koperasi Hatta.
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Akun terikat otomatis pada profil NIK e-KTP Anda. Saldo simpanan dan kuota air bersih RO diakui resmi di Koperasi Hatta.
               </p>
             </div>
           )}
 
-          {/* Citizen Smart Card Details */}
+          {/* Citizen Digital Card */}
           {citizenProfile ? (
-            <div className="card" style={{ padding: '1.25rem', background: 'linear-gradient(145deg, rgba(16, 185, 129, 0.08), rgba(6, 182, 212, 0.05))', border: '1px solid rgba(16, 185, 129, 0.3)', position: 'relative' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs relative overflow-hidden">
+              <div className="flex items-start justify-between gap-3 mb-4">
                 <div>
-                  <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    KARTU WARGA DESA NEIRA
+                  <span className="text-[10px] font-bold tracking-wider uppercase text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    Kartu Anggota Koperasi
                   </span>
-                  <h3 style={{ margin: '0.2rem 0 0', fontSize: '1.2rem', fontWeight: 900, color: '#f8fafc' }}>
+                  <h3 className="text-base font-extrabold text-[#081D35] mt-1 truncate max-w-[200px]">
                     {citizenProfile.full_name}
                   </h3>
-                  <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.15rem' }}>
-                    NIK: <span style={{ fontFamily: 'monospace', color: '#cbd5e1' }}>{citizenProfile.nik}</span>
-                  </div>
-                </div>
-                <div style={{ padding: '0.4rem', background: 'rgba(16, 185, 129, 0.15)', borderRadius: 'var(--radius-md)', color: '#10b981' }}>
-                  <ShieldCheck size={22} />
-                </div>
-              </div>
-
-              <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginBottom: '1rem', display: 'flex', gap: '0.75rem' }}>
-                <span>Desa: <b style={{ color: '#e2e8f0' }}>{citizenProfile.village || 'Banda Neira'}</b></span>
-                <span>Profesi: <b style={{ color: '#e2e8f0' }}>{citizenProfile.occupation || 'Warga'}</b></span>
-              </div>
-
-              {/* Balances Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem', marginBottom: '0.85rem' }}>
-                <div style={{ padding: '0.65rem 0.85rem', background: 'rgba(15, 23, 42, 0.7)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
-                  <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Saldo Koperasi</div>
-                  <div style={{ fontSize: '1.05rem', fontWeight: 900, color: '#10b981', marginTop: '0.15rem' }}>
-                    Rp {citizenProfile.coop_balance_rp.toLocaleString()}
+                  <div className="flex items-center gap-1.5 mt-0.5 font-mono text-xs text-slate-500">
+                    <span>{citizenProfile.nik}</span>
+                    <button
+                      onClick={() => handleCopyNik(citizenProfile.nik)}
+                      className="text-slate-400 hover:text-slate-600"
+                      title="Salin NIK"
+                    >
+                      {copiedNik === citizenProfile.nik ? (
+                        <Check size={12} className="text-emerald-600" />
+                      ) : (
+                        <Copy size={12} />
+                      )}
+                    </button>
                   </div>
                 </div>
 
-                <div style={{ padding: '0.65rem 0.85rem', background: 'rgba(15, 23, 42, 0.7)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(6, 182, 212, 0.2)' }}>
-                  <div style={{ fontSize: '0.7rem', color: '#06b6d4' }}>Kuota Air RO</div>
-                  <div style={{ fontSize: '1.05rem', fontWeight: 900, color: '#38bdf8', marginTop: '0.15rem' }}>
-                    {citizenProfile.clean_water_quota_ltr.toFixed(1)} <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Liter</span>
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-200">
+                  <ShieldCheck size={20} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs text-slate-500 mb-4 pb-3 border-b border-slate-100">
+                <div>
+                  Desa: <strong className="text-slate-800">{citizenProfile.village || 'Banda Neira'}</strong>
+                </div>
+                <div>
+                  Profesi: <strong className="text-slate-800">{citizenProfile.occupation || 'Warga'}</strong>
+                </div>
+              </div>
+
+              {/* Balances Display */}
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div className="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl">
+                  <span className="text-[10px] font-bold text-emerald-800 uppercase block">Saldo Simpanan</span>
+                  <div className="text-base font-black text-emerald-700 mt-0.5">
+                    Rp {citizenProfile.coop_balance_rp.toLocaleString('id-ID')}
+                  </div>
+                </div>
+
+                <div className="p-3 bg-cyan-50/70 border border-cyan-200/80 rounded-xl">
+                  <span className="text-[10px] font-bold text-cyan-800 uppercase block">Kuota Air RO</span>
+                  <div className="text-base font-black text-cyan-700 mt-0.5">
+                    {citizenProfile.clean_water_quota_ltr.toFixed(1)} <span className="text-xs font-semibold">L</span>
                   </div>
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
-                <div style={{ padding: '0.55rem 0.75rem', background: 'rgba(15, 23, 42, 0.5)', borderRadius: 'var(--radius-sm)', fontSize: '0.72rem', color: '#94a3b8' }}>
-                  Poin Sampah: <b style={{ color: '#f59e0b' }}>{citizenProfile.plastic_points} pts</b>
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="p-2.5 bg-slate-50 border border-slate-200/60 rounded-xl">
+                  <span className="text-[10px] text-slate-500 block">Poin Sampah</span>
+                  <strong className="text-amber-600">{citizenProfile.plastic_points} pts</strong>
                 </div>
-                <div style={{ padding: '0.55rem 0.75rem', background: 'rgba(15, 23, 42, 0.5)', borderRadius: 'var(--radius-sm)', fontSize: '0.72rem', color: '#94a3b8' }}>
-                  Plastik Disetor: <b style={{ color: '#e2e8f0' }}>{citizenProfile.total_plastic_recycled_kg.toFixed(1)} kg</b>
+                <div className="p-2.5 bg-slate-50 border border-slate-200/60 rounded-xl">
+                  <span className="text-[10px] text-slate-500 block">Total Plastik Disetor</span>
+                  <strong className="text-slate-800">{citizenProfile.total_plastic_recycled_kg.toFixed(1)} kg</strong>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="card" style={{ padding: '1.5rem', textAlign: 'center', background: 'rgba(15, 23, 42, 0.4)', border: '1px dashed var(--border-color)', color: '#64748b' }}>
-              <Scale size={32} style={{ margin: '0 auto 0.5rem', opacity: 0.5 }} />
-              <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>Belum Ada Warga Dipilih</div>
-              <p style={{ margin: '0.25rem 0 0', fontSize: '0.75rem' }}>
-                Cari NIK warga untuk melihat saldo koperasi &amp; kuota air minum.
+            <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-400 shadow-xs">
+              <Scale size={28} className="mx-auto mb-2 opacity-50" />
+              <p className="font-bold text-slate-700 text-xs">Belum Ada Warga Terpilih</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Masukkan 16 digit NIK warga untuk memeriksa saldo koperasi &amp; jatah kuota air minum.
               </p>
             </div>
           )}
 
           {/* Struk Terakhir Widget */}
           {lastReceipt && (
-            <div className="card" style={{ padding: '1rem', background: 'rgba(15, 23, 42, 0.85)', border: '1px solid rgba(16, 185, 129, 0.4)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#10b981', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-                <CheckCircle2 size={14} /> Struk Transaksi Terverifikasi
+            <div className="bg-white rounded-2xl border border-emerald-300 p-4 shadow-xs animate-fade-in">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 uppercase tracking-wider mb-1.5">
+                <CheckCircle2 size={14} className="text-emerald-600" />
+                <span>Struk Transaksi Sah</span>
               </div>
-              <div style={{ fontSize: '0.8rem', color: '#e2e8f0', fontWeight: 700 }}>
-                {lastReceipt.item_name}
+              <p className="text-xs font-bold text-slate-800">{lastReceipt.item_name}</p>
+              <div className="text-[11px] text-slate-500 font-mono mt-0.5">
+                Kode: {lastReceipt.transaction_code}
               </div>
-              <div style={{ fontSize: '0.72rem', color: '#94a3b8', margin: '0.2rem 0' }}>
-                Kode: <span style={{ fontFamily: 'monospace', color: '#38bdf8' }}>{lastReceipt.transaction_code}</span>
-              </div>
-              <div style={{ fontSize: '0.72rem', color: '#94a3b8', wordBreak: 'break-all' }}>
-                Hash: <span style={{ fontFamily: 'monospace', color: '#10b981' }}>{lastReceipt.receipt_hash}</span>
+              <div className="text-[10px] text-slate-400 font-mono mt-1 break-all bg-slate-50 p-1.5 rounded border border-slate-200">
+                Hash: {lastReceipt.receipt_hash}
               </div>
             </div>
           )}
         </div>
 
-        {/* Right Column: Operations Panel */}
-        <div>
+        {/* Kolom Kanan (8 Kolom): Cashier & Operations Form */}
+        <div className="lg:col-span-8 space-y-4">
           {/* Status Message Alerts */}
           {actionSuccessMsg && (
-            <div style={{ padding: '0.75rem 1rem', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.4)', borderRadius: 'var(--radius-md)', color: '#34d399', fontSize: '0.825rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <CheckCircle2 size={16} /> {actionSuccessMsg}
+            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold flex items-center gap-2 shadow-xs animate-fade-in">
+              <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+              <span>{actionSuccessMsg}</span>
             </div>
           )}
           {actionErrorMsg && (
-            <div style={{ padding: '0.75rem 1rem', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.4)', borderRadius: 'var(--radius-md)', color: '#f87171', fontSize: '0.825rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <AlertCircle size={16} /> {actionErrorMsg}
+            <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs font-semibold flex items-center gap-2 shadow-xs animate-fade-in">
+              <AlertCircle size={16} className="text-rose-600 shrink-0" />
+              <span>{actionErrorMsg}</span>
             </div>
           )}
 
           {/* TAB 1: Kasir Timbangan Komoditas */}
           {activeTab === 'komoditas' && (
-            <div className="card" style={{ padding: '1.5rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Scale size={18} style={{ color: '#10b981' }} /> Kasir Timbangan Hasil Bumi &amp; Laut
-                  </h3>
-                  <p style={{ margin: '0.2rem 0 0', color: '#94a3b8', fontSize: '0.8rem' }}>
-                    Menerima setoran pala, fuli, cengkeh, dan ikan tangkapan nelayan dengan harga acuan Koperasi Hatta.
-                  </p>
-                </div>
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-5">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="text-base font-extrabold text-[#081D35] flex items-center gap-2">
+                  <Scale size={18} className="text-emerald-600" />
+                  <span>Kasir Timbangan Hasil Bumi &amp; Laut</span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Menerima setoran pala, fuli, cengkeh, dan ikan tangkapan nelayan dengan harga acuan Koperasi Hatta.
+                </p>
               </div>
 
-              <form onSubmit={handleDepositKomoditas} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-                {/* Select Commodity */}
+              <form onSubmit={handleDepositKomoditas} className="space-y-4">
+                {/* Select Commodity Cards */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.4rem' }}>
-                    Pilih Jenis Komoditas:
-                  </label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.5rem' }}>
-                    {COMMODITY_OPTIONS.map((item) => (
-                      <button
-                        type="button"
-                        key={item.code}
-                        onClick={() => setCommodityType(item.code)}
-                        style={{
-                          padding: '0.65rem 0.85rem',
-                          background: commodityType === item.code ? 'rgba(16, 185, 129, 0.18)' : 'rgba(15, 23, 42, 0.6)',
-                          border: commodityType === item.code ? '1px solid #10b981' : '1px solid var(--border-color)',
-                          borderRadius: 'var(--radius-md)',
-                          textAlign: 'left',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                        }}
-                      >
-                        <span style={{ fontSize: '1.2rem' }}>{item.icon}</span>
-                        <div>
-                          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#f8fafc' }}>{item.name}</div>
-                          <div style={{ fontSize: '0.72rem', color: '#10b981', fontWeight: 600 }}>
-                            Rp {item.price.toLocaleString()} / kg
+                  <label className="block text-xs font-bold text-slate-700 mb-2">Pilih Jenis Komoditas:</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                    {COMMODITY_OPTIONS.map((item) => {
+                      const isSelected = commodityType === item.code
+                      return (
+                        <button
+                          type="button"
+                          key={item.code}
+                          onClick={() => setCommodityType(item.code)}
+                          className={`p-3 rounded-xl text-left transition-all border flex items-center gap-2.5 ${
+                            isSelected
+                              ? 'bg-emerald-50/80 border-emerald-500 ring-2 ring-emerald-100 shadow-2xs'
+                              : 'bg-slate-50/60 border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          <span className="text-xl">{item.icon}</span>
+                          <div className="min-w-0">
+                            <div className="text-xs font-bold text-slate-800 truncate">{item.name}</div>
+                            <div className="text-[11px] font-extrabold text-emerald-700 mt-0.5">
+                              Rp {item.price.toLocaleString('id-ID')} / kg
+                            </div>
                           </div>
-                        </div>
-                      </button>
-                    ))}
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
 
-                {/* Weight Input & Destination Selection */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                {/* Weight & Destination */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.4rem' }}>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
                       Berat Timbangan (Kg):
                     </label>
                     <input
@@ -709,57 +915,34 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
                       max="1000"
                       value={commodityWeight}
                       onChange={(e) => setCommodityWeight(parseFloat(e.target.value) || 0)}
-                      style={{
-                        width: '100%',
-                        background: 'rgba(15, 23, 42, 0.8)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: 'var(--radius-md)',
-                        color: '#f8fafc',
-                        padding: '0.6rem 0.75rem',
-                        fontSize: '1rem',
-                        fontWeight: 700,
-                      }}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:bg-white focus:border-emerald-500 outline-none"
                     />
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.4rem' }}>
-                      Alokasi Nilai Tukar:
-                    </label>
-                    <div style={{ display: 'flex', gap: '0.4rem' }}>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">Alokasi Nilai Tukar:</label>
+                    <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
                         onClick={() => setCommodityDest('BALANCE')}
-                        style={{
-                          flex: 1,
-                          padding: '0.6rem 0.5rem',
-                          borderRadius: 'var(--radius-md)',
-                          border: commodityDest === 'BALANCE' ? '1px solid #10b981' : '1px solid var(--border-color)',
-                          background: commodityDest === 'BALANCE' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(15, 23, 42, 0.6)',
-                          color: commodityDest === 'BALANCE' ? '#10b981' : '#94a3b8',
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                        }}
+                        className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1 ${
+                          commodityDest === 'BALANCE'
+                            ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        }`}
                       >
-                        💰 Tabungan Saldo (Rp)
+                        <span>Tabungan Saldo</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => setCommodityDest('WATER_QUOTA')}
-                        style={{
-                          flex: 1,
-                          padding: '0.6rem 0.5rem',
-                          borderRadius: 'var(--radius-md)',
-                          border: commodityDest === 'WATER_QUOTA' ? '1px solid #06b6d4' : '1px solid var(--border-color)',
-                          background: commodityDest === 'WATER_QUOTA' ? 'rgba(6, 182, 212, 0.2)' : 'rgba(15, 23, 42, 0.6)',
-                          color: commodityDest === 'WATER_QUOTA' ? '#06b6d4' : '#94a3b8',
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                        }}
+                        className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1 ${
+                          commodityDest === 'WATER_QUOTA'
+                            ? 'bg-cyan-600 text-white border-cyan-600 shadow-xs'
+                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        }`}
                       >
-                        🚰 Kuota Air Bersih (RO)
+                        <span>Kuota Air RO</span>
                       </button>
                     </div>
                   </div>
@@ -767,40 +950,32 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
 
                 {/* Notes Input */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.4rem' }}>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
                     Catatan Kasir (Opsional):
                   </label>
                   <input
                     type="text"
                     value={commodityNotes}
                     onChange={(e) => setCommodityNotes(e.target.value)}
-                    placeholder="Contoh: Panen kebun nutmeg Hatta blok utara"
-                    style={{
-                      width: '100%',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: '#f8fafc',
-                      padding: '0.55rem 0.75rem',
-                      fontSize: '0.8rem',
-                    }}
+                    placeholder="Contoh: Panen kebun Lonthoir blok timur..."
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:border-emerald-500 outline-none"
                   />
                 </div>
 
                 {/* Calculation Summary Box */}
-                <div style={{ padding: '0.9rem 1.15rem', background: 'rgba(16, 185, 129, 0.08)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(16, 185, 129, 0.25)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-xl flex items-center justify-between">
                   <div>
-                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Estimasi Nilai Tukar:</div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#10b981' }}>
-                      Rp {estCommodityRp.toLocaleString()}
-                    </div>
+                    <span className="text-[11px] text-slate-500 font-semibold block">Total Nilai Timbangan:</span>
+                    <span className="text-xl font-black text-emerald-800">
+                      Rp {estCommodityRp.toLocaleString('id-ID')}
+                    </span>
                   </div>
                   {commodityDest === 'WATER_QUOTA' && (
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Konversi Air Minum RO:</div>
-                      <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#06b6d4' }}>
+                    <div className="text-right">
+                      <span className="text-[11px] text-slate-500 font-semibold block">Konversi Air RO:</span>
+                      <span className="text-xl font-black text-cyan-700">
                         + {estCommodityWaterLtr.toFixed(1)} Liter
-                      </div>
+                      </span>
                     </div>
                   )}
                 </div>
@@ -809,14 +984,7 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
                 <button
                   type="submit"
                   disabled={submittingKomoditas || !citizenProfile}
-                  className="btn btn-primary"
-                  style={{
-                    padding: '0.8rem',
-                    fontSize: '0.9rem',
-                    fontWeight: 800,
-                    justifyContent: 'center',
-                    background: 'linear-gradient(135deg, #10b981, #059669)',
-                  }}
+                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {submittingKomoditas ? (
                     <>
@@ -832,60 +1000,52 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
             </div>
           )}
 
-          {/* TAB 2: Bank Sampah Plastik (Mandat Prof. Purwo) */}
+          {/* TAB 2: Bank Sampah Plastik */}
           {activeTab === 'sampah' && (
-            <div className="card" style={{ padding: '1.5rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Recycle size={18} style={{ color: '#06b6d4' }} /> Bank Sampah Plastik Terpadu
-                  </h3>
-                  <p style={{ margin: '0.2rem 0 0', color: '#94a3b8', fontSize: '0.8rem' }}>
-                    Mandat Kemandirian Prof. Purwo: Setiap 1 kg sampah botol plastik ditukar 10 liter air minum higienis.
-                  </p>
-                </div>
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-5">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="text-base font-extrabold text-[#081D35] flex items-center gap-2">
+                  <Recycle size={18} className="text-cyan-600" />
+                  <span>Bank Sampah Plastik Terpadu</span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Mandat Kemandirian Prof. Purwo: Setiap 1 kg sampah botol plastik ditukar 10 liter air minum higienis.
+                </p>
               </div>
 
-              <form onSubmit={handleDepositWaste} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-                {/* Select Waste Type */}
+              <form onSubmit={handleDepositWaste} className="space-y-4">
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.4rem' }}>
-                    Kategori Sampah Terpilah:
-                  </label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '0.5rem' }}>
-                    {WASTE_OPTIONS.map((item) => (
-                      <button
-                        type="button"
-                        key={item.code}
-                        onClick={() => setWasteType(item.code)}
-                        style={{
-                          padding: '0.75rem',
-                          background: wasteType === item.code ? 'rgba(6, 182, 212, 0.18)' : 'rgba(15, 23, 42, 0.6)',
-                          border: wasteType === item.code ? '1px solid #06b6d4' : '1px solid var(--border-color)',
-                          borderRadius: 'var(--radius-md)',
-                          textAlign: 'left',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.5rem',
-                        }}
-                      >
-                        <span style={{ fontSize: '1.4rem' }}>{item.icon}</span>
-                        <div>
-                          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#f8fafc' }}>{item.name}</div>
-                          <div style={{ fontSize: '0.72rem', color: '#06b6d4', fontWeight: 700 }}>
-                            1 kg = {item.waterPerKg} L Air RO ({item.price.toLocaleString()} Rp)
+                  <label className="block text-xs font-bold text-slate-700 mb-2">Kategori Sampah Terpilah:</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    {WASTE_OPTIONS.map((item) => {
+                      const isSelected = wasteType === item.code
+                      return (
+                        <button
+                          type="button"
+                          key={item.code}
+                          onClick={() => setWasteType(item.code)}
+                          className={`p-3 rounded-xl text-left transition-all border flex items-center gap-2.5 ${
+                            isSelected
+                              ? 'bg-cyan-50/80 border-cyan-500 ring-2 ring-cyan-100 shadow-2xs'
+                              : 'bg-slate-50/60 border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          <span className="text-xl">{item.icon}</span>
+                          <div className="min-w-0">
+                            <div className="text-xs font-bold text-slate-800 truncate">{item.name}</div>
+                            <div className="text-[11px] font-extrabold text-cyan-700 mt-0.5">
+                              1 kg = {item.waterPerKg} L Air RO
+                            </div>
                           </div>
-                        </div>
-                      </button>
-                    ))}
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
 
-                {/* Weight & Destination */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.4rem' }}>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
                       Berat Sampah Timbangan (Kg):
                     </label>
                     <input
@@ -895,116 +1055,73 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
                       max="500"
                       value={wasteWeight}
                       onChange={(e) => setWasteWeight(parseFloat(e.target.value) || 0)}
-                      style={{
-                        width: '100%',
-                        background: 'rgba(15, 23, 42, 0.8)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: 'var(--radius-md)',
-                        color: '#f8fafc',
-                        padding: '0.6rem 0.75rem',
-                        fontSize: '1rem',
-                        fontWeight: 700,
-                      }}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:bg-white focus:border-cyan-500 outline-none"
                     />
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.4rem' }}>
-                      Alokasi Penukaran:
-                    </label>
-                    <div style={{ display: 'flex', gap: '0.4rem' }}>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">Alokasi Penukaran:</label>
+                    <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
                         onClick={() => setWasteDest('WATER_QUOTA')}
-                        style={{
-                          flex: 1,
-                          padding: '0.6rem 0.5rem',
-                          borderRadius: 'var(--radius-md)',
-                          border: wasteDest === 'WATER_QUOTA' ? '1px solid #06b6d4' : '1px solid var(--border-color)',
-                          background: wasteDest === 'WATER_QUOTA' ? 'rgba(6, 182, 212, 0.2)' : 'rgba(15, 23, 42, 0.6)',
-                          color: wasteDest === 'WATER_QUOTA' ? '#06b6d4' : '#94a3b8',
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                        }}
+                        className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1 ${
+                          wasteDest === 'WATER_QUOTA'
+                            ? 'bg-cyan-600 text-white border-cyan-600 shadow-xs'
+                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        }`}
                       >
-                        🚰 Kuota Air RO (Utama)
+                        <span>Kuota Air RO</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => setWasteDest('BALANCE')}
-                        style={{
-                          flex: 1,
-                          padding: '0.6rem 0.5rem',
-                          borderRadius: 'var(--radius-md)',
-                          border: wasteDest === 'BALANCE' ? '1px solid #10b981' : '1px solid var(--border-color)',
-                          background: wasteDest === 'BALANCE' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(15, 23, 42, 0.6)',
-                          color: wasteDest === 'BALANCE' ? '#10b981' : '#94a3b8',
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                        }}
+                        className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1 ${
+                          wasteDest === 'BALANCE'
+                            ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        }`}
                       >
-                        💰 Saldo Uang (Rp)
+                        <span>Saldo Uang (Rp)</span>
                       </button>
                     </div>
                   </div>
                 </div>
 
-                {/* Notes Input */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.4rem' }}>
-                    Lokasi Asal Sampah:
-                  </label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Lokasi Asal Sampah:</label>
                   <input
                     type="text"
                     value={wasteNotes}
                     onChange={(e) => setWasteNotes(e.target.value)}
-                    placeholder="Contoh: Pembersihan pesisir pantai Pulau Ay / RT 02"
-                    style={{
-                      width: '100%',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: '#f8fafc',
-                      padding: '0.55rem 0.75rem',
-                      fontSize: '0.8rem',
-                    }}
+                    placeholder="Contoh: Pembersihan pesisir pantai Lonthoir..."
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:border-cyan-500 outline-none"
                   />
                 </div>
 
-                {/* Impact Calculation Callout */}
-                <div style={{ padding: '0.9rem 1.15rem', background: 'rgba(6, 182, 212, 0.08)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(6, 182, 212, 0.25)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="p-4 bg-cyan-50/70 border border-cyan-200/80 rounded-xl flex items-center justify-between">
                   <div>
-                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
-                      {wasteDest === 'WATER_QUOTA' ? 'Perolehan Air Minum Bersih:' : 'Nilai Saldo Tabungan (Rp):'}
-                    </div>
-                    <div style={{ fontSize: '1.35rem', fontWeight: 900, color: wasteDest === 'WATER_QUOTA' ? '#38bdf8' : '#10b981' }}>
+                    <span className="text-[11px] text-slate-500 font-semibold block">
+                      {wasteDest === 'WATER_QUOTA' ? 'Perolehan Air Bersih:' : 'Nilai Saldo Tabungan:'}
+                    </span>
+                    <span className="text-xl font-black text-cyan-800">
                       {wasteDest === 'WATER_QUOTA'
                         ? `+ ${estWasteWaterLtr.toFixed(1)} Liter Air RO`
-                        : `Rp ${estWasteRp.toLocaleString()}`}
-                    </div>
+                        : `Rp ${estWasteRp.toLocaleString('id-ID')}`}
+                    </span>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Bonus Poin Lingkungan:</div>
-                    <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#f59e0b' }}>
+                  <div className="text-right">
+                    <span className="text-[11px] text-slate-500 font-semibold block">Poin Lingkungan:</span>
+                    <span className="text-xl font-black text-amber-600">
                       + {Math.round(wasteWeight * 10)} Poin
-                    </div>
+                    </span>
                   </div>
                 </div>
 
-                {/* Submit Button */}
                 <button
                   type="submit"
                   disabled={submittingWaste || !citizenProfile}
-                  className="btn btn-primary"
-                  style={{
-                    padding: '0.8rem',
-                    fontSize: '0.9rem',
-                    fontWeight: 800,
-                    justifyContent: 'center',
-                    background: 'linear-gradient(135deg, #06b6d4, #0284c7)',
-                  }}
+                  className="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {submittingWaste ? (
                     <>
@@ -1020,70 +1137,55 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
             </div>
           )}
 
-          {/* TAB 3: Dispenser Air RO & Solenoid Valve ESP32 */}
+          {/* TAB 3: Dispenser Air RO Otomatis */}
           {activeTab === 'dispenser' && (
-            <div className="card" style={{ padding: '1.5rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-5">
+              <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Droplets size={18} style={{ color: '#3b82f6' }} /> Dispenser Air Minum RO Otomatis
+                  <h3 className="text-base font-extrabold text-[#081D35] flex items-center gap-2">
+                    <Droplets size={18} className="text-blue-600" />
+                    <span>Dispenser Air Minum RO Otomatis</span>
                   </h3>
-                  <p style={{ margin: '0.2rem 0 0', color: '#94a3b8', fontSize: '0.8rem' }}>
-                    Solenoid valve berbasis relay microcontroller (ESP32) memotong kuota air NIK dan mengalirkan air minum siap konsumsi.
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Solenoid valve berbasis microcontroller membuka keran dan memotong kuota air NIK.
                   </p>
                 </div>
 
-                {/* Valve Status Badge */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <div
-                    style={{
-                      width: '10px',
-                      height: '10px',
-                      borderRadius: '50%',
-                      background: valveStatus === 'OPEN' ? '#10b981' : '#64748b',
-                      boxShadow: valveStatus === 'OPEN' ? '0 0 10px #10b981' : 'none',
-                    }}
+                <div className="flex items-center gap-2 px-3 py-1 rounded-full border bg-slate-50">
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      valveStatus === 'OPEN' ? 'bg-emerald-500 animate-ping' : 'bg-slate-400'
+                    }`}
                   />
-                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: valveStatus === 'OPEN' ? '#10b981' : '#94a3b8' }}>
+                  <span className="text-[11px] font-bold text-slate-700">
                     SOLENOID: {valveStatus}
                   </span>
                 </div>
               </div>
 
-              {/* Solenoid Animation Box */}
+              {/* Countdown Animation Box */}
               {dispensingActive && (
-                <div style={{ marginBottom: '1.25rem', padding: '1.5rem', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.15))', borderRadius: 'var(--radius-lg)', border: '1px solid rgba(59, 130, 246, 0.4)', textAlign: 'center' }}>
-                  <Droplets size={42} style={{ color: '#38bdf8', animation: 'bounce 1s infinite' }} />
-                  <h4 style={{ margin: '0.5rem 0 0.2rem', color: '#f8fafc', fontSize: '1.1rem', fontWeight: 800 }}>
-                    Air Bersih Sedang Mengalir...
-                  </h4>
-                  <p style={{ margin: 0, color: '#cbd5e1', fontSize: '0.8rem' }}>
-                    Letakkan wadah atau galon di bawah nozzle keran dispenser stasiun desa.
+                <div className="p-6 rounded-2xl bg-blue-50 border border-blue-200 text-center space-y-2 animate-fade-in">
+                  <Droplets size={36} className="mx-auto text-blue-600 animate-bounce" />
+                  <h4 className="text-sm font-extrabold text-blue-950">Air Bersih Sedang Mengalir...</h4>
+                  <p className="text-xs text-blue-700">
+                    Letakkan wadah atau galon di bawah nozzle dispenser stasiun.
                   </p>
-                  <div style={{ marginTop: '0.75rem', fontSize: '1.8rem', fontWeight: 900, color: '#38bdf8', fontFamily: 'monospace' }}>
+                  <div className="text-2xl font-black font-mono text-blue-700">
                     00:{dispenseCountdown.toString().padStart(2, '0')} detik
                   </div>
                 </div>
               )}
 
-              <form onSubmit={handleRedeemWater} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
-                {/* Station Code Selector */}
+              <form onSubmit={handleRedeemWater} className="space-y-4">
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.4rem' }}>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
                     Pilih Lokasi Stasiun Dispenser RO:
                   </label>
                   <select
                     value={dispenserStation}
                     onChange={(e) => setDispenserStation(e.target.value)}
-                    style={{
-                      width: '100%',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: '#f8fafc',
-                      padding: '0.6rem 0.75rem',
-                      fontSize: '0.825rem',
-                    }}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-blue-500 outline-none"
                   >
                     {WATER_STATIONS.map((st) => (
                       <option key={st.code} value={st.code}>
@@ -1093,12 +1195,9 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
                   </select>
                 </div>
 
-                {/* Preset Volume Buttons */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.4rem' }}>
-                    Preset Volume Pengisian:
-                  </label>
-                  <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Preset Volume Pengisian:</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {[
                       { ltr: 2.0, label: '2 Liter (Botol)' },
                       { ltr: 5.0, label: '5 Liter (Jeriken Kecil)' },
@@ -1109,16 +1208,11 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
                         type="button"
                         key={preset.ltr}
                         onClick={() => setWaterLiters(preset.ltr)}
-                        style={{
-                          padding: '0.5rem 0.75rem',
-                          borderRadius: 'var(--radius-md)',
-                          border: waterLiters === preset.ltr ? '1px solid #3b82f6' : '1px solid var(--border-color)',
-                          background: waterLiters === preset.ltr ? 'rgba(59, 130, 246, 0.25)' : 'rgba(15, 23, 42, 0.6)',
-                          color: waterLiters === preset.ltr ? '#93c5fd' : '#94a3b8',
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                        }}
+                        className={`p-2.5 rounded-xl text-xs font-bold border transition-all text-center ${
+                          waterLiters === preset.ltr
+                            ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
+                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        }`}
                       >
                         {preset.label}
                       </button>
@@ -1126,11 +1220,8 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
                   </div>
                 </div>
 
-                {/* Manual Liters Input */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.4rem' }}>
-                    Volume Air (Liter):
-                  </label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">Volume Air (Liter):</label>
                   <input
                     type="number"
                     step="0.5"
@@ -1138,31 +1229,14 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
                     max="100"
                     value={waterLiters}
                     onChange={(e) => setWaterLiters(parseFloat(e.target.value) || 0)}
-                    style={{
-                      width: '100%',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)',
-                      color: '#f8fafc',
-                      padding: '0.6rem 0.75rem',
-                      fontSize: '1rem',
-                      fontWeight: 700,
-                    }}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:bg-white focus:border-blue-500 outline-none"
                   />
                 </div>
 
-                {/* Submit Dispense */}
                 <button
                   type="submit"
                   disabled={submittingWater || dispensingActive || !citizenProfile}
-                  className="btn btn-primary"
-                  style={{
-                    padding: '0.85rem',
-                    fontSize: '0.9rem',
-                    fontWeight: 800,
-                    justifyContent: 'center',
-                    background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
-                  }}
+                  className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {submittingWater ? (
                     <>
@@ -1184,76 +1258,74 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
 
           {/* TAB 4: Buku Besar Transaksi (Ledger) */}
           {activeTab === 'ledger' && (
-            <div className="card" style={{ padding: '1.5rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs overflow-hidden">
+              <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 flex-wrap gap-2">
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <CreditCard size={18} style={{ color: '#8b5cf6' }} /> Buku Besar Koperasi &amp; Bank Sampah
+                  <h3 className="text-sm font-extrabold text-[#081D35] flex items-center gap-2">
+                    <CreditCard size={16} className="text-purple-600" />
+                    <span>Buku Besar Transaksi Kasir &amp; Bank Sampah</span>
                   </h3>
-                  <p style={{ margin: '0.2rem 0 0', color: '#94a3b8', fontSize: '0.8rem' }}>
-                    Log transaksi deterministik dengan enkripsi SHA-256 untuk audit akuntabilitas pulau.
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Log mutasi transaksi deterministik dengan enkripsi hash SHA-256 akuntabilitas terbuka.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={loadLedger}
                   disabled={loadingLedger}
-                  className="btn btn-secondary"
-                  style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors"
                 >
-                  <RefreshCw size={13} className={loadingLedger ? 'animate-spin' : ''} /> Muat Ulang
+                  <RefreshCw size={12} className={loadingLedger ? 'animate-spin' : ''} />
+                  <span>Segarkan</span>
                 </button>
               </div>
 
               {ledgerTransactions.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '2rem 1rem', color: '#64748b', fontSize: '0.85rem' }}>
-                  Belum ada catatan transaksi di buku besar.
+                <div className="py-12 px-4 text-center text-slate-500">
+                  <CreditCard size={28} className="mx-auto mb-2 text-slate-400 opacity-60" />
+                  <p className="text-xs font-bold text-slate-800">Belum ada catatan transaksi di buku besar</p>
                 </div>
               ) : (
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.78rem' }}>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
                     <thead>
-                      <tr style={{ borderBottom: '1px solid var(--border-color)', color: '#94a3b8', textAlign: 'left' }}>
-                        <th style={{ padding: '0.55rem 0.6rem' }}>Waktu</th>
-                        <th style={{ padding: '0.55rem 0.6rem' }}>Kode / Tipe</th>
-                        <th style={{ padding: '0.55rem 0.6rem' }}>Komoditas / Item</th>
-                        <th style={{ padding: '0.55rem 0.6rem' }}>Kuantitas</th>
-                        <th style={{ padding: '0.55rem 0.6rem' }}>Nilai (Rp)</th>
-                        <th style={{ padding: '0.55rem 0.6rem' }}>Dampak Air</th>
-                        <th style={{ padding: '0.55rem 0.6rem' }}>Receipt Hash</th>
+                      <tr className="bg-slate-50/80 border-b border-slate-200/80 text-slate-500 font-bold uppercase tracking-wider">
+                        <th className="py-3 px-3">Waktu</th>
+                        <th className="py-3 px-3">Kode / Tipe</th>
+                        <th className="py-3 px-3">Komoditas / Item</th>
+                        <th className="py-3 px-3">Kuantitas</th>
+                        <th className="py-3 px-3">Nilai (Rp)</th>
+                        <th className="py-3 px-3">Dampak Air</th>
+                        <th className="py-3 px-3">Receipt Hash</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
                       {ledgerTransactions.map((trx) => (
-                        <tr key={trx.id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.04)' }}>
-                          <td style={{ padding: '0.55rem 0.6rem', color: '#64748b', whiteSpace: 'nowrap' }}>
+                        <tr key={trx.id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="py-2.5 px-3 text-slate-500 whitespace-nowrap">
                             {new Date(trx.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </td>
-                          <td style={{ padding: '0.55rem 0.6rem', fontWeight: 700, color: '#f8fafc' }}>
-                            <span style={{ fontSize: '0.7rem', color: '#38bdf8' }}>{trx.transaction_type}</span>
-                            <div style={{ fontSize: '0.68rem', color: '#64748b', fontFamily: 'monospace' }}>
-                              {trx.transaction_code}
-                            </div>
+                          <td className="py-2.5 px-3">
+                            <span className="font-bold text-blue-700 block">{trx.transaction_type}</span>
+                            <span className="font-mono text-[10px] text-slate-400">{trx.transaction_code}</span>
                           </td>
-                          <td style={{ padding: '0.55rem 0.6rem', color: '#e2e8f0', fontWeight: 600 }}>
-                            {trx.item_name}
-                          </td>
-                          <td style={{ padding: '0.55rem 0.6rem', color: '#f8fafc', fontWeight: 700 }}>
+                          <td className="py-2.5 px-3 font-semibold text-slate-900">{trx.item_name}</td>
+                          <td className="py-2.5 px-3 font-bold text-slate-800">
                             {trx.weight_or_volume.toFixed(1)} {trx.transaction_type === 'REDEEM_WATER' ? 'L' : 'Kg'}
                           </td>
-                          <td style={{ padding: '0.55rem 0.6rem', color: '#10b981', fontWeight: 700 }}>
-                            {trx.monetary_value_rp > 0 ? `Rp ${trx.monetary_value_rp.toLocaleString()}` : '—'}
+                          <td className="py-2.5 px-3 font-bold text-emerald-700">
+                            {trx.monetary_value_rp > 0 ? `Rp ${trx.monetary_value_rp.toLocaleString('id-ID')}` : '—'}
                           </td>
-                          <td style={{ padding: '0.55rem 0.6rem', fontWeight: 700 }}>
+                          <td className="py-2.5 px-3 font-bold">
                             {trx.water_quota_impact_ltr > 0 ? (
-                              <span style={{ color: '#06b6d4' }}>+{trx.water_quota_impact_ltr} L</span>
+                              <span className="text-cyan-700">+{trx.water_quota_impact_ltr} L</span>
                             ) : trx.water_quota_impact_ltr < 0 ? (
-                              <span style={{ color: '#f87171' }}>{trx.water_quota_impact_ltr} L</span>
+                              <span className="text-rose-700">{trx.water_quota_impact_ltr} L</span>
                             ) : (
-                              <span style={{ color: '#64748b' }}>0</span>
+                              <span className="text-slate-400">0</span>
                             )}
                           </td>
-                          <td style={{ padding: '0.55rem 0.6rem', fontFamily: 'monospace', color: '#94a3b8', fontSize: '0.68rem' }}>
+                          <td className="py-2.5 px-3 font-mono text-[10px] text-purple-700">
                             {trx.receipt_hash.slice(0, 10)}...{trx.receipt_hash.slice(-6)}
                           </td>
                         </tr>
@@ -1265,80 +1337,68 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
             </div>
           )}
 
-          {/* TAB WARGA 1: Katalog Harga Acuan Rempah & Nilai Tukar Sampah */}
+          {/* TAB WARGA 1: Katalog Harga Acuan */}
           {activeTab === 'katalog_harga' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div className="card" style={{ padding: '1.5rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
-                <div style={{ marginBottom: '1.25rem' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Scale size={18} style={{ color: '#10b981' }} /> Harga Pembelian Resmi Koperasi Hatta
+            <div className="space-y-4">
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+                <div className="border-b border-slate-100 pb-3 mb-4">
+                  <h3 className="text-sm font-extrabold text-[#081D35] flex items-center gap-2">
+                    <Scale size={16} className="text-emerald-600" />
+                    <span>Harga Pembelian Resmi Koperasi Hatta Banda Neira</span>
                   </h3>
-                  <p style={{ margin: '0.2rem 0 0', color: '#94a3b8', fontSize: '0.8rem' }}>
-                    Standar harga beli hasil panen rempah pala &amp; fuli di kasir Koperasi Hatta.
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Standar acuan resmi pembelian hasil panen petani dan tangkapan nelayan.
                   </p>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.85rem' }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                   {COMMODITY_OPTIONS.map((item) => (
                     <div
                       key={item.code}
-                      style={{
-                        padding: '1rem',
-                        borderRadius: 'var(--radius-md)',
-                        background: 'rgba(15, 23, 42, 0.6)',
-                        border: '1px solid rgba(16, 185, 129, 0.2)',
-                      }}
+                      className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/80 hover:border-emerald-300 transition-colors"
                     >
-                      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <span>{item.icon}</span> {item.name}
+                      <div className="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
+                        <span className="text-base">{item.icon}</span>
+                        <span className="truncate">{item.name}</span>
                       </div>
-                      <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#10b981', margin: '0.35rem 0' }}>
-                        Rp {item.price.toLocaleString()} <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 500 }}>/ Kg</span>
+                      <div className="text-base font-black text-emerald-700 mt-2">
+                        Rp {item.price.toLocaleString('id-ID')}{' '}
+                        <span className="text-[11px] font-medium text-slate-400">/ Kg</span>
                       </div>
-                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#94a3b8' }}>
-                        Standar mutu resmi Koperasi Hatta Banda Neira.
-                      </p>
+                      <p className="text-[10px] text-slate-500 mt-1">Standar mutu resmi Koperasi Hatta</p>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="card" style={{ padding: '1.5rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
-                <div style={{ marginBottom: '1.25rem' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Recycle size={18} style={{ color: '#06b6d4' }} /> Nilai Tukar Bank Sampah Plastik
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+                <div className="border-b border-slate-100 pb-3 mb-4">
+                  <h3 className="text-sm font-extrabold text-[#081D35] flex items-center gap-2">
+                    <Recycle size={16} className="text-cyan-600" />
+                    <span>Nilai Tukar Bank Sampah Plastik Mandat UGM</span>
                   </h3>
-                  <p style={{ margin: '0.2rem 0 0', color: '#94a3b8', fontSize: '0.8rem' }}>
-                    Tukar sampah plastik bersih Anda menjadi kuota air bersih RO atau saldo simpanan koperasi.
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Tukarkan sampah plastik bersih menjadi kuota air minum RO atau saldo tabungan.
                   </p>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.85rem' }}>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {WASTE_OPTIONS.map((item) => (
                     <div
                       key={item.code}
-                      style={{
-                        padding: '1rem',
-                        borderRadius: 'var(--radius-md)',
-                        background: 'rgba(15, 23, 42, 0.6)',
-                        border: '1px solid rgba(6, 182, 212, 0.2)',
-                      }}
+                      className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200/80 hover:border-cyan-300 transition-colors"
                     >
-                      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#f8fafc' }}>
-                        {item.name}
+                      <div className="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
+                        <span className="text-base">{item.icon}</span>
+                        <span className="truncate">{item.name}</span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: '0.35rem 0' }}>
-                        <span style={{ fontSize: '1.1rem', fontWeight: 900, color: '#38bdf8' }}>
-                          +{item.waterPerKg} L Air RO
-                        </span>
-                        <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>atau</span>
-                        <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#10b981' }}>
-                          Rp {item.price.toLocaleString()}
-                        </span>
+                      <div className="mt-2 space-y-0.5">
+                        <div className="text-sm font-black text-cyan-700">+{item.waterPerKg} L Air RO</div>
+                        <div className="text-xs font-bold text-emerald-700">
+                          atau Rp {item.price.toLocaleString('id-ID')}
+                        </div>
                       </div>
-                      <p style={{ margin: 0, fontSize: '0.72rem', color: '#94a3b8' }}>
-                        Bonus: +5 Poin Warga per kilogram terverifikasi
-                      </p>
+                      <p className="text-[10px] text-slate-500 mt-1.5">+5 Poin Lingkungan per kg</p>
                     </div>
                   ))}
                 </div>
@@ -1348,78 +1408,70 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
 
           {/* TAB WARGA 2: Riwayat Transaksi Saya */}
           {activeTab === 'riwayat_warga' && (
-            <div className="card" style={{ padding: '1.5rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs overflow-hidden">
+              <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <CreditCard size={18} style={{ color: '#8b5cf6' }} /> Riwayat Transaksi &amp; Kuota Saya
+                  <h3 className="text-sm font-extrabold text-[#081D35] flex items-center gap-2">
+                    <CreditCard size={16} className="text-purple-600" />
+                    <span>Riwayat Transaksi &amp; Kuota Saya</span>
                   </h3>
-                  <p style={{ margin: '0.2rem 0 0', color: '#94a3b8', fontSize: '0.8rem' }}>
-                    Catatan setoran hasil panen, penukaran sampah, dan pengambilan air minum RO Anda.
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Catatan mutasi saldo dan pengambilan air minum RO pada profil Anda.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={loadLedger}
                   disabled={loadingLedger}
-                  className="btn btn-secondary"
-                  style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors"
                 >
-                  <RefreshCw size={13} className={loadingLedger ? 'animate-spin' : ''} /> Segarkan
+                  <RefreshCw size={12} className={loadingLedger ? 'animate-spin' : ''} />
+                  <span>Segarkan</span>
                 </button>
               </div>
 
               {ledgerTransactions.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '2rem 1rem', color: '#64748b', fontSize: '0.85rem' }}>
-                  Belum ada catatan transaksi pada akun Anda. Kunjungi kasir Koperasi Hatta untuk transaksi pertama.
+                <div className="py-12 px-4 text-center text-slate-500">
+                  <CreditCard size={28} className="mx-auto mb-2 text-slate-400 opacity-60" />
+                  <p className="text-xs font-bold text-slate-800">Belum ada transaksi pada profil ini</p>
                 </div>
               ) : (
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.78rem' }}>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
                     <thead>
-                      <tr style={{ borderBottom: '1px solid var(--border-color)', color: '#94a3b8', textAlign: 'left' }}>
-                        <th style={{ padding: '0.55rem 0.6rem' }}>Waktu</th>
-                        <th style={{ padding: '0.55rem 0.6rem' }}>Jenis Transaksi</th>
-                        <th style={{ padding: '0.55rem 0.6rem' }}>Komoditas / Sampah</th>
-                        <th style={{ padding: '0.55rem 0.6rem' }}>Kuantitas</th>
-                        <th style={{ padding: '0.55rem 0.6rem' }}>Nilai (Rp)</th>
-                        <th style={{ padding: '0.55rem 0.6rem' }}>Dampak Kuota Air</th>
-                        <th style={{ padding: '0.55rem 0.6rem' }}>Receipt Hash</th>
+                      <tr className="bg-slate-50/80 border-b border-slate-200/80 text-slate-500 font-bold uppercase tracking-wider">
+                        <th className="py-2.5 px-3">Tanggal</th>
+                        <th className="py-2.5 px-3">Transaksi</th>
+                        <th className="py-2.5 px-3">Item</th>
+                        <th className="py-2.5 px-3">Kuantitas</th>
+                        <th className="py-2.5 px-3">Nilai (Rp)</th>
+                        <th className="py-2.5 px-3">Air RO</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
                       {ledgerTransactions.map((trx) => (
-                        <tr key={trx.id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.04)' }}>
-                          <td style={{ padding: '0.55rem 0.6rem', color: '#64748b', whiteSpace: 'nowrap' }}>
-                            {new Date(trx.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}{' '}
-                            {new Date(trx.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        <tr key={trx.id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="py-2.5 px-3 text-slate-500 whitespace-nowrap">
+                            {new Date(trx.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
                           </td>
-                          <td style={{ padding: '0.55rem 0.6rem', fontWeight: 700, color: '#f8fafc' }}>
-                            <span style={{ fontSize: '0.7rem', color: '#38bdf8' }}>{trx.transaction_type}</span>
-                            <div style={{ fontSize: '0.68rem', color: '#64748b', fontFamily: 'monospace' }}>
-                              {trx.transaction_code}
-                            </div>
+                          <td className="py-2.5 px-3">
+                            <span className="font-bold text-slate-800">{trx.transaction_type}</span>
                           </td>
-                          <td style={{ padding: '0.55rem 0.6rem', color: '#e2e8f0', fontWeight: 600 }}>
-                            {trx.item_name}
-                          </td>
-                          <td style={{ padding: '0.55rem 0.6rem', color: '#f8fafc', fontWeight: 700 }}>
+                          <td className="py-2.5 px-3 font-semibold text-slate-900">{trx.item_name}</td>
+                          <td className="py-2.5 px-3 font-bold text-slate-800">
                             {trx.weight_or_volume.toFixed(1)} {trx.transaction_type === 'REDEEM_WATER' ? 'L' : 'Kg'}
                           </td>
-                          <td style={{ padding: '0.55rem 0.6rem', color: '#10b981', fontWeight: 700 }}>
-                            {trx.monetary_value_rp > 0 ? `Rp ${trx.monetary_value_rp.toLocaleString()}` : '—'}
+                          <td className="py-2.5 px-3 font-bold text-emerald-700">
+                            {trx.monetary_value_rp > 0 ? `Rp ${trx.monetary_value_rp.toLocaleString('id-ID')}` : '—'}
                           </td>
-                          <td style={{ padding: '0.55rem 0.6rem', fontWeight: 700 }}>
+                          <td className="py-2.5 px-3 font-bold">
                             {trx.water_quota_impact_ltr > 0 ? (
-                              <span style={{ color: '#06b6d4' }}>+{trx.water_quota_impact_ltr} L</span>
+                              <span className="text-cyan-700">+{trx.water_quota_impact_ltr} L</span>
                             ) : trx.water_quota_impact_ltr < 0 ? (
-                              <span style={{ color: '#f87171' }}>{trx.water_quota_impact_ltr} L</span>
+                              <span className="text-rose-700">{trx.water_quota_impact_ltr} L</span>
                             ) : (
-                              <span style={{ color: '#64748b' }}>0</span>
+                              <span className="text-slate-400">0</span>
                             )}
-                          </td>
-                          <td style={{ padding: '0.55rem 0.6rem', fontFamily: 'monospace', color: '#94a3b8', fontSize: '0.68rem' }}>
-                            {trx.receipt_hash.slice(0, 10)}...{trx.receipt_hash.slice(-6)}
                           </td>
                         </tr>
                       ))}
@@ -1430,45 +1482,37 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
             </div>
           )}
 
-          {/* TAB WARGA 3: Lokasi Stasiun RO & Bank Sampah */}
+          {/* TAB WARGA 3: Panduan Stasiun RO */}
           {activeTab === 'panduan_warga' && (
-            <div className="card" style={{ padding: '1.5rem', background: 'var(--surface-color)', border: '1px solid var(--border-color)' }}>
-              <div style={{ marginBottom: '1.25rem' }}>
-                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Droplets size={18} style={{ color: '#38bdf8' }} /> 4 Titik Stasiun Air Minum RO &amp; Penukaran
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-4">
+              <div className="border-b border-slate-100 pb-3">
+                <h3 className="text-sm font-extrabold text-[#081D35] flex items-center gap-2">
+                  <Droplets size={16} className="text-cyan-600" />
+                  <span>4 Titik Stasiun Air Minum RO &amp; Pos Penukaran Sampah</span>
                 </h3>
-                <p style={{ margin: '0.2rem 0 0', color: '#94a3b8', fontSize: '0.8rem' }}>
-                  Lokasi fasilitas dispenser air minum bersih RO otomatis dan pos penimbangan bank sampah di pulau Banda.
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Lokasi fasilitas dispenser air minum bersih RO otomatis dan pos penimbangan di kepulauan Banda.
                 </p>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {WATER_STATIONS.map((station) => (
                   <div
                     key={station.code}
-                    style={{
-                      padding: '1.15rem',
-                      borderRadius: 'var(--radius-md)',
-                      background: 'rgba(15, 23, 42, 0.6)',
-                      border: '1px solid rgba(56, 189, 248, 0.2)',
-                    }}
+                    className="p-4 rounded-xl bg-slate-50/70 border border-slate-200/80 hover:border-cyan-300 transition-colors"
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#38bdf8', textTransform: 'uppercase' }}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-mono text-[10px] font-bold text-cyan-700 uppercase">
                         {station.code}
                       </span>
-                      <span className="badge badge-emerald" style={{ fontSize: '0.65rem' }}>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                         Aktif Beroperasi
                       </span>
                     </div>
-                    <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: '#f8fafc' }}>
-                      {station.name}
-                    </h4>
-                    <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#cbd5e1' }}>
-                      Kapasitas Tandon: <b>5.000 Liter RO</b>
-                    </div>
-                    <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '0.25rem' }}>
-                      Solenoid: <span style={{ color: '#34d399', fontWeight: 600 }}>Terkoneksi IoT Otomatis</span>
+                    <h4 className="text-xs font-extrabold text-[#081D35]">{station.name}</h4>
+                    <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-500">
+                      <span>Kapasitas: 5.000 L</span>
+                      <span className="font-semibold text-emerald-700">IoT Solenoid Valve Ready</span>
                     </div>
                   </div>
                 ))}

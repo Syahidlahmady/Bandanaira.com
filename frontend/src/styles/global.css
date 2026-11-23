@@ -572,3 +572,117 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
     padding: 1.5rem;
   }
 }
+
+/* ==========================================================================
+   Nautical Dark Mode Global Surface & Component Adapters
+   ========================================================================== */
+html.dark body {
+  background-color: #040D1A;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(15, 44, 89, 0.4) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(244, 183, 94, 0.06) 0px, transparent 45%),
+    radial-gradient(rgba(244, 183, 94, 0.04) 1px, transparent 1px);
+  color: #F8FAFC;
+}
+
+html.dark .app-card,
+html.dark .card,
+html.dark .stat-card {
+  background-color: #081D35;
+  border-color: #1E3A5F;
+  color: #F8FAFC;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+html.dark .data-table th {
+  background-color: #0F2C59;
+  border-color: #1E3A5F;
+  color: #F4B75E;
+}
+
+html.dark .data-table td {
+  border-color: #1E3A5F;
+  color: #E2E8F0;
+}
+
+html.dark .data-table tbody tr:hover {
+  background-color: rgba(15, 44, 89, 0.5);
+}
+
+html.dark .form-control,
+html.dark .form-input,
+html.dark .form-select,
+html.dark .form-textarea {
+  background-color: #0F2C59;
+  border-color: #1E3A5F;
+  color: #F8FAFC;
+}
+
+html.dark .form-control:focus,
+html.dark .form-input:focus,
+html.dark .form-select:focus,
+html.dark .form-textarea:focus {
+  background-color: #081D35;
+  border-color: #F4B75E;
+  color: #F8FAFC;
+  box-shadow: 0 0 0 3px rgba(244, 183, 94, 0.25);
+}
+
+html.dark .form-select option {
+  background-color: #081D35;
+  color: #F8FAFC;
+}
+
+html.dark .form-label {
+  color: #E2E8F0;
+}
+
+html.dark .modal-content {
+  background-color: #081D35;
+  border-color: #1E3A5F;
+  color: #F8FAFC;
+}
+
+/* Tailwind utility adaptations for consistent dark mode across workspaces */
+html.dark .bg-white {
+  background-color: #081D35 !important;
+}
+
+html.dark .bg-slate-50,
+html.dark .bg-slate-50\/80,
+html.dark .bg-slate-50\/70,
+html.dark .bg-slate-50\/60,
+html.dark .bg-slate-100 {
+  background-color: #0F2C59 !important;
+}
+
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-slate-200\/80,
+html.dark .border-slate-200\/90,
+html.dark .border-slate-200\/60,
+html.dark .border-\[\#E2E8F0\],
+html.dark .border-\[\#CBD5E1\] {
+  border-color: #1E3A5F !important;
+}
+
+html.dark .text-\[\#081D35\] {
+  color: #F8FAFC !important;
+}
+
+html.dark .text-slate-900,
+html.dark .text-slate-800,
+html.dark .text-slate-700 {
+  color: #E2E8F0 !important;
+}
+
+html.dark .text-slate-600,
+html.dark .text-slate-500 {
+  color: #94A3B8 !important;
+}
+
+html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+html.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #1E3A5F !important;
+}
+

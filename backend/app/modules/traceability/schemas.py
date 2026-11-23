@@ -88,3 +88,9 @@ class PublicBatchVerificationResponse(BaseModel):
     verified_integrity: bool
     timeline: List[PublicEventTimeline]
     qr_code_base64: str
+    contract_address: Optional[str] = None
+    transaction_hash: Optional[str] = None
+    block_number: Optional[int] = None
+    latest_db_hash: Optional[str] = None
+    on_chain_hash: Optional[str] = None
+

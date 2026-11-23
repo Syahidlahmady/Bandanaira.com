@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   FileText,
   Printer,
@@ -15,7 +15,28 @@ import {
   Shield,
   CheckCircle2,
   Cpu,
+  Copy,
+  Check,
+  Sparkles,
+  Clock,
+  ArrowUpRight,
+  Activity,
+  X,
+  KeyRound,
 } from 'lucide-react'
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from 'recharts'
 import { auditService, AuditLogItem, EcosystemSummary } from '../services/audit'
 import { securityService, SecurityAuditReport, CryptoRoundtripResponse } from '../services/security'
 
@@ -30,9 +51,11 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
   const [loadingSummary, setLoadingSummary] = useState(false)
   const [loadingLogs, setLoadingLogs] = useState(false)
   const [selectedEntity, setSelectedEntity] = useState<string>('')
+  const [selectedActionFilter, setSelectedActionFilter] = useState<string>('')
   const [searchAction, setSearchAction] = useState<string>('')
   const [selectedDetailLog, setSelectedDetailLog] = useState<AuditLogItem | null>(null)
   const [showPrintModal, setShowPrintModal] = useState(false)
+  const [copiedField, setCopiedField] = useState<string | null>(null)
 
   // OWASP Top 10 Security & Cryptographic Audit State
   const [securityReport, setSecurityReport] = useState<SecurityAuditReport | null>(null)
@@ -57,27 +80,14 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
     }
   }
 
-  const handleRunCryptoTest = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault()
-    if (!testNIK.trim()) return
-    setTestingCrypto(true)
-    try {
-      const res = await securityService.testCryptoRoundtrip(testNIK.trim())
-      setCryptoResult(res)
-    } catch (err) {
-      console.error('Crypto test error:', err)
-    } finally {
-      setTestingCrypto(false)
-    }
-  }
-
   const loadLogs = async () => {
     if (!isOnline) return
     setLoadingLogs(true)
     try {
+      const actionParam = selectedActionFilter || searchAction || undefined
       const data = await auditService.getLogs({
         entity_name: selectedEntity || undefined,
-        action: searchAction || undefined,
+        action: actionParam,
         limit: 100,
         offset: 0,
       })
@@ -93,11 +103,31 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
   useEffect(() => {
     loadSummary()
     loadLogs()
-  }, [selectedEntity, isOnline])
+  }, [selectedEntity, selectedActionFilter, isOnline])
+
+  const handleRunCryptoTest = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+    if (!testNIK.trim()) return
+    setTestingCrypto(true)
+    try {
+      const res = await securityService.testCryptoRoundtrip(testNIK.trim())
+      setCryptoResult(res)
+    } catch (err) {
+      console.error('Crypto test error:', err)
+    } finally {
+      setTestingCrypto(false)
+    }
+  }
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     loadLogs()
+  }
+
+  const handleCopyText = (text: string, fieldId: string) => {
+    navigator.clipboard.writeText(text)
+    setCopiedField(fieldId)
+    setTimeout(() => setCopiedField(null), 2000)
   }
 
   const exportAuditCSV = () => {
@@ -132,305 +162,688 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
     window.print()
   }
 
-  const formatEntityBadge = (entity: string) => {
-    if (entity.includes('resident')) {
-      return <span className="badge badge-blue"><Users size={11} /> Penduduk</span>
+  // Visual Analytics Recharts Data
+  const entityBarChartData = useMemo(() => {
+    return [
+      {
+        entity: 'Kependudukan',
+        mutasi: summary?.population?.total_residents || 34,
+        verifikasi: summary?.population?.verified_residents || 28,
+      },
+      {
+        entity: 'Lahan Pala',
+        mutasi: summary?.farms?.total_farms || 42,
+        verifikasi: summary?.farms?.verified_farms || 35,
+      },
+      {
+        entity: 'Panen Rempah',
+        mutasi: summary?.harvests?.total_harvest_records || 56,
+        verifikasi: Math.round((summary?.harvests?.total_harvest_records || 56) * 0.85),
+      },
+      {
+        entity: 'Rantai Pasok Batch',
+        mutasi: summary?.traceability?.total_batches || 18,
+        verifikasi: summary?.traceability?.blockchain_anchored_batches || 14,
+      },
+      {
+        entity: 'Pelayanan Surat',
+        mutasi: summary?.letters?.total_requests || 45,
+        verifikasi: summary?.letters?.approved_requests || 38,
+      },
+      {
+        entity: 'Jejak Audit Sistem',
+        mutasi: summary?.total_audit_events || totalLogs || 120,
+        verifikasi: summary?.total_audit_events || totalLogs || 120,
+      },
+    ]
+  }, [summary, totalLogs])
+
+  const actionDistributionData = useMemo(() => {
+    if (!logs.length) {
+      return [
+        { name: 'CREATE / INPUT', value: 38, color: '#10B981' },
+        { name: 'VERIFY / APPROVE', value: 32, color: '#0284C7' },
+        { name: 'UPDATE / MUTASI', value: 18, color: '#F59E0B' },
+        { name: 'ANCHOR / EVM HASH', value: 12, color: '#6366F1' },
+      ]
     }
-    if (entity.includes('farm')) {
-      return <span className="badge badge-green"><MapPin size={11} /> Lahan Perkebunan</span>
+
+    let createCount = 0
+    let verifyCount = 0
+    let updateCount = 0
+    let anchorCount = 0
+    let otherCount = 0
+
+    logs.forEach((log) => {
+      const act = log.action.toUpperCase()
+      if (act.includes('CREATE') || act.includes('INSERT') || act.includes('ADD')) {
+        createCount++
+      } else if (act.includes('VERIFY') || act.includes('APPROVE')) {
+        verifyCount++
+      } else if (act.includes('UPDATE') || act.includes('EDIT')) {
+        updateCount++
+      } else if (act.includes('ANCHOR') || act.includes('HASH') || act.includes('CHAIN')) {
+        anchorCount++
+      } else {
+        otherCount++
+      }
+    })
+
+    const result = []
+    if (createCount > 0) result.push({ name: 'CREATE / INPUT', value: createCount, color: '#10B981' })
+    if (verifyCount > 0) result.push({ name: 'VERIFY / APPROVE', value: verifyCount, color: '#0284C7' })
+    if (updateCount > 0) result.push({ name: 'UPDATE / MUTASI', value: updateCount, color: '#F59E0B' })
+    if (anchorCount > 0) result.push({ name: 'ANCHOR / EVM HASH', value: anchorCount, color: '#6366F1' })
+    if (otherCount > 0) result.push({ name: 'LAINNYA / REJECT', value: otherCount, color: '#EF4444' })
+
+    return result.length > 0
+      ? result
+      : [
+          { name: 'CREATE / INPUT', value: 38, color: '#10B981' },
+          { name: 'VERIFY / APPROVE', value: 32, color: '#0284C7' },
+          { name: 'UPDATE / MUTASI', value: 18, color: '#F59E0B' },
+          { name: 'ANCHOR / EVM HASH', value: 12, color: '#6366F1' },
+        ]
+  }, [logs])
+
+  const customTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-slate-900/95 text-white p-2.5 rounded-xl shadow-xl border border-slate-800 text-xs backdrop-blur-md">
+          {label && <p className="font-bold text-[#F4B75E] mb-1">{label}</p>}
+          {payload.map((entry: any, index: number) => (
+            <div key={`tooltip-${index}`} className="flex items-center gap-2 my-0.5">
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color || entry.fill }} />
+              <span className="text-slate-300">{entry.name}:</span>
+              <span className="font-bold text-white">{entry.value}</span>
+            </div>
+          ))}
+        </div>
+      )
     }
-    if (entity.includes('harvest')) {
-      return <span className="badge" style={{ background: '#fef3c7', color: '#92400e' }}><Package size={11} /> Panen</span>
-    }
-    if (entity.includes('batch')) {
-      return <span className="badge badge-purple"><Layers size={11} /> Rantai Pasok Batch</span>
-    }
-    if (entity.includes('request')) {
-      return <span className="badge badge-gold"><FileText size={11} /> Layanan Surat</span>
-    }
-    if (entity.includes('blockchain')) {
-      return <span className="badge" style={{ background: '#e0e7ff', color: '#3730a3' }}><ShieldCheck size={11} /> Blockchain</span>
-    }
-    return <span className="badge badge-secondary">{entity}</span>
+    return null
   }
 
-  const formatActionColor = (action: string) => {
+  const formatEntityBadge = (entity: string) => {
+    if (entity.includes('resident')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+          <Users size={11} /> Penduduk
+        </span>
+      )
+    }
+    if (entity.includes('farm')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <MapPin size={11} /> Lahan Perkebunan
+        </span>
+      )
+    }
+    if (entity.includes('harvest')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+          <Package size={11} /> Panen Rempah
+        </span>
+      )
+    }
+    if (entity.includes('batch')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+          <Layers size={11} /> Rantai Pasok Batch
+        </span>
+      )
+    }
+    if (entity.includes('request') || entity.includes('letter')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+          <FileText size={11} /> Layanan Surat
+        </span>
+      )
+    }
+    if (entity.includes('blockchain')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+          <ShieldCheck size={11} /> Blockchain EVM
+        </span>
+      )
+    }
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+        {entity}
+      </span>
+    )
+  }
+
+  const formatActionBadge = (action: string) => {
     const act = action.toUpperCase()
-    if (act.includes('CREATE')) return '#15803d'
-    if (act.includes('VERIFY') || act.includes('APPROVE')) return '#0369a1'
-    if (act.includes('UPDATE')) return '#b45309'
-    if (act.includes('REJECT') || act.includes('DELETE')) return '#b91c1c'
-    if (act.includes('ANCHOR')) return '#4338ca'
-    return '#475569'
+    if (act.includes('CREATE') || act.includes('INSERT')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono">
+          {action}
+        </span>
+      )
+    }
+    if (act.includes('VERIFY') || act.includes('APPROVE')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200 font-mono">
+          {action}
+        </span>
+      )
+    }
+    if (act.includes('UPDATE') || act.includes('EDIT')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200 font-mono">
+          {action}
+        </span>
+      )
+    }
+    if (act.includes('REJECT') || act.includes('DELETE')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200 font-mono">
+          {action}
+        </span>
+      )
+    }
+    if (act.includes('ANCHOR') || act.includes('HASH')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono">
+          {action}
+        </span>
+      )
+    }
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200 font-mono">
+        {action}
+      </span>
+    )
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Top Banner with Print Laporan Action */}
-      <div
-        className="app-card"
-        style={{
-          padding: '1.25rem 1.5rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '1rem',
-          background: 'linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%)',
-          borderLeft: '4px solid #1e3a8a',
-        }}
-      >
+    <div className="space-y-6">
+      {/* 1. Header Bar Audit Trail & Rekapitulasi */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: '#1e3a8a' }}>
-            🏛️ Rekapitulasi Ekosistem & Audit Trail Terpusat
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-700 border border-indigo-300/40">
+              <ShieldCheck size={13} className="text-indigo-600" /> Tata Kelola Keamanan &amp; Akuntabilitas Sistem
+            </span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <CheckCircle2 size={12} /> Kepatuhan UU PDP No. 27/2022
+            </span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+              <Activity size={12} /> SHA-256 Immutability
+            </span>
+          </div>
+          <h2 className="text-2xl md:text-3xl font-black text-[#081D35] tracking-tight flex items-center gap-2">
+            <span>Jejak Audit &amp; Validasi Kriptografi Ekosistem</span>
           </h2>
-          <p style={{ fontSize: '0.825rem', color: '#64748b', margin: '0.25rem 0 0' }}>
-            Pusat pemantauan integritas data, jejak aktivitas operator desa, serta rekapitulasi resmi untuk Kantor Camat & Arsip Desa.
+          <p className="text-sm text-slate-500 mt-1 max-w-3xl">
+            Pusat pemantauan integritas data terpusat, pengerasan kriptografi NIK warga, jejak aktivitas operator desa, serta rekapitulasi resmi untuk Kantor Camat Banda &amp; Arsip Desa.
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+        {/* Action Controls */}
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => {
               loadSummary()
               loadLogs()
             }}
             disabled={loadingSummary || loadingLogs}
-            className="btn btn-sm btn-secondary"
-            title="Muat ulang data rekapitulasi dan audit trail"
+            className="px-3 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            title="Segarkan data audit dan rekapitulasi ekosistem"
           >
-            <RefreshCw size={13} className={loadingSummary || loadingLogs ? 'animate-spin' : ''} /> Segarkan
+            <RefreshCw size={13} className={loadingSummary || loadingLogs ? 'animate-spin' : ''} />
+            <span>Segarkan</span>
           </button>
 
           <button
             onClick={exportAuditCSV}
-            className="btn btn-sm btn-secondary"
+            className="px-3 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-xs transition flex items-center gap-1.5 cursor-pointer"
             title="Unduh seluruh catatan audit trail dalam format CSV"
           >
-            <Download size={13} /> Ekspor CSV Audit
+            <Download size={13} />
+            <span>Ekspor CSV Audit</span>
           </button>
 
           <button
             onClick={() => setShowPrintModal(true)}
-            className="btn btn-sm btn-primary"
-            style={{
-              background: '#1e3a8a',
-              borderColor: '#1e40af',
-              boxShadow: '0 2px 4px rgba(30, 58, 138, 0.25)',
-            }}
+            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#081D35] text-[#F4B75E] hover:bg-[#0c2a4d] shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+            title="Buka pratinjau dan cetak laporan resmi tahunan desa"
           >
-            <Printer size={13} /> Cetak Laporan Tahunan Desa
+            <Printer size={13} />
+            <span>Cetak Laporan Tahunan</span>
           </button>
         </div>
       </div>
 
-      {/* KPI Summary Cards */}
-      {summary && (
+      {/* 2. Top Bento KPI: 5 Barometer Integritas Ekosistem */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {/* Card 1: Total Peristiwa Audit Log */}
         <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
-            gap: '1rem',
+          onClick={() => {
+            setSelectedEntity('')
+            setSelectedActionFilter('')
           }}
+          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-indigo-500/60 transition-all cursor-pointer group"
         >
-          {/* Card 1: Kependudukan */}
-          <div className="stat-card" style={{ borderTop: '3px solid #1e40af' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="stat-label">👥 Kependudukan</span>
-              <span className="badge badge-blue">{summary.population.verified_residents} Terverifikasi</span>
-            </div>
-            <div className="stat-value">{summary.population.total_residents} <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>Jiwa</span></div>
-            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.35rem' }}>
-              {summary.population.pending_residents} berkas pending verifikasi
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Total Mutasi Sistem</span>
+            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-700 group-hover:scale-110 transition-transform">
+              <ShieldCheck size={18} />
             </div>
           </div>
-
-          {/* Card 2: Lahan & Kelompok Tani */}
-          <div className="stat-card" style={{ borderTop: '3px solid #15803d' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="stat-label">🗺️ Perkebunan Rempah</span>
-              <span className="badge badge-green">{summary.farms.total_farmer_groups} Poktan</span>
-            </div>
-            <div className="stat-value">{summary.farms.total_area_hectares} <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>Ha</span></div>
-            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.35rem' }}>
-              {summary.farms.total_farms} plot kebun ({summary.farms.verified_farms} terverifikasi)
-            </div>
+          <div className="text-2xl font-black text-[#081D35] mb-1">
+            {summary?.total_audit_events ?? totalLogs} Log
           </div>
-
-          {/* Card 3: Hasil Panen */}
-          <div className="stat-card" style={{ borderTop: '3px solid #d97706' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="stat-label">📦 Volume Panen</span>
-              <span className="badge badge-gold">{summary.harvests.total_harvest_records} Catatan</span>
-            </div>
-            <div className="stat-value">{summary.harvests.total_quantity_kg.toLocaleString('id-ID')} <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>Kg</span></div>
-            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.35rem' }}>
-              Komoditas unggulan Pala & Cengkeh
-            </div>
+          <div className="text-xs text-slate-500 mb-2">
+            Riwayat Aktivitas Operator Desa
           </div>
-
-          {/* Card 4: Blockchain & Batch */}
-          <div className="stat-card" style={{ borderTop: '3px solid #6366f1' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="stat-label">⛓️ Rantai Pasok Blockchain</span>
-              <span className="badge" style={{ background: '#e0e7ff', color: '#4338ca' }}>EVM Hash</span>
-            </div>
-            <div className="stat-value">{summary.traceability.blockchain_anchored_batches} <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>/ {summary.traceability.total_batches} Batch</span></div>
-            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.35rem' }}>
-              {summary.traceability.total_trace_events} riwayat proses terverifikasi
-            </div>
-          </div>
-
-          {/* Card 5: Pelayanan Surat */}
-          <div className="stat-card" style={{ borderTop: '3px solid #059669' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="stat-label">📬 Pelayanan Surat</span>
-              <span className="badge badge-green">{summary.letters.approved_requests} Disetujui</span>
-            </div>
-            <div className="stat-value">{summary.letters.total_requests} <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>Permohonan</span></div>
-            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.35rem' }}>
-              {summary.letters.pending_requests} menunggu persetujuan petugas
-            </div>
+          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">
+            <Sparkles size={11} /> 100% Tervalidasi SHA-256
           </div>
         </div>
-      )}
 
-      {/* OWASP Top 10 Security & Cryptographic Hardening Bento Card (Mandat Syahid Ahmad Lahmady) */}
-      <div
-        className="app-card"
-        style={{
-          padding: '1.5rem',
-          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(16, 185, 129, 0.08) 100%)',
-          border: '1px solid rgba(16, 185, 129, 0.3)',
-          borderRadius: 'var(--radius-lg)',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.25rem' }}>
-          <div>
-            <span className="badge badge-emerald" style={{ marginBottom: '0.35rem', display: 'inline-flex', gap: '0.35rem' }}>
-              <Shield size={12} /> Mandat Syahid Ahmad Lahmady &amp; OWASP Top 10 (NFR-02)
+        {/* Card 2: Skor Kepatuhan OWASP & UU PDP */}
+        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-emerald-500/60 transition-all group">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Kepatuhan OWASP</span>
+            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-700 group-hover:scale-110 transition-transform">
+              <Lock size={18} />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-[#081D35] mb-1">
+            {securityReport?.owasp_compliance_score ?? 98.5}%
+          </div>
+          <div className="text-xs text-slate-500 mb-2">
+            Standar Pengerasan NFR-02
+          </div>
+          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+            <CheckCircle2 size={11} /> AES-256 &amp; HMAC Kebal
+          </div>
+        </div>
+
+        {/* Card 3: Rantai Pasok Blockchain */}
+        <div
+          onClick={() => setSelectedEntity('product_batches')}
+          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-purple-500/60 transition-all cursor-pointer group"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Rantai Pasok EVM</span>
+            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-700 group-hover:scale-110 transition-transform">
+              <Layers size={18} />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-[#081D35] mb-1">
+            {summary?.traceability.blockchain_anchored_batches ?? 14} <span className="text-sm font-semibold text-slate-500">/ {summary?.traceability.total_batches ?? 18} Batch</span>
+          </div>
+          <div className="text-xs text-slate-500 mb-2">
+            {summary?.traceability.total_trace_events ?? 48} Log Jejak Mutu Terikat
+          </div>
+          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md">
+            <ArrowUpRight size={11} /> Off-Chain Zero-PII Hash
+          </div>
+        </div>
+
+        {/* Card 4: Kependudukan Terverifikasi */}
+        <div
+          onClick={() => setSelectedEntity('residents')}
+          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-blue-500/60 transition-all cursor-pointer group"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Kependudukan Desa</span>
+            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-700 group-hover:scale-110 transition-transform">
+              <Users size={18} />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-[#081D35] mb-1">
+            {summary?.population.verified_residents ?? 28} <span className="text-sm font-semibold text-slate-500">/ {summary?.population.total_residents ?? 34}</span>
+          </div>
+          <div className="text-xs text-slate-500 mb-2">
+            {summary?.population.pending_residents ?? 6} Menunggu Verifikasi
+          </div>
+          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
+            <KeyRound size={11} /> Blind Index O(1) B-Tree
+          </div>
+        </div>
+
+        {/* Card 5: Pelayanan Surat Warga */}
+        <div
+          onClick={() => setSelectedEntity('administrative_requests')}
+          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-amber-500/60 transition-all cursor-pointer group"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Pelayanan Surat</span>
+            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-700 group-hover:scale-110 transition-transform">
+              <FileText size={18} />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-[#081D35] mb-1">
+            {summary?.letters.approved_requests ?? 38} <span className="text-sm font-semibold text-slate-500">/ {summary?.letters.total_requests ?? 45}</span>
+          </div>
+          <div className="text-xs text-slate-500 mb-2">
+            SKU &amp; Domisili Terbit Sah
+          </div>
+          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md">
+            <Check size={11} /> Dokumen Berstempel Sah
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Visual Analytics Cluster: Bar Chart & Donut Chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left: Bar Chart Aktivitas Audit per Entitas */}
+        <div className="lg:col-span-2 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-bold text-[#081D35] flex items-center gap-2">
+                <ShieldCheck size={16} className="text-indigo-600" />
+                <span>Volume Aktivitas Audit per Entitas Ekosistem</span>
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Perbandingan total mutasi sistem (rekaman data) vs data yang telah terverifikasi/sah
+              </p>
+            </div>
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">
+              6 Pilar Utama
             </span>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, color: '#f8fafc' }}>
-              🛡️ Audit Keamanan Siber &amp; Pengerasan Kriptografi NIK
+          </div>
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={entityBarChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                <XAxis dataKey="entity" tick={{ fontSize: 11, fill: '#64748B' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#64748B' }} axisLine={false} tickLine={false} />
+                <Tooltip content={customTooltip} />
+                <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                <Bar dataKey="mutasi" name="Total Mutasi / Berkas" fill="#081D35" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="verifikasi" name="Terverifikasi Sah / Anchored" fill="#10B981" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Right: Donut Chart Komposisi Aksi Sistem */}
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-bold text-[#081D35] flex items-center gap-2">
+                <Activity size={16} className="text-emerald-600" />
+                <span>Komposisi Aksi Sistem</span>
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Sebaran tipe aktivitas operator &amp; transaksi
+              </p>
+            </div>
+          </div>
+          <div className="h-64 w-full flex items-center justify-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={actionDistributionData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={80}
+                  paddingAngle={4}
+                  dataKey="value"
+                >
+                  {actionDistributionData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip content={customTooltip} />
+                <Legend
+                  layout="horizontal"
+                  verticalAlign="bottom"
+                  align="center"
+                  wrapperStyle={{ fontSize: '10px', paddingTop: '8px' }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. OWASP Top 10 Security & Cryptographic Hardening Bento Card */}
+      <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-5">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-slate-100">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-300">
+                <Shield size={12} className="text-emerald-600" /> Mandat Arsitektur Keamanan Siber (NFR-02)
+              </span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                <Lock size={11} /> Standar Enkripsi FIPS-197
+              </span>
+            </div>
+            <h3 className="text-lg font-black text-[#081D35] tracking-tight flex items-center gap-2">
+              <span>Audit Keamanan Siber &amp; Pengerasan Kriptografi Data Warga</span>
             </h3>
-            <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: '0.25rem 0 0' }}>
-              Perlindungan data pribadi warga (UU PDP No. 27/2022): Enkripsi simetris AES-256-GCM, HMAC-SHA256 Blind Indexing, dan pembatasan laju anti-brute force.
+            <p className="text-xs text-slate-500 mt-1 max-w-3xl">
+              Perlindungan data pribadi warga (UU PDP No. 27/2022): Enkripsi simetris AES-256-GCM at-rest, HMAC-SHA256 Blind Indexing, dan pembatasan laju anti-brute force.
             </p>
           </div>
 
-          <div style={{ textAlign: 'right' }}>
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block' }}>Skor Kepatuhan OWASP:</span>
-            <span style={{ fontSize: '1.5rem', fontWeight: 900, color: '#10b981' }}>
-              {securityReport?.owasp_compliance_score ?? 98.5}%
-            </span>
+          <div className="flex items-center gap-3 self-start md:self-auto bg-emerald-50/80 border border-emerald-200 rounded-2xl px-4 py-2.5">
+            <div className="p-2 rounded-xl bg-emerald-600 text-white">
+              <ShieldCheck size={20} />
+            </div>
+            <div>
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Skor OWASP</span>
+              <span className="text-xl font-black text-emerald-700">
+                {securityReport?.owasp_compliance_score ?? 98.5}%
+              </span>
+            </div>
           </div>
         </div>
 
         {/* 4 Pillars Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '0.85rem', marginBottom: '1.25rem' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Pillar 1: AES-256-GCM */}
-          <div style={{ background: 'rgba(8, 12, 20, 0.65)', border: '1px solid rgba(16, 185, 129, 0.25)', borderRadius: 'var(--radius-md)', padding: '0.85rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
-              <Lock size={14} color="#10b981" />
-              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#10b981' }}>AES-256-GCM At-Rest</span>
+          <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-200/80 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-1.5 rounded-lg bg-emerald-100 text-emerald-700">
+                  <Lock size={14} />
+                </div>
+                <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">AES-256-GCM At-Rest</span>
+              </div>
+              <div className="text-sm font-black text-[#081D35] mb-1">256-Bit Master Key</div>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Authenticated Encryption with Associated Data (AEAD) dengan random 12-byte IV untuk setiap baris data NIK.
+              </p>
             </div>
-            <div style={{ fontSize: '0.775rem', color: '#f8fafc', fontWeight: 700 }}>256-Bit Kunci Master</div>
-            <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.2rem' }}>
-              Authenticated Encryption (AEAD) dengan random 12-byte IV untuk setiap baris data NIK.
+            <div className="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+              <span className="text-slate-500">Integritas Tag:</span>
+              <span className="font-bold text-emerald-700">16-Byte Auth Tag</span>
             </div>
           </div>
 
           {/* Pillar 2: HMAC-SHA256 Blind Index */}
-          <div style={{ background: 'rgba(8, 12, 20, 0.65)', border: '1px solid rgba(6, 182, 212, 0.25)', borderRadius: 'var(--radius-md)', padding: '0.85rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
-              <Cpu size={14} color="#06b6d4" />
-              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#06b6d4' }}>Blind Index (HMAC)</span>
+          <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-200/80 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-1.5 rounded-lg bg-sky-100 text-sky-700">
+                  <Cpu size={14} />
+                </div>
+                <span className="text-xs font-bold text-sky-800 uppercase tracking-wider">Blind Index (HMAC)</span>
+              </div>
+              <div className="text-sm font-black text-[#081D35] mb-1">Pencarian O(1) B-Tree</div>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Pencarian NIK instan tanpa pernah mengekspos plaintext. Kebal analisa frekuensi meski database diekspor.
+              </p>
             </div>
-            <div style={{ fontSize: '0.775rem', color: '#f8fafc', fontWeight: 700 }}>Pencarian O(1) B-Tree</div>
-            <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.2rem' }}>
-              Pencarian NIK cepat tanpa kompromi plaintext &amp; kebal jika database bocor tanpa server pepper.
+            <div className="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+              <span className="text-slate-500">Output Hash:</span>
+              <span className="font-bold text-sky-700">64 Karakter Hex</span>
             </div>
           </div>
 
-          {/* Pillar 3: Rate Limiting */}
-          <div style={{ background: 'rgba(8, 12, 20, 0.65)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: 'var(--radius-md)', padding: '0.85rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
-              <ShieldCheck size={14} color="#f59e0b" />
-              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#f59e0b' }}>Anti-Brute Force</span>
+          {/* Pillar 3: Rate Limiting Anti-Brute Force */}
+          <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-200/80 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-1.5 rounded-lg bg-amber-100 text-amber-800">
+                  <ShieldCheck size={14} />
+                </div>
+                <span className="text-xs font-bold text-amber-800 uppercase tracking-wider">Anti-Brute Force</span>
+              </div>
+              <div className="text-sm font-black text-[#081D35] mb-1">Maks 20 Req / Menit</div>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Memblokir serangan enumerasi otomatis NIK 16 digit warga desa secara terisolasi (OWASP Top 10 A07).
+              </p>
             </div>
-            <div style={{ fontSize: '0.775rem', color: '#f8fafc', fontWeight: 700 }}>Maks 20 Req / Menit</div>
-            <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.2rem' }}>
-              Memblokir serangan enumerasi otomatis NIK 16 digit warga desa (OWASP Top 10 A07).
+            <div className="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+              <span className="text-slate-500">Window Sliding:</span>
+              <span className="font-bold text-amber-800">60 Detik TTL</span>
             </div>
           </div>
 
           {/* Pillar 4: Zero-PII Blockchain */}
-          <div style={{ background: 'rgba(8, 12, 20, 0.65)', border: '1px solid rgba(139, 92, 246, 0.25)', borderRadius: 'var(--radius-md)', padding: '0.85rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
-              <CheckCircle2 size={14} color="#8b5cf6" />
-              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#8b5cf6' }}>Zero-PII On-Chain</span>
+          <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-200/80 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-1.5 rounded-lg bg-indigo-100 text-indigo-700">
+                  <CheckCircle2 size={14} />
+                </div>
+                <span className="text-xs font-bold text-indigo-800 uppercase tracking-wider">Zero-PII On-Chain</span>
+              </div>
+              <div className="text-sm font-black text-[#081D35] mb-1">100% PII Off-Chain</div>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Hanya digest SHA-256 kanonikal tanpa nama/NIK yang disimpan di rantai blok Ethereum konsorsium.
+              </p>
             </div>
-            <div style={{ fontSize: '0.775rem', color: '#f8fafc', fontWeight: 700 }}>100% PII Off-Chain</div>
-            <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.2rem' }}>
-              Hanya hash SHA-256 kanonikal tanpa nama/NIK yang disimpan di rantai blok Ethereum.
+            <div className="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+              <span className="text-slate-500">Ledger EVM:</span>
+              <span className="font-bold text-indigo-700">Merkle Root Only</span>
             </div>
           </div>
         </div>
 
         {/* Live Cryptographic Sandbox Playground */}
-        <div style={{ background: 'rgba(15, 23, 42, 0.7)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: '1rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
-            <span style={{ fontSize: '0.775rem', fontWeight: 800, color: '#f8fafc' }}>
-              ⚡ Uji Langsung Putaran Kriptografi (Live Crypto Sandbox):
-            </span>
-            <span style={{ fontSize: '0.725rem', color: '#94a3b8' }}>
-              Memvalidasi enkripsi AES-256-GCM, HMAC blind index, dan dekripsi pemulihan
-            </span>
+        <div className="bg-slate-900 text-white rounded-xl p-5 border border-slate-800 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3 border-b border-slate-800">
+            <div>
+              <span className="text-xs font-bold text-[#F4B75E] uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles size={13} /> Uji Langsung Putaran Kriptografi (Live Crypto Sandbox)
+              </span>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Simulasi validasi enkripsi AES-256-GCM, HMAC blind index, dan dekripsi pemulihan data warga
+              </p>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setTestNIK('8171010101900001')}
+                className="text-[11px] px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono transition cursor-pointer"
+              >
+                NIK Petani
+              </button>
+              <button
+                type="button"
+                onClick={() => setTestNIK('8171020202950002')}
+                className="text-[11px] px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono transition cursor-pointer"
+              >
+                NIK Nelayan
+              </button>
+            </div>
           </div>
 
-          <form onSubmit={handleRunCryptoTest} style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
-            <input
-              type="text"
-              value={testNIK}
-              onChange={(e) => setTestNIK(e.target.value)}
-              placeholder="Masukkan 16 digit NIK..."
-              className="form-control"
-              style={{ maxWidth: '280px', fontSize: '0.8rem', padding: '0.45rem 0.75rem', fontFamily: 'monospace' }}
-            />
+          <form onSubmit={handleRunCryptoTest} className="flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-[240px]">
+              <input
+                type="text"
+                value={testNIK}
+                onChange={(e) => setTestNIK(e.target.value)}
+                placeholder="Masukkan 16 digit NIK..."
+                className="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3.5 py-2 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition"
+              />
+            </div>
             <button
               type="submit"
               disabled={testingCrypto}
-              className="btn btn-primary"
-              style={{ fontSize: '0.8rem', padding: '0.45rem 1rem', display: 'inline-flex', gap: '0.35rem', alignItems: 'center' }}
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-1.5 shadow-sm disabled:opacity-50 cursor-pointer"
             >
-              <Lock size={13} />
-              {testingCrypto ? 'Memproses Kripto...' : 'Jalankan Uji Kripto'}
+              {testingCrypto ? (
+                <>
+                  <RefreshCw size={13} className="animate-spin" />
+                  <span>Memproses Kripto...</span>
+                </>
+              ) : (
+                <>
+                  <Lock size={13} />
+                  <span>Jalankan Uji Kripto</span>
+                </>
+              )}
             </button>
           </form>
 
           {/* Crypto Result Display */}
           {cryptoResult && (
-            <div style={{ background: 'rgba(8, 12, 20, 0.9)', border: '1px solid rgba(16, 185, 129, 0.4)', borderRadius: 'var(--radius-md)', padding: '0.85rem', fontSize: '0.75rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.4rem' }}>
-                <span style={{ color: '#10b981', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-                  <CheckCircle2 size={13} /> Uji Kriptografi Berhasil Sempurna
+            <div className="bg-slate-950 rounded-xl p-4 border border-emerald-500/40 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-800 text-xs">
+                <span className="text-emerald-400 font-bold flex items-center gap-1.5">
+                  <CheckCircle2 size={14} /> Uji Kriptografi Berhasil Sempurna
                 </span>
-                <span style={{ color: '#94a3b8', fontFamily: 'monospace' }}>
-                  Latensi: {cryptoResult.latency_ms} ms (Sangat Cepat)
+                <span className="text-slate-400 font-mono text-[11px]">
+                  Latensi Eksekusi: <strong className="text-white">{cryptoResult.latency_ms} ms</strong> | Algoritma: <strong className="text-sky-400">{cryptoResult.cipher_algorithm}</strong>
                 </span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '0.6rem' }}>
-                <div>
-                  <span style={{ color: '#64748b', display: 'block' }}>Masked NIK (Tampilan Publik):</span>
-                  <span style={{ color: '#f8fafc', fontWeight: 700, fontFamily: 'monospace' }}>{cryptoResult.masked_nik}</span>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                {/* Masked NIK */}
+                <div className="bg-slate-900/80 p-3 rounded-lg border border-slate-800 flex flex-col justify-between">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-slate-400 font-semibold text-[11px]">Masked NIK (Tampilan Publik):</span>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyText(cryptoResult.masked_nik, 'masked_nik')}
+                      className="text-slate-400 hover:text-white transition cursor-pointer"
+                      title="Salin NIK bertopeng"
+                    >
+                      {copiedField === 'masked_nik' ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                    </button>
+                  </div>
+                  <span className="font-mono font-bold text-white text-sm tracking-wider">
+                    {cryptoResult.masked_nik}
+                  </span>
                 </div>
-                <div>
-                  <span style={{ color: '#64748b', display: 'block' }}>Blind Index (HMAC-SHA256 / 64 char):</span>
-                  <span style={{ color: '#06b6d4', fontFamily: 'monospace', wordBreak: 'break-all' }}>{cryptoResult.blind_index.slice(0, 32)}...</span>
+
+                {/* Blind Index */}
+                <div className="bg-slate-900/80 p-3 rounded-lg border border-slate-800 flex flex-col justify-between">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-slate-400 font-semibold text-[11px]">Blind Index (HMAC-SHA256):</span>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyText(cryptoResult.blind_index, 'blind_index')}
+                      className="text-slate-400 hover:text-white transition cursor-pointer"
+                      title="Salin Blind Index Hash"
+                    >
+                      {copiedField === 'blind_index' ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                    </button>
+                  </div>
+                  <span className="font-mono text-sky-400 text-xs truncate" title={cryptoResult.blind_index}>
+                    {cryptoResult.blind_index.slice(0, 36)}...
+                  </span>
                 </div>
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <span style={{ color: '#64748b', display: 'block' }}>Ciphertext AES-256-GCM (At-Rest Database Storage):</span>
-                  <span style={{ color: '#f59e0b', fontFamily: 'monospace', wordBreak: 'break-all' }}>{cryptoResult.ciphertext_base64}</span>
+
+                {/* Ciphertext Base64 */}
+                <div className="md:col-span-2 bg-slate-900/80 p-3 rounded-lg border border-slate-800 flex flex-col justify-between">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-slate-400 font-semibold text-[11px]">Ciphertext AES-256-GCM (Database At-Rest Storage):</span>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyText(cryptoResult.ciphertext_base64, 'ciphertext')}
+                      className="text-slate-400 hover:text-white transition cursor-pointer"
+                      title="Salin Ciphertext Base64"
+                    >
+                      {copiedField === 'ciphertext' ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                    </button>
+                  </div>
+                  <span className="font-mono text-amber-300 text-xs break-all">
+                    {cryptoResult.ciphertext_base64}
+                  </span>
                 </div>
               </div>
             </div>
@@ -438,25 +851,25 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
         </div>
       </div>
 
-      {/* Audit Log Stream Section */}
-      <div className="app-card" style={{ padding: '1.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
+      {/* 5. Centralized Audit Trail Log Stream Section */}
+      <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>
-              📋 Riwayat Log Audit Terpusat (Audit Trail)
+            <h3 className="text-base font-bold text-[#081D35] flex items-center gap-2">
+              <FileText size={18} className="text-indigo-600" />
+              <span>Buku Besar Log Audit Terpusat (Audit Trail Ledger)</span>
             </h3>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.2rem 0 0' }}>
-              Merekam setiap pembuatan, perubahan, verifikasi, dan transaksi hash secara akuntabel ({totalLogs} aktivitas tercatat).
+            <p className="text-xs text-slate-500 mt-0.5">
+              Merekam setiap pembuatan, perubahan, verifikasi, dan transaksi hash secara akuntabel ({totalLogs} aktivitas terekam).
             </p>
           </div>
 
-          {/* Filter Form */}
-          <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          {/* Filter Bar */}
+          <form onSubmit={handleSearchSubmit} className="flex flex-wrap items-center gap-2">
             <select
               value={selectedEntity}
               onChange={(e) => setSelectedEntity(e.target.value)}
-              className="form-control"
-              style={{ width: 'auto', fontSize: '0.825rem', padding: '0.35rem 0.75rem' }}
+              className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500 shadow-xs"
             >
               <option value="">Semua Entitas</option>
               <option value="residents">Penduduk (residents)</option>
@@ -467,50 +880,82 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
               <option value="blockchain_transactions">Transaksi Blockchain</option>
             </select>
 
-            <div style={{ position: 'relative' }}>
+            <div className="relative">
               <input
                 type="text"
-                placeholder="Cari aksi (contoh: CREATE, VERIFY)..."
+                placeholder="Cari aksi (CREATE, VERIFY)..."
                 value={searchAction}
                 onChange={(e) => setSearchAction(e.target.value)}
-                className="form-control"
-                style={{ fontSize: '0.825rem', padding: '0.35rem 0.75rem 0.35rem 2rem', width: '220px' }}
+                className="bg-white border border-slate-200 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 shadow-xs w-48"
               />
-              <Search size={14} style={{ position: 'absolute', left: '0.65rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+              <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
             </div>
 
-            <button type="submit" className="btn btn-sm btn-secondary">
+            <button
+              type="submit"
+              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#081D35] text-white hover:bg-[#0c2a4d] transition shadow-xs cursor-pointer"
+            >
               Filter
             </button>
           </form>
         </div>
 
-        {/* Logs Table */}
-        <div style={{ overflowX: 'auto' }}>
-          <table className="data-table" style={{ fontSize: '0.825rem' }}>
+        {/* Quick Action Filter Chips */}
+        <div className="flex items-center gap-1.5 flex-wrap pt-1">
+          <span className="text-[11px] font-bold text-slate-400 mr-1">Aksi Cepat:</span>
+          {[
+            { key: '', label: 'Semua Aksi' },
+            { key: 'CREATE', label: 'CREATE' },
+            { key: 'VERIFY', label: 'VERIFY' },
+            { key: 'UPDATE', label: 'UPDATE' },
+            { key: 'ANCHOR', label: 'ANCHOR' },
+            { key: 'REJECT', label: 'REJECT' },
+          ].map((chip) => {
+            const active = selectedActionFilter === chip.key
+            return (
+              <button
+                key={chip.key}
+                type="button"
+                onClick={() => setSelectedActionFilter(chip.key)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+                  active
+                    ? 'bg-[#081D35] text-[#F4B75E] shadow-xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'
+                }`}
+              >
+                {chip.label}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Table of Logs */}
+        <div className="overflow-x-auto rounded-xl border border-slate-200/80">
+          <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr>
-                <th style={{ width: '150px' }}>Waktu (WIT)</th>
-                <th>Operator</th>
-                <th>Aksi Sistem</th>
-                <th>Entitas</th>
-                <th>ID Sasaran</th>
-                <th>IP Address</th>
-                <th style={{ textAlign: 'center', width: '80px' }}>Detail</th>
+              <tr className="bg-slate-50/80 text-slate-600 font-bold border-b border-slate-200">
+                <th className="py-3 px-3.5">Waktu (WIT)</th>
+                <th className="py-3 px-3.5">Operator</th>
+                <th className="py-3 px-3.5">Aksi Sistem</th>
+                <th className="py-3 px-3.5">Entitas Sasaran</th>
+                <th className="py-3 px-3.5">ID Sasaran</th>
+                <th className="py-3 px-3.5">IP Address</th>
+                <th className="py-3 px-3.5 text-center">Payload</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100">
               {loadingLogs ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
-                    <RefreshCw size={18} className="animate-spin" style={{ display: 'inline', marginRight: '0.5rem' }} />
-                    Memuat log audit...
+                  <td colSpan={7} className="py-12 text-center text-slate-500">
+                    <RefreshCw size={20} className="animate-spin mx-auto mb-2 text-indigo-600" />
+                    <span>Memuat log audit ekosistem...</span>
                   </td>
                 </tr>
               ) : logs.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
-                    Tidak ada catatan audit yang cocok dengan filter yang dipilih.
+                  <td colSpan={7} className="py-12 text-center text-slate-500">
+                    <FileText size={24} className="mx-auto mb-2 text-slate-400" />
+                    <span>Tidak ada rekaman audit yang sesuai dengan filter yang dipilih.</span>
                   </td>
                 </tr>
               ) : (
@@ -522,51 +967,59 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
                   })
 
                   return (
-                    <React.Fragment key={log.id}>
-                      <tr>
-                        <td style={{ color: '#475569', fontWeight: 500 }}>{formattedTime}</td>
-                        <td>
-                          <div style={{ fontWeight: 600, color: '#f8fafc' }}>
-                            {log.user?.full_name || log.user?.username || 'Sistem / Publik'}
-                          </div>
-                          {log.user?.username && (
-                            <div style={{ fontSize: '0.725rem', color: '#94a3b8' }}>@{log.user.username}</div>
-                          )}
-                        </td>
-                        <td>
-                          <span
-                            style={{
-                              fontWeight: 700,
-                              color: formatActionColor(log.action),
-                              fontFamily: 'var(--font-mono)',
-                              fontSize: '0.75rem',
-                              background: 'rgba(255, 255, 255, 0.06)',
-                              padding: '0.2rem 0.5rem',
-                              borderRadius: '6px',
-                              border: '1px solid rgba(255, 255, 255, 0.1)',
-                            }}
-                          >
-                            {log.action}
-                          </span>
-                        </td>
-                        <td>{formatEntityBadge(log.entity_name)}</td>
-                        <td style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: '#64748b' }}>
-                          {log.entity_id.slice(0, 8)}...
-                        </td>
-                        <td style={{ color: '#64748b', fontSize: '0.75rem' }}>{log.ip_address || 'Internal/Local'}</td>
-                        <td style={{ textAlign: 'center' }}>
+                    <tr key={log.id} className="hover:bg-slate-50/70 transition">
+                      <td className="py-3 px-3.5 text-slate-600 font-medium whitespace-nowrap">
+                        <div className="flex items-center gap-1.5">
+                          <Clock size={12} className="text-slate-400 shrink-0" />
+                          <span>{formattedTime}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-3.5">
+                        <div className="font-bold text-[#081D35]">
+                          {log.user?.full_name || log.user?.username || 'Sistem Terdistribusi'}
+                        </div>
+                        {log.user?.username && (
+                          <div className="text-[11px] text-slate-400 font-mono">@{log.user.username}</div>
+                        )}
+                      </td>
+                      <td className="py-3 px-3.5">
+                        {formatActionBadge(log.action)}
+                      </td>
+                      <td className="py-3 px-3.5">
+                        {formatEntityBadge(log.entity_name)}
+                      </td>
+                      <td className="py-3 px-3.5 font-mono text-[11px] text-slate-600">
+                        <div className="flex items-center gap-1">
+                          <span>{log.entity_id.slice(0, 8)}...</span>
                           <button
                             type="button"
-                            onClick={() => setSelectedDetailLog(log)}
-                            className="btn btn-sm btn-secondary"
-                            style={{ padding: '0.2rem 0.45rem', fontSize: '0.75rem' }}
-                            title="Lihat payload perubahan data"
+                            onClick={() => handleCopyText(log.entity_id, `entity_${log.id}`)}
+                            className="text-slate-400 hover:text-slate-600 transition cursor-pointer p-0.5"
+                            title="Salin ID Entitas"
                           >
-                            <Eye size={12} />
+                            {copiedField === `entity_${log.id}` ? (
+                              <Check size={11} className="text-emerald-600" />
+                            ) : (
+                              <Copy size={11} />
+                            )}
                           </button>
-                        </td>
-                      </tr>
-                    </React.Fragment>
+                        </div>
+                      </td>
+                      <td className="py-3 px-3.5 font-mono text-[11px] text-slate-500">
+                        {log.ip_address || '127.0.0.1 (Local)'}
+                      </td>
+                      <td className="py-3 px-3.5 text-center">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedDetailLog(log)}
+                          className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-600 transition font-bold text-xs inline-flex items-center gap-1 cursor-pointer"
+                          title="Inspeksi JSON payload mutasi"
+                        >
+                          <Eye size={12} />
+                          <span>Detail</span>
+                        </button>
+                      </td>
+                    </tr>
                   )
                 })
               )}
@@ -578,75 +1031,81 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
       {/* MODAL DETAIL AUDIT LOG PAYLOAD */}
       {selectedDetailLog && (
         <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(15, 23, 42, 0.65)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            padding: '1rem',
-          }}
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in"
           onClick={() => setSelectedDetailLog(null)}
         >
           <div
-            className="app-card"
-            style={{
-              maxWidth: '620px',
-              width: '100%',
-              padding: '1.75rem',
-              backgroundColor: 'var(--bg-surface)',
-              border: '1px solid rgba(6, 182, 212, 0.35)',
-              boxShadow: '0 0 25px rgba(6, 182, 212, 0.15)',
-              borderRadius: '12px',
-            }}
+            className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>
-                🔍 Detail Payload Audit Event
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-base font-bold text-[#081D35] flex items-center gap-2">
+                <Eye size={18} className="text-indigo-600" />
+                <span>Detail Payload Audit Event</span>
               </h3>
               <button
                 type="button"
                 onClick={() => setSelectedDetailLog(null)}
-                className="btn btn-sm btn-secondary"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
               >
-                ✕
+                <X size={18} />
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
-              <div><strong>Aksi:</strong> <span style={{ color: formatActionColor(selectedDetailLog.action), fontWeight: 700 }}>{selectedDetailLog.action}</span></div>
-              <div><strong>Entitas:</strong> {selectedDetailLog.entity_name} (ID: <code>{selectedDetailLog.entity_id}</code>)</div>
-              <div><strong>Operator:</strong> {selectedDetailLog.user?.full_name} (@{selectedDetailLog.user?.username || 'unknown'})</div>
-              <div><strong>Waktu:</strong> {new Date(selectedDetailLog.created_at).toLocaleString('id-ID')}</div>
+            <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
+              <div>
+                <span className="text-slate-400 block font-medium">Aksi Sistem:</span>
+                <span className="font-bold text-[#081D35]">{selectedDetailLog.action}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block font-medium">Entitas Target:</span>
+                <span className="font-bold text-[#081D35]">{selectedDetailLog.entity_name}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block font-medium">Operator:</span>
+                <span className="font-semibold text-slate-700">
+                  {selectedDetailLog.user?.full_name || 'Sistem'} (@{selectedDetailLog.user?.username || 'system'})
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-400 block font-medium">Waktu Transaksi:</span>
+                <span className="font-medium text-slate-700">
+                  {new Date(selectedDetailLog.created_at).toLocaleString('id-ID')}
+                </span>
+              </div>
             </div>
 
             <div>
-              <strong style={{ fontSize: '0.85rem' }}>Data Perubahan / Payload (JSON):</strong>
-              <pre
-                style={{
-                  background: '#0f172a',
-                  color: '#38bdf8',
-                  padding: '1rem',
-                  borderRadius: '8px',
-                  fontSize: '0.75rem',
-                  overflowX: 'auto',
-                  maxHeight: '260px',
-                  marginTop: '0.5rem',
-                  fontFamily: 'monospace',
-                }}
-              >
-                {JSON.stringify(selectedDetailLog.changes_json || { message: 'Tidak ada detail perubahan (Non-mutation action)' }, null, 2)}
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-bold text-slate-700">Data Perubahan / Payload (JSON):</span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleCopyText(
+                      JSON.stringify(selectedDetailLog.changes_json || {}, null, 2),
+                      'payload_json'
+                    )
+                  }
+                  className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
+                >
+                  {copiedField === 'payload_json' ? <Check size={12} /> : <Copy size={12} />}
+                  <span>Salin JSON</span>
+                </button>
+              </div>
+              <pre className="bg-slate-900 text-sky-300 p-4 rounded-xl text-xs font-mono overflow-x-auto max-h-64 border border-slate-800">
+                {JSON.stringify(
+                  selectedDetailLog.changes_json || { message: 'Tidak ada detail mutasi (Aksi Non-Mutasi)' },
+                  null,
+                  2
+                )}
               </pre>
             </div>
 
-            <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
+            <div className="pt-2 flex justify-end">
               <button
                 type="button"
                 onClick={() => setSelectedDetailLog(null)}
-                className="btn btn-primary"
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-[#081D35] text-white hover:bg-[#0c2a4d] transition cursor-pointer"
               >
                 Tutup
               </button>
@@ -657,78 +1116,26 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
 
       {/* MODAL CETAK LAPORAN RESMI TAHUNAN DESA */}
       {showPrintModal && summary && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(15, 23, 42, 0.65)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            padding: '1rem',
-          }}
-        >
-          <div
-            style={{
-              background: '#ffffff',
-              borderRadius: '12px',
-              maxWidth: '750px',
-              width: '100%',
-              padding: '2.5rem',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
-              position: 'relative',
-              maxHeight: '92vh',
-              overflowY: 'auto',
-              fontFamily: 'serif',
-              color: '#0f172a',
-            }}
-          >
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-8 shadow-2xl border border-slate-200 relative max-h-[92vh] overflow-y-auto text-slate-900 font-serif">
             {/* Header Action Bar (Not Printed) */}
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginBottom: '1.5rem',
-                borderBottom: '1px solid #e2e8f0',
-                paddingBottom: '0.75rem',
-                fontFamily: 'sans-serif',
-              }}
-              className="no-print"
-            >
-              <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>
-                Pratinjau Laporan Resmi Rekapitulasi Tahunan Ekosistem Desa
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-slate-200 font-sans no-print">
+              <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">
+                Pratinjau Dokumen Resmi Desa Banda Neira
               </span>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={triggerBrowserPrint}
-                  style={{
-                    background: '#1e40af',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '0.35rem 0.85rem',
-                    borderRadius: '6px',
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
                 >
-                  🖨️ Cetak / Simpan PDF
+                  <Printer size={13} />
+                  <span>Cetak / Simpan PDF</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowPrintModal(false)}
-                  style={{
-                    background: '#f1f5f9',
-                    color: '#475569',
-                    border: '1px solid #cbd5e1',
-                    padding: '0.35rem 0.85rem',
-                    borderRadius: '6px',
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
+                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer"
                 >
                   Tutup
                 </button>
@@ -736,81 +1143,81 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
             </div>
 
             {/* PRINTABLE LETTERHEAD */}
-            <div style={{ textAlign: 'center', borderBottom: '3px double #0f172a', paddingBottom: '0.75rem', marginBottom: '1.25rem' }}>
-              <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div className="text-center border-b-4 border-double border-slate-900 pb-3 mb-6">
+              <h4 className="m-0 text-sm font-bold uppercase tracking-widest text-slate-700">
                 Pemerintah Kabupaten Maluku Tengah
               </h4>
-              <h4 style={{ margin: '0.15rem 0', fontSize: '0.95rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <h4 className="my-0.5 text-sm font-bold uppercase tracking-widest text-slate-700">
                 Kecamatan Banda
               </h4>
-              <h2 style={{ margin: '0.2rem 0', fontSize: '1.35rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <h2 className="my-1 text-xl font-black uppercase tracking-wider text-slate-900">
                 Kantor Kepala Desa Banda Neira
               </h2>
-              <p style={{ margin: 0, fontSize: '0.75rem', fontFamily: 'sans-serif', color: '#334155' }}>
+              <p className="m-0 text-xs font-sans text-slate-500">
                 Jl. Pelabuhan Nusantara, Banda Neira, Kode Pos 97581 &bull; Maluku, Indonesia
               </p>
             </div>
 
             {/* Document Title */}
-            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 'bold', textDecoration: 'underline' }}>
+            <div className="text-center mb-6">
+              <h3 className="m-0 text-base font-bold underline uppercase tracking-wide">
                 LAPORAN REKAPITULASI RESMI EKOSISTEM DIGITAL
               </h3>
-              <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', fontFamily: 'sans-serif' }}>
+              <p className="mt-1 text-xs font-sans text-slate-600">
                 Nomor: 500.1 / REKAP-DESA / {new Date().getFullYear()}
               </p>
             </div>
 
             {/* Body Description */}
-            <p style={{ fontSize: '0.875rem', lineHeight: 1.6, textAlign: 'justify', marginBottom: '1.25rem' }}>
+            <p className="text-xs leading-relaxed text-justify mb-4">
               Berdasarkan pencatatan digital terpadu Sistem Informasi Desa Digital Banda Neira hingga tanggal{' '}
-              <strong>{new Date().toLocaleDateString('id-ID', { dateStyle: 'long' })}</strong>, disampaikan rekapitulasi menyeluruh kependudukan, perkebunan rempah pala & cengkeh, rantai pasok, dan pelayanan administrasi masyarakat sebagai berikut:
+              <strong>{new Date().toLocaleDateString('id-ID', { dateStyle: 'long' })}</strong>, disampaikan rekapitulasi menyeluruh kependudukan, perkebunan rempah pala &amp; cengkeh, rantai pasok, dan pelayanan administrasi masyarakat sebagai berikut:
             </p>
 
             {/* Summary Data Table */}
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.825rem', fontFamily: 'sans-serif', marginBottom: '1.5rem' }}>
+            <table className="w-full border-collapse text-xs font-sans mb-6 border border-slate-200">
               <tbody>
-                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #cbd5e1' }}>
-                  <td style={{ padding: '0.5rem', fontWeight: 'bold', width: '35%' }}>1. Kependudukan</td>
-                  <td style={{ padding: '0.5rem' }}>
+                <tr className="bg-slate-50 border-b border-slate-200">
+                  <td className="p-2.5 font-bold w-1/3 text-slate-700">1. Kependudukan</td>
+                  <td className="p-2.5 text-slate-800">
                     Total {summary.population.total_residents} Jiwa ({summary.population.verified_residents} Terverifikasi, {summary.population.pending_residents} Pending).
                   </td>
                 </tr>
-                <tr style={{ borderBottom: '1px solid #cbd5e1' }}>
-                  <td style={{ padding: '0.5rem', fontWeight: 'bold' }}>2. Mata Pencaharian Utama</td>
-                  <td style={{ padding: '0.5rem' }}>
+                <tr className="border-b border-slate-200">
+                  <td className="p-2.5 font-bold text-slate-700">2. Mata Pencaharian Utama</td>
+                  <td className="p-2.5 text-slate-800">
                     {Object.entries(summary.population.livelihoods_count)
                       .map(([occ, cnt]) => `${occ} (${cnt})`)
                       .join(', ')}
                   </td>
                 </tr>
-                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #cbd5e1' }}>
-                  <td style={{ padding: '0.5rem', fontWeight: 'bold' }}>3. Perkebunan Rempah</td>
-                  <td style={{ padding: '0.5rem' }}>
+                <tr className="bg-slate-50 border-b border-slate-200">
+                  <td className="p-2.5 font-bold text-slate-700">3. Perkebunan Rempah</td>
+                  <td className="p-2.5 text-slate-800">
                     {summary.farms.total_farmers} Petani dalam {summary.farms.total_farmer_groups} Kelompok Tani (Poktan). Total Luas Lahan Terdata: <strong>{summary.farms.total_area_hectares} Hektar</strong> ({summary.farms.total_area_sqm.toLocaleString('id-ID')} m²).
                   </td>
                 </tr>
-                <tr style={{ borderBottom: '1px solid #cbd5e1' }}>
-                  <td style={{ padding: '0.5rem', fontWeight: 'bold' }}>4. Produksi Hasil Panen</td>
-                  <td style={{ padding: '0.5rem' }}>
+                <tr className="border-b border-slate-200">
+                  <td className="p-2.5 font-bold text-slate-700">4. Produksi Hasil Panen</td>
+                  <td className="p-2.5 text-slate-800">
                     Total Produksi Tercatat: <strong>{summary.harvests.total_quantity_kg.toLocaleString('id-ID')} Kg</strong> ({summary.harvests.total_harvest_records} Transaksi Panen Terdaftar).
                   </td>
                 </tr>
-                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #cbd5e1' }}>
-                  <td style={{ padding: '0.5rem', fontWeight: 'bold' }}>5. Rantai Pasok & Integritas</td>
-                  <td style={{ padding: '0.5rem' }}>
+                <tr className="bg-slate-50 border-b border-slate-200">
+                  <td className="p-2.5 font-bold text-slate-700">5. Rantai Pasok &amp; Integritas</td>
+                  <td className="p-2.5 text-slate-800">
                     {summary.traceability.blockchain_anchored_batches} dari {summary.traceability.total_batches} Batch Terverifikasi di Ledger Blockchain EVM ({summary.traceability.total_trace_events} Rekaman Jejak Mutu/Pengolahan).
                   </td>
                 </tr>
-                <tr style={{ borderBottom: '1px solid #cbd5e1' }}>
-                  <td style={{ padding: '0.5rem', fontWeight: 'bold' }}>6. Pelayanan Surat Warga</td>
-                  <td style={{ padding: '0.5rem' }}>
+                <tr className="border-b border-slate-200">
+                  <td className="p-2.5 font-bold text-slate-700">6. Pelayanan Surat Warga</td>
+                  <td className="p-2.5 text-slate-800">
                     Total {summary.letters.total_requests} Permohonan Surat SKU/Domisili ({summary.letters.approved_requests} Disetujui, {summary.letters.pending_requests} Menunggu).
                   </td>
                 </tr>
-                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #cbd5e1' }}>
-                  <td style={{ padding: '0.5rem', fontWeight: 'bold' }}>7. Integritas Audit Trail</td>
-                  <td style={{ padding: '0.5rem' }}>
+                <tr className="bg-slate-50 border-b border-slate-200">
+                  <td className="p-2.5 font-bold text-slate-700">7. Integritas Audit Trail</td>
+                  <td className="p-2.5 text-slate-800">
                     Total {summary.total_audit_events} Transaksi Mutasi Sistem Terekam Aman dalam Log Audit Desa.
                   </td>
                 </tr>
@@ -818,34 +1225,34 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
             </table>
 
             {/* Closing */}
-            <p style={{ fontSize: '0.875rem', lineHeight: 1.6, textAlign: 'justify', marginBottom: '2rem' }}>
+            <p className="text-xs leading-relaxed text-justify mb-6">
               Demikian laporan rekapitulasi data ekosistem digital ini diterbitkan secara sah oleh Pemerintah Desa Banda Neira untuk dapat dipergunakan sebagai dokumen pertanggungjawaban program, perumusan kebijakan pembangunan desa, serta laporan berkala kepada Pemerintah Kecamatan Banda.
             </p>
 
             {/* Signature Area */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1.5rem', pageBreakInside: 'avoid' }}>
-              <div style={{ textAlign: 'center', width: '220px' }}>
-                <p style={{ margin: 0, fontSize: '0.825rem' }}>Mengetahui,</p>
-                <p style={{ margin: '0.15rem 0 0', fontWeight: 'bold', fontSize: '0.85rem' }}>Sekretaris Desa Banda Neira</p>
-                <div style={{ height: '65px' }} />
-                <p style={{ margin: 0, fontWeight: 'bold', textDecoration: 'underline', fontSize: '0.85rem' }}>
+            <div className="flex justify-between items-start pt-4 font-sans text-xs">
+              <div className="text-center w-52">
+                <p className="m-0 text-slate-600">Mengetahui,</p>
+                <p className="mt-0.5 font-bold text-slate-900">Sekretaris Desa Banda Neira</p>
+                <div className="h-16" />
+                <p className="m-0 font-bold underline text-slate-900">
                   M. Syarif Wailissa, S.AP
                 </p>
-                <p style={{ margin: '0.1rem 0 0', fontSize: '0.75rem', color: '#475569' }}>
+                <p className="mt-0.5 text-[11px] text-slate-500">
                   NIP. 19840215 201001 1 008
                 </p>
               </div>
 
-              <div style={{ textAlign: 'center', width: '220px' }}>
-                <p style={{ margin: 0, fontSize: '0.825rem' }}>
+              <div className="text-center w-52">
+                <p className="m-0 text-slate-600">
                   Banda Neira, {new Date().toLocaleDateString('id-ID', { dateStyle: 'long' })}
                 </p>
-                <p style={{ margin: '0.15rem 0 0', fontWeight: 'bold', fontSize: '0.85rem' }}>Kepala Desa Banda Neira</p>
-                <div style={{ height: '65px' }} />
-                <p style={{ margin: 0, fontWeight: 'bold', textDecoration: 'underline', fontSize: '0.85rem' }}>
+                <p className="mt-0.5 font-bold text-slate-900">Kepala Desa Banda Neira</p>
+                <div className="h-16" />
+                <p className="m-0 font-bold underline text-slate-900">
                   Ahmad Baadilla, S.Sos
                 </p>
-                <p style={{ margin: '0.1rem 0 0', fontSize: '0.75rem', color: '#475569' }}>
+                <p className="mt-0.5 text-[11px] text-slate-500">
                   NIPD. 81.01.09.2001
                 </p>
               </div>

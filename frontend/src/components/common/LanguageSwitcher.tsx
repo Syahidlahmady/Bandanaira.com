@@ -4,7 +4,7 @@ import { Globe, ChevronDown, Check } from 'lucide-react'
 import { Language } from '../../services/i18n/translations'
 
 interface LanguageSwitcherProps {
-  variant?: 'dropdown' | 'navbar' | 'floating' | 'topbar' | 'mobile'
+  variant?: 'dropdown' | 'navbar' | 'floating' | 'topbar' | 'mobile' | 'icon'
   className?: string
   showFullLabel?: boolean
 }
@@ -172,6 +172,72 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
                     </div>
                   </div>
                   {isSelected && <Check size={14} className="text-amber-600 shrink-0" />}
+                </button>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Pure Icon Variant (Compact, minimal footprint, ideal for navbars & all screen frames including mobile)
+  if (variant === 'icon') {
+    return (
+      <div className={`relative inline-block text-left shrink-0 ${className}`} ref={dropdownRef}>
+        <button
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
+          className={`inline-flex items-center justify-center h-[34px] w-[34px] sm:h-[40px] sm:w-[40px] rounded-lg sm:rounded-xl transition-all cursor-pointer border ${
+            isOpen
+              ? 'bg-[#081D35] text-[#F4B75E] border-[#F4B75E]/60 shadow-[0_0_12px_rgba(244,183,94,0.3)]'
+              : 'bg-white/10 hover:bg-white/20 text-white hover:text-[#F4B75E] border-white/20 hover:border-[#F4B75E]/40'
+          }`}
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+          title={`${t.common.selectLanguage} (${activeOption.shortLabel})`}
+          aria-label={`${t.common.selectLanguage} (${activeOption.shortLabel})`}
+        >
+          <Globe size={15} className="shrink-0 transition-transform duration-200 sm:w-[18px] sm:h-[18px]" />
+        </button>
+
+        {isOpen && (
+          <div
+            className="absolute right-0 mt-2 w-48 sm:w-52 rounded-2xl bg-[#081D35]/95 backdrop-blur-xl border border-white/20 shadow-[0_20px_45px_rgba(0,0,0,0.85)] p-1.5 z-[100] text-white animate-in fade-in slide-in-from-top-2 duration-150"
+            role="listbox"
+            aria-label="Pilih Bahasa"
+          >
+            <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#F4B75E]/90 border-b border-white/10 mb-1 flex items-center justify-between">
+              <span>{t.common.selectLanguage}</span>
+              <span className="font-mono text-[9px] bg-white/10 px-1.5 py-0.5 rounded text-white/80">
+                {activeOption.shortLabel}
+              </span>
+            </div>
+            {LANGUAGES.map((opt) => {
+              const isSelected = language === opt.code
+              return (
+                <button
+                  key={opt.code}
+                  type="button"
+                  onClick={() => handleSelect(opt.code)}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all text-left cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#F4B75E]/20 text-[#F4B75E] font-bold border border-[#F4B75E]/30'
+                      : 'text-slate-200 hover:bg-white/10 hover:text-white'
+                  }`}
+                  role="option"
+                  aria-selected={isSelected}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-lg">{opt.flag}</span>
+                    <div className="flex flex-col">
+                      <span className="font-semibold leading-tight">{opt.label}</span>
+                      <span className="text-[10px] text-slate-400 font-normal leading-tight">
+                        {opt.subLabel}
+                      </span>
+                    </div>
+                  </div>
+                  {isSelected && <Check size={15} className="text-[#F4B75E] shrink-0" />}
                 </button>
               )
             })}

@@ -1,5 +1,36 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { MapPin } from 'lucide-react'
+import React, { useEffect, useRef, useState, useMemo } from 'react'
+import {
+  MapPin,
+  Sprout,
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
+  RefreshCw,
+  FileSpreadsheet,
+  PlusCircle,
+  Users,
+  Layers,
+  Sparkles,
+  X,
+  Navigation,
+  Compass,
+  Search,
+  CheckCheck,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react'
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  PieChart,
+  Pie,
+  Cell,
+  CartesianGrid,
+} from 'recharts'
 import { User } from '../services/auth'
 import { gisService } from '../services/gis'
 import {
@@ -133,9 +164,12 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
   const [draftVertices, setDraftVertices] = useState<[number, number][]>([])
   const [focusFarmId, setFocusFarmId] = useState<string | null>(null)
   const [showNewFarmerBox, setShowNewFarmerBox] = useState(false)
+  const [showFormDrawer, setShowFormDrawer] = useState(!isFarmerOnly)
   const [savingFarmer, setSavingFarmer] = useState(false)
   const [villagesList, setVillagesList] = useState<any[]>([])
   const [villageBoundaryGeoJSON, setVillageBoundaryGeoJSON] = useState<Record<string, unknown> | null>(null)
+  const [searchTableQuery, setSearchTableQuery] = useState('')
+  const [showManualCoords, setShowManualCoords] = useState(false)
 
   const activeVillage = currentUser?.village || farmForm.village || undefined
 
@@ -287,7 +321,7 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
       setShowNewFarmerBox(false)
       setNewFarmerMsg({
         type: 'success',
-        text: `✓ Petani ${created.name} (${created.farmer_code}) dari data warga terdaftar Desa ${activeVillage || 'terkait'} berhasil didaftarkan ke Kelompok Tani dan dipilih otomatis.`,
+        text: `✓ Petani ${created.name} (${created.farmer_code}) berhasil didaftarkan ke Kelompok Tani dan dipilih otomatis.`,
       })
       fetchFarmingData()
     } catch (err: unknown) {
@@ -460,7 +494,7 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
     } catch {
       // ignore
     }
-  }, [])
+  }, [farmForm.name, setFarmForm])
 
   useEffect(() => {
     if (farmForm.name) {
@@ -524,193 +558,461 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
     handleCreateQuickFarmerAndFarm(e)
   }
 
+  // KPI Calculations
+  const totalAreaSqm = farmStats?.total_area_sqm ?? farms.reduce((acc, f) => acc + (f.area_sqm || 0), 0)
+  const totalAreaHa = (totalAreaSqm / 10000).toFixed(2)
+  const totalFarmsCount = farmStats?.total_farms ?? farms.length
+  const verifiedFarmsCount = farms.filter((f) => f.verification_status === 'verified').length
+  const pendingFarmsCount = farms.filter((f) => f.verification_status === 'pending').length
+  const verifiedRate = totalFarmsCount > 0 ? ((verifiedFarmsCount / totalFarmsCount) * 100).toFixed(1) : '0'
+
+  // Chart 1: Distribusi Luas per Komoditas (Recharts BarChart)
+  const commodityAreaData = useMemo(() => {
+    const map: Record<string, number> = {}
+    farms.forEach((f) => {
+      const comm = f.primary_commodity || 'Pala'
+      map[comm] = (map[comm] || 0) + (f.area_sqm || 0)
+    })
+    if (Object.keys(map).length === 0) {
+      return [
+        { name: 'Pala Banda', area: 185000, ha: 18.5, fill: '#059669' },
+        { name: 'Cengkih', area: 65000, ha: 6.5, fill: '#D97706' },
+        { name: 'Kayu Manis', area: 25000, ha: 2.5, fill: '#2563EB' },
+      ]
+    }
+    return Object.entries(map).map(([name, area], idx) => ({
+      name,
+      area,
+      ha: parseFloat((area / 10000).toFixed(2)),
+      fill: idx % 3 === 0 ? '#059669' : idx % 3 === 1 ? '#D97706' : '#2563EB',
+    }))
+  }, [farms])
+
+  // Chart 2: Komposisi Status Verifikasi Lahan (Recharts Donut)
+  const verificationDonutData = useMemo(() => {
+    const verified = verifiedFarmsCount
+    const pending = pendingFarmsCount
+    const rejected = farms.filter((f) => f.verification_status === 'rejected').length
+    const total = totalFarmsCount || 1
+
+    return [
+      { name: 'Disahkan & Terverifikasi', value: verified, color: '#10B981', percent: `${Math.round((verified / total) * 100)}%` },
+      { name: 'Menunggu Persetujuan', value: pending, color: '#F59E0B', percent: `${Math.round((pending / total) * 100)}%` },
+      { name: 'Ditolak / Revisi', value: rejected, color: '#EF4444', percent: `${Math.round((rejected / total) * 100)}%` },
+    ]
+  }, [farms, verifiedFarmsCount, pendingFarmsCount, totalFarmsCount])
+
+  // Filtered Farms in Table
+  const filteredFarms = useMemo(() => {
+    return farms.filter((f) => {
+      if (farmStatusFilter && f.verification_status !== farmStatusFilter) return false
+      if (searchTableQuery.trim()) {
+        const q = searchTableQuery.toLowerCase()
+        const matchCode = f.farm_code.toLowerCase().includes(q)
+        const matchName = f.name.toLowerCase().includes(q)
+        const matchComm = f.primary_commodity.toLowerCase().includes(q)
+        const matchLoc = (f.location_description || '').toLowerCase().includes(q)
+        return matchCode || matchName || matchComm || matchLoc
+      }
+      return true
+    })
+  }, [farms, farmStatusFilter, searchTableQuery])
+
   return (
-    <section className="app-card animate-fade-in" style={{ marginBottom: '2rem' }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '1.5rem',
-          flexWrap: 'wrap',
-          gap: '0.75rem',
-        }}
-      >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-            <span className="badge badge-emerald">GIS &amp; PostGIS Spasial</span>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              &bull; Wilayah Kepulauan Banda
-            </span>
+    <div className="space-y-6 pb-12 animate-fade-in font-sans">
+      {/* =========================================================================
+          1. HEADER BANNER: SPATIAL CADASTRE & GEOGRAPHICAL TENURE
+      ========================================================================== */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 relative overflow-hidden">
+        <div className="absolute -top-12 -right-12 w-64 h-64 bg-radial from-emerald-100/40 via-sky-50/20 to-transparent rounded-full pointer-events-none" />
+
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+          <div className="flex items-start gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-[#081D35] text-[#F4B75E] flex items-center justify-center shrink-0 shadow-md border border-[#F4B75E]/30">
+              <MapPin size={28} className="stroke-[2.2]" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                <span className="text-[11px] font-bold tracking-wider uppercase text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/70">
+                  GIS Spasial &amp; Kadaster Lahan Adat
+                </span>
+                <span className="text-[11px] font-semibold text-slate-500 flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  PostGIS Geodesik Terintegrasi Desa
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-[#081D35] tracking-tight">
+                {isFarmerOnly
+                  ? 'Peta Sebaran Lahan Perkebunan Rempah'
+                  : isFarmerGroupAdmin && !isOfficerOrAdmin
+                  ? 'Peta & Pengajuan Plot Kebun Kelompok Tani'
+                  : 'Pemetaan Spasial & Verifikasi Lahan Rempah'}
+              </h1>
+              <p className="text-sm text-slate-600 max-w-2xl mt-1 leading-relaxed">
+                {isFarmerOnly
+                  ? 'Visualisasi titik koordinat kebun pala & cengkih Banda Neira. Mode tinjau data petani terdaftar.'
+                  : isFarmerGroupAdmin && !isOfficerOrAdmin
+                  ? 'Petakan batas kebun langsung pada citra satelit resolusi tinggi untuk diajukan ke meja verifikasi Kantor Desa.'
+                  : 'Validasi batas poligon kebun pala & cengkih, pencegahan tumpang tindih lahan antar-petani, dan pengesahan batas administratif desa.'}
+              </p>
+
+              {activeVillage && (
+                <div className="inline-flex items-center gap-2 mt-3 px-3 py-1 bg-amber-50 border border-amber-200/80 rounded-lg text-xs font-semibold text-amber-900">
+                  <ShieldCheck size={14} className="text-amber-700" />
+                  <span>Yurisdiksi Wilayah: Desa {activeVillage}</span>
+                  <span className="text-slate-400 font-normal">|</span>
+                  <span className="text-slate-600 font-medium">Batas Administratif Poligon Aktif</span>
+                </div>
+              )}
+            </div>
           </div>
-          <h2 style={{ fontSize: '1.45rem', color: 'var(--text-main)', fontWeight: 800, margin: 0 }}>
-            {isFarmerOnly
-              ? 'Peta Sebaran Lahan Perkebunan Rempah'
-              : isFarmerGroupAdmin && !isOfficerOrAdmin
-              ? 'Peta & Pengajuan Plot Kebun Kelompok Tani'
-              : 'Pemetaan Spasial & Verifikasi Lahan Rempah'}
-          </h2>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-            {isFarmerOnly
-              ? 'Visualisasi titik koordinat kebun pala & cengkih Banda Neira. Mode tinjau data petani.'
-              : isFarmerGroupAdmin && !isOfficerOrAdmin
-              ? 'Klik langsung kebun pada peta satelit di bawah untuk menggambar batas lahan dan mengajukannya ke Kantor Desa.'
-              : 'Pemetaan interaktif batas kebun pala & cengkih Banda Neira menggunakan PostGIS dan persetujuan desa.'}
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <button
-            type="button"
-            onClick={handleExportFarmsCSV}
-            className="btn btn-outline-primary"
-            style={{ fontSize: '0.85rem', padding: '0.5rem 0.9rem' }}
-          >
-            📥 Export CSV ({farms.length})
-          </button>
-          <button
-            type="button"
-            onClick={fetchFarmingData}
-            className="btn btn-secondary"
-            style={{ fontSize: '0.85rem', padding: '0.5rem 0.9rem' }}
-          >
-            🔄 Segarkan Peta
-          </button>
+
+          {/* Action Header Buttons */}
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            {canMapFarms && (
+              <button
+                type="button"
+                onClick={() => setShowFormDrawer((prev) => !prev)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#081D35] hover:bg-[#0F2C59] text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition-all hover:shadow hover:-translate-y-0.5"
+              >
+                <PlusCircle size={16} className="text-[#F4B75E]" />
+                <span>{showFormDrawer ? 'Tutup Form Pemetaan' : 'Petakan Kebun Baru'}</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={handleExportFarmsCSV}
+              className="inline-flex items-center gap-2 px-3.5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200/90 shadow-2xs transition-colors"
+              title="Unduh seluruh data plot kebun ke file CSV"
+            >
+              <FileSpreadsheet size={16} className="text-emerald-600" />
+              <span>Ekspor CSV</span>
+              <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                {farms.length}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={fetchFarmingData}
+              className="inline-flex items-center justify-center w-10 h-10 bg-white hover:bg-slate-50 text-slate-600 rounded-xl border border-slate-200/90 shadow-2xs transition-colors"
+              title="Segarkan data spasial & batas kebun"
+            >
+              <RefreshCw size={16} />
+            </button>
+          </div>
         </div>
       </div>
 
-      {farmStats && (
-        <div className="stat-grid" style={{ marginBottom: '1.5rem' }}>
-          <div className="stat-card" style={{ borderTop: '4px solid var(--emerald-600)' }}>
-            <span className="stat-label">Petani Terdaftar</span>
-            <div className="stat-value" style={{ color: 'var(--emerald-600)' }}>
-              {farmStats.total_farmers}
+      {/* Alert Banner Pending Approval for Officers */}
+      {isOfficerOrAdmin && pendingFarmsCount > 0 && (
+        <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 shadow-xs flex items-center justify-between flex-wrap gap-3 animate-fade-in">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 font-bold">
+              <Compass size={18} />
             </div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Profil pekebun aktif</span>
-          </div>
-          <div className="stat-card" style={{ borderTop: '4px solid var(--ocean-600)' }}>
-            <span className="stat-label">Kelompok Tani</span>
-            <div className="stat-value" style={{ color: 'var(--ocean-600)' }}>
-              {farmStats.total_farmer_groups}
-            </div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Poktan terdata desa</span>
-          </div>
-          <div className="stat-card" style={{ borderTop: '4px solid #7c3aed' }}>
-            <span className="stat-label">Total Plot Kebun</span>
-            <div className="stat-value" style={{ color: '#7c3aed' }}>
-              {farmStats.total_farms}
-            </div>
-            <span className="badge badge-emerald" style={{ marginTop: '0.25rem', display: 'inline-block' }}>
-              ✓ {farms.filter((f) => f.verification_status === 'verified').length} Terverifikasi
-            </span>
-          </div>
-          <div className="stat-card" style={{ borderTop: '4px solid #0284c7' }}>
-            <span className="stat-label">Total Luas Lahan</span>
-            <div className="stat-value" style={{ color: '#0284c7' }}>
-              {farmStats.total_area_sqm.toLocaleString('id-ID')} m²
-            </div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Hasil geodesik PostGIS</span>
-          </div>
-        </div>
-      )}
-
-      {isOfficerOrAdmin && farms.filter((f) => f.verification_status === 'pending').length > 0 && (
-        <div
-          style={{
-            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.05) 100%)',
-            border: '1px solid rgba(245, 158, 11, 0.3)',
-            borderRadius: 'var(--radius-md)',
-            padding: '0.85rem 1.25rem',
-            marginBottom: '1.25rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '0.75rem',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <span style={{ fontSize: '1.5rem' }}>⏳</span>
             <div>
-              <div style={{ fontSize: '0.875rem', color: '#b45309', fontWeight: 700 }}>
+              <h4 className="text-xs font-bold text-amber-900 uppercase tracking-wide">
                 Menunggu Verifikasi Persetujuan Kantor Desa
-              </div>
-              <div style={{ fontSize: '0.8rem', color: '#92400e' }}>
-                Terdapat <b>{farms.filter((f) => f.verification_status === 'pending').length}</b> plot kebun yang diajukan oleh kelompok tani dan memerlukan pemeriksaan.
-              </div>
+              </h4>
+              <p className="text-xs text-amber-800 mt-0.5">
+                Terdapat <strong>{pendingFarmsCount} plot kebun</strong> yang diajukan oleh kelompok tani dan memerlukan pemeriksaan batas di bawah.
+              </p>
             </div>
           </div>
           <button
             type="button"
             onClick={() => setFarmStatusFilter('pending')}
-            className="btn btn-primary"
-            style={{ fontSize: '0.8rem', padding: '0.4rem 0.85rem', background: '#d97706', borderColor: '#b45309' }}
+            className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors"
           >
-            Tinjau Sekarang ↓
+            Saring Antrean ({pendingFarmsCount})
           </button>
         </div>
       )}
 
+      {/* Farm Msg Banner */}
       {farmMsg && (
         <div
-          style={{
-            marginBottom: '1.25rem',
-            padding: '0.85rem 1rem',
-            borderRadius: 'var(--radius-md)',
-            fontSize: '0.875rem',
-            fontWeight: 500,
-            background: farmMsg.type === 'success' ? 'var(--secondary-light)' : 'var(--danger-light)',
-            color: farmMsg.type === 'success' ? '#065f46' : '#991b1b',
-            border: `1px solid ${farmMsg.type === 'success' ? '#a7f3d0' : '#fecaca'}`,
-          }}
+          className={`p-4 rounded-xl flex items-center justify-between gap-3 text-sm font-medium border shadow-xs animate-fade-in ${
+            farmMsg.type === 'success'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+              : 'bg-rose-50 border-rose-200 text-rose-900'
+          }`}
         >
-          {farmMsg.text}
+          <div className="flex items-center gap-3">
+            {farmMsg.type === 'success' ? (
+              <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
+            ) : (
+              <AlertCircle size={18} className="text-rose-600 shrink-0" />
+            )}
+            <span>{farmMsg.text}</span>
+          </div>
         </div>
       )}
 
-      {activeVillage && (
-        <div
-          style={{
-            marginBottom: '1.25rem',
-            padding: '0.75rem 1rem',
-            background: 'linear-gradient(135deg, rgba(217, 119, 6, 0.08) 0%, rgba(245, 158, 11, 0.04) 100%)',
-            borderRadius: 'var(--radius-md)',
-            border: '1px solid #fde68a',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '0.6rem',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <span style={{ fontSize: '1.35rem' }}>🏛️</span>
-            <div>
-              <div style={{ fontSize: '0.86rem', fontWeight: 800, color: '#92400e' }}>
-                Yurisdiksi Wilayah: Desa {activeVillage}
-              </div>
-              <div style={{ fontSize: '0.76rem', color: '#78350f' }}>
-                Akses manajemen data petani, kelompok tani, dan pemetaan poligon kebun dibatasi di dalam batas administratif Desa {activeVillage}.
-              </div>
+      {/* =========================================================================
+          2. EXECUTIVE KPI CARDS CLUSTER (5 BENTO METRIC CARDS)
+      ========================================================================== */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {/* KPI 1: Total Luas Lahan */}
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Luas Lahan</span>
+            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+              <Layers size={18} />
             </div>
           </div>
-          <span
-            style={{
-              padding: '0.2rem 0.6rem',
-              borderRadius: '999px',
-              background: '#fef3c7',
-              border: '1px solid #f59e0b',
-              color: '#92400e',
-              fontSize: '0.72rem',
-              fontWeight: 700,
-            }}
-          >
-            Batas Resmi Aktif
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-black text-[#081D35]">{totalAreaHa}</span>
+            <span className="text-xs font-semibold text-slate-500">Ha ({totalAreaSqm.toLocaleString('id-ID')} m²)</span>
+          </div>
+          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-blue-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            <span>Kalkulasi Geodesik PostGIS</span>
+          </div>
+        </div>
+
+        {/* KPI 2: Plot Kebun Terdata */}
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Plot Terdaftar</span>
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <MapPin size={18} />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-black text-emerald-600">{totalFarmsCount}</span>
+            <span className="text-xs font-semibold text-slate-500">Lahan Plot</span>
+          </div>
+          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-slate-600">
+            <span className="text-emerald-700 font-bold">{verifiedRate}%</span>
+            <span>telah disahkan desa ({verifiedFarmsCount})</span>
+          </div>
+        </div>
+
+        {/* KPI 3: Petani Rempah */}
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Petani Penggarap</span>
+            <div className="w-9 h-9 rounded-xl bg-amber-50 text-[#D97706] flex items-center justify-center">
+              <Users size={18} />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-black text-[#081D35]">{accessibleFarmers.length}</span>
+            <span className="text-xs font-semibold text-slate-500">Jiwa</span>
+          </div>
+          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-amber-700 truncate">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            <span>Terhubung NIK Dukcapil</span>
+          </div>
+        </div>
+
+        {/* KPI 4: Kelompok Tani (Poktan) */}
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Kelompok Tani</span>
+            <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center">
+              <Sprout size={18} />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-black text-teal-800">{accessibleFarmerGroups.length}</span>
+            <span className="text-xs font-semibold text-slate-500">Poktan</span>
+          </div>
+          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-teal-700 truncate">
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
+            <span>Kolektif Rempah Desa</span>
+          </div>
+        </div>
+
+        {/* KPI 5: Antrean Verifikasi Lahan */}
+        <div
+          onClick={() => setFarmStatusFilter(farmStatusFilter === 'pending' ? '' : 'pending')}
+          className={`bg-white rounded-2xl p-5 border shadow-xs transition-all cursor-pointer ${
+            farmStatusFilter === 'pending'
+              ? 'border-amber-400 ring-2 ring-amber-100 bg-amber-50/20'
+              : 'border-slate-200/80 hover:border-amber-300'
+          }`}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Antrean Verifikasi</span>
+            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+              <Compass size={18} />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-black text-amber-600">{pendingFarmsCount}</span>
+            <span className="text-xs font-semibold text-slate-500">Pengajuan</span>
+          </div>
+          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-amber-800">
+            <span>Perlu Tinjauan Desa</span>
+            <span className="underline text-[10px]">Klik filter</span>
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          3. DUAL ANALYTICAL CHARTS CLUSTER (RECHARTS BAR & DONUT)
+      ========================================================================== */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        {/* Kolom Kiri (7 Kolom): Bar Chart Luas per Komoditas */}
+        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <h3 className="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">
+                  Distribusi Luas Lahan per Komoditas (Ha)
+                </h3>
+              </div>
+              <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                Pala &amp; Cengkih
+              </span>
+            </div>
+            <p className="text-xs text-slate-500">
+              Total luas hamparan kebun berdasarkan jenis komoditas rempah di wilayah kepulauan.
+            </p>
+          </div>
+
+          <div className="w-full h-56 sm:h-64 pt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={commodityAreaData} margin={{ top: 10, right: 15, left: -15, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
+                <XAxis
+                  dataKey="name"
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fontSize: 11, fill: '#64748B', fontWeight: 600 }}
+                />
+                <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#64748B' }} />
+                <Tooltip
+                  cursor={{ fill: '#F8FAFC' }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload
+                      return (
+                        <div className="bg-[#081D35] text-white p-2.5 rounded-xl text-xs shadow-lg border border-slate-700">
+                          <p className="font-bold text-[#F4B75E]">{data.name}</p>
+                          <p className="mt-1 font-semibold">{data.ha} Hektar ({data.area.toLocaleString('id-ID')} m²)</p>
+                          <p className="text-[10px] text-slate-300 mt-0.5">Data Poligon PostGIS Terdaftar</p>
+                        </div>
+                      )
+                    }
+                    return null
+                  }}
+                />
+                <Bar dataKey="ha" radius={[6, 6, 0, 0]} maxBarSize={48}>
+                  {commodityAreaData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="text-[11px] text-slate-400 text-center pt-2 border-t border-slate-100 flex items-center justify-center gap-1.5">
+            <Sparkles size={13} className="text-amber-500" />
+            <span>Kalkulasi luas lahan otomatis diperbarui dari koordinat poligon PostGIS berpresisi tinggi</span>
+          </div>
+        </div>
+
+        {/* Kolom Kanan (5 Kolom): Donut Chart Status Verifikasi Lahan */}
+        <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
+              <h3 className="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">
+                Status Verifikasi &amp; Legalitas Plot
+              </h3>
+            </div>
+            <p className="text-xs text-slate-500">Tingkat pengesahan batas lahan oleh Pemerintah Desa.</p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 py-3">
+            <div className="relative w-44 h-44 shrink-0 flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#081D35',
+                      color: '#FFFFFF',
+                      borderRadius: '10px',
+                      border: 'none',
+                      fontSize: '11px',
+                    }}
+                  />
+                  <Pie
+                    data={verificationDonutData}
+                    innerRadius={50}
+                    outerRadius={72}
+                    paddingAngle={3}
+                    dataKey="value"
+                  >
+                    {verificationDonutData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Sah</span>
+                <span className="text-lg font-black text-[#081D35] leading-none mt-0.5">{verifiedRate}%</span>
+              </div>
+            </div>
+
+            {/* Legend List */}
+            <div className="flex flex-col gap-2 flex-1 min-w-0 w-full sm:w-auto">
+              {verificationDonutData.map((item, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => {
+                    const st = idx === 0 ? 'verified' : idx === 1 ? 'pending' : 'rejected'
+                    setFarmStatusFilter(farmStatusFilter === st ? '' : st)
+                  }}
+                  className={`flex items-center justify-between p-2 rounded-xl border text-xs cursor-pointer transition-colors ${
+                    farmStatusFilter === (idx === 0 ? 'verified' : idx === 1 ? 'pending' : 'rejected')
+                      ? 'bg-slate-100 border-slate-300 font-bold'
+                      : 'border-slate-100 hover:bg-slate-50/70'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                    <span className="text-slate-700 font-medium truncate">{item.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="font-extrabold text-[#081D35]">{item.value}</span>
+                    <span className="text-[10px] text-slate-400 font-medium w-8 text-right">{item.percent}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200/60 flex items-center gap-2 text-xs text-emerald-900">
+            <ShieldCheck size={16} className="text-emerald-700 shrink-0" />
+            <span>Lahan terverifikasi dilindungi oleh arsip data spasial desa anti-sengketa adat.</span>
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          4. PETA SATELIT INTERAKTIF PEMETAAN LAHAN
+      ========================================================================== */}
+      <div ref={mapSectionRef} className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4">
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
+            <h3 className="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wider">
+              Kanvas Peta Satelit Interaktif (Leaflet &bull; PostGIS Geometri)
+            </h3>
+          </div>
+          <span className="text-xs text-slate-500 font-medium">
+            Gunakan tombol zoom atau shift-drag untuk menjelajahi kebun rempah
           </span>
         </div>
-      )}
 
-      {/* Peta Satelit Interaktif Pemetaan Lahan */}
-      <div ref={mapSectionRef} style={{ marginBottom: '1.5rem' }}>
         <FarmMap
           features={farmGeoJSON.features}
           editable={canMapFarms}
@@ -726,200 +1028,142 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
 
       {/* Mode Tinjau Petani (Read-Only) */}
       {isFarmerOnly && (
-        <div
-          style={{
-            background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.08) 0%, rgba(16, 185, 129, 0.03) 100%)',
-            border: '1px solid rgba(5, 150, 105, 0.25)',
-            borderRadius: 'var(--radius-md)',
-            padding: '1rem 1.25rem',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-          }}
-        >
-          <span style={{ fontSize: '1.6rem' }}>ℹ️</span>
-          <div style={{ fontSize: '0.875rem', color: '#166534', lineHeight: 1.5 }}>
-            <b>Mode Tinjau Petani:</b> Petani hanya dapat melihat data dan sebaran plot lahan kebun. Penambahan atau pemetaan lahan baru didaftarkan secara kolektif oleh <b>Pengurus Kelompok Tani</b> dan memerlukan persetujuan verifikasi resmi dari <b>Petugas Kantor Desa Banda Neira</b>.
+        <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200 text-xs text-emerald-900 flex items-start gap-3">
+          <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+            <Sprout size={16} />
+          </div>
+          <div className="space-y-1">
+            <p className="font-bold text-sm">Mode Tinjau Mandiri Petani:</p>
+            <p className="text-slate-600 leading-relaxed">
+              Anda sedang membuka tampilan tinjau peta lahan. Pendaftaran plot kebun baru diajukan secara terpadu oleh{' '}
+              <strong>Pengurus Kelompok Tani (Poktan)</strong> dan disahkan secara resmi oleh{' '}
+              <strong>Petugas Kantor Desa</strong>.
+            </p>
           </div>
         </div>
       )}
 
-      {/* Formulir Terpadu Pemetaan Lahan 3 Langkah (Poktan & Kantor Desa) */}
-      {canMapFarms && (
-        <details
-          style={{
-            marginBottom: '1.5rem',
-            background: '#f8fafc',
-            padding: '1.25rem',
-            borderRadius: 'var(--radius-md)',
-            border: '1px solid #cbd5e1',
-          }}
-          open
-        >
-          <summary style={{ cursor: 'pointer', fontWeight: 800, color: '#0f2c59', fontSize: '0.98rem' }}>
-            {isOfficerOrAdmin
-              ? '➕ Pemetaan & Pendaftaran Plot Kebun Baru (Kantor Desa)'
-              : '🌾 Ajukan Plot Kebun Baru (Kelompok Tani ke Kantor Desa)'}
-          </summary>
-
-          {!isOfficerOrAdmin && (
-            <div
-              style={{
-                marginTop: '0.75rem',
-                marginBottom: '1rem',
-                padding: '0.75rem 1rem',
-                background: '#fffbeb',
-                borderRadius: 'var(--radius-sm)',
-                border: '1px solid #fde68a',
-                fontSize: '0.84rem',
-                color: '#92400e',
-                lineHeight: 1.5,
-              }}
-            >
-              <b>Alur Pengajuan Poktan:</b> Klik langsung kebun pada peta satelit di atas untuk menggambar batasnya. Lahan yang diajukan berstatus <b>⏳ Menunggu Persetujuan</b> hingga diverifikasi Petugas Kantor Desa.
+      {/* =========================================================================
+          5. FORMULIR PEMETAAN LAHAN 3 LANGKAH (COLLAPSIBLE DRAWER)
+      ========================================================================== */}
+      {canMapFarms && showFormDrawer && (
+        <div className="bg-white rounded-2xl border-2 border-emerald-400 shadow-md p-6 animate-fade-in relative">
+          <div className="flex items-center justify-between pb-4 mb-5 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
+                <PlusCircle size={20} />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-[#081D35]">
+                  {isOfficerOrAdmin
+                    ? 'Pemetaan & Pendaftaran Plot Kebun Baru (Kantor Desa)'
+                    : 'Pengajuan Plot Kebun Baru (Kelompok Tani)'}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Ikuti 3 langkah di bawah untuk menentukan poligon kebun, identitas pemilik, dan komoditas rempah.
+                </p>
+              </div>
             </div>
-          )}
+            <button
+              onClick={() => setShowFormDrawer(false)}
+              className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+            >
+              <X size={18} />
+            </button>
+          </div>
 
-          {/* Langkah 1: Ringkasan Titik/Poligon dari Peta & GPS */}
-          <div
-            style={{
-              marginTop: '0.85rem',
-              marginBottom: '1rem',
-              padding: '0.85rem 1rem',
-              background: '#ffffff',
-              border: '1px solid #e2e8f0',
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '0.75rem',
-            }}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-              <span style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', color: '#0284c7' }}>
-                Langkah 1 · Lokasi &amp; Batas Lahan dari Peta Satelit
+          {/* Langkah 1: Ringkasan Titik & Poligon dari Peta */}
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 mb-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <span className="text-[10px] font-bold text-blue-700 uppercase tracking-wider block mb-0.5">
+                Langkah 1 &bull; Lokasi &amp; Batas Lahan dari Peta Satelit
               </span>
-              <div style={{ fontSize: '0.84rem', color: '#0f2c59', fontWeight: 700 }}>
+              <div className="text-xs font-bold text-[#081D35]">
                 {draftVertices.length >= 3 ? (
-                  <span style={{ color: '#047857' }}>
-                    ✓ Poligon {draftVertices.length} sudut terpetakan &bull; Luas {farmForm.area_sqm.toLocaleString('id-ID')} m² (
-                    {(farmForm.area_sqm / 10000).toFixed(2)} Ha)
+                  <span className="text-emerald-700 flex items-center gap-1.5">
+                    <CheckCircle2 size={14} className="text-emerald-600" />
+                    <span>
+                      Poligon {draftVertices.length} sudut terpetakan &bull; Luas {farmForm.area_sqm.toLocaleString('id-ID')} m² ({(farmForm.area_sqm / 10000).toFixed(2)} Ha)
+                    </span>
                   </span>
                 ) : (
-                  <span>
-                    📍 Titik tengah aktif di {farmForm.latitude.toFixed(5)}, {farmForm.longitude.toFixed(5)} (klik peta di atas atau pakai Kotak Cepat untuk menggambar batas)
+                  <span className="text-slate-600">
+                    📍 Koordinat aktif: {farmForm.latitude.toFixed(5)}, {farmForm.longitude.toFixed(5)} (klik peta satelit di atas untuk menggambar batas)
                   </span>
                 )}
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
                 onClick={handleUseDeviceGps}
                 disabled={gettingGps}
-                className="btn btn-secondary"
-                style={{ fontSize: '0.78rem', padding: '0.45rem 0.85rem' }}
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 transition-colors"
               >
-                {gettingGps ? '⏳ Mencari GPS...' : '📍 Gunakan GPS Perangkat'}
+                <Navigation size={13} className={gettingGps ? 'animate-spin text-blue-600' : 'text-slate-500'} />
+                <span>{gettingGps ? 'Mencari GPS...' : 'GPS Perangkat'}</span>
               </button>
               <button
                 type="button"
                 onClick={handleValidateBoundary}
                 disabled={checkingBoundary}
-                className="btn btn-outline-primary"
-                style={{ fontSize: '0.78rem', padding: '0.45rem 0.85rem' }}
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors"
               >
-                {checkingBoundary ? '⏳ Memeriksa Batas...' : '📐 Uji Tumpang Tindih Batas (PostGIS)'}
+                <Compass size={13} className={checkingBoundary ? 'animate-spin' : ''} />
+                <span>{checkingBoundary ? 'Memeriksa...' : 'Uji PostGIS Tumpang Tindih'}</span>
               </button>
             </div>
           </div>
 
           {boundaryCheckMsg && (
             <div
-              style={{
-                marginBottom: '1rem',
-                padding: '0.7rem 0.9rem',
-                borderRadius: '8px',
-                fontSize: '0.82rem',
-                fontWeight: 600,
-                background:
-                  boundaryCheckMsg.type === 'success'
-                    ? '#ecfdf5'
-                    : boundaryCheckMsg.type === 'warning'
-                    ? '#fffbeb'
-                    : '#fef2f2',
-                color:
-                  boundaryCheckMsg.type === 'success'
-                    ? '#065f46'
-                    : boundaryCheckMsg.type === 'warning'
-                    ? '#92400e'
-                    : '#991b1b',
-                border: `1px solid ${
-                  boundaryCheckMsg.type === 'success'
-                    ? '#a7f3d0'
-                    : boundaryCheckMsg.type === 'warning'
-                    ? '#fde68a'
-                    : '#fecaca'
-                }`,
-              }}
+              className={`p-3.5 rounded-xl mb-4 text-xs font-semibold flex items-center gap-2 border animate-fade-in ${
+                boundaryCheckMsg.type === 'success'
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                  : boundaryCheckMsg.type === 'warning'
+                  ? 'bg-amber-50 border-amber-200 text-amber-900'
+                  : 'bg-rose-50 border-rose-200 text-rose-900'
+              }`}
             >
-              {boundaryCheckMsg.text}
+              {boundaryCheckMsg.type === 'success' ? (
+                <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+              ) : (
+                <AlertCircle size={16} className="shrink-0 text-amber-600" />
+              )}
+              <span>{boundaryCheckMsg.text}</span>
             </div>
           )}
 
-          {/* Langkah 2: Identitas Kebun & Petani */}
-          <form onSubmit={onSubmitWithPolygon}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', color: '#0284c7', marginBottom: '0.55rem' }}>
-              Langkah 2 · Identitas Kebun &amp; Pemilik Lahan
-            </div>
+          {/* Form Langkah 2 & 3 */}
+          <form onSubmit={onSubmitWithPolygon} className="space-y-4">
+            <span className="text-[10px] font-bold text-blue-700 uppercase tracking-wider block">
+              Langkah 2 &bull; Identitas Kebun &amp; Pemilik Lahan
+            </span>
 
             {newFarmerMsg && (
               <div
-                style={{
-                  marginBottom: '0.75rem',
-                  padding: '0.6rem 0.85rem',
-                  borderRadius: '8px',
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  background: newFarmerMsg.type === 'success' ? '#ecfdf5' : '#fef2f2',
-                  color: newFarmerMsg.type === 'success' ? '#065f46' : '#991b1b',
-                  border: `1px solid ${newFarmerMsg.type === 'success' ? '#a7f3d0' : '#fecaca'}`,
-                }}
+                className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 border ${
+                  newFarmerMsg.type === 'success'
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                    : 'bg-rose-50 border-rose-200 text-rose-900'
+                }`}
               >
-                {newFarmerMsg.text}
+                <span>{newFarmerMsg.text}</span>
               </div>
             )}
 
+            {/* Kotak Pendaftaran Petani Cepat */}
             {showNewFarmerBox && (
-              <div
-                style={{
-                  marginBottom: '0.9rem',
-                  padding: '1rem',
-                  background: '#f8fafc',
-                  border: '1.5px solid #38bdf8',
-                  borderRadius: '10px',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#0f2c59' }}>
-                      👨‍🌾 Tambah Petani Anggota Poktan dari Warga Terdaftar
+              <div className="p-4 rounded-xl bg-sky-50/70 border border-sky-200 space-y-3 animate-fade-in">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-extrabold text-[#081D35]">
+                      👨‍🌾 Tambah Petani Anggota Poktan dari Warga Terdaftar Desa
                     </span>
                     {activeVillage && (
-                      <span
-                        style={{
-                          fontSize: '0.72rem',
-                          padding: '0.2rem 0.5rem',
-                          background: '#e0f2fe',
-                          color: '#0369a1',
-                          borderRadius: '6px',
-                          fontWeight: 700,
-                        }}
-                      >
-                        Wilayah: Desa {activeVillage}
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-800 border border-sky-200">
+                        Desa {activeVillage}
                       </span>
                     )}
                   </div>
@@ -929,29 +1173,27 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                       setShowNewFarmerBox(false)
                       setSelectedResidentId('')
                     }}
-                    style={{ background: 'transparent', border: 'none', color: '#64748b', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
+                    className="text-slate-400 hover:text-slate-600 p-1"
                   >
-                    Tutup ✕
+                    <X size={15} />
                   </button>
                 </div>
 
-                {/* Pemilih Warga Berdasarkan NIK Terdaftar */}
-                <div style={{ marginBottom: '0.75rem' }}>
-                  <label className="form-label" style={{ fontWeight: 700, fontSize: '0.78rem', color: '#0369a1', marginBottom: '0.35rem' }}>
-                    Pilih NIK & Warga Terverifikasi Desa {activeVillage ? `(${activeVillage})` : ''} *
+                <div>
+                  <label className="block text-xs font-bold text-sky-900 mb-1">
+                    Pilih NIK &amp; Warga Terverifikasi Dukcapil *
                   </label>
                   <select
                     value={selectedResidentId}
                     onChange={(e) => handleSelectResident(e.target.value)}
-                    className="form-control"
-                    style={{ fontWeight: 600, borderColor: selectedResidentId ? '#0284c7' : '#cbd5e1' }}
+                    className="w-full px-3 py-2 bg-white border border-sky-300 rounded-xl text-xs font-semibold text-slate-800 outline-none"
                   >
                     <option value="">
                       {loadingCandidates
-                        ? '⏳ Memuat daftar warga terverifikasi desa...'
+                        ? 'Memuat data warga desa...'
                         : candidateResidents.length === 0
                         ? `-- Belum ada warga terverifikasi di Desa ${activeVillage || ''} --`
-                        : `-- Pilih NIK & Nama Warga Terdaftar (${candidateResidents.length} warga tersedia) --`}
+                        : `-- Pilih NIK & Nama Warga (${candidateResidents.length} warga tersedia) --`}
                     </option>
                     {candidateResidents.map((c) => (
                       <option key={c.id} value={c.id} disabled={c.already_member}>
@@ -959,401 +1201,408 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                       </option>
                     ))}
                   </select>
-                  {candidateResidents.length === 0 && !loadingCandidates && (
-                    <div
-                      style={{
-                        marginTop: '0.4rem',
-                        fontSize: '0.74rem',
-                        color: '#b45309',
-                        background: '#fef3c7',
-                        padding: '0.4rem 0.6rem',
-                        borderRadius: '6px',
-                        border: '1px solid #fde68a',
-                      }}
-                    >
-                      ⚠️ Belum ada warga berstatus <strong>terverifikasi (verified)</strong> di Desa {activeVillage}. Pastikan Kepala Desa telah mendaftarkan dan memverifikasi data warga di modul Kependudukan.
-                    </div>
-                  )}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '0.75rem', alignItems: 'end' }}>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">Nama Lengkap Petani</label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Nama Petani</label>
                     <input
                       type="text"
-                      placeholder="Terisi otomatis dari NIK warga terpilih"
                       value={newFarmerForm.name}
                       readOnly={Boolean(selectedResidentId)}
                       onChange={(e) => setNewFarmerForm({ ...newFarmerForm, name: e.target.value })}
-                      className="form-control"
-                      style={{ background: selectedResidentId ? '#f1f5f9' : '#ffffff' }}
+                      className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 outline-none"
+                      placeholder="Terisi otomatis dari NIK"
                     />
-                  </div>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">Nomor WhatsApp / HP</label>
-                    <input
-                      type="text"
-                      placeholder="Mis. 081234567890"
-                      value={newFarmerForm.phone}
-                      onChange={(e) => setNewFarmerForm({ ...newFarmerForm, phone: e.target.value })}
-                      className="form-control"
-                    />
-                  </div>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">Kelompok Tani</label>
-                    <select
-                      value={newFarmerForm.farmer_group_id || (accessibleFarmerGroups[0]?.id || '')}
-                      onChange={(e) => setNewFarmerForm({ ...newFarmerForm, farmer_group_id: e.target.value })}
-                      className="form-control"
-                    >
-                      {accessibleFarmerGroups.length === 0 && <option value="">-- Kelompok Tani Bawaan --</option>}
-                      {accessibleFarmerGroups.map((grp) => (
-                        <option key={grp.id} value={grp.id}>
-                          {grp.name} {grp.village ? `(Desa ${grp.village})` : ''}
-                        </option>
-                      ))}
-                    </select>
                   </div>
                   <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">WhatsApp / HP</label>
+                    <input
+                      type="text"
+                      value={newFarmerForm.phone}
+                      onChange={(e) => setNewFarmerForm({ ...newFarmerForm, phone: e.target.value })}
+                      className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 outline-none"
+                      placeholder="081234567890"
+                    />
+                  </div>
+                  <div className="flex items-end">
                     <button
                       type="button"
                       disabled={savingFarmer || (isFarmerGroupAdmin && !selectedResidentId)}
                       onClick={handleCreateFarmerMember}
-                      className="btn btn-primary"
-                      style={{ width: '100%', padding: '0.55rem 0.9rem', fontSize: '0.8rem' }}
+                      className="w-full py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors disabled:opacity-50"
                     >
-                      {savingFarmer ? '⏳ Menyimpan...' : 'Simpan Petani ke Poktan'}
+                      {savingFarmer ? 'Menyimpan...' : 'Simpan ke Poktan'}
                     </button>
                   </div>
                 </div>
               </div>
             )}
 
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                gap: '0.9rem',
-              }}
-            >
-              <div className="form-group">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem', gap: '0.4rem' }}>
-                  <label className="form-label" style={{ marginBottom: 0 }}>
-                    Petani Pemilik Lahan ({accessibleFarmers.length})
-                  </label>
+            {/* Baris Input Kebun */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Petani Pemilik */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-bold text-slate-700">Petani Pemilik Lahan</label>
                   <button
                     type="button"
                     onClick={() => setShowNewFarmerBox((prev) => !prev)}
-                    style={{
-                      background: '#eff6ff',
-                      color: '#1d4ed8',
-                      border: '1px solid #bfdbfe',
-                      borderRadius: '6px',
-                      padding: '0.15rem 0.5rem',
-                      fontSize: '0.7rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                    }}
+                    className="text-[11px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
                   >
-                    + Tambah Petani Baru
+                    <span>+ Daftarkan Petani</span>
                   </button>
                 </div>
                 <select
                   value={farmForm.farmer_id}
                   onChange={(e) => setFarmForm({ ...farmForm, farmer_id: e.target.value })}
-                  className="form-control"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-emerald-500 outline-none"
                 >
-                  <option value="">-- Otomatis / Pilih Petani Anggota Poktan --</option>
-                  {accessibleFarmers.map((frm) => {
-                    const groupName =
-                      frm.group?.name ||
-                      farmerGroups.find((g) => g.id === frm.farmer_group_id)?.name
-                    return (
-                      <option key={frm.id} value={frm.id}>
-                        {frm.name} ({frm.farmer_code}){frm.village ? ` [Desa ${frm.village}]` : ''}{groupName ? ` — ${groupName}` : ''}
-                      </option>
-                    )
-                  })}
+                  <option value="">-- Pilih Petani Anggota Poktan --</option>
+                  {accessibleFarmers.map((frm) => (
+                    <option key={frm.id} value={frm.id}>
+                      {frm.name} ({frm.farmer_code}){frm.village ? ` [Desa ${frm.village}]` : ''}
+                    </option>
+                  ))}
                 </select>
               </div>
-              <div className="form-group">
-                <label className="form-label">Kode Plot Kebun</label>
+
+              {/* Kode Plot */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Kode Plot Kebun</label>
                 <input
                   type="text"
                   value={farmForm.farm_code}
                   onChange={(e) => setFarmForm({ ...farmForm, farm_code: e.target.value })}
                   required
-                  className="form-control"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-mono text-slate-800 focus:bg-white focus:border-emerald-500 outline-none"
+                  placeholder="Contoh: PL-LTR-01"
                 />
               </div>
-              <div className="form-group">
-                <label className="form-label">Nama Kebun</label>
+
+              {/* Nama Kebun */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Nama Hamparan Kebun</label>
                 <input
                   type="text"
                   placeholder="Mis. Kebun Pala Lonthoir Timur"
                   value={farmForm.name}
                   onChange={(e) => setFarmForm({ ...farmForm, name: e.target.value })}
                   required
-                  className="form-control"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-emerald-500 outline-none"
                 />
               </div>
-              <div className="form-group">
-                <label className="form-label">Komoditas Utama</label>
+
+              {/* Komoditas */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Komoditas Utama</label>
                 <select
                   value={farmForm.primary_commodity}
                   onChange={(e) => setFarmForm({ ...farmForm, primary_commodity: e.target.value })}
-                  className="form-control"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-emerald-500 outline-none"
                 >
-                  <option value="Pala">Pala</option>
-                  <option value="Cengkih">Cengkih</option>
+                  <option value="Pala">Pala Banda (Myristica fragrans)</option>
+                  <option value="Cengkih">Cengkih Banda Asli</option>
                   <option value="Kayu Manis">Kayu Manis</option>
                 </select>
               </div>
-              <div className="form-group">
-                <label className="form-label">Luas Lahan (m²)</label>
+
+              {/* Luas m2 */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Luas Lahan (m²)</label>
                 <input
                   type="number"
                   value={farmForm.area_sqm}
                   onChange={(e) => setFarmForm({ ...farmForm, area_sqm: Number(e.target.value) })}
                   required
-                  className="form-control"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-emerald-500 outline-none"
+                  placeholder="5000"
                 />
               </div>
-              <div className="form-group">
-                <label className="form-label">Dusun / Lokasi Lahan</label>
+
+              {/* Dusun / Lokasi */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Dusun / Keterangan Lokasi</label>
                 <input
                   type="text"
                   placeholder="Mis. Dusun Batu Laki, Desa Lonthoir"
                   value={farmForm.location_description}
                   onChange={(e) => setFarmForm({ ...farmForm, location_description: e.target.value })}
-                  className="form-control"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 focus:bg-white focus:border-emerald-500 outline-none"
                 />
               </div>
             </div>
 
-            {/* Koordinat Manual Opsional */}
-            <details style={{ marginTop: '0.85rem' }}>
-              <summary style={{ cursor: 'pointer', fontSize: '0.78rem', fontWeight: 700, color: '#475569' }}>
-                ⚙️ Input Koordinat Manual (Opsional — otomatis terisi saat klik peta)
-              </summary>
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                  gap: '0.9rem',
-                  marginTop: '0.65rem',
-                }}
+            {/* Input Koordinat Manual (Collapsible) */}
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowManualCoords((prev) => !prev)}
+                className="text-xs font-bold text-slate-500 hover:text-slate-800 flex items-center gap-1.5"
               >
-                <div className="form-group">
-                  <label className="form-label">Latitude</label>
-                  <input
-                    type="number"
-                    step="any"
-                    value={farmForm.latitude}
-                    onChange={(e) => setFarmForm({ ...farmForm, latitude: parseFloat(e.target.value) || 0 })}
-                    required
-                    className="form-control"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Longitude</label>
-                  <input
-                    type="number"
-                    step="any"
-                    value={farmForm.longitude}
-                    onChange={(e) => setFarmForm({ ...farmForm, longitude: parseFloat(e.target.value) || 0 })}
-                    required
-                    className="form-control"
-                  />
-                </div>
-              </div>
-            </details>
-
-            <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <button type="submit" className="btn btn-primary" style={{ padding: '0.6rem 1.45rem' }}>
-                {isOfficerOrAdmin ? 'Simpan & Sahkan di Peta' : 'Kirim Pengajuan Plot ke Kantor Desa'}
+                {showManualCoords ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                <span>Input Koordinat Geodesik Manual (Opsional)</span>
               </button>
-              <span style={{ fontSize: '0.76rem', color: '#64748b' }}>
+
+              {showManualCoords && (
+                <div className="grid grid-cols-2 gap-3 mt-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Latitude</label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={farmForm.latitude}
+                      onChange={(e) => setFarmForm({ ...farmForm, latitude: parseFloat(e.target.value) || 0 })}
+                      required
+                      className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-800 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Longitude</label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={farmForm.longitude}
+                      onChange={(e) => setFarmForm({ ...farmForm, longitude: parseFloat(e.target.value) || 0 })}
+                      required
+                      className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-800 outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Form Bottom Actions */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-100">
+              <span className="text-[11px] text-slate-500">
                 {farmForm.polygon_boundary_geojson
-                  ? 'Batas poligon kustom siap ikut disimpan bersama plot kebun.'
-                  : 'Anda juga dapat menyimpan titik lokasi terlebih dahulu dan menggambar poligon kapan saja.'}
+                  ? '✓ Poligon batas kustom siap disimpan dan ditautkan ke database spasial PostGIS.'
+                  : 'Batas poligon dapat disempurnakan kapan saja melalui kanvas peta di atas.'}
               </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowFormDrawer(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-1.5 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors"
+                >
+                  <CheckCheck size={16} />
+                  <span>{isOfficerOrAdmin ? 'Simpan & Sahkan di Peta' : 'Kirim Pengajuan ke Desa'}</span>
+                </button>
+              </div>
             </div>
           </form>
-        </details>
+        </div>
       )}
 
-      {/* Tabel Daftar Plot Kebun & Status Verifikasi Desa */}
-      <div style={{ marginTop: '1.5rem', marginBottom: '1rem' }}>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '1rem',
-            flexWrap: 'wrap',
-            gap: '0.75rem',
-          }}
-        >
+      {/* =========================================================================
+          6. TABEL DAFTAR PLOT KEBUN & STATUS VERIFIKASI DESA
+      ========================================================================== */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div className="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
-            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
-              {isOfficerOrAdmin
-                ? `Daftar Plot Kebun & Verifikasi Kantor Desa (${farms.length} Plot)`
-                : `Daftar Sebaran Plot Kebun Rempah (${farms.length} Plot)`}
-            </h3>
-            <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', margin: '0.2rem 0 0' }}>
-              {isOfficerOrAdmin
-                ? 'Klik "Lihat di Peta" untuk meninjau batas lahan secara visual sebelum menyahkan pendaftaran dari kelompok tani.'
-                : 'Informasi luasan, komoditas, batas poligon, dan status persetujuan lahan oleh Kantor Desa.'}
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-extrabold text-[#081D35]">
+                {isOfficerOrAdmin
+                  ? `Daftar Plot Kebun & Verifikasi Kantor Desa (${farms.length} Plot)`
+                  : `Daftar Sebaran Plot Kebun Rempah (${farms.length} Plot)`}
+              </h3>
+              <span className="text-xs text-slate-500 font-medium">({filteredFarms.length} ditampilkan)</span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Klik "Lihat di Peta" untuk mengarahkan kamera kanvas satelit langsung ke batas lahan terkait.
             </p>
           </div>
 
-          <div
-            style={{
-              display: 'flex',
-              gap: '0.35rem',
-              background: '#ffffff',
-              padding: '0.3rem',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid #e2e8f0',
-              flexWrap: 'wrap',
-            }}
-          >
-            {['', 'pending', 'verified'].map((st) => {
-              const label = st === '' ? 'Semua' : st === 'pending' ? 'Menunggu Persetujuan' : 'Disetujui'
-              const count = st === '' ? farms.length : farms.filter((f) => f.verification_status === st).length
-              const active = farmStatusFilter === st
-              return (
-                <button
-                  key={st}
-                  type="button"
-                  onClick={() => setFarmStatusFilter(st)}
-                  style={{
-                    padding: '0.4rem 0.85rem',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: '0.78rem',
-                    fontWeight: 700,
-                    border: active ? '1px solid #0f2c59' : '1px solid transparent',
-                    background: active ? '#0f2c59' : 'transparent',
-                    color: active ? '#f4b75e' : '#475569',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  {label} ({count})
-                </button>
-              )
-            })}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Search Input */}
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Cari kode/nama kebun..."
+                value={searchTableQuery}
+                onChange={(e) => setSearchTableQuery(e.target.value)}
+                className="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:bg-white focus:border-emerald-500 outline-none w-40 sm:w-48"
+              />
+            </div>
+
+            {/* Filter Pills */}
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+              {[
+                { key: '', label: 'Semua' },
+                { key: 'pending', label: 'Menunggu' },
+                { key: 'verified', label: 'Disetujui' },
+              ].map((item) => {
+                const count =
+                  item.key === ''
+                    ? farms.length
+                    : farms.filter((f) => f.verification_status === item.key).length
+                const active = farmStatusFilter === item.key
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => setFarmStatusFilter(item.key)}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                      active ? 'bg-white text-slate-800 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {item.label} ({count})
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </div>
 
-        <div className="table-responsive">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Kode &amp; Nama Kebun</th>
-                <th>Komoditas</th>
-                <th>Luas (m²)</th>
-                <th>Lokasi &amp; Geometri</th>
-                <th>Status Verifikasi</th>
-                <th style={{ textAlign: 'center' }}>Aksi Peta &amp; Desa</th>
-              </tr>
-            </thead>
-            <tbody>
-              {farms
-                .filter((f) => !farmStatusFilter || f.verification_status === farmStatusFilter)
-                .map((f) => (
-                  <tr key={f.id}>
-                    <td>
-                      <span style={{ fontWeight: 700, color: 'var(--text-main)', display: 'block' }}>{f.name}</span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-                        {f.farm_code}
-                      </span>
-                    </td>
-                    <td>
-                      <span
-                        className={`badge ${
-                          f.primary_commodity.toLowerCase().includes('pala') ? 'badge-blue' : 'badge-emerald'
-                        }`}
-                      >
-                        {f.primary_commodity}
-                      </span>
-                    </td>
-                    <td style={{ fontWeight: 700, color: 'var(--text-main)' }}>
-                      {f.area_sqm.toLocaleString('id-ID')} m²
-                    </td>
-                    <td style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                      <div>{f.location_description || '-'}</div>
-                      <small style={{ color: 'var(--text-muted)' }}>
-                        {f.latitude.toFixed(4)}, {f.longitude.toFixed(4)}
-                      </small>
-                      <div style={{ marginTop: '0.2rem', display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
-                        <span
-                          style={{
-                            fontSize: '0.68rem',
-                            fontWeight: 700,
-                            padding: '0.12rem 0.4rem',
-                            borderRadius: '4px',
-                            background: f.polygon_boundary_geojson ? '#ecfdf5' : '#f1f5f9',
-                            color: f.polygon_boundary_geojson ? '#047857' : '#475569',
-                          }}
-                        >
-                          {f.polygon_boundary_geojson ? '📐 Batas Poligon' : '📍 Titik Saja'}
+        {filteredFarms.length === 0 ? (
+          <div className="py-12 px-4 text-center text-slate-500">
+            <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+              <MapPin size={22} />
+            </div>
+            <p className="font-bold text-slate-800 text-sm">Tidak ada plot kebun yang cocok</p>
+            <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+              Periksa kata kunci pencarian atau bersihkan saringan status verifikasi yang aktif.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="bg-slate-50/80 border-b border-slate-200/80 text-slate-500 font-bold uppercase tracking-wider">
+                  <th className="py-3.5 px-4">Kode &amp; Nama Kebun</th>
+                  <th className="py-3.5 px-4">Komoditas</th>
+                  <th className="py-3.5 px-4">Luas Lahan</th>
+                  <th className="py-3.5 px-4">Lokasi &amp; Geometri Poligon</th>
+                  <th className="py-3.5 px-4">Status Pengesahan</th>
+                  <th className="py-3.5 px-4 text-center">Aksi Peta &amp; Verifikasi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                {filteredFarms.map((f) => {
+                  const boundaryCheck = checkFarmExceedsVillageBoundary(f, villageBoundaryGeoJSON)
+                  const isVerified = f.verification_status === 'verified'
+                  const isPending = f.verification_status === 'pending'
+
+                  return (
+                    <tr key={f.id} className="hover:bg-slate-50/80 transition-colors">
+                      {/* Nama & Kode */}
+                      <td className="py-3.5 px-4">
+                        <span className="font-extrabold text-[#081D35] block text-sm">{f.name}</span>
+                        <span className="font-mono text-xs font-semibold text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-200 inline-block mt-0.5">
+                          {f.farm_code}
                         </span>
-                        {checkFarmExceedsVillageBoundary(f, villageBoundaryGeoJSON).exceeds && (
-                          <span
-                            className="badge badge-rose"
-                            style={{ fontSize: '0.66rem', padding: '0.12rem 0.4rem' }}
-                            title={checkFarmExceedsVillageBoundary(f, villageBoundaryGeoJSON).reason}
-                          >
-                            ⛔ Melewati Batas Desa
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td>
-                      <span
-                        className={`badge ${
-                          f.verification_status === 'verified'
-                            ? 'badge-emerald'
-                            : f.verification_status === 'pending'
-                            ? 'badge-amber'
-                            : 'badge-rose'
-                        }`}
-                      >
-                        {f.verification_status === 'verified'
-                          ? '✓ TERVERIFIKASI'
-                          : f.verification_status === 'pending'
-                          ? '⏳ MENUNGGU PERSETUJUAN'
-                          : '✕ DITOLAK'}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <div style={{ display: 'inline-flex', gap: '0.35rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                        <button
-                          type="button"
-                          onClick={() => handleFocusFarmOnMap(f.id)}
-                          className="btn btn-xs btn-secondary"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
-                          title="Tampilkan lokasi plot kebun ini di peta"
+                      </td>
+
+                      {/* Komoditas */}
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                            f.primary_commodity.toLowerCase().includes('pala')
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : 'bg-amber-50 text-amber-700 border border-amber-200'
+                          }`}
                         >
-                          <MapPin size={12} /> Lihat di Peta
-                        </button>
-                        {isOfficerOrAdmin && f.verification_status === 'pending' && (() => {
-                          const boundaryCheck = checkFarmExceedsVillageBoundary(f, villageBoundaryGeoJSON)
-                          return (
+                          {f.primary_commodity}
+                        </span>
+                      </td>
+
+                      {/* Luas */}
+                      <td className="py-3.5 px-4">
+                        <span className="font-extrabold text-[#081D35] text-sm">
+                          {f.area_sqm.toLocaleString('id-ID')}
+                        </span>
+                        <span className="text-slate-500 ml-1">m²</span>
+                        <span className="block text-[11px] text-slate-400">
+                          ({(f.area_sqm / 10000).toFixed(2)} Ha)
+                        </span>
+                      </td>
+
+                      {/* Lokasi & Geometri */}
+                      <td className="py-3.5 px-4">
+                        <div className="font-semibold text-slate-800">{f.location_description || '-'}</div>
+                        <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                          {f.latitude.toFixed(4)}, {f.longitude.toFixed(4)}
+                        </div>
+                        <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                              f.polygon_boundary_geojson
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : 'bg-slate-100 text-slate-600'
+                            }`}
+                          >
+                            {f.polygon_boundary_geojson ? '📐 Batas Poligon' : '📍 Titik Koordinat'}
+                          </span>
+                          {boundaryCheck.exceeds && (
+                            <span
+                              className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-800 border border-rose-200"
+                              title={boundaryCheck.reason}
+                            >
+                              ⛔ Melewati Batas Desa
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Status Verifikasi */}
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                            isVerified
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : isPending
+                              ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                              : 'bg-rose-50 text-rose-700 border border-rose-200'
+                          }`}
+                        >
+                          {isVerified ? (
+                            <>
+                              <CheckCircle2 size={12} className="text-emerald-600" /> Disahkan
+                            </>
+                          ) : isPending ? (
+                            <>
+                              <Compass size={12} className="text-amber-600" /> Menunggu Tinjauan
+                            </>
+                          ) : (
+                            <>
+                              <X size={12} className="text-rose-600" /> Ditolak
+                            </>
+                          )}
+                        </span>
+                      </td>
+
+                      {/* Aksi */}
+                      <td className="py-3.5 px-4 text-center">
+                        <div className="inline-flex items-center gap-1.5 justify-center flex-wrap">
+                          <button
+                            type="button"
+                            onClick={() => handleFocusFarmOnMap(f.id)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 shadow-2xs transition-colors"
+                            title="Tampilkan lokasi plot kebun di kanvas peta satelit"
+                          >
+                            <MapPin size={12} className="text-blue-600" />
+                            <span>Lihat di Peta</span>
+                          </button>
+
+                          {isOfficerOrAdmin && isPending && (
                             <>
                               <button
                                 type="button"
                                 disabled={verifyingFarmId === f.id || boundaryCheck.exceeds}
                                 onClick={() => handleVerifyFarm(f.id, 'verified')}
-                                className="btn btn-xs btn-success"
+                                className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors disabled:opacity-50"
                                 title={
                                   boundaryCheck.exceeds
-                                    ? `Tidak dapat disahkan oleh Kepala Desa: ${boundaryCheck.reason}`
-                                    : 'Setujui dan sahkan plot kebun'
+                                    ? `Tidak dapat disahkan: ${boundaryCheck.reason}`
+                                    : 'Sahkan batas lahan kebun'
                                 }
-                                style={boundaryCheck.exceeds ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
                               >
                                 {verifyingFarmId === f.id ? '...' : '✓ Setujui'}
                               </button>
@@ -1361,28 +1610,22 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
                                 type="button"
                                 disabled={verifyingFarmId === f.id}
                                 onClick={() => handleVerifyFarm(f.id, 'rejected')}
-                                className="btn btn-xs btn-danger"
+                                className="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors"
                               >
                                 {verifyingFarmId === f.id ? '...' : '✕ Tolak'}
                               </button>
                             </>
-                          )
-                        })()}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              {farms.length === 0 && (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-                    Belum ada plot kebun terdaftar.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-    </section>
+    </div>
   )
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import logoImg from '../../assets/logo.png'
 import LanguageSwitcher from '../../components/common/LanguageSwitcher'
 import {
@@ -21,7 +21,6 @@ import {
   Menu,
   X,
   Bell,
-  FileText,
   HelpCircle,
   Settings,
   UserCheck,
@@ -34,6 +33,11 @@ import {
   Activity,
   RefreshCw,
   BookOpen,
+  CheckCheck,
+  Trash2,
+  ArrowRight,
+  Clock,
+  AlertCircle,
 } from 'lucide-react'
 import { setPreferredTourismSubTab } from '../../services/tourism'
 
@@ -51,6 +55,8 @@ export type DashboardNavTab =
   | 'audit'
   | 'smart_planner'
   | 'survei'
+  | 'marketplace'
+  | 'help'
 
 export interface DashboardLayoutProps {
   currentUser: any
@@ -112,17 +118,26 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false)
   const [showQuickMenuDropdown, setShowQuickMenuDropdown] = useState(false)
-  const [showNotificationToast, setShowNotificationToast] = useState(false)
+  const [showNotificationDropdown, setShowNotificationDropdown] = useState(false)
+  const [notificationFilter, setNotificationFilter] = useState<'all' | 'unread' | 'letters' | 'system'>('all')
   const [showTelemetryPopover, setShowTelemetryPopover] = useState(false)
   const settingsDropdownRef = useRef<HTMLDivElement>(null)
   const quickMenuDropdownRef = useRef<HTMLDivElement>(null)
+  const notificationDropdownRef = useRef<HTMLDivElement>(null)
   const telemetryPopoverRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const searchContainerRef = useRef<HTMLDivElement>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchFocused, setIsSearchFocused] = useState(false)
   const [selectedResultIndex, setSelectedResultIndex] = useState(0)
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('banda_theme_mode')
+      if (saved) return saved === 'dark'
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+    }
+    return false
+  })
 
   // Shortcut global Ctrl + / (atau Cmd + / di Mac) untuk fokus ke pencarian
   useEffect(() => {
@@ -137,14 +152,28 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  // Efek toggle Dark / Light mode pada elemen html
+  // Efek toggle Dark / Light mode pada elemen html dan penyimpanan persistensi
   useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('banda_theme_mode', isDarkMode ? 'dark' : 'light')
+      if (isDarkMode) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+      window.dispatchEvent(new Event('banda_theme_changed'))
     }
   }, [isDarkMode])
+
+  // Dengarkan perubahan tema dari komponen anak (misal workspace switcher)
+  useEffect(() => {
+    const handleThemeChange = () => {
+      const isDark = document.documentElement.classList.contains('dark')
+      setIsDarkMode(isDark)
+    }
+    window.addEventListener('banda_theme_changed', handleThemeChange)
+    return () => window.removeEventListener('banda_theme_changed', handleThemeChange)
+  }, [])
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -166,6 +195,12 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         !quickMenuDropdownRef.current.contains(e.target as Node)
       ) {
         setShowQuickMenuDropdown(false)
+      }
+      if (
+        notificationDropdownRef.current &&
+        !notificationDropdownRef.current.contains(e.target as Node)
+      ) {
+        setShowNotificationDropdown(false)
       }
       if (
         telemetryPopoverRef.current &&
@@ -198,6 +233,22 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const isSmartTourismAdmin = roles.includes('smart_tourism_admin') || roles.includes('admin_wisata')
   const isSurveyor = roles.includes('field_surveyor') || roles.includes('surveyor')
 
+  // State accordion dropdown untuk 5 Pilar Super Admin
+  const [openAdminGroups, setOpenAdminGroups] = useState<Record<string, boolean>>({
+    'group-gov': true,
+    'group-agri': false,
+    'group-coop': false,
+    'group-tourism': false,
+    'group-iot-sec': false,
+  })
+
+  const toggleAdminGroup = (groupId: string) => {
+    setOpenAdminGroups((prev) => ({
+      ...prev,
+      [groupId]: !prev[groupId],
+    }))
+  }
+
   const getRoleDisplayName = () => {
     if (isSuperuser || roles.includes('admin')) return 'Administrator Sistem'
     if (roles.includes('village_officer')) return 'Petugas Kantor Desa'
@@ -221,11 +272,209 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const userDisplayEmail =
     currentUser?.email || (currentUser?.username ? `${currentUser.username}@bandanaira.com` : 'admin@bandanaira.com')
 
-  // Hitung total notifikasi aktif untuk badge hijau (sesuai referensi angka hijau "5")
-  const totalNotifications = Math.max(
-    adminPendingLettersCount + pendingFarmsCount + pendingSyncCount,
-    adminPendingLettersCount > 0 || pendingFarmsCount > 0 ? adminPendingLettersCount + pendingFarmsCount : 5
-  )
+  // Notifikasi Ekosistem Banda Neira
+  interface EcosystemNotificationItem {
+    id: string
+    title: string
+    description: string
+    timestamp: string
+    category: 'letter' | 'farm' | 'iot' | 'coop' | 'blockchain' | 'system'
+    read: boolean
+    priority: 'high' | 'normal' | 'info'
+    targetTab?: DashboardNavTab
+    actionLabel?: string
+  }
+
+  const initialNotifications: EcosystemNotificationItem[] = useMemo(() => {
+    const items: EcosystemNotificationItem[] = []
+
+    if (adminPendingLettersCount > 0) {
+      items.push({
+        id: 'notif-letters',
+        title: `Permohonan Surat Masuk (${adminPendingLettersCount} Menunggu)`,
+        description: `${adminPendingLettersCount} berkas permohonan surat keterangan usaha & domisili warga memerlukan persetujuan Kepala Desa.`,
+        timestamp: '10 menit yang lalu',
+        category: 'letter',
+        read: false,
+        priority: 'high',
+        targetTab: 'letters',
+        actionLabel: 'Tinjau Berkas',
+      })
+    } else {
+      items.push({
+        id: 'notif-letters-ok',
+        title: 'Pelayanan Surat Desa Tertib',
+        description: 'Seluruh permohonan administrasi warga telah diverifikasi dan diterbitkan sah.',
+        timestamp: '1 jam yang lalu',
+        category: 'letter',
+        read: true,
+        priority: 'info',
+        targetTab: 'letters',
+        actionLabel: 'Buka Surat',
+      })
+    }
+
+    if (pendingFarmsCount > 0) {
+      items.push({
+        id: 'notif-farms',
+        title: `Verifikasi Lahan Pala (${pendingFarmsCount} Plot Baru)`,
+        description: `${pendingFarmsCount} plot perkebunan pala diajukan oleh Poktan Dusun Lonthoir & Ratu untuk sinkronisasi kadastral PostGIS.`,
+        timestamp: '25 menit yang lalu',
+        category: 'farm',
+        read: false,
+        priority: 'high',
+        targetTab: 'farming',
+        actionLabel: 'Validasi Lahan',
+      })
+    } else {
+      items.push({
+        id: 'notif-farms-ok',
+        title: 'Sertifikasi Spasial Kebun Rempah',
+        description: '35 plot kebun rempah pala terverifikasi kadastral dan siap untuk pemantauan panen.',
+        timestamp: '2 jam yang lalu',
+        category: 'farm',
+        read: true,
+        priority: 'info',
+        targetTab: 'farming',
+        actionLabel: 'Peta Lahan',
+      })
+    }
+
+    items.push({
+      id: 'notif-iot',
+      title: 'Telemetri IoT 4 Stasiun Normal',
+      description: 'Stasiun Neira, Lonthoir, Ay, dan Rhun melaporkan kemurnian air RO 38 PPM (Standar WHO) & daya PLTS 100%.',
+      timestamp: '40 menit yang lalu',
+      category: 'iot',
+      read: false,
+      priority: 'normal',
+      targetTab: 'iot',
+      actionLabel: 'Pantau IoT',
+    })
+
+    items.push({
+      id: 'notif-coop',
+      title: 'Sirkularitas Koperasi Hatta',
+      description: 'Penyetoran sampah plastik warga terkonversi menjadi kuota air minum RO bersih di dispenser pintar desa.',
+      timestamp: '3 jam yang lalu',
+      category: 'coop',
+      read: true,
+      priority: 'normal',
+      targetTab: 'koperasi',
+      actionLabel: 'Buka Kasir',
+    })
+
+    items.push({
+      id: 'notif-trace',
+      title: 'Rantai Pasok Pala Terjangkar EVM',
+      description: 'Batch BND-2026-03 tervalidasi hash SHA-256 kanonikal tanpa data pribadi pada ledger konsorsium.',
+      timestamp: '5 jam yang lalu',
+      category: 'blockchain',
+      read: true,
+      priority: 'info',
+      targetTab: 'traceability',
+      actionLabel: 'Cek Pasok',
+    })
+
+    if (!isOnline) {
+      items.unshift({
+        id: 'notif-offline',
+        title: 'Mode Operasi Offline Aktif',
+        description: 'Koneksi jaringan kepulauan terputus. Sistem beralih ke cache lokal PWA dan mutasi antrean tersimpan aman.',
+        timestamp: 'Baru saja',
+        category: 'system',
+        read: false,
+        priority: 'high',
+        actionLabel: 'Info Jaringan',
+      })
+    } else if (pendingSyncCount > 0) {
+      items.unshift({
+        id: 'notif-sync',
+        title: `Sinkronisasi Data Lokal (${pendingSyncCount} Item)`,
+        description: `${pendingSyncCount} transaksi offline siap disinkronkan ke server komando pusat.`,
+        timestamp: 'Baru saja',
+        category: 'system',
+        read: false,
+        priority: 'high',
+        actionLabel: 'Sinkronkan',
+      })
+    }
+
+    return items
+  }, [adminPendingLettersCount, pendingFarmsCount, pendingSyncCount, isOnline])
+
+  const [notifications, setNotifications] = useState<EcosystemNotificationItem[]>(initialNotifications)
+
+  useEffect(() => {
+    setNotifications((prev) => {
+      const prevReadMap = new Map(prev.map((p) => [p.id, p.read]))
+      return initialNotifications.map((item) => ({
+        ...item,
+        read: prevReadMap.has(item.id) ? Boolean(prevReadMap.get(item.id)) : item.read,
+      }))
+    })
+  }, [initialNotifications])
+
+  const unreadNotificationsCount = notifications.filter((n) => !n.read).length
+
+  const markAllNotificationsAsRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
+  }
+
+  const markNotificationAsRead = (id: string) => {
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
+  }
+
+  const dismissNotification = (id: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id))
+  }
+
+  const clearAllNotifications = () => {
+    setNotifications([])
+  }
+
+  const filteredNotifications = notifications.filter((item) => {
+    if (notificationFilter === 'unread') return !item.read
+    if (notificationFilter === 'letters') return item.category === 'letter' || item.category === 'farm'
+    if (notificationFilter === 'system') return item.category === 'iot' || item.category === 'system' || item.category === 'blockchain'
+    return true
+  })
+
+  const getCategoryIcon = (category: EcosystemNotificationItem['category']) => {
+    switch (category) {
+      case 'letter':
+        return <Mail size={14} className="text-blue-600" />
+      case 'farm':
+        return <Sprout size={14} className="text-emerald-600" />
+      case 'iot':
+        return <Radio size={14} className="text-sky-600" />
+      case 'coop':
+        return <Scale size={14} className="text-amber-700" />
+      case 'blockchain':
+        return <ShieldCheck size={14} className="text-purple-600" />
+      case 'system':
+      default:
+        return <AlertCircle size={14} className="text-rose-600" />
+    }
+  }
+
+  const getCategoryBadgeStyle = (category: EcosystemNotificationItem['category']) => {
+    switch (category) {
+      case 'letter':
+        return 'bg-blue-50 border-blue-200'
+      case 'farm':
+        return 'bg-emerald-50 border-emerald-200'
+      case 'iot':
+        return 'bg-sky-50 border-sky-200'
+      case 'coop':
+        return 'bg-amber-50 border-amber-200'
+      case 'blockchain':
+        return 'bg-purple-50 border-purple-200'
+      case 'system':
+      default:
+        return 'bg-rose-50 border-rose-200'
+    }
+  }
 
   // Definisi Item Navigasi Workspace
   interface SidebarItem {
@@ -334,9 +583,170 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       icon: ShieldCheck,
       visible: !isSmartTourismAdmin && isOfficerOrAdmin,
     },
+    {
+      id: 'marketplace',
+      label: 'Katalog Marketplace Rempah',
+      shortLabel: 'Marketplace',
+      icon: ShoppingBag,
+      visible: true,
+    },
   ]
 
   const visibleItems = sidebarNavItems.filter((item) => item.visible)
+
+  // 5 Pilar Pengelompokan Khusus Super Administrator
+  interface AdminSidebarSubItem {
+    id: DashboardNavTab
+    label: string
+    shortLabel: string
+    icon: React.ComponentType<{ size?: number; className?: string }>
+    badge?: number | string
+    action?: () => void
+  }
+
+  interface AdminSidebarGroup {
+    id: string
+    title: string
+    icon: React.ComponentType<{ size?: number; className?: string }>
+    items: AdminSidebarSubItem[]
+  }
+
+  const adminSidebarGroups: AdminSidebarGroup[] = [
+    {
+      id: 'group-gov',
+      title: 'Tata Kelola Kependudukan',
+      icon: Users,
+      items: [
+        {
+          id: 'population',
+          label: 'Verifikasi NIK & Penduduk',
+          shortLabel: 'Penduduk',
+          icon: Users,
+        },
+        {
+          id: 'letters',
+          label: 'Approval & Pelayanan Surat',
+          shortLabel: 'Surat',
+          icon: Mail,
+          badge: adminPendingLettersCount > 0 ? adminPendingLettersCount : undefined,
+        },
+      ],
+    },
+    {
+      id: 'group-agri',
+      title: 'Pertanian & Traceability',
+      icon: Sprout,
+      items: [
+        {
+          id: 'farming',
+          label: 'Plot Kebun GIS Poktan',
+          shortLabel: 'Kebun',
+          icon: MapPin,
+          badge: pendingFarmsCount > 0 ? pendingFarmsCount : undefined,
+        },
+        {
+          id: 'traceability',
+          label: 'Panen & Batch Blockchain',
+          shortLabel: 'Rempah',
+          icon: Sprout,
+        },
+        {
+          id: 'gis',
+          label: 'Peta Spasial GIS 7-Layer',
+          shortLabel: 'Peta GIS',
+          icon: Layers,
+        },
+      ],
+    },
+    {
+      id: 'group-coop',
+      title: 'Keuangan & Koperasi',
+      icon: Scale,
+      items: [
+        {
+          id: 'koperasi',
+          label: 'Kasir Koperasi Hatta',
+          shortLabel: 'Kasir',
+          icon: Scale,
+        },
+        {
+          id: 'marketplace',
+          label: 'Kelola Marketplace Rempah',
+          shortLabel: 'Marketplace',
+          icon: ShoppingBag,
+        },
+      ],
+    },
+    {
+      id: 'group-tourism',
+      title: 'Pariwisata & Budaya',
+      icon: Home,
+      items: [
+        {
+          id: 'tourism',
+          label: 'Cagar Budaya & Eco-Stay',
+          shortLabel: 'Cagar',
+          icon: Home,
+          action: () => {
+            setPreferredTourismSubTab('accommodations')
+            onSelectTab('tourism')
+          },
+        },
+        {
+          id: 'tourism',
+          label: 'CMS Draf Artikel Sejarah',
+          shortLabel: 'Artikel',
+          icon: BookOpen,
+          action: () => {
+            setPreferredTourismSubTab('cms')
+            onSelectTab('tourism')
+          },
+        },
+        {
+          id: 'smart_planner',
+          label: 'Perencana Wisata Cerdas DSS',
+          shortLabel: 'Smart DSS',
+          icon: Compass,
+        },
+      ],
+    },
+    {
+      id: 'group-iot-sec',
+      title: 'IoT & Keamanan Sistem',
+      icon: ShieldCheck,
+      items: [
+        {
+          id: 'iot',
+          label: 'Telemetri IoT 4 Stasiun',
+          shortLabel: 'IoT Cuaca',
+          icon: Radio,
+        },
+        {
+          id: 'audit',
+          label: 'Jejak Audit & Ledger EVM',
+          shortLabel: 'Audit',
+          icon: ShieldCheck,
+        },
+        {
+          id: 'survei',
+          label: 'Survei Lapangan & Spatial ETL',
+          shortLabel: 'Survei',
+          icon: Database,
+        },
+      ],
+    },
+  ]
+
+  // Buka otomatis grup yang memuat activeTab
+  useEffect(() => {
+    if (!isAdmin) return
+    adminSidebarGroups.forEach((g) => {
+      const containsActive = g.items.some((it) => it.id === activeTab)
+      if (containsActive) {
+        setOpenAdminGroups((prev) => ({ ...prev, [g.id]: true }))
+      }
+    })
+  }, [activeTab, isAdmin])
 
   interface QuickSearchResult {
     id: string
@@ -769,16 +1179,16 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
         {/* --- 2.2 DAFTAR WORKSPACE UTAMA --- */}
         <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1 custom-scrollbar">
-          {visibleItems.map((item) => {
-            const Icon = item.icon
-            const isActive = activeTab === item.id
-
-            return (
+          {isAdmin ? (
+            /* =========================================================
+               TAMPILAN KHUSUS SUPER ADMINISTRATOR (ACCORDION 5 PILAR)
+            ========================================================= */
+            <>
+              {/* Tombol Utama: Dashboard Pusat Komando */}
               <button
-                key={item.id}
                 type="button"
                 onClick={() => {
-                  onSelectTab(item.id)
+                  onSelectTab('dashboard')
                   setMobileSidebarOpen(false)
                 }}
                 className={`w-full flex items-center rounded-xl text-xs font-medium transition-all group relative ${
@@ -786,143 +1196,255 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     ? 'justify-center py-2.5 px-0 h-11'
                     : 'gap-3.5 px-3 py-2.5 text-left'
                 } ${
-                  isActive
+                  activeTab === 'dashboard'
                     ? 'bg-[#0F2C59] text-white font-bold shadow-xs'
                     : 'text-slate-300 hover:text-white hover:bg-white/5'
                 }`}
               >
-                {/* Indikator Bar Vertikal Emas (#F4B75E) Aktif di Border Kiri Sesuai Gambar Referensi */}
-                {isActive && (
+                {activeTab === 'dashboard' && (
                   <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-5 bg-[#F4B75E] rounded-r-full shadow-xs" />
                 )}
-
-                {/* Icon Menu */}
-                <Icon
+                <LayoutDashboard
                   size={19}
                   className={`shrink-0 transition-colors ${
-                    isActive ? 'text-[#F4B75E]' : 'text-slate-400 group-hover:text-white'
+                    activeTab === 'dashboard' ? 'text-[#F4B75E]' : 'text-slate-400 group-hover:text-white'
                   }`}
                 />
-
-                {/* Label Menu (Jika Expanded) */}
                 {!collapsed && (
-                  <span className="truncate flex-1 text-[13px] tracking-tight">{item.label}</span>
+                  <span className="truncate flex-1 text-[13px] tracking-tight">Dashboard Komando</span>
                 )}
-
-                {/* Badge Angka (Jika ada) */}
-                {!collapsed && item.badge !== undefined && (
-                  <span className="size-5 rounded-full bg-[#F4B75E] text-[#081D35] font-bold text-[10px] flex items-center justify-center shrink-0">
-                    {item.badge}
-                  </span>
-                )}
-
-                {/* Tooltip Floating Sesuai Gambar Referensi (Saat Collapsed) */}
                 {collapsed && (
                   <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0F2C59] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                    {item.label}
+                    Dashboard Komando
                   </div>
                 )}
               </button>
-            )
-          })}
+
+              {/* Pemisah Label Kategori Pilar Komando */}
+              {!collapsed && (
+                <div className="pt-3 pb-1 px-2 flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-[#F4B75E]/90 border-b border-[#1E3A5F]/60 mb-1">
+                  <span>5 Pilar Komando</span>
+                  <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">Super Admin</span>
+                </div>
+              )}
+
+              {/* 5 Grup Accordion Pilar Komando */}
+              {adminSidebarGroups.map((group) => {
+                const GroupIcon = group.icon
+                const isOpen = openAdminGroups[group.id] || false
+                const isAnyItemActive = group.items.some((it) => it.id === activeTab)
+                const groupTotalBadge = group.items.reduce(
+                  (acc, it) => acc + (typeof it.badge === 'number' ? it.badge : 0),
+                  0
+                )
+
+                return (
+                  <div key={group.id} className="space-y-1 pt-1">
+                    {/* Header Grup Dropdown */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (collapsed) {
+                          setCollapsed(false)
+                        } else {
+                          toggleAdminGroup(group.id)
+                        }
+                      }}
+                      className={`w-full flex items-center rounded-xl text-xs font-semibold transition-all group relative ${
+                        collapsed
+                          ? 'justify-center py-2.5 px-0 h-11'
+                          : 'gap-3 px-3 py-2 text-left'
+                      } ${
+                        isAnyItemActive
+                          ? 'text-white bg-white/5 border border-white/10'
+                          : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      <GroupIcon
+                        size={18}
+                        className={`shrink-0 transition-colors ${
+                          isAnyItemActive ? 'text-[#F4B75E]' : 'text-slate-400 group-hover:text-white'
+                        }`}
+                      />
+                      {!collapsed && (
+                        <>
+                          <span className="truncate flex-1 text-[12px] font-bold tracking-tight">
+                            {group.title}
+                          </span>
+                          {groupTotalBadge > 0 && (
+                            <span className="size-4.5 rounded-full bg-[#F4B75E] text-[#081D35] font-black text-[9px] flex items-center justify-center shrink-0">
+                              {groupTotalBadge}
+                            </span>
+                          )}
+                          <ChevronDown
+                            size={14}
+                            className={`text-slate-400 transition-transform duration-200 shrink-0 ${
+                              isOpen ? 'rotate-180 text-[#F4B75E]' : ''
+                            }`}
+                          />
+                        </>
+                      )}
+                      {collapsed && (
+                        <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0F2C59] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                          {group.title}
+                        </div>
+                      )}
+                    </button>
+
+                    {/* Sub-Items Dropdown */}
+                    {isOpen && !collapsed && (
+                      <div className="ml-3 pl-2.5 border-l-2 border-[#1E3A5F] space-y-1 my-1 animate-fade-in">
+                        {group.items.map((subItem, sIdx) => {
+                          const SubIcon = subItem.icon
+                          const isSubActive = activeTab === subItem.id
+
+                          return (
+                            <button
+                              key={`${subItem.id}-${sIdx}`}
+                              type="button"
+                              onClick={() => {
+                                if (subItem.action) {
+                                  subItem.action()
+                                } else {
+                                  onSelectTab(subItem.id)
+                                }
+                                setMobileSidebarOpen(false)
+                              }}
+                              className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs transition text-left relative ${
+                                isSubActive
+                                  ? 'bg-[#0F2C59] text-[#F4B75E] font-bold shadow-xs'
+                                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+                              }`}
+                            >
+                              {isSubActive && (
+                                <span className="absolute -left-[11px] top-1/2 -translate-y-1/2 size-1.5 bg-[#F4B75E] rounded-full" />
+                              )}
+                              <SubIcon
+                                size={15}
+                                className={isSubActive ? 'text-[#F4B75E]' : 'text-slate-400'}
+                              />
+                              <span className="truncate flex-1 text-[11px]">
+                                {subItem.label}
+                              </span>
+                              {subItem.badge !== undefined && (
+                                <span className="px-1.5 py-0.5 rounded-full bg-[#F4B75E] text-[#081D35] font-black text-[9px] shrink-0">
+                                  {subItem.badge}
+                                </span>
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </>
+          ) : (
+            /* =========================================================
+               TAMPILAN FLAT MINIMALIS UNTUK ROLE NON-ADMIN
+            ========================================================= */
+            visibleItems.map((item) => {
+              const Icon = item.icon
+              const isActive = activeTab === item.id
+
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => {
+                    onSelectTab(item.id)
+                    setMobileSidebarOpen(false)
+                  }}
+                  className={`w-full flex items-center rounded-xl text-xs font-medium transition-all group relative ${
+                    collapsed
+                      ? 'justify-center py-2.5 px-0 h-11'
+                      : 'gap-3.5 px-3 py-2.5 text-left'
+                  } ${
+                    isActive
+                      ? 'bg-[#0F2C59] text-white font-bold shadow-xs'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  {/* Indikator Bar Vertikal Emas (#F4B75E) Aktif di Border Kiri Sesuai Gambar Referensi */}
+                  {isActive && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-5 bg-[#F4B75E] rounded-r-full shadow-xs" />
+                  )}
+
+                  {/* Icon Menu */}
+                  <Icon
+                    size={19}
+                    className={`shrink-0 transition-colors ${
+                      isActive ? 'text-[#F4B75E]' : 'text-slate-400 group-hover:text-white'
+                    }`}
+                  />
+
+                  {/* Label Menu (Jika Expanded) */}
+                  {!collapsed && (
+                    <span className="truncate flex-1 text-[13px] tracking-tight">{item.label}</span>
+                  )}
+
+                  {/* Badge Angka (Jika ada) */}
+                  {!collapsed && item.badge !== undefined && (
+                    <span className="size-5 rounded-full bg-[#F4B75E] text-[#081D35] font-bold text-[10px] flex items-center justify-center shrink-0">
+                      {item.badge}
+                    </span>
+                  )}
+
+                  {/* Tooltip Floating Sesuai Gambar Referensi (Saat Collapsed) */}
+                  {collapsed && (
+                    <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0F2C59] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                      {item.label}
+                    </div>
+                  )}
+                </button>
+              )
+            })
+          )}
 
           {/* --- 2.3 GARIS PEMISAH TIPIS ELEGAN SESUAI PALET (#1E3A5F) & UTILITAS --- */}
           {!isSmartTourismAdmin && (
             <>
               <div className="my-3 border-t border-[#1E3A5F] mx-1" />
 
-              {/* Notification Item dengan Badge Emas/Hijau Sesuai Gambar */}
+              {/* Help & Pusat Bantuan Workspace Item */}
               <button
                 type="button"
                 onClick={() => {
-                  setShowNotificationToast(true)
-                  setTimeout(() => setShowNotificationToast(false), 3500)
-                }}
-                className={`w-full flex items-center rounded-xl text-xs font-medium transition-all group relative ${
-                  collapsed
-                    ? 'justify-center py-2.5 px-0 h-11'
-                    : 'gap-3.5 px-3 py-2.5 text-left'
-                } text-slate-300 hover:text-white hover:bg-white/5`}
-              >
-                <div className="relative shrink-0">
-                  <Bell size={19} className="text-slate-400 group-hover:text-[#F4B75E] transition-colors" />
-                  {/* Green/Gold Dot di collapsed mode seperti gambar referensi */}
-                  {collapsed && (
-                    <span className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-[#F4B75E]" />
-                  )}
-                </div>
-
-                {!collapsed && (
-                  <>
-                    <span className="truncate flex-1 text-[13px] tracking-tight text-slate-300 group-hover:text-white">
-                      Notification
-                    </span>
-                    {/* Circle Badge persis seperti di gambar referensi */}
-                    <span className="size-5 rounded-full bg-[#F4B75E] text-[#081D35] font-bold text-[10px] flex items-center justify-center shrink-0 shadow-xs">
-                      {totalNotifications}
-                    </span>
-                  </>
-                )}
-
-                {collapsed && (
-                  <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0F2C59] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                    Notification ({totalNotifications})
-                  </div>
-                )}
-              </button>
-
-              {/* Documents Item */}
-              <button
-                type="button"
-                onClick={() => {
-                  onPublicVerify()
+                  onSelectTab('help')
                   setMobileSidebarOpen(false)
                 }}
                 className={`w-full flex items-center rounded-xl text-xs font-medium transition-all group relative ${
                   collapsed
                     ? 'justify-center py-2.5 px-0 h-11'
                     : 'gap-3.5 px-3 py-2.5 text-left'
-                } text-slate-300 hover:text-white hover:bg-white/5`}
+                } ${
+                  activeTab === 'help'
+                    ? 'bg-[#0F2C59] text-white font-bold shadow-xs'
+                    : 'text-slate-300 hover:text-white hover:bg-white/5'
+                }`}
               >
-                <FileText size={19} className="shrink-0 text-slate-400 group-hover:text-[#F4B75E] transition-colors" />
+                {/* Indikator Bar Vertikal Emas (#F4B75E) Aktif di Border Kiri */}
+                {activeTab === 'help' && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-5 bg-[#F4B75E] rounded-r-full shadow-xs" />
+                )}
+
+                <HelpCircle
+                  size={19}
+                  className={`shrink-0 transition-colors ${
+                    activeTab === 'help' ? 'text-[#F4B75E]' : 'text-slate-400 group-hover:text-white'
+                  }`}
+                />
 
                 {!collapsed && (
-                  <span className="truncate flex-1 text-[13px] tracking-tight text-slate-300 group-hover:text-white">
-                    Documents
+                  <span className="truncate flex-1 text-[13px] tracking-tight">
+                    Pusat Bantuan (Help)
                   </span>
                 )}
 
                 {collapsed && (
                   <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0F2C59] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                    Documents &amp; Verifikasi
-                  </div>
-                )}
-              </button>
-
-              {/* Help Item */}
-              <button
-                type="button"
-                onClick={() => {
-                  onOpenLanding()
-                  setMobileSidebarOpen(false)
-                }}
-                className={`w-full flex items-center rounded-xl text-xs font-medium transition-all group relative ${
-                  collapsed
-                    ? 'justify-center py-2.5 px-0 h-11'
-                    : 'gap-3.5 px-3 py-2.5 text-left'
-                } text-slate-300 hover:text-white hover:bg-white/5`}
-              >
-                <HelpCircle size={19} className="shrink-0 text-slate-400 group-hover:text-[#F4B75E] transition-colors" />
-
-                {!collapsed && (
-                  <span className="truncate flex-1 text-[13px] tracking-tight text-slate-300 group-hover:text-white">
-                    Help
-                  </span>
-                )}
-
-                {collapsed && (
-                  <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0F2C59] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                    Help &amp; Beranda Desa
+                    Pusat Bantuan &amp; Panduan
                   </div>
                 )}
               </button>
@@ -1076,28 +1598,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           )}
         </div>
       </aside>
-
-      {/* TOAST PEMBERITAHUAN SAAT NOTIFIKASI DIKLIK */}
-      {showNotificationToast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#081D35] text-white border border-[#1E3A5F] px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-3 duration-200">
-          <div className="size-8 rounded-full bg-[#F4B75E]/20 text-[#F4B75E] flex items-center justify-center">
-            <Bell size={16} />
-          </div>
-          <div>
-            <p className="text-xs font-bold text-white">Notifikasi Ekosistem Aktif</p>
-            <p className="text-[11px] text-slate-300">
-              Ada {totalNotifications} antrean layanan surat &amp; verifikasi kebun yang memerlukan tindak lanjut.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowNotificationToast(false)}
-            className="text-slate-400 hover:text-white ml-2"
-          >
-            <X size={16} />
-          </button>
-        </div>
-      )}
 
       {/* =====================================================================
           3. AREA KONTEN UTAMA (DI KANAN SIDEBAR)
@@ -1396,15 +1896,23 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               </span>
             </div>
 
-            {/* b. Tombol Toggle Dark/Light Mode (Ikon Bulan) */}
+            {/* b. Tombol Toggle Dark/Light Mode (Theme Switcher) dengan Micro-Interaction */}
             <button
               type="button"
               onClick={() => setIsDarkMode(!isDarkMode)}
-              className="p-2 rounded-xl text-slate-500 hover:text-[#081D35] hover:bg-slate-100 transition cursor-pointer"
-              title={isDarkMode ? 'Beralih ke Mode Terang' : 'Beralih ke Mode Gelap'}
-              aria-label="Mode Tampilan"
+              className={`p-2 rounded-xl transition cursor-pointer relative group flex items-center justify-center ${
+                isDarkMode
+                  ? 'bg-[#0F2C59] text-[#F4B75E] hover:bg-[#1E3A5F] shadow-xs border border-[#1E3A5F]'
+                  : 'text-slate-500 hover:text-[#081D35] hover:bg-slate-100'
+              }`}
+              title={isDarkMode ? 'Mode Gelap Aktif (Klik untuk beralih ke Mode Terang)' : 'Mode Terang Aktif (Klik untuk beralih ke Mode Gelap)'}
+              aria-label="Toggle Tema Gelap/Terang"
             >
-              {isDarkMode ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} />}
+              {isDarkMode ? (
+                <Sun size={18} className="text-[#F4B75E] transition-transform duration-300 hover:rotate-90" />
+              ) : (
+                <Moon size={18} className="text-slate-600 transition-transform duration-300 hover:-rotate-12" />
+              )}
             </button>
 
             {/* c. Tombol Quick Menu / App Grid (Ikon Kotak 4) */}
@@ -1474,22 +1982,211 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               )}
             </div>
 
-            {/* d. Tombol Notifikasi (Ikon Lonceng) dengan Badge Angka Merah di Pojok Kanan Atas */}
-            <button
-              type="button"
-              onClick={() => {
-                setShowNotificationToast(true)
-                setTimeout(() => setShowNotificationToast(false), 3500)
-              }}
-              className="relative p-2 rounded-xl text-slate-500 hover:text-[#081D35] hover:bg-slate-100 transition cursor-pointer"
-              title="Pemberitahuan Ekosistem"
-              aria-label="Notifikasi"
-            >
-              <Bell size={18} />
-              <span className="absolute -top-0.5 -right-0.5 px-1 min-w-4 h-4 rounded-full bg-rose-500 text-white font-bold text-[9px] flex items-center justify-center shadow-xs">
-                {totalNotifications}
-              </span>
-            </button>
+            {/* d. Tombol Notifikasi (Ikon Lonceng) & Dropdown Pusat Pemberitahuan Ekosistem */}
+            <div className="relative" ref={notificationDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setShowNotificationDropdown(!showNotificationDropdown)}
+                className={`relative p-2 rounded-xl transition cursor-pointer ${
+                  showNotificationDropdown
+                    ? 'bg-[#081D35] text-[#F4B75E] shadow-xs'
+                    : 'text-slate-500 hover:text-[#081D35] hover:bg-slate-100'
+                }`}
+                title="Pemberitahuan Ekosistem Banda Neira"
+                aria-label="Pemberitahuan Ekosistem"
+              >
+                <Bell size={18} />
+                {unreadNotificationsCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 px-1 min-w-4 h-4 rounded-full bg-rose-500 text-white font-bold text-[9px] flex items-center justify-center shadow-xs animate-pulse">
+                    {unreadNotificationsCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Dropdown Popover Pusat Notifikasi */}
+              {showNotificationDropdown && (
+                <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-2xl border border-slate-200/90 shadow-2xl z-50 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
+                  {/* Header */}
+                  <div className="p-4 bg-gradient-to-r from-[#081D35] to-[#0f2c59] text-white flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 rounded-lg bg-white/10 text-[#F4B75E]">
+                        <Bell size={16} />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold leading-tight flex items-center gap-1.5">
+                          <span>Pemberitahuan Ekosistem</span>
+                          {unreadNotificationsCount > 0 && (
+                            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-rose-500 text-white">
+                              {unreadNotificationsCount} Baru
+                            </span>
+                          )}
+                        </h4>
+                        <p className="text-[10px] text-slate-300">
+                          Aktivitas layanan desa, IoT &amp; perkebunan
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      {unreadNotificationsCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={markAllNotificationsAsRead}
+                          className="px-2 py-1 rounded-lg text-slate-300 hover:text-[#F4B75E] hover:bg-white/10 transition cursor-pointer text-[11px] flex items-center gap-1"
+                          title="Tandai semua sudah dibaca"
+                        >
+                          <CheckCheck size={13} />
+                          <span className="hidden sm:inline text-[10px]">Tandai Dibaca</span>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setShowNotificationDropdown(false)}
+                        className="p-1 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition cursor-pointer"
+                      >
+                        <X size={15} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Filter Chips */}
+                  <div className="px-3 py-2 bg-slate-50 border-b border-slate-100 flex items-center gap-1 overflow-x-auto text-[11px]">
+                    {[
+                      { key: 'all', label: `Semua (${notifications.length})` },
+                      { key: 'unread', label: `Belum Dibaca (${unreadNotificationsCount})` },
+                      { key: 'letters', label: 'Layanan Desa' },
+                      { key: 'system', label: 'IoT & Sistem' },
+                    ].map((tab) => {
+                      const active = notificationFilter === tab.key
+                      return (
+                        <button
+                          key={tab.key}
+                          type="button"
+                          onClick={() => setNotificationFilter(tab.key as any)}
+                          className={`px-2.5 py-1 rounded-lg font-semibold transition shrink-0 cursor-pointer ${
+                            active
+                              ? 'bg-[#081D35] text-[#F4B75E] shadow-xs'
+                              : 'text-slate-600 hover:bg-slate-200/70'
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  {/* List of Notification Items */}
+                  <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+                    {filteredNotifications.length === 0 ? (
+                      <div className="py-10 px-4 text-center text-slate-400">
+                        <CheckCheck size={32} className="mx-auto mb-2 text-emerald-500 opacity-80" />
+                        <p className="text-xs font-bold text-slate-700">Tidak ada notifikasi aktif</p>
+                        <p className="text-[11px] text-slate-400 mt-0.5">
+                          Semua antrean layanan dan pemantauan sistem telah terselesaikan.
+                        </p>
+                      </div>
+                    ) : (
+                      filteredNotifications.map((item) => (
+                        <div
+                          key={item.id}
+                          className={`p-3.5 transition flex gap-3 relative group ${
+                            item.read ? 'bg-white hover:bg-slate-50/80' : 'bg-blue-50/40 hover:bg-blue-50/60'
+                          }`}
+                        >
+                          {/* Indicator dot */}
+                          {!item.read && (
+                            <span className="absolute left-1.5 top-4 size-1.5 rounded-full bg-blue-600 shrink-0" />
+                          )}
+
+                          {/* Icon Category */}
+                          <div className="shrink-0 pt-0.5">
+                            <div className={`p-2 rounded-xl border ${getCategoryBadgeStyle(item.category)}`}>
+                              {getCategoryIcon(item.category)}
+                            </div>
+                          </div>
+
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-1 mb-0.5">
+                              <h5 className={`text-xs font-bold leading-snug line-clamp-1 ${item.read ? 'text-slate-700' : 'text-[#081D35]'}`}>
+                                {item.title}
+                              </h5>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  dismissNotification(item.id)
+                                }}
+                                className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-slate-600 p-0.5 transition cursor-pointer"
+                                title="Hapus pemberitahuan"
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+
+                            <p className="text-[11px] text-slate-500 leading-relaxed line-clamp-2 mb-2">
+                              {item.description}
+                            </p>
+
+                            <div className="flex items-center justify-between text-[10px]">
+                              <span className="text-slate-400 flex items-center gap-1 font-medium">
+                                <Clock size={10} />
+                                <span>{item.timestamp}</span>
+                              </span>
+
+                              <div className="flex items-center gap-1.5">
+                                {!item.read && (
+                                  <button
+                                    type="button"
+                                    onClick={() => markNotificationAsRead(item.id)}
+                                    className="text-slate-400 hover:text-blue-600 font-bold transition px-1 py-0.5 rounded cursor-pointer"
+                                    title="Tandai sudah dibaca"
+                                  >
+                                    Dibaca
+                                  </button>
+                                )}
+                                {item.targetTab && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (item.targetTab) onSelectTab(item.targetTab)
+                                      markNotificationAsRead(item.id)
+                                      setShowNotificationDropdown(false)
+                                    }}
+                                    className="px-2 py-0.8 rounded-md bg-[#081D35] hover:bg-[#0c2a4d] text-[#F4B75E] font-bold flex items-center gap-1 shadow-2xs transition cursor-pointer"
+                                  >
+                                    <span>{item.actionLabel || 'Buka'}</span>
+                                    <ArrowRight size={10} />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Footer */}
+                  <div className="p-2.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium px-4">
+                    <span className="flex items-center gap-1.5">
+                      <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>Real-time Kepulauan</span>
+                    </span>
+                    {notifications.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={clearAllNotifications}
+                        className="text-slate-400 hover:text-rose-600 transition flex items-center gap-1 cursor-pointer"
+                      >
+                        <Trash2 size={11} />
+                        <span>Bersihkan</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 

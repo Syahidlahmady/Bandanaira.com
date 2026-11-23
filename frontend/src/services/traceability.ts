@@ -56,6 +56,11 @@ export interface PublicBatchVerification {
     event_hash: string
   }[]
   qr_code_base64: string
+  contract_address?: string
+  transaction_hash?: string
+  block_number?: number
+  latest_db_hash?: string
+  on_chain_hash?: string
 }
 
 export interface BlockchainTransaction {
