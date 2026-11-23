@@ -8,8 +8,6 @@ export interface BandaUnifiedFooterProps {
 
 export const BandaUnifiedFooter: React.FC<BandaUnifiedFooterProps> = ({
   onNavigateTab,
-  onOpenLogin,
-  onOpenQuickLogin,
 }) => {
   return (
     <footer className="w-full bg-[#081D35] text-white pt-16 pb-8 px-6 sm:px-12 lg:px-20 border-t border-white/10 mt-auto">
@@ -57,7 +55,7 @@ export const BandaUnifiedFooter: React.FC<BandaUnifiedFooterProps> = ({
           </div>
 
           {/* Nav Links Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 flex-1 max-w-[680px]">
+          <div className="grid grid-cols-2 gap-8 flex-1 max-w-[500px]">
             <div className="flex flex-col gap-3">
               <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400">
                 Jelajahi Banda
@@ -95,24 +93,6 @@ export const BandaUnifiedFooter: React.FC<BandaUnifiedFooterProps> = ({
                 <button type="button" onClick={() => onNavigateTab && onNavigateTab('letters')} className="text-left hover:text-white transition-colors">
                   Layanan Surat Warga
                 </button>
-              </nav>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400">
-                Akses Akun
-              </h4>
-              <nav className="flex flex-col gap-2 text-xs text-[#c1ced8]">
-                {onOpenLogin && (
-                  <button type="button" onClick={onOpenLogin} className="text-left hover:text-white transition-colors">
-                    Masuk / Login
-                  </button>
-                )}
-                {onOpenQuickLogin && (
-                  <button type="button" onClick={onOpenQuickLogin} className="text-left hover:text-white transition-colors">
-                    ⚡ Simulasi Peran (Operator)
-                  </button>
-                )}
               </nav>
             </div>
           </div>

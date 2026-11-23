@@ -34,20 +34,11 @@ export const defaultFooterLinkGroups: FooterLinkGroup[] = [
       { label: 'Direktori Eco-Stay', tab: 'tourism' },
     ],
   },
-  {
-    title: 'Akses akun',
-    links: [
-      { label: 'Masuk / Login', action: 'login' },
-      { label: 'Penduduk', tab: 'letters' },
-      { label: 'Mitra homestay', tab: 'tourism' },
-      { label: 'Operator', action: 'quicklogin' },
-    ],
-  },
 ]
 
 export interface LandingFooterSectionProps {
   onNavigate: (tab: any) => void
-  onOpenLogin: () => void
+  onOpenLogin?: () => void
   onOpenQuickLogin?: () => void
   setActiveNav?: (href: string) => void
   footerGroups?: FooterLinkGroup[]
@@ -81,16 +72,6 @@ export const LandingFooterSection: React.FC<LandingFooterSectionProps> = ({
           { label: t.footer.navSmes, href: '#layanan-umkm' },
           { label: t.footer.navCoop, tab: 'koperasi' },
           { label: t.footer.navStays, tab: 'tourism' },
-        ],
-      },
-      {
-        title: t.footer.groupAccess,
-        links: [
-          { label: t.footer.registerNew, action: 'register' },
-          { label: t.footer.signIn, action: 'login' },
-          { label: t.footer.resident, tab: 'letters' },
-          { label: t.footer.homestayPartner, tab: 'tourism' },
-          { label: t.footer.operator, action: 'quicklogin' },
         ],
       },
     ]
@@ -141,7 +122,7 @@ export const LandingFooterSection: React.FC<LandingFooterSectionProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 flex-1 w-full">
+        <div className="grid grid-cols-2 gap-8 flex-1 max-w-[500px]">
           {activeGroups.map((group) => (
             <nav
               className="flex flex-col items-start gap-[17px] relative flex-1 grow"
