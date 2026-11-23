@@ -1899,7 +1899,10 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
 
     setIsDeletingFeature(true)
     try {
-      await gisService.deleteFeature(featureId, token)
+      if (featureId && !featureId.startsWith('feat-')) {
+        await gisService.deleteFeature(featureId, token)
+      }
+      setFeatures((prev) => prev.filter((f) => f.id !== featureId && f.properties?.id !== featureId))
       setNotificationMsg({
         type: 'info',
         text: `Titik '${featureName}' berhasil dihapus dari database PostGIS.`,
