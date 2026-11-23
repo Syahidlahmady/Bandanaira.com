@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1'
+import { getApiBase } from './apiConfig'
 
 export interface Role {
   id: string
@@ -240,7 +240,7 @@ export const authService = {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
+      const res = await fetch(`${getApiBase()}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -304,7 +304,7 @@ export const authService = {
       return null
     }
     try {
-      const res = await fetch(`${API_BASE}/auth/refresh`, {
+      const res = await fetch(`${getApiBase()}/auth/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refresh_token: refreshToken }),
@@ -343,7 +343,7 @@ export const authService = {
       )
       if (matched) {
         try {
-          const res = await fetch(`${API_BASE}/auth/login`, {
+          const res = await fetch(`${getApiBase()}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -390,7 +390,7 @@ export const authService = {
       }
     }
     try {
-      let res = await fetch(`${API_BASE}/auth/me`, {
+      let res = await fetch(`${getApiBase()}/auth/me`, {
         headers: {
           Authorization: `Bearer ${activeToken}`,
         },
@@ -398,7 +398,7 @@ export const authService = {
       if (res.status === 401) {
         const refreshed = await this.ensureValidToken(true)
         if (refreshed && !refreshed.startsWith('offline-jwt-')) {
-          res = await fetch(`${API_BASE}/auth/me`, {
+          res = await fetch(`${getApiBase()}/auth/me`, {
             headers: {
               Authorization: `Bearer ${refreshed}`,
             },
@@ -495,7 +495,7 @@ export const authService = {
 
   async logout() {
     try {
-      await fetch(`${API_BASE}/auth/logout`, { method: 'POST' })
+      await fetch(`${getApiBase()}/auth/logout`, { method: 'POST' })
     } catch {
       // safe fallback if offline
     }

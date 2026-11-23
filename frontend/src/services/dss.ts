@@ -59,17 +59,7 @@ export interface CrisisPriorityWeights {
   weight_padam_listrik?: number
 }
 
-const getApiBase = () => {
-  const envUrl = import.meta.env?.VITE_API_BASE_URL
-  if (envUrl) return envUrl
-  if (typeof window !== 'undefined') {
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      return `http://${window.location.hostname}:8005/api/v1`
-    }
-    return `${window.location.origin}/api/v1`
-  }
-  return 'http://localhost:8005/api/v1'
-}
+import { getApiBase } from './apiConfig'
 
 export const dssService = {
   async getTourismAlternatives(): Promise<SAWAlternativeInput[]> {

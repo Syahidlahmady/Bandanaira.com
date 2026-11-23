@@ -58,6 +58,7 @@ import {
   VILLAGE_DETAILS,
   VillageInfo,
 } from '../data/bandaVillagesData'
+import { FALLBACK_SPATIAL_FEATURES } from '../data/bandaFeaturesData'
 
 export interface InteractiveMapWorkspaceProps {
   currentUser?: any
@@ -722,7 +723,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
   const isOfficerOrAdmin = isSuperuser || userRoleNames.some((r) => ['admin', 'village_officer'].includes(r))
 
   // State
-  const [features, setFeatures] = useState<GeoJSONFeature[]>([])
+  const [features, setFeatures] = useState<GeoJSONFeature[]>(() => FALLBACK_SPATIAL_FEATURES)
   const [loading, setLoading] = useState<boolean>(true)
   const [selectedFeature, setSelectedFeature] = useState<GeoJSONFeature | null>(null)
   const [is360ModalOpen, setIs360ModalOpen] = useState<boolean>(false)

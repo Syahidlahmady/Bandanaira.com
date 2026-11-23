@@ -1,4 +1,6 @@
 import { offlineDB } from '../offline/db'
+import { getApiBase } from './apiConfig'
+import { FALLBACK_SPATIAL_FEATURES } from '../data/bandaFeaturesData'
 
 export interface GeoJSONGeometry {
   type: string
@@ -89,18 +91,6 @@ export interface GeocodingResponse {
   results: GeocodingResult[]
 }
 
-const getApiBase = () => {
-  const envUrl = import.meta.env?.VITE_API_BASE_URL
-  if (envUrl) return envUrl
-  if (typeof window !== 'undefined') {
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-      return `http://${window.location.hostname}:8005/api/v1`
-    }
-    return `${window.location.origin}/api/v1`
-  }
-  return 'http://localhost:8005/api/v1'
-}
-
 export const gisService = {
   getLayers: async (params?: {
     layers?: string
@@ -121,7 +111,7 @@ export const gisService = {
       const data: GeoJSONFeatureCollection = await res.json()
 
       // Automatically cache full dataset in IndexedDB for seamless offline availability
-      if (isFullDataset) {
+      if (isFullDataset && data && data.features && data.features.length > 0) {
         try {
           await offlineDB.cacheData('gis_layers_all', data)
         } catch (cacheErr) {
@@ -131,13 +121,22 @@ export const gisService = {
 
       return data
     } catch (networkErr) {
-      // Offline fallback: try reading from IndexedDB
-      console.warn('Network fetch GIS gagal atau offline, mencoba membaca cache offline IndexedDB...', networkErr)
-      const cached = await offlineDB.getCachedData<GeoJSONFeatureCollection>('gis_layers_all')
-      if (cached && cached.features) {
-        return cached
+      // Offline fallback: try reading from IndexedDB or authentic fallback features
+      console.warn('Network fetch GIS gagal atau offline, menggunakan cache IndexedDB atau data autentik...', networkErr)
+      try {
+        const cached = await offlineDB.getCachedData<GeoJSONFeatureCollection>('gis_layers_all')
+        if (cached && cached.features && cached.features.length > 0) {
+          return cached
+        }
+      } catch {}
+
+      // Fallback to 89 authentic calibrated features so points NEVER disappear
+      return {
+        type: 'FeatureCollection',
+        features: FALLBACK_SPATIAL_FEATURES,
+        total_features: FALLBACK_SPATIAL_FEATURES.length,
+        active_layers: Array.from(new Set(FALLBACK_SPATIAL_FEATURES.map((f) => f.properties.layer_type))),
       }
-      throw new Error('Peta tidak dapat dimuat: Anda sedang offline dan data belum tersimpan di cache lokal perangkat.')
     }
   },
 

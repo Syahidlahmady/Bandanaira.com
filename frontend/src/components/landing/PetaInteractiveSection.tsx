@@ -43,7 +43,7 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
           <div className="flex-1 h-[1.5px] bg-[#0c2340]/80 min-w-[20px]" />
           <h2
             id="peta-heading"
-            className="font-serif text-3xl sm:text-5xl lg:text-[52px] text-[#0c2340] font-normal tracking-tight whitespace-nowrap text-center"
+            className="font-serif text-2xl sm:text-5xl lg:text-[52px] text-[#0c2340] font-normal tracking-tight whitespace-normal sm:whitespace-nowrap text-center"
           >
             {t.mapSection.heading}
           </h2>

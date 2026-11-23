@@ -37,7 +37,7 @@
   inset: 0;
   clip-path: inset(21% 29% 21% 29% round 24px);
   will-change: clip-path;
-  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.6);
+  box-shadow: none;
 }
 
 .scroll-expand__media {
