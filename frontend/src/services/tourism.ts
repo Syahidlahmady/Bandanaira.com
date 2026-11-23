@@ -255,14 +255,7 @@ export interface LiteracyGovernanceResponse {
 }
 
 import { authService } from './auth'
-
-const getApiBase = () => {
-  const envUrl = import.meta.env?.VITE_API_BASE_URL
-  if (envUrl) return envUrl
-  return typeof window !== 'undefined'
-    ? `${window.location.origin}/api/v1`
-    : 'http://localhost:8005/api/v1'
-}
+import { getApiBase } from './apiConfig'
 
 const getAuthHeaders = (hasBody = true): HeadersInit => {
   const token = authService.getAccessToken()
