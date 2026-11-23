@@ -182,8 +182,15 @@ export const gisService = {
       body: JSON.stringify(data),
     })
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      throw new Error(err.detail || 'Gagal menambahkan titik spasial')
+      const text = await res.text().catch(() => '')
+      let detail = ''
+      try {
+        const json = JSON.parse(text)
+        detail = json.detail || json.message
+      } catch {
+        detail = text
+      }
+      throw new Error(detail || `Gagal menambahkan titik spasial (${res.status})`)
     }
     return res.json()
   },
@@ -198,8 +205,15 @@ export const gisService = {
       body: JSON.stringify(data),
     })
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      throw new Error(err.detail || 'Gagal memperbarui titik spasial')
+      const text = await res.text().catch(() => '')
+      let detail = ''
+      try {
+        const json = JSON.parse(text)
+        detail = json.detail || json.message
+      } catch {
+        detail = text
+      }
+      throw new Error(detail || `Gagal memperbarui titik spasial (${res.status})`)
     }
     return res.json()
   },
@@ -212,8 +226,15 @@ export const gisService = {
       },
     })
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      throw new Error(err.detail || 'Gagal menghapus titik spasial')
+      const text = await res.text().catch(() => '')
+      let detail = ''
+      try {
+        const json = JSON.parse(text)
+        detail = json.detail || json.message
+      } catch {
+        detail = text
+      }
+      throw new Error(detail || `Gagal menghapus titik spasial (${res.status})`)
     }
     return res.json()
   },
