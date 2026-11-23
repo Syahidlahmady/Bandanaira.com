@@ -7,7 +7,6 @@ export interface BandaUnifiedNavbarProps {
   activeTab?: string
   onNavigateTab: (tab: any) => void
   onOpenLogin?: () => void
-  onOpenRegister?: () => void
   onOpenMarketplace?: () => void
   onLogout?: () => void
   isOnline?: boolean
@@ -18,7 +17,6 @@ export const BandaUnifiedNavbar: React.FC<BandaUnifiedNavbarProps> = ({
   activeTab = 'landing',
   onNavigateTab,
   onOpenLogin,
-  onOpenRegister,
   onLogout,
 }) => {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -140,20 +138,11 @@ export const BandaUnifiedNavbar: React.FC<BandaUnifiedNavbarProps> = ({
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              {onOpenRegister && (
-                <button
-                  type="button"
-                  onClick={onOpenRegister}
-                  className="hidden sm:inline-flex px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition-colors shadow-sm cursor-pointer"
-                >
-                  {t.navbar.register}
-                </button>
-              )}
               {onOpenLogin && (
                 <button
                   type="button"
                   onClick={onOpenLogin}
-                  className="px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold transition-colors shadow-sm cursor-pointer"
                 >
                   {t.navbar.signIn}
                 </button>
@@ -213,19 +202,6 @@ export const BandaUnifiedNavbar: React.FC<BandaUnifiedNavbarProps> = ({
 
           {/* Mobile Language Switcher */}
           <LanguageSwitcher variant="mobile" className="mt-1 mb-1" />
-
-          {!currentUser && onOpenRegister && (
-            <button
-              type="button"
-              onClick={() => {
-                onOpenRegister()
-                setMobileOpen(false)
-              }}
-              className="mt-2 py-2 text-center rounded-lg bg-amber-600 text-white text-xs font-bold"
-            >
-              {t.navbar.register}
-            </button>
-          )}
         </div>
       )}
     </header>

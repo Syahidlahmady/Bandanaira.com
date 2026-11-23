@@ -690,7 +690,7 @@ const ROLE_PROFILES: Record<RoleKey, RoleDashboardProfile> = {
       { title: 'Sensor Kalibrasi Mandiri', desc: 'Sensor TDS dan level air memiliki batas toleransi error < 2%.', icon: CheckCircle2, color: '#0284C7', bgColor: 'bg-sky-100' },
       { title: 'Tahan Cuaca & Tanpa Sinyal', desc: 'Data tersimpan di memori lokal saat jaringan seluler terputus.', icon: ShieldCheck, color: '#059669', bgColor: 'bg-emerald-100' },
       { title: 'Validasi JSON Schema Ketat', desc: 'Pipa ETL memeriksa tipe data sebelum masuk database PostGIS.', icon: RefreshCw, color: '#D97706', bgColor: 'bg-amber-100' },
-      { title: 'Algoritma Resiliensi Krisis Air', desc: 'DSS SAW Mode 2 memprioritaskan pasokan jika tandon kritis.', icon: FileCheck, color: '#7C3AED', bgColor: 'bg-purple-100' },
+      { title: 'Sistem Ketahanan Air Bersih', desc: 'Prioritas pasokan otomatis saat elevasi tandon air RO kritis.', icon: Droplets, color: '#0284C7', bgColor: 'bg-sky-100' },
     ],
     exportFilenamePrefix: 'data_telemetri_iot_bandanaira',
   },

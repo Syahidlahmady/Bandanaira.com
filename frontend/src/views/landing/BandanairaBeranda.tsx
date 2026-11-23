@@ -31,7 +31,6 @@ export type NavTabType =
 export interface BandanairaBerandaProps {
   onNavigate: (tab: NavTabType, slugOrParam?: string) => void
   onOpenLogin: () => void
-  onOpenRegister?: () => void
   onOpenMarketplace: () => void
   onPublicVerify: (token: string) => void
   currentUser: any
@@ -50,7 +49,6 @@ export interface BandanairaBerandaProps {
 export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
   onNavigate,
   onOpenLogin,
-  onOpenRegister,
   onOpenMarketplace,
   onPublicVerify,
   currentUser,
@@ -120,7 +118,6 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
       <HeroSection
         onNavigate={onNavigate}
         onOpenLogin={onOpenLogin}
-        onOpenRegister={onOpenRegister}
         currentUser={currentUser}
         onLogout={onLogout}
         activeNav={activeNav}
@@ -205,7 +202,6 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
           <LandingFooterSection
             onNavigate={onNavigate}
             onOpenLogin={onOpenLogin}
-            onOpenRegister={onOpenRegister}
             onOpenQuickLogin={onOpenQuickLogin}
             setActiveNav={setActiveNav}
           />

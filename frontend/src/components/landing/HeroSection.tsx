@@ -18,7 +18,6 @@ export const defaultNavigationItems = [
 export interface HeroSectionProps {
   onNavigate: (tab: any) => void
   onOpenLogin: () => void
-  onOpenRegister?: () => void
   currentUser: any
   onLogout?: () => void
   activeNav?: string
@@ -28,7 +27,6 @@ export interface HeroSectionProps {
 export const HeroSection: React.FC<HeroSectionProps> = ({
   onNavigate,
   onOpenLogin,
-  onOpenRegister,
   currentUser,
   onLogout,
   activeNav: externalActiveNav,
@@ -163,21 +161,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               </div>
             ) : (
               <div className="inline-flex items-center gap-1.5 sm:gap-2">
-                {onOpenRegister && (
-                  <button
-                    type="button"
-                    onClick={onOpenRegister}
-                    className="hidden sm:inline-flex h-9 sm:h-[42px] items-center px-4 py-0 bg-amber-600 hover:bg-amber-500 rounded-lg border border-solid border-[#f4b75e] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e] cursor-pointer"
-                  >
-                    <span className="font-semibold text-white text-xs tracking-[0] relative w-fit leading-none">
-                      {t.navbar.register}
-                    </span>
-                  </button>
-                )}
                 <button
                   type="button"
                   onClick={onOpenLogin}
-                  className="inline-flex h-9 sm:h-[42px] items-center px-3.5 sm:px-5 py-0 bg-[#d9770626] hover:bg-[#d9770640] rounded-lg border border-solid border-[#f4b75e] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e] cursor-pointer active:scale-95"
+                  className="inline-flex h-9 sm:h-[42px] items-center px-4 sm:px-6 py-0 bg-amber-600 hover:bg-amber-500 rounded-lg border border-solid border-[#f4b75e] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e] cursor-pointer active:scale-95"
                 >
                   <span className="font-semibold text-white text-xs tracking-[0] relative w-fit leading-none">
                     {t.navbar.signIn}
@@ -242,26 +229,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               {!currentUser && (
                 <>
                   <div className="h-px bg-white/15 my-1.5" />
-                  <div className="grid grid-cols-2 gap-2 pt-1">
-                    {onOpenRegister && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMobileMenuOpen(false)
-                          onOpenRegister()
-                        }}
-                        className="h-10 px-3 rounded-lg bg-amber-600 border border-[#f4b75e] text-white text-xs font-semibold flex items-center justify-center active:scale-95"
-                      >
-                        {t.navbar.register}
-                      </button>
-                    )}
+                  <div className="pt-1">
                     <button
                       type="button"
                       onClick={() => {
                         setMobileMenuOpen(false)
                         onOpenLogin()
                       }}
-                      className="h-10 px-3 rounded-lg bg-[#d9770626] border border-[#f4b75e] text-white text-xs font-semibold flex items-center justify-center active:scale-95"
+                      className="w-full h-10 px-3 rounded-lg bg-amber-600 border border-[#f4b75e] text-white text-xs font-semibold flex items-center justify-center active:scale-95"
                     >
                       {t.navbar.signIn}
                     </button>

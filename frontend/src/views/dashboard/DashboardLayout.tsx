@@ -197,6 +197,16 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const isCoopManager = roles.includes('coop_manager') || roles.includes('pengelola_koperasi')
   const isSmartTourismAdmin = roles.includes('smart_tourism_admin') || roles.includes('admin_wisata')
   const isSurveyor = roles.includes('field_surveyor') || roles.includes('surveyor')
+  const isResident =
+    roles.includes('resident') ||
+    (!isAdmin &&
+      !roles.includes('village_officer') &&
+      !isFarmer &&
+      !isFarmerGroupAdmin &&
+      !isHomestayOperator &&
+      !isCoopManager &&
+      !isSmartTourismAdmin &&
+      !isSurveyor)
 
   const getRoleDisplayName = () => {
     if (isSuperuser || roles.includes('admin')) return 'Administrator Sistem'
@@ -311,7 +321,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       label: 'Perencana Wisata Cerdas',
       shortLabel: 'Perencana Wisata',
       icon: Compass,
-      visible: !isSmartTourismAdmin,
+      visible: !isSmartTourismAdmin && !isResident && !isFarmer && !isFarmerGroupAdmin && !isCoopManager,
     },
     {
       id: 'iot',
@@ -401,8 +411,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       keywords: ['gis', 'peta', 'layer', 'spasial', 'kontur', 'koordinat', 'evakuasi'],
     },
     smart_planner: {
-      desc: 'DSS SAW perencana itinerary rute wisata cerdas',
-      keywords: ['smart planner', 'dss', 'saw', 'rute', 'itinerary', 'rekomendasi', 'perencana'],
+      desc: 'Asisten perencana rute wisata cerdas kepulauan Banda',
+      keywords: ['smart planner', 'rute', 'itinerary', 'rekomendasi', 'perencana', 'wisata'],
     },
     iot: {
       desc: 'Telemetri 4 stasiun cuaca pulau dan sensor tanah',

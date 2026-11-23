@@ -1223,3 +1223,19 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Menambahkan pengujian di `backend/tests/test_tourism.py` (`test_filter_accommodations_by_village_and_search`, `test_list_bookings_village_scoping_and_search`, `test_list_tour_guides_search`).
   - 100% tes pariwisata (16 passed) dan kependudukan (10 passed) lulus sempurna.
   - Build produksi frontend Vite sukses 100% (2.044 modul, exit code 0).
+
+---
+
+## [Phase 69] - Penghapusan Fitur Registrasi Mandiri & Eliminasi DSS/SAW pada Ruang Kerja Warga
+- [x] 69.1 Penghapusan Fitur Registrasi Mandiri (Zero Self-Register):
+  - Menghapus komponen `RegisterSection.tsx` secara permanen.
+  - Menghapus tipe `register`, rute `/register`, dan `/daftar` (otomatis dialihkan ke login kependudukan `/population`).
+  - Menghapus seluruh tombol pendaftaran akun baru pada `HeroSection.tsx`, `BandaUnifiedNavbar.tsx`, `BandaUnifiedFooter.tsx`, dan `LandingFooterSection.tsx`.
+  - Memperbarui `LoginSection.tsx` dengan penegasan resmi: *"Akun kependudukan terintegrasi NIK diterbitkan secara resmi melalui Kantor Desa."*
+- [x] 69.2 Eliminasi DSS/SAW pada Ruang Kerja Warga Desa:
+  - Menyembunyikan menu *Perencana Wisata Cerdas* (`smart_planner`) dari bilah samping `DashboardLayout.tsx` khusus untuk peran Warga (`isResident`), Petani, dan Poktan.
+  - Membersihkan istilah teknis "DSS SAW" dari kartu transparansi kependudukan di `UserEcosystemDashboard.tsx`.
+- [x] 69.3 Pengujian & Verifikasi Menyeluruh:
+  - 100% build produksi frontend lolos tanpa error TypeScript (2.047 modul terkompilasi dalam 18.28s).
+  - 100% automated test backend lolos (26 passed dalam 83.58s).
+  - Backend dan frontend merespons HTTP 200 OK.

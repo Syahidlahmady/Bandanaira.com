@@ -25,7 +25,6 @@ import {
   BlockchainVerification,
 } from './services/traceability.ts'
 const LoginSection = React.lazy(() => import('./components/LoginSection.tsx').then(m => ({ default: m.LoginSection })))
-const RegisterSection = React.lazy(() => import('./components/RegisterSection.tsx').then(m => ({ default: m.RegisterSection })))
 const BlockchainModal = React.lazy(() => import('./components/BlockchainModal.tsx').then(m => ({ default: m.BlockchainModal })))
 const OfflineQueueModal = React.lazy(() => import('./components/OfflineQueueModal.tsx').then(m => ({ default: m.OfflineQueueModal })))
 const PublicVerifyModal = React.lazy(() => import('./components/PublicVerifyModal.tsx').then(m => ({ default: m.PublicVerifyModal })))
@@ -65,7 +64,6 @@ interface HealthResponse {
 
 export type TabId =
   | 'landing'
-  | 'register'
   | 'dashboard'
   | 'population'
   | 'letters'
@@ -82,7 +80,6 @@ export type TabId =
 
 export const TAB_ROUTES: Record<TabId, string> = {
   landing: '/',
-  register: '/register',
   dashboard: '/dashboard',
   population: '/population',
   letters: '/letters',
@@ -103,8 +100,8 @@ export const ROUTE_TO_TAB: Record<string, TabId> = {
   '/landing': 'landing',
   '/beranda': 'landing',
   '/home': 'landing',
-  '/register': 'register',
-  '/daftar': 'register',
+  '/register': 'population',
+  '/daftar': 'population',
   '/dashboard': 'dashboard',
   '/dasbor': 'dashboard',
   '/population': 'population',
@@ -727,7 +724,6 @@ export const App: React.FC = () => {
           if (
             currentPath !== '/' &&
             currentPath !== '/landing' &&
-            currentPath !== '/register' &&
             !(mappedTab && PUBLIC_EXPLORER_TABS.includes(mappedTab))
           ) {
             setActiveTab('landing', true)
@@ -1336,7 +1332,7 @@ export const App: React.FC = () => {
       }}
     >
       {/* 0. RESTORING SESSION PLACEHOLDER */}
-      {Boolean(authService.getAccessToken()) && !currentUser && activeTab !== 'landing' && activeTab !== 'register' && (
+      {Boolean(authService.getAccessToken()) && !currentUser && activeTab !== 'landing' && (
         <div className="min-h-screen bg-[#081d35] flex items-center justify-center text-amber-300 font-sans">
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
@@ -1371,7 +1367,6 @@ export const App: React.FC = () => {
                 )
               }}
               onOpenLogin={() => setActiveTab('population')}
-              onOpenRegister={() => setActiveTab('register')}
               onOpenMarketplace={() => setShowMarketplaceModal(true)}
               onPublicVerify={(token) => handlePublicVerify(token)}
               currentUser={currentUser}
@@ -1383,23 +1378,10 @@ export const App: React.FC = () => {
         </ErrorBoundary>
       )}
 
-      {/* 1B. REGISTER DESKTOP SPLIT-SCREEN PAGE (Sesuai desainsaatini/register-dekstop) */}
-      {activeTab === 'register' && (
-        <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#081d35] text-amber-300">Memuat pendaftaran...</div>}>
-          <RegisterSection
-            onBackToHome={() => setActiveTab('landing')}
-            onSwitchToLogin={() => setActiveTab('population')}
-            onQuickLogin={handleQuickLogin}
-            onNavigate={(tab) => setActiveTab(tab)}
-          />
-        </React.Suspense>
-      )}
-
       {/* 2. Login Portal Section for Non-authenticated Users on Protected Operational Routes */}
       {!currentUser &&
         !authService.getAccessToken() &&
         activeTab !== 'landing' &&
-        activeTab !== 'register' &&
         !PUBLIC_EXPLORER_TABS.includes(activeTab) && (
         <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#081d35] text-amber-300">Memuat portal masuk...</div>}>
           <LoginSection
@@ -1410,7 +1392,6 @@ export const App: React.FC = () => {
             onLogin={handleLogin}
             onQuickLogin={handleQuickLogin}
             onBackToHome={() => setActiveTab('landing')}
-            onOpenRegister={() => setActiveTab('register')}
             onVerifySampleBatch={(token) => handlePublicVerify(token)}
             onPublicVerify={(token) => handlePublicVerify(token)}
             onOpenMarketplace={() => setShowMarketplaceModal(true)}
@@ -1564,7 +1545,7 @@ export const App: React.FC = () => {
       )}
 
       {/* 2B. Loading State when restoring active user session with valid token */}
-      {!currentUser && Boolean(authService.getAccessToken()) && activeTab !== 'landing' && activeTab !== 'register' && activeTab !== 'sejarah' && (
+      {!currentUser && Boolean(authService.getAccessToken()) && activeTab !== 'landing' && activeTab !== 'sejarah' && (
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#081D35] text-white p-6">
           <div className="w-12 h-12 border-4 border-[#F4B75E] border-t-transparent rounded-full animate-spin mb-4" />
           <h3 className="font-serif text-lg text-[#F4B75E] font-bold">Memulihkan Sesi Pengguna...</h3>
@@ -1576,7 +1557,7 @@ export const App: React.FC = () => {
           4. DASBOR EKOSISTEM DENGAN SIDEBAR NAVIGASI DI SAMPING (UNTUK USER LOGIN)
              Semua Ruang Kerja Operasional Terintegrasi di Dalam Dasbor Sesuai Hak Akses Role
       ====================================================================== */}
-      {currentUser && activeTab !== 'landing' && activeTab !== 'register' && activeTab !== 'sejarah' && (
+      {currentUser && activeTab !== 'landing' && activeTab !== 'sejarah' && (
         <DashboardLayout
           currentUser={currentUser}
           activeTab={activeTab as any}

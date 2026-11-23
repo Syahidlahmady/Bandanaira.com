@@ -37,7 +37,6 @@ export const defaultFooterLinkGroups: FooterLinkGroup[] = [
   {
     title: 'Akses akun',
     links: [
-      { label: 'Daftar Akun Baru', action: 'register' },
       { label: 'Masuk / Login', action: 'login' },
       { label: 'Penduduk', tab: 'letters' },
       { label: 'Mitra homestay', tab: 'tourism' },
@@ -49,7 +48,6 @@ export const defaultFooterLinkGroups: FooterLinkGroup[] = [
 export interface LandingFooterSectionProps {
   onNavigate: (tab: any) => void
   onOpenLogin: () => void
-  onOpenRegister?: () => void
   onOpenQuickLogin?: () => void
   setActiveNav?: (href: string) => void
   footerGroups?: FooterLinkGroup[]
@@ -58,7 +56,6 @@ export interface LandingFooterSectionProps {
 export const LandingFooterSection: React.FC<LandingFooterSectionProps> = ({
   onNavigate,
   onOpenLogin,
-  onOpenRegister,
   onOpenQuickLogin,
   setActiveNav,
   footerGroups,
@@ -191,11 +188,9 @@ export const LandingFooterSection: React.FC<LandingFooterSectionProps> = ({
                     key={link.label}
                     type="button"
                     onClick={() =>
-                      link.action === 'register' && onOpenRegister
-                        ? onOpenRegister()
-                        : link.action === 'quicklogin' && onOpenQuickLogin
-                          ? onOpenQuickLogin()
-                          : onOpenLogin()
+                      link.action === 'quicklogin' && onOpenQuickLogin
+                        ? onOpenQuickLogin()
+                        : onOpenLogin()
                     }
                     className="relative w-fit font-normal text-[#c1ced8] hover:text-[#f4b75e] transition-colors text-xs tracking-[0] leading-[normal] text-left"
                   >
