@@ -2155,6 +2155,24 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
     - Memberikan badge hijau jika NIK valid dan belum terdaftar di desa manapun.
   - Menambahkan tes otomatis `test_nik_cannot_be_duplicated_across_any_village` dan `test_check_nik_availability_endpoint`.
 
+---
+
+## [Phase 105] - Restorasi Komponen UI futuristic-nav.tsx (LumaBar) & Dependensi framer-motion
+- [x] 105.1 Pemasangan Penuh Dependensi Pihak Ketiga `framer-motion`:
+  - Menginstal paket `framer-motion` secara permanen ke `package.json` dan menyinkronkan `package-lock.json`.
+  - Memastikan modul terpasang di host dan volume container Docker `banda_frontend` sehingga tidak ada risiko error modul hilang saat di-pull.
+- [x] 105.2 Restorasi Komponen UI & Berkas Demo:
+  - Mengembalikan berkas komponen `frontend/src/components/ui/futuristic-nav.tsx` (`LumaBar`) dengan interaktivitas spring layout glow dan animasi perbesaran ikon.
+  - Mengembalikan berkas `frontend/src/components/ui/demo.tsx` dengan import path relatif yang valid (`./futuristic-nav`).
+- [x] 105.3 Restorasi Animasi Spring Motion pada Navigasi:
+  - Mengembalikan implementasi `framer-motion` pada `MobileBottomNav.tsx` dan `DashboardLayout.tsx`:
+    - Menggunakan `<motion.button>` dengan `whileTap={{ scale: 0.86 }}`.
+    - Menggunakan `<motion.div layoutId="..."/>` dengan transisi pegas fisik (`type: 'spring', stiffness: 450, damping: 30`).
+    - Efek pembesaran ikon aktif dan animasi dot meluncur.
+- [x] 105.4 Pengujian & Verifikasi Build:
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% (0 error).
+  - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 24.50 detik).
+
 
 
 
