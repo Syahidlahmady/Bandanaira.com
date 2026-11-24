@@ -2145,6 +2145,15 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Seluruh rangkaian pengujian backend sistem (100 test cases) lulus tanpa regresi.
   - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% (0 error).
   - Build produksi Vite (`npm run build`) sukses 100% (2.058 modul ter-bundle).
+- [x] 104.7 Penegakan Keunikan NIK Lintas Desa & Validasi Real-Time (`check-nik`):
+  - Memastikan NIK bersifat tunggal nasional dan mutlak tidak boleh sama di desa manapun di Kepulauan Banda.
+  - Menambahkan endpoint verifikasi ketersediaan NIK `GET /api/v1/population/residents/check-nik?nik=...` yang memeriksa seluruh basis data kependudukan tanpa batasan wilayah desa.
+  - Mempertegas penolakan HTTP 409 Conflict di `create_resident` saat NIK sudah terdaftar di desa lain dengan pesan eksplisit.
+  - Menambahkan validasi real-time di formulir pendaftaran penduduk (`ResidentsWorkspace.tsx`) saat 16 digit NIK diketik:
+    - Memberikan badge peringatan merah jika NIK sudah terdaftar di desa lain (menyebutkan nama desa terdaftar).
+    - Menonaktifkan tombol "Simpan Data Warga" bila NIK duplikat terdeteksi.
+    - Memberikan badge hijau jika NIK valid dan belum terdaftar di desa manapun.
+  - Menambahkan tes otomatis `test_nik_cannot_be_duplicated_across_any_village` dan `test_check_nik_availability_endpoint`.
 
 
 

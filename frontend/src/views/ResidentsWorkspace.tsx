@@ -114,6 +114,46 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
   const [copiedReceipt, setCopiedReceipt] = useState(false)
   const [showReceiptPin, setShowReceiptPin] = useState(false)
 
+  // Real-time universal NIK cross-village validation check
+  const [nikCheckStatus, setNikCheckStatus] = useState<{
+    checking: boolean
+    available?: boolean
+    message?: string
+    village?: string
+  }>({ checking: false })
+
+  useEffect(() => {
+    if (popForm.nik && popForm.nik.length === 16) {
+      let isMounted = true
+      setNikCheckStatus({ checking: true })
+      const timer = setTimeout(() => {
+        populationService
+          .checkNik(popForm.nik)
+          .then((res) => {
+            if (isMounted) {
+              setNikCheckStatus({
+                checking: false,
+                available: res.available,
+                message: res.message,
+                village: res.village,
+              })
+            }
+          })
+          .catch(() => {
+            if (isMounted) {
+              setNikCheckStatus({ checking: false })
+            }
+          })
+      }, 300)
+      return () => {
+        isMounted = false
+        clearTimeout(timer)
+      }
+    } else {
+      setNikCheckStatus({ checking: false })
+    }
+  }, [popForm.nik])
+
   // Sync village with currentUser.village for village officers
   useEffect(() => {
     if (currentUser?.village && popForm.village !== currentUser.village) {
@@ -689,23 +729,62 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
                   <span
                     className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
                       popForm.nik?.length === 16
-                        ? 'bg-emerald-100 text-emerald-800'
+                        ? nikCheckStatus.available === false
+                          ? 'bg-rose-100 text-rose-800'
+                          : 'bg-emerald-100 text-emerald-800'
                         : 'bg-slate-100 text-slate-500'
                     }`}
                   >
                     {popForm.nik?.length || 0}/16 Digit
                   </span>
                 </div>
-                <input
-                  type="text"
-                  maxLength={16}
-                  value={popForm.nik}
-                  onChange={(e) => setPopForm({ ...popForm, nik: e.target.value.replace(/\D/g, '') })}
-                  required
-                  pattern="^\d{16}$"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono text-slate-800 focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none transition-all"
-                  placeholder="Contoh: 8171010101900001"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    maxLength={16}
+                    value={popForm.nik}
+                    onChange={(e) => setPopForm({ ...popForm, nik: e.target.value.replace(/\D/g, '') })}
+                    required
+                    pattern="^\d{16}$"
+                    className={`w-full pl-3.5 pr-8 py-2.5 border rounded-xl text-sm font-mono outline-none transition-all ${
+                      nikCheckStatus.available === false
+                        ? 'bg-rose-50 border-rose-300 text-rose-900 focus:border-rose-500 focus:ring-2 focus:ring-rose-100 font-bold'
+                        : nikCheckStatus.available === true
+                        ? 'bg-emerald-50/40 border-emerald-300 text-slate-800 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 font-bold'
+                        : 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white focus:border-amber-400 focus:ring-2 focus:ring-amber-100'
+                    }`}
+                    placeholder="Contoh: 8171010101900001"
+                  />
+                  {nikCheckStatus.checking && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                      <RefreshCw size={13} className="animate-spin text-amber-600" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Validation Status Feedback */}
+                {nikCheckStatus.available === false && (
+                  <div className="mt-1.5 p-2 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-start gap-1.5 animate-fade-in">
+                    <AlertCircle size={15} className="text-rose-600 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-extrabold text-[11px]">NIK Sudah Terdaftar di Desa Lain!</p>
+                      <p className="text-[11px] text-rose-700 leading-tight mt-0.5">
+                        {nikCheckStatus.message || `NIK ini sudah terdaftar di Desa ${nikCheckStatus.village}. NIK bersifat tunggal nasional dan tidak boleh sama di desa manapun.`}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {nikCheckStatus.available === true && (
+                  <div className="mt-1.5 p-1.5 px-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-800 flex items-center gap-1.5 animate-fade-in">
+                    <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
+                    <span>NIK valid dan belum terdaftar di desa manapun.</span>
+                  </div>
+                )}
+
+                <p className="text-[10px] text-slate-400 mt-1">
+                  * NIK bersifat tunggal nasional dan tidak boleh sama di desa manapun.
+                </p>
               </div>
 
               {/* Field Nama Lengkap */}
@@ -877,8 +956,8 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
                 </button>
                 <button
                   type="submit"
-                  disabled={loadingPop}
-                  className="inline-flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all"
+                  disabled={loadingPop || nikCheckStatus.available === false}
+                  className="inline-flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl shadow-sm transition-all"
                 >
                   <CheckCheck size={16} /> Simpan Data Warga
                 </button>

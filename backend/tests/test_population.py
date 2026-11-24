@@ -433,3 +433,55 @@ async def test_create_resident_auto_provisions_user_and_allows_login(client: Asy
         json={"username_or_email": nik, "password": new_pin},
     )
     assert new_login.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_nik_cannot_be_duplicated_across_any_village(client: AsyncClient):
+    token = await get_admin_token(client)
+    shared_nik = "8171010101900999"
+
+    # 1. Register in Lonthoir
+    res1 = await client.post(
+        "/api/v1/population/residents",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "nik": shared_nik,
+            "full_name": "Warga Asal Lonthoir",
+            "gender": "L",
+            "village": "Lonthoir",
+        },
+    )
+    assert res1.status_code == 201
+
+    # 2. Check NIK availability via check-nik endpoint -> False
+    check_dup = await client.get(
+        f"/api/v1/population/residents/check-nik?nik={shared_nik}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert check_dup.status_code == 200
+    assert check_dup.json()["available"] is False
+    assert check_dup.json()["village"] == "Lonthoir"
+
+    # 3. Attempt registering same NIK in a DIFFERENT village (Selamon) -> MUST BE REJECTED (409)
+    res2 = await client.post(
+        "/api/v1/population/residents",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "nik": shared_nik,
+            "full_name": "Warga Asal Selamon",
+            "gender": "P",
+            "village": "Selamon",
+        },
+    )
+    assert res2.status_code == 409
+    detail = res2.json()["detail"].lower()
+    assert "already exists" in detail
+    assert "tidak boleh sama di desa manapun" in detail
+
+    # 4. Check an unused NIK -> True
+    check_free = await client.get(
+        "/api/v1/population/residents/check-nik?nik=8171010101900888",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert check_free.status_code == 200
+    assert check_free.json()["available"] is True

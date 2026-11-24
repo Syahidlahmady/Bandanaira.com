@@ -99,6 +99,30 @@ async def list_residents(
     )
 
 
+@router.get("/residents/check-nik")
+async def check_nik_availability(
+    nik: str = Query(..., min_length=16, max_length=16, pattern=r"^\d{16}$"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(OFFICER_ROLES),
+):
+    """Memeriksa ketersediaan NIK di seluruh desa Kepulauan Banda (NIK harus unik nasional)."""
+    stmt = select(Resident).where(Resident.nik == nik)
+    existing = (await db.execute(stmt)).scalar_one_or_none()
+    if existing:
+        return {
+            "available": False,
+            "nik": nik,
+            "village": existing.village,
+            "full_name": existing.full_name,
+            "message": f"NIK {nik} sudah terdaftar di Desa {existing.village}. NIK bersifat tunggal nasional dan tidak boleh sama di desa manapun.",
+        }
+    return {
+        "available": True,
+        "nik": nik,
+        "message": "NIK valid dan belum terdaftar di desa manapun.",
+    }
+
+
 @router.post("/residents", response_model=ResidentResponse, status_code=status.HTTP_201_CREATED)
 async def create_resident(
     resident_in: ResidentCreate,
@@ -120,13 +144,13 @@ async def create_resident(
             )
         data["village"] = current_user.village
 
-    # Check duplicate NIK
+    # Check duplicate NIK across ALL villages (universal uniqueness enforcement)
     stmt = select(Resident).where(Resident.nik == resident_in.nik)
     existing = (await db.execute(stmt)).scalar_one_or_none()
     if existing:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="A resident with this NIK already exists",
+            detail=f"NIK {resident_in.nik} already exists (sudah terdaftar di Desa {existing.village}). NIK bersifat tunggal nasional dan tidak boleh sama di desa manapun.",
         )
 
     resident = Resident(**data)

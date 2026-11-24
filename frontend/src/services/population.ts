@@ -148,6 +148,15 @@ export const populationService = {
     return res.json()
   },
 
+  async checkNik(nik: string): Promise<{ available: boolean; nik: string; village?: string; full_name?: string; message: string }> {
+    const res = await this.requestWithAuth(`/population/residents/check-nik?nik=${encodeURIComponent(nik)}`)
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail || `Gagal memeriksa NIK (${res.status})`)
+    }
+    return res.json()
+  },
+
   async getStatistics(village?: string): Promise<PopulationStatistics> {
     const q = village ? `?village=${encodeURIComponent(village)}` : ''
     const res = await this.requestWithAuth(`/population/statistics${q}`)

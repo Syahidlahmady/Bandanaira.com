@@ -967,6 +967,15 @@ export const App: React.FC = () => {
     e.preventDefault()
     setPopMsg(null)
 
+    // Check duplicate NIK locally first
+    if (residents.some((r) => r.nik === popForm.nik)) {
+      setPopMsg({
+        type: 'error',
+        text: `NIK ${popForm.nik} sudah terdaftar di sistem kependudukan. NIK bersifat tunggal nasional dan tidak boleh sama di desa manapun.`,
+      })
+      return
+    }
+
     if (!navigator.onLine) {
       await syncManager.enqueue(
         'resident_create',
