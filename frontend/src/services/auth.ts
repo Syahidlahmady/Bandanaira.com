@@ -494,11 +494,11 @@ export const authService = {
   },
 
   async logout() {
+    this.clearTokens()
     try {
       await fetch(`${getApiBase()}/auth/logout`, { method: 'POST' })
     } catch {
       // safe fallback if offline
     }
-    this.clearTokens()
   },
 }

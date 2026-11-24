@@ -22,6 +22,7 @@ import {
   DollarSign,
   Compass,
   ShoppingBag,
+  LogOut,
 } from 'lucide-react'
 import { setPreferredTourismSubTab } from '../../services/tourism'
 import {
@@ -266,6 +267,19 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
               <DollarSign size={14} className="text-emerald-600" />
               <span>Pasar Rempah</span>
             </button>
+
+            {onLogout && (
+              <button
+                type="button"
+                onClick={onLogout}
+                className="px-3.5 py-2 rounded-xl text-xs font-bold bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
+                title="Keluar dari Akun (Logout)"
+                aria-label="Keluar Akun"
+              >
+                <LogOut size={14} className="text-rose-600" />
+                <span>Keluar</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

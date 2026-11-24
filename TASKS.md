@@ -82,6 +82,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 92: Pengetatan Hak Akses DSS/SAW Smart Planner Khusus Administrator Sistem**
 - [x] **Phase 93: Penghapusan Switcher Bahasa pada Dashboard Admin (Penyelarasan Pengguna Lokal Banda & Penegasan Fokus Smart Tourism-Kependudukan)**
 - [x] **Phase 94: Personalisasi Notifikasi Ekosistem Berdasarkan Peran Hak Akses Pengguna (Role-Scoped Ecosystem Notifications)**
+- [x] **Phase 95: Optimalisasi Aksesibilitas Tombol Keluar (Logout) pada Seluruh Antarmuka Ekosistem**
 ---
 
 ## Detailed Task Checklist
@@ -1789,3 +1790,23 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Menyelaraskan filter kategori notifikasi agar mencakup layanan pariwisata.
 - [x] 94.3 Pengujian & Verifikasi:
   - Kompilasi build produksi Vite sukses 100% (2.059 modul ter-bundle dalam 34.14s).
+
+---
+
+## [Phase 95] - Optimalisasi Aksesibilitas Tombol Keluar (Logout) pada Seluruh Antarmuka Ekosistem
+- [x] 95.1 Tombol Keluar Langsung pada Header Topbar Desktop (`frontend/src/views/dashboard/DashboardLayout.tsx`):
+  - Menambahkan pill identitas profil pengguna dan tombol "Keluar" (Logout) dengan ikon `LogOut` merah di sisi kanan header topbar yang selalu terlihat di desktop.
+  - Pengguna tidak lagi harus mencari atau membuka dropdown tersembunyi untuk keluar akun.
+- [x] 95.2 Tombol Keluar Langsung pada Topbar Mobile (`frontend/src/views/dashboard/DashboardLayout.tsx`):
+  - Menjadikan avatar mobile interaktif dan menyematkan tombol aksi cepat "Keluar" langsung di samping avatar pengguna pada header mobile fixed topbar.
+- [x] 95.3 Peningkatan Footer Sidebar Pengguna (`frontend/src/views/dashboard/DashboardLayout.tsx`):
+  - Menjadikan seluruh baris identitas kartu pengguna dapat diklik (clickable) untuk membuka opsi akun.
+  - Menambahkan tombol aksi langsung ikon `LogOut` merah di samping tombol gear pengaturan pada sidebar footer.
+- [x] 95.4 Tombol Keluar pada Header Dasbor Ringkasan (`frontend/src/views/dashboard/UserEcosystemDashboard.tsx`):
+  - Menyematkan tombol aksi cepat "Keluar" di samping tombol Pasar Rempah dan Peluncur Modul pada banner sambutan ekosistem.
+- [x] 95.5 Penyempurnaan Sinkronisasi Sesi & Token Reset (`frontend/src/services/auth.ts` & `frontend/src/App.tsx`):
+  - Memindahkan `this.clearTokens()` ke awal eksekusi `authService.logout()` secara sinkron agar kredensial JWT terhapus seketika tanpa tertahan latensi panggilan jaringan.
+  - Memperbarui `handleLogout` di `App.tsx` agar membersihkan riwayat navigasi (`window.history.pushState`), mengembalikan active tab ke `'landing'`, serta mereset seluruh state data aplikasi seketika.
+- [x] 95.6 Pengujian & Verifikasi:
+  - Kompilasi build produksi frontend Vite sukses 100% (2.059 modul ter-bundle dalam 19.88s).
+  - 100/100 automated test suite backend lulus 100% (278.73s).

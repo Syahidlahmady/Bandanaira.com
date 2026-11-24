@@ -813,9 +813,15 @@ export const App: React.FC = () => {
   }
 
   const handleLogout = () => {
-    authService.logout()
+    authService.clearTokens()
+    authService.logout().catch(() => {})
     try {
       localStorage.removeItem('banda_active_tab')
+    } catch {
+      // ignore
+    }
+    try {
+      window.history.pushState({ tab: 'landing' }, '', '/')
     } catch {
       // ignore
     }
