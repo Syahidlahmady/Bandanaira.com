@@ -1832,10 +1832,11 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Mengubah perenderan `LandingPortalWorkspace` di `App.tsx` menjadi persistent DOM (`style={{ display: activeTab === 'landing' ? 'block' : 'none' }}`) sehingga struktur DOM beranda tidak pernah dihancurkan dan tidak perlu reload saat navigasi bolak-balik.
   - Mengubah impor 10 seksi beranda di `BandanairaBeranda.tsx` dari `React.lazy` menjadi impor langsung (synchronous), mengeliminasi keterlambatan Suspense fallback sehingga tombol dan seksi target tersedia 100% pada frame awal.
   - Menghapus kelas `content-auto` (`content-visibility: auto`) yang sebelumnya menahan layouting dan menyebabkan dimensi elemen luar layar bernilai 0 sebelum discroll.
-  - Menghubungkan inisialisasi Lenis desktop agar langsung mengatur `lenis.scrollTo(finalTarget, { immediate: true, offset: -80 })`, mencegah Lenis mereset scroll ke 0 pada siklus requestAnimationFrame pertama.
+  - Menghapus dependensi Lenis virtual scroll dari `BandanairaBeranda.tsx` yang sebelumnya membajak event mouse wheel (`smoothWheel`) dan me-reset posisi scroll kembali ke 0 saat pengguna mulai menggulir layar.
+  - Menerapkan 100% native browser compositor scrolling sehingga saat pengguna memutar roda mouse, peramban melanjutkan pengguliran secara mulus langsung dari posisi tombol/seksi tersebut tanpa pernah melompat ke atas.
   - Mendukung target elemen ganda: tombol spesifik (`savedAnchor`), seksi wilayah (`savedSection` seperti `#wisata`, `#eco-stay`, `#layanan-umkm`), dan koordinat piksel `targetY`.
 - [x] 96.4 Pengujian & Verifikasi:
-  - Kompilasi build produksi Vite sukses 100% tanpa error TypeScript (2.059 modul dalam 16.84s).
+  - Kompilasi build produksi Vite sukses 100% tanpa error TypeScript (2.057 modul dalam 15.55s).
   - 16/16 automated test suite pariwisata backend lulus 100% (48.90s).
 
 ---

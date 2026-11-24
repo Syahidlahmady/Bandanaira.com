@@ -1,6 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
-import Lenis from 'lenis'
-import 'lenis/dist/lenis.css'
+import React, { useEffect, useState } from 'react'
 import { HeroSection } from '../../components/landing/HeroSection'
 import PetaInteractiveSection from '../../components/landing/PetaInteractiveSection'
 import HeritageSpiceSection from '../../components/landing/HeritageSpiceSection'
@@ -58,7 +56,6 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
   activeTab = 'landing',
 }) => {
   const [activeNav, setActiveNav] = useState<string>('#beranda')
-  const lenisRef = useRef<Lenis | null>(null)
 
   // 1. Intercept all button and anchor clicks on landing page to capture scroll position, anchor & section
   useEffect(() => {
@@ -66,7 +63,7 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
       const target = e.target as HTMLElement | null
       const btn = target?.closest('button, a, [data-scroll-anchor]') as HTMLElement | null
       if (btn) {
-        const scrollY = lenisRef.current?.scroll || window.scrollY || document.documentElement.scrollTop || 0
+        const scrollY = window.scrollY || document.documentElement.scrollTop || 0
         const anchor = btn.getAttribute('data-scroll-anchor') || btn.id
         const section = btn.closest('section')?.id || ''
         try {
@@ -113,22 +110,16 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
       const finalTarget = (targetEl || targetSec) as HTMLElement | null
 
       if (finalTarget) {
-        if (lenisRef.current) {
-          lenisRef.current.scrollTo(finalTarget, { immediate: true, offset: -80 })
-        }
         finalTarget.scrollIntoView({ behavior: 'auto', block: 'center' })
         return true
       } else if (targetY !== null && !isNaN(targetY)) {
-        if (lenisRef.current) {
-          lenisRef.current.scrollTo(targetY, { immediate: true })
-        }
         window.scrollTo({ top: targetY, behavior: 'auto' })
         return true
       }
       return false
     }
 
-    // Attempt immediately and across intervals to ensure position stays pinned
+    // Attempt immediately and across short intervals to ensure the page is centered on the button
     performScrollRestore()
     const t1 = setTimeout(performScrollRestore, 30)
     const t2 = setTimeout(performScrollRestore, 100)
@@ -148,88 +139,22 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
     }
   }, [activeTab])
 
-  // Smooth scrolling initialization via Lenis (Desktop only; native momentum scrolling for mobile)
+  // 3. Smooth native anchor link clicks (e.g. href="#wisata", href="#peta")
   useEffect(() => {
-    const isMobileDevice = typeof window !== 'undefined' && (
-      window.innerWidth < 1024 ||
-      window.matchMedia('(pointer: coarse)').matches ||
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-    )
-
-    // Check if there is a saved scroll target to restore immediately
-    const savedAnchor = sessionStorage.getItem('banda_landing_scroll_anchor')
-    const savedSection = sessionStorage.getItem('banda_landing_scroll_section')
-    const savedYStr = sessionStorage.getItem('banda_landing_scroll_y')
-
-    // On mobile devices, bypass Lenis to utilize native 60/120Hz GPU-accelerated momentum scrolling
-    if (isMobileDevice) {
-      if (savedAnchor || savedSection || savedYStr) {
-        const el = savedAnchor
-          ? (document.getElementById(savedAnchor) || document.querySelector(`[data-scroll-anchor="${savedAnchor}"]`))
-          : (savedSection ? document.getElementById(savedSection) : null)
-        if (el) {
-          el.scrollIntoView({ behavior: 'auto', block: 'center' })
-        } else if (savedYStr) {
-          window.scrollTo({ top: parseFloat(savedYStr), behavior: 'auto' })
-        }
-      }
-
-      const handleAnchorClick = (e: MouseEvent) => {
-        const target = (e.target as HTMLElement).closest('a[href^="#"]') as HTMLAnchorElement | null
-        if (target && target.hash) {
-          const targetElement = document.querySelector(target.hash)
-          if (targetElement) {
-            e.preventDefault()
-            targetElement.scrollIntoView({ behavior: 'smooth' })
-          }
-        }
-      }
-      document.addEventListener('click', handleAnchorClick)
-      return () => {
-        document.removeEventListener('click', handleAnchorClick)
-      }
-    }
-
-    const lenis = new Lenis({
-      autoRaf: true,
-      duration: 1.1,
-      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-      wheelMultiplier: 1.0,
-      touchMultiplier: 1.0,
-    })
-    lenisRef.current = lenis
-
-    // If there is a saved scroll target, immediately initialize Lenis to it!
-    if (savedAnchor || savedSection || savedYStr) {
-      const el = savedAnchor
-        ? (document.getElementById(savedAnchor) || document.querySelector(`[data-scroll-anchor="${savedAnchor}"]`))
-        : (savedSection ? document.getElementById(savedSection) : null)
-      if (el) {
-        lenis.scrollTo(el as HTMLElement, { immediate: true, offset: -80 })
-      } else if (savedYStr) {
-        lenis.scrollTo(parseFloat(savedYStr), { immediate: true })
-      }
-    }
-
-    // Smooth anchor link click handling
     const handleAnchorClick = (e: MouseEvent) => {
       const target = (e.target as HTMLElement).closest('a[href^="#"]') as HTMLAnchorElement | null
       if (target && target.hash) {
         const targetElement = document.querySelector(target.hash)
         if (targetElement) {
           e.preventDefault()
-          lenis.scrollTo(targetElement, { offset: -20, duration: 1.2 })
+          targetElement.scrollIntoView({ behavior: 'smooth' })
         }
       }
     }
 
     document.addEventListener('click', handleAnchorClick)
-
     return () => {
       document.removeEventListener('click', handleAnchorClick)
-      lenisRef.current = null
-      lenis.destroy()
     }
   }, [])
 
