@@ -1458,16 +1458,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           <div className="size-8 rounded-full bg-[#0F2C59] border border-[#F4B75E]/30 text-[#F4B75E] font-bold text-xs flex items-center justify-center">
             {getUserInitials()}
           </div>
-          <button
-            type="button"
-            onClick={onLogout}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-rose-500/25 hover:bg-rose-500/40 border border-rose-400/40 text-rose-200 text-xs font-bold transition active:scale-95 cursor-pointer"
-            title="Keluar dari Akun (Logout)"
-            aria-label="Keluar Akun"
-          >
-            <LogOut size={13} />
-            <span>Keluar</span>
-          </button>
         </div>
       </div>
 
@@ -1822,12 +1812,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <div className="p-3 shrink-0 relative" ref={settingsDropdownRef}>
           {!collapsed ? (
             <div className="flex items-center justify-between p-2 rounded-2xl bg-[#0F2C59]/60 hover:bg-[#0F2C59] transition border border-[#1E3A5F]">
-              <button
-                type="button"
-                onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
-                className="flex items-center gap-3 min-w-0 text-left flex-1 cursor-pointer overflow-hidden"
-                title="Klik untuk opsi akun"
-              >
+              <div className="flex items-center gap-3 min-w-0">
                 {/* Foto / Avatar Pengguna Berbentuk Lingkaran dengan aksen emas */}
                 <div className="relative size-10 rounded-full bg-[#081D35] border border-[#F4B75E]/40 overflow-hidden shrink-0 flex items-center justify-center">
                   <img
@@ -1851,29 +1836,17 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     {userDisplayEmail}
                   </span>
                 </div>
-              </button>
-
-              <div className="flex items-center gap-1 shrink-0">
-                {/* Settings Gear Icon dengan Dropdown Opsi */}
-                <button
-                  type="button"
-                  onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-[#F4B75E] hover:bg-white/10 transition"
-                  title="Pengaturan Akun & Aksi"
-                >
-                  <Settings size={17} />
-                </button>
-                {/* Direct Logout Icon Button */}
-                <button
-                  type="button"
-                  onClick={onLogout}
-                  className="p-1.5 rounded-lg text-rose-400 hover:text-white hover:bg-rose-500/25 transition cursor-pointer"
-                  title="Keluar dari Akun (Logout)"
-                  aria-label="Keluar Akun"
-                >
-                  <LogOut size={17} />
-                </button>
               </div>
+
+              {/* Settings Gear Icon dengan Dropdown Opsi */}
+              <button
+                type="button"
+                onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-[#F4B75E] hover:bg-white/10 transition shrink-0"
+                title="Pengaturan Akun & Aksi"
+              >
+                <Settings size={18} />
+              </button>
             </div>
           ) : (
             /* Mode Collapsed: Avatar di tengah dengan Settings Modal saat diklik */
@@ -2547,7 +2520,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     )}
                   </div>
 
-                  {/* Footer Notifikasi */}
+                  {/* Footer */}
                   <div className="p-2.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium px-4">
                     <span className="flex items-center gap-1.5">
                       <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -2566,38 +2539,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   </div>
                 </div>
               )}
-            </div>
-
-            {/* Topbar User Profile & Prominent Logout Action */}
-            <div className="h-6 w-px bg-slate-200/80 mx-1 hidden sm:block" />
-
-            <div className="flex items-center gap-2">
-              {/* User Identity Pill with Role */}
-              <div className="hidden md:flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-xl bg-slate-100/80 border border-slate-200/60">
-                <div className="size-7 rounded-full bg-[#081D35] border border-[#F4B75E]/60 text-[#F4B75E] font-bold text-xs flex items-center justify-center shrink-0">
-                  {getUserInitials()}
-                </div>
-                <div className="flex flex-col text-left max-w-[130px]">
-                  <span className="text-xs font-bold text-[#081D35] truncate leading-tight">
-                    {userDisplayName}
-                  </span>
-                  <span className="text-[10px] text-[#D97706] font-semibold truncate leading-none">
-                    {getRoleDisplayName()}
-                  </span>
-                </div>
-              </div>
-
-              {/* Explicit, High-Visibility Logout Button in Topbar */}
-              <button
-                type="button"
-                onClick={onLogout}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200/80 text-rose-700 hover:text-rose-800 text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95"
-                title="Keluar dari akun (Logout)"
-                aria-label="Keluar Akun"
-              >
-                <LogOut size={15} className="shrink-0 text-rose-600" />
-                <span className="hidden sm:inline">Keluar</span>
-              </button>
             </div>
           </div>
         </header>

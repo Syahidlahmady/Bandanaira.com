@@ -82,7 +82,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 92: Pengetatan Hak Akses DSS/SAW Smart Planner Khusus Administrator Sistem**
 - [x] **Phase 93: Penghapusan Switcher Bahasa pada Dashboard Admin (Penyelarasan Pengguna Lokal Banda & Penegasan Fokus Smart Tourism-Kependudukan)**
 - [x] **Phase 94: Personalisasi Notifikasi Ekosistem Berdasarkan Peran Hak Akses Pengguna (Role-Scoped Ecosystem Notifications)**
-- [x] **Phase 95: Optimalisasi Aksesibilitas Tombol Keluar (Logout) pada Seluruh Antarmuka Ekosistem**
+- [x] **Phase 95: Perbaikan Fungsionalitas Logout & Penjagaan Desain Antarmuka Asli Sesuai Sebelumnya**
 ---
 
 ## Detailed Task Checklist
@@ -1793,20 +1793,14 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 
 ---
 
-## [Phase 95] - Optimalisasi Aksesibilitas Tombol Keluar (Logout) pada Seluruh Antarmuka Ekosistem
-- [x] 95.1 Tombol Keluar Langsung pada Header Topbar Desktop (`frontend/src/views/dashboard/DashboardLayout.tsx`):
-  - Menambahkan pill identitas profil pengguna dan tombol "Keluar" (Logout) dengan ikon `LogOut` merah di sisi kanan header topbar yang selalu terlihat di desktop.
-  - Pengguna tidak lagi harus mencari atau membuka dropdown tersembunyi untuk keluar akun.
-- [x] 95.2 Tombol Keluar Langsung pada Topbar Mobile (`frontend/src/views/dashboard/DashboardLayout.tsx`):
-  - Menjadikan avatar mobile interaktif dan menyematkan tombol aksi cepat "Keluar" langsung di samping avatar pengguna pada header mobile fixed topbar.
-- [x] 95.3 Peningkatan Footer Sidebar Pengguna (`frontend/src/views/dashboard/DashboardLayout.tsx`):
-  - Menjadikan seluruh baris identitas kartu pengguna dapat diklik (clickable) untuk membuka opsi akun.
-  - Menambahkan tombol aksi langsung ikon `LogOut` merah di samping tombol gear pengaturan pada sidebar footer.
-- [x] 95.4 Tombol Keluar pada Header Dasbor Ringkasan (`frontend/src/views/dashboard/UserEcosystemDashboard.tsx`):
-  - Menyematkan tombol aksi cepat "Keluar" di samping tombol Pasar Rempah dan Peluncur Modul pada banner sambutan ekosistem.
-- [x] 95.5 Penyempurnaan Sinkronisasi Sesi & Token Reset (`frontend/src/services/auth.ts` & `frontend/src/App.tsx`):
-  - Memindahkan `this.clearTokens()` ke awal eksekusi `authService.logout()` secara sinkron agar kredensial JWT terhapus seketika tanpa tertahan latensi panggilan jaringan.
-  - Memperbarui `handleLogout` di `App.tsx` agar membersihkan riwayat navigasi (`window.history.pushState`), mengembalikan active tab ke `'landing'`, serta mereset seluruh state data aplikasi seketika.
-- [x] 95.6 Pengujian & Verifikasi:
-  - Kompilasi build produksi frontend Vite sukses 100% (2.059 modul ter-bundle dalam 19.88s).
-  - 100/100 automated test suite backend lulus 100% (278.73s).
+## [Phase 95] - Perbaikan Fungsionalitas Logout & Penjagaan Desain Antarmuka Asli Sesuai Sebelumnya
+- [x] 95.1 Penjagaan Desain Antarmuka Asli ("Sesuaikan dengan Sebelumnya"):
+  - Menghilangkan tombol-tombol logout tambahan yang sempat disematkan di topbar desktop, topbar mobile, sidebar footer, dan dashboard view.
+  - Mempertahankan tata letak visual elegan asli di mana tombol "Keluar Akun" berada di dalam menu pengaturan profil sidebar bawah (`showSettingsDropdown`) serta navbar/hero landing page.
+- [x] 95.2 Perbaikan Akar Masalah Kegagalan Logout Sesi (`frontend/src/services/auth.ts` & `frontend/src/App.tsx`):
+  - Mengatasi akar masalah mengapa sebelumnya akun tidak bisa keluar: pemanggilan `authService.clearTokens()` sebelumnya tertunda di akhir pemanggilan asinkron `fetch('/auth/logout')`, sehingga request latar belakang yang memanggil `ensureValidToken()` sempat mendeteksi token lama dan memperbarui sesi otomatis.
+  - Memindahkan `this.clearTokens()` ke awal eksekusi `authService.logout()` secara sinkron, serta memanggil `authService.clearTokens()` seketika pada fungsi `handleLogout` di `App.tsx`.
+  - Mereset URL ke `/` (`window.history.pushState`), mengembalikan tab ke `'landing'`, dan mengosongkan state sesi aplikasi secara bersih.
+- [x] 95.3 Pengujian & Verifikasi:
+  - Kompilasi build produksi Vite sukses 100% tanpa error.
+  - 100/100 automated test suite backend lulus 100%.
