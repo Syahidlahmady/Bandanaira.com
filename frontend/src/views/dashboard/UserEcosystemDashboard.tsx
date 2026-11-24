@@ -51,6 +51,47 @@ export interface UserEcosystemDashboardProps {
   isOnline?: boolean
 }
 
+/**
+ * Komponen Jam Real-time Terisolasi (React.memo)
+ * Memastikan interval 1 detik HANYA me-render ulang badge waktu ini saja,
+ * dan TIDAK memicu re-render berat pada seluruh dasbor, grafik Recharts, atau role views.
+ */
+export const LiveClockBadge: React.FC = React.memo(() => {
+  const [currentDateTime, setCurrentDateTime] = useState<Date>(() => new Date())
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentDateTime(new Date())
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const formattedDate = currentDateTime.toLocaleDateString('id-ID', {
+    timeZone: 'Asia/Jayapura',
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+
+  const formattedTime = currentDateTime.toLocaleTimeString('id-ID', {
+    timeZone: 'Asia/Jayapura',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  })
+
+  return (
+    <div className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200/80 text-xs shadow-2xs">
+      <Clock size={15} className="text-[#F4B75E]" />
+      <span className="font-semibold text-slate-700">{formattedDate}</span>
+      <span className="text-slate-300">•</span>
+      <span className="font-mono font-bold text-[#081D35] tabular-nums">{formattedTime} WIT</span>
+    </div>
+  )
+})
+
 export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
   currentUser,
   onNavigate,
@@ -91,32 +132,6 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
   // Peran aktif yang efektif: jika bukan Admin, SELALU gunakan role asli pengguna (tidak bisa bypass ke admin)
   const activeRoleKey: RoleKey = isAdmin ? selectedRoleKey : detectInitialRoleKey()
   const profile = ROLE_PROFILES[activeRoleKey] || ROLE_PROFILES.resident
-
-  // Waktu Real-Time Sinkron WIT (Waktu Indonesia Timur / UTC+9)
-  const [currentDateTime, setCurrentDateTime] = useState<Date>(() => new Date())
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentDateTime(new Date())
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [])
-
-  const formattedDate = currentDateTime.toLocaleDateString('id-ID', {
-    timeZone: 'Asia/Jayapura',
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-
-  const formattedTime = currentDateTime.toLocaleTimeString('id-ID', {
-    timeZone: 'Asia/Jayapura',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  })
 
   const handleVerifySubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -245,12 +260,7 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
 
         {/* Right Info Cluster: Live Clock & Quick Launchers */}
         <div className="flex flex-col sm:flex-row lg:flex-col items-start lg:items-end gap-3 shrink-0">
-          <div className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200/80 text-xs shadow-2xs">
-            <Clock size={15} className="text-[#F4B75E]" />
-            <span className="font-semibold text-slate-700">{formattedDate}</span>
-            <span className="text-slate-300">•</span>
-            <span className="font-mono font-bold text-[#081D35] tabular-nums">{formattedTime} WIT</span>
-          </div>
+          <LiveClockBadge />
 
           <div className="flex items-center gap-2">
             <button

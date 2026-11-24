@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { authService, User } from './services/auth.ts'
 import {
   populationService,
@@ -232,6 +232,7 @@ const ensureFarmPolygonGeoJSON = (
 export const App: React.FC = () => {
   const [activeTab, setActiveTabState] = useState<TabId>(getInitialTab)
   const [selectedArticleSlug, setSelectedArticleSlug] = useState<string | null>(getInitialArticleSlug)
+  const lastFetchedUserIdRef = useRef<string | null>(null)
 
   const handleNavigateToSejarah = (slug?: string) => {
     if (activeTab === 'landing' && typeof window !== 'undefined') {
@@ -571,6 +572,20 @@ export const App: React.FC = () => {
     setLoadingPop(true)
     const q = typeof queryOverride === 'string' ? queryOverride : searchQuery
     const occ = typeof occOverride === 'string' ? occOverride : selectedOccupationFilter
+
+    // Stale-While-Revalidate: tampilkan data cache seketika jika memori kosong
+    if (residents.length === 0) {
+      offlineDB.getCachedData<Resident[]>('residents').then((cached) => {
+        if (cached && cached.length > 0) setResidents((prev) => (prev.length === 0 ? cached : prev))
+      })
+      offlineDB.getCachedData<PopulationStatistics>('popStats').then((cachedStats) => {
+        if (cachedStats) setPopStats((prev) => prev || cachedStats)
+      })
+      offlineDB.getCachedData<AdministrativeRequestItem[]>('adminRequests').then((cachedReqs) => {
+        if (cachedReqs && cachedReqs.length > 0) setAdminRequests((prev) => (prev.length === 0 ? cachedReqs : prev))
+      })
+    }
+
     try {
       const [resList, resStats, reqList] = await Promise.all([
         populationService.listResidents(1, 50, q, occ || undefined),
@@ -604,6 +619,23 @@ export const App: React.FC = () => {
   const fetchFarmingData = async () => {
     try {
       const userVillage = currentUser?.village || undefined
+
+      // Stale-While-Revalidate: baca cache kebun seketika jika memori kosong
+      if (farms.length === 0) {
+        offlineDB.getCachedData<Farm[]>('farms').then((cf) => {
+          if (cf && cf.length > 0) setFarms((prev) => (prev.length === 0 ? cf : prev))
+        })
+        offlineDB.getCachedData<Farmer[]>('farmers').then((cf) => {
+          if (cf && cf.length > 0) setFarmers((prev) => (prev.length === 0 ? cf : prev))
+        })
+        offlineDB.getCachedData<FarmerGroup[]>('farmerGroups').then((cg) => {
+          if (cg && cg.length > 0) setFarmerGroups((prev) => (prev.length === 0 ? cg : prev))
+        })
+        offlineDB.getCachedData<FarmStatistics>('farmStats').then((cs) => {
+          if (cs) setFarmStats((prev) => prev || cs)
+        })
+      }
+
       const [groups, farmerList, farmList, geo, fStats] = await Promise.all([
         farmerService.listGroups(userVillage),
         farmerService.listFarmers(userVillage),
@@ -653,6 +685,15 @@ export const App: React.FC = () => {
 
   const fetchTraceabilityData = async () => {
     try {
+      if (harvests.length === 0) {
+        offlineDB.getCachedData<Harvest[]>('harvests').then((ch) => {
+          if (ch && ch.length > 0) setHarvests((prev) => (prev.length === 0 ? ch : prev))
+        })
+        offlineDB.getCachedData<ProductBatch[]>('batches').then((cb) => {
+          if (cb && cb.length > 0) setBatches((prev) => (prev.length === 0 ? cb : prev))
+        })
+      }
+
       const [hList, bList] = await Promise.all([
         traceabilityService.listHarvests(),
         traceabilityService.listBatches(),
@@ -800,17 +841,27 @@ export const App: React.FC = () => {
   }, [apiBase])
 
   useEffect(() => {
-    if (currentUser) {
-      if (isOfficerOrAdmin) {
-        fetchPopulationData()
-        fetchFarmingData()
-        fetchTraceabilityData()
-      } else if (isFarmerGroupAdmin || isFarmer) {
-        fetchFarmingData()
-        fetchTraceabilityData()
-      }
+    const userId = currentUser?.id
+    if (!userId) {
+      lastFetchedUserIdRef.current = null
+      return
     }
-  }, [currentUser, isOfficerOrAdmin, isFarmerGroupAdmin, isFarmer])
+
+    // Hindari duplikasi pemanggilan 10 endpoint jika objek user me-refresh token dengan ID yang sama
+    if (lastFetchedUserIdRef.current === userId) {
+      return
+    }
+    lastFetchedUserIdRef.current = userId
+
+    if (isOfficerOrAdmin) {
+      fetchPopulationData()
+      fetchFarmingData()
+      fetchTraceabilityData()
+    } else if (isFarmerGroupAdmin || isFarmer) {
+      fetchFarmingData()
+      fetchTraceabilityData()
+    }
+  }, [currentUser?.id, isOfficerOrAdmin, isFarmerGroupAdmin, isFarmer])
 
   const getRoleDefaultTab = (user: User | null): typeof activeTab => {
     if (!user) return 'landing'

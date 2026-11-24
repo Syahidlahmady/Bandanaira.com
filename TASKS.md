@@ -1925,5 +1925,24 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 100.3 Pengujian & Verifikasi:
   - Kompilasi build produksi Vite sukses 100% tanpa error (2.057 modul dalam 16.36s).
   - Backend pytest test suite (100 tes) lulus 100% (0 error, 4 warnings deprecation standar).
- (fix(auth): eliminate login glitch to beranda via seamless client-side SPA routing)
+
+---
+
+## [Phase 101] - Optimasi Kinerja Dashboard Admin, Eliminasi Render Loop & Reduksi Panggilan Endpoint Duplikat
+- [x] 101.1 Penanganan Database Migration yang Tertinggal (`community_contents`):
+  - Mengidentifikasi kegagalan `relation "community_contents" does not exist` pada endpoint pariwisata yang menyebabkan rollback PostgreSQL di backend.
+  - Menjalankan migrasi `alembic upgrade head` (revisi `014_community_contents_table`) sehingga tabel terbuat dan query konten pariwisata berjalan normal tanpa error.
+- [x] 101.2 Eliminasi Re-Render Loop Tanpa Henti pada DashboardLayout (`DashboardLayout.tsx`):
+  - Memperbaiki deklarasi `roles` agar ter-memoize dengan `useMemo` berdasarkan `currentUser?.roles`.
+  - Menghapus referensi array baru `roles` dari dependensi `initialNotifications`, menghentikan siklus pemicuan `useEffect` yang sebelumnya me-render ulang `DashboardLayout` secara terus-menerus.
+- [x] 101.3 Isolasi Live Clock Badge pada Dasbor Ekosistem (`UserEcosystemDashboard.tsx`):
+  - Memisahkan timer `setInterval` 1 detik ke dalam komponen mandiri `LiveClockBadge` berbasis `React.memo`.
+  - Mencegah timer jam me-render ulang seluruh halaman dasbor, kartu KPI, dan grafik Recharts (Bar/Line/Pie) setiap detik, membebaskan utilisasi CPU peramban.
+- [x] 101.4 Pencegahan Duplikasi Fetch 10 Endpoint pada App Mount & SWR Caching (`App.tsx`):
+  - Menambahkan `lastFetchedUserIdRef` untuk mendeteksi perubahan ID pengguna secara riil.
+  - Mengeliminasi gelombang kedua (20 panggilan bersamaan) saat `authService.getMe()` mengembalikan objek profil baru dengan ID yang sama.
+  - Menerapkan pola *Stale-While-Revalidate* (SWR) di `fetchPopulationData`, `fetchFarmingData`, dan `fetchTraceabilityData` yang membaca data IndexedDB lokal seketika saat state memori kosong, sehingga UI langsung tampil tanpa jeda jaringan.
+- [x] 101.5 Pengujian & Verifikasi:
+  - Kompilasi build produksi Vite sukses 100% tanpa error TypeScript (2.057 modul dalam 25.36s).
+  - Backend pytest test suite (100 tes) lulus 100% (0 error, 3 warnings deprecation standar).
 

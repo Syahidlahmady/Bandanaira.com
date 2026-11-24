@@ -218,10 +218,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Ekstraksi peran pengguna
-  const roles: string[] = currentUser
-    ? (currentUser.roles || []).map((r: any) => (typeof r === 'string' ? r : r.name))
-    : []
+  // Ekstraksi peran pengguna ter-memoize (mencegah loop re-render array baru pada useMemo notifikasi)
+  const roles: string[] = useMemo(() => {
+    if (!currentUser?.roles) return []
+    return (currentUser.roles || []).map((r: any) => (typeof r === 'string' ? r : r.name))
+  }, [currentUser?.roles])
   const isSuperuser = Boolean(currentUser?.is_superuser)
   const isAdmin = isSuperuser || roles.includes('admin')
   const isOfficerOrAdmin = isAdmin || roles.some((r) => ['admin', 'village_officer'].includes(r))
@@ -745,7 +746,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     pendingSyncCount,
     isOnline,
     isAdmin,
-    roles,
     isHomestayOperator,
     isSmartTourismAdmin,
     isFarmer,
