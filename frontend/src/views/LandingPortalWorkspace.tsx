@@ -10,6 +10,7 @@ export interface LandingPortalWorkspaceProps {
   isOnline?: boolean
   onLogout?: () => void
   onOpenQuickLogin?: () => void
+  activeTab?: string
 }
 
 export const LandingPortalWorkspace: React.FC<LandingPortalWorkspaceProps> = ({
@@ -21,6 +22,7 @@ export const LandingPortalWorkspace: React.FC<LandingPortalWorkspaceProps> = ({
   isOnline = true,
   onLogout,
   onOpenQuickLogin,
+  activeTab,
 }) => {
   return (
     <BandanairaBeranda
@@ -32,6 +34,7 @@ export const LandingPortalWorkspace: React.FC<LandingPortalWorkspaceProps> = ({
       isOnline={isOnline}
       onLogout={onLogout}
       onOpenQuickLogin={onOpenQuickLogin}
+      activeTab={activeTab}
     />
   )
 }

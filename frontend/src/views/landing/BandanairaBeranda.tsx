@@ -1,18 +1,17 @@
-import React, { useEffect, useState, useRef, Suspense } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import { HeroSection } from '../../components/landing/HeroSection'
-
-const PetaInteractiveSection = React.lazy(() => import('../../components/landing/PetaInteractiveSection'))
-const HeritageSpiceSection = React.lazy(() => import('../../components/landing/HeritageSpiceSection'))
-const TourismSawSection = React.lazy(() => import('../../components/landing/TourismSawSection'))
-const EcoStayCatalogSection = React.lazy(() => import('../../components/landing/EcoStayCatalogSection'))
-const EcosystemFeaturesSection = React.lazy(() => import('../../components/landing/EcosystemFeaturesSection'))
-const TraceabilityMarketplaceSection = React.lazy(() => import('../../components/landing/TraceabilityMarketplaceSection'))
-const SustainableTravelSection = React.lazy(() => import('../../components/landing/SustainableTravelSection'))
-const PlanYourVisitSection = React.lazy(() => import('../../components/landing/PlanYourVisitSection'))
-const LandingFooterSection = React.lazy(() => import('../../components/landing/LandingFooterSection'))
-const TourismChatbotBubble = React.lazy(() => import('../../components/landing/TourismChatbotBubble'))
+import PetaInteractiveSection from '../../components/landing/PetaInteractiveSection'
+import HeritageSpiceSection from '../../components/landing/HeritageSpiceSection'
+import TourismSawSection from '../../components/landing/TourismSawSection'
+import EcoStayCatalogSection from '../../components/landing/EcoStayCatalogSection'
+import EcosystemFeaturesSection from '../../components/landing/EcosystemFeaturesSection'
+import TraceabilityMarketplaceSection from '../../components/landing/TraceabilityMarketplaceSection'
+import SustainableTravelSection from '../../components/landing/SustainableTravelSection'
+import PlanYourVisitSection from '../../components/landing/PlanYourVisitSection'
+import LandingFooterSection from '../../components/landing/LandingFooterSection'
+import TourismChatbotBubble from '../../components/landing/TourismChatbotBubble'
 
 export type NavTabType =
   | 'population'
@@ -40,6 +39,7 @@ export interface BandanairaBerandaProps {
   onOpenQuickLogin?: () => void
   onToggleViewMode?: () => void
   viewMode?: 'editorial' | 'command'
+  activeTab?: string
 }
 
 /**
@@ -55,20 +55,25 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
   currentUser,
   onLogout,
   onOpenQuickLogin,
+  activeTab = 'landing',
 }) => {
   const [activeNav, setActiveNav] = useState<string>('#beranda')
   const lenisRef = useRef<Lenis | null>(null)
 
-  // 1. Intercept all button and anchor clicks on landing page to capture scroll position & button anchor
+  // 1. Intercept all button and anchor clicks on landing page to capture scroll position, anchor & section
   useEffect(() => {
     const handleDocumentClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null
       const btn = target?.closest('button, a, [data-scroll-anchor]') as HTMLElement | null
       if (btn) {
-        const scrollY = window.scrollY || document.documentElement.scrollTop || 0
+        const scrollY = lenisRef.current?.scroll || window.scrollY || document.documentElement.scrollTop || 0
         const anchor = btn.getAttribute('data-scroll-anchor') || btn.id
+        const section = btn.closest('section')?.id || ''
         try {
           sessionStorage.setItem('banda_landing_scroll_y', String(scrollY))
+          if (section) {
+            sessionStorage.setItem('banda_landing_scroll_section', section)
+          }
           if (anchor) {
             sessionStorage.setItem('banda_landing_scroll_anchor', anchor)
           } else {
@@ -89,54 +94,59 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
     }
   }, [])
 
-  // 2. Restore scroll position back to the exact pressed button when returning to Beranda
+  // 2. Restore scroll position back to the exact pressed button/section when landing becomes active
   useEffect(() => {
+    if (activeTab !== 'landing') return
+
     const savedAnchor = sessionStorage.getItem('banda_landing_scroll_anchor')
+    const savedSection = sessionStorage.getItem('banda_landing_scroll_section')
     const savedYStr = sessionStorage.getItem('banda_landing_scroll_y')
-    if (!savedAnchor && !savedYStr) return
+    if (!savedAnchor && !savedSection && !savedYStr) return
 
     const targetY = savedYStr ? parseFloat(savedYStr) : null
-    let attempts = 0
-    const maxAttempts = 35 // polling across ~1.75s to allow Suspense/lazy sections to mount
 
-    const attemptScrollRestore = () => {
-      attempts++
-      let restored = false
+    const performScrollRestore = () => {
+      const targetEl = savedAnchor
+        ? (document.getElementById(savedAnchor) || document.querySelector(`[data-scroll-anchor="${savedAnchor}"]`))
+        : null
+      const targetSec = savedSection ? document.getElementById(savedSection) : null
+      const finalTarget = (targetEl || targetSec) as HTMLElement | null
 
-      if (savedAnchor) {
-        const targetEl = document.getElementById(savedAnchor) || document.querySelector(`[data-scroll-anchor="${savedAnchor}"]`)
-        if (targetEl) {
-          targetEl.scrollIntoView({ behavior: 'auto', block: 'center' })
-          if (lenisRef.current) {
-            lenisRef.current.scrollTo(targetEl as HTMLElement, { immediate: true, offset: -60 })
-          }
-          restored = true
+      if (finalTarget) {
+        if (lenisRef.current) {
+          lenisRef.current.scrollTo(finalTarget, { immediate: true, offset: -80 })
         }
-      }
-
-      if (!restored && targetY !== null && !isNaN(targetY)) {
-        if (document.documentElement.scrollHeight >= targetY + 100 || attempts >= maxAttempts) {
-          window.scrollTo({ top: targetY, behavior: 'auto' })
-          if (lenisRef.current) {
-            lenisRef.current.scrollTo(targetY, { immediate: true })
-          }
-          restored = true
+        finalTarget.scrollIntoView({ behavior: 'auto', block: 'center' })
+        return true
+      } else if (targetY !== null && !isNaN(targetY)) {
+        if (lenisRef.current) {
+          lenisRef.current.scrollTo(targetY, { immediate: true })
         }
+        window.scrollTo({ top: targetY, behavior: 'auto' })
+        return true
       }
-
-      if (restored || attempts >= maxAttempts) {
-        sessionStorage.removeItem('banda_landing_scroll_anchor')
-        sessionStorage.removeItem('banda_landing_scroll_y')
-      } else {
-        requestAnimationFrame(() => {
-          setTimeout(attemptScrollRestore, 50)
-        })
-      }
+      return false
     }
 
-    const timer = setTimeout(attemptScrollRestore, 40)
-    return () => clearTimeout(timer)
-  }, [])
+    // Attempt immediately and across intervals to ensure position stays pinned
+    performScrollRestore()
+    const t1 = setTimeout(performScrollRestore, 30)
+    const t2 = setTimeout(performScrollRestore, 100)
+    const t3 = setTimeout(performScrollRestore, 250)
+    const t4 = setTimeout(() => {
+      performScrollRestore()
+      sessionStorage.removeItem('banda_landing_scroll_anchor')
+      sessionStorage.removeItem('banda_landing_scroll_section')
+      sessionStorage.removeItem('banda_landing_scroll_y')
+    }, 450)
+
+    return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+      clearTimeout(t3)
+      clearTimeout(t4)
+    }
+  }, [activeTab])
 
   // Smooth scrolling initialization via Lenis (Desktop only; native momentum scrolling for mobile)
   useEffect(() => {
@@ -146,8 +156,24 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
     )
 
+    // Check if there is a saved scroll target to restore immediately
+    const savedAnchor = sessionStorage.getItem('banda_landing_scroll_anchor')
+    const savedSection = sessionStorage.getItem('banda_landing_scroll_section')
+    const savedYStr = sessionStorage.getItem('banda_landing_scroll_y')
+
     // On mobile devices, bypass Lenis to utilize native 60/120Hz GPU-accelerated momentum scrolling
     if (isMobileDevice) {
+      if (savedAnchor || savedSection || savedYStr) {
+        const el = savedAnchor
+          ? (document.getElementById(savedAnchor) || document.querySelector(`[data-scroll-anchor="${savedAnchor}"]`))
+          : (savedSection ? document.getElementById(savedSection) : null)
+        if (el) {
+          el.scrollIntoView({ behavior: 'auto', block: 'center' })
+        } else if (savedYStr) {
+          window.scrollTo({ top: parseFloat(savedYStr), behavior: 'auto' })
+        }
+      }
+
       const handleAnchorClick = (e: MouseEvent) => {
         const target = (e.target as HTMLElement).closest('a[href^="#"]') as HTMLAnchorElement | null
         if (target && target.hash) {
@@ -173,6 +199,18 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
       touchMultiplier: 1.0,
     })
     lenisRef.current = lenis
+
+    // If there is a saved scroll target, immediately initialize Lenis to it!
+    if (savedAnchor || savedSection || savedYStr) {
+      const el = savedAnchor
+        ? (document.getElementById(savedAnchor) || document.querySelector(`[data-scroll-anchor="${savedAnchor}"]`))
+        : (savedSection ? document.getElementById(savedSection) : null)
+      if (el) {
+        lenis.scrollTo(el as HTMLElement, { immediate: true, offset: -80 })
+      } else if (savedYStr) {
+        lenis.scrollTo(parseFloat(savedYStr), { immediate: true })
+      }
+    }
 
     // Smooth anchor link click handling
     const handleAnchorClick = (e: MouseEvent) => {
@@ -207,92 +245,81 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
         setActiveNav={setActiveNav}
       />
 
-      <Suspense
-        fallback={
-          <div className="w-full py-16 flex flex-col items-center justify-center gap-3 bg-[#f7f5f0]">
-            <div className="w-8 h-8 rounded-full border-2 border-[#0f2c59] border-t-transparent animate-spin" />
-            <span className="text-xs font-semibold text-slate-600">
-              Memuat bagian penjelajahan pulau...
-            </span>
-          </div>
-        }
-      >
-        {/* 3. Interactive Spatial Map Section */}
-        <div className="w-full content-auto">
-          <PetaInteractiveSection
-            onNavigate={onNavigate}
-            currentUser={currentUser}
-          />
-        </div>
+      {/* 3. Interactive Spatial Map Section */}
+      <div className="w-full">
+        <PetaInteractiveSection
+          onNavigate={onNavigate}
+          currentUser={currentUser}
+        />
+      </div>
 
-        {/* 4. Spice Heritage & Cultural Sites Section */}
-        <HeritageSpiceSection
+      {/* 4. Spice Heritage & Cultural Sites Section */}
+      <HeritageSpiceSection
+        onNavigate={onNavigate}
+      />
+
+      {/* 5. Marine & Heritage Tourism with SAW Recommender */}
+      <div className="w-full">
+        <TourismSawSection
           onNavigate={onNavigate}
         />
+      </div>
 
-        {/* 5. Marine & Heritage Tourism with SAW Recommender */}
-        <div className="w-full content-auto">
-          <TourismSawSection
-            onNavigate={onNavigate}
-          />
-        </div>
+      {/* 6. Island Stays & Eco-Lodges Directory */}
+      <div className="w-full">
+        <EcoStayCatalogSection
+          onNavigate={onNavigate}
+          onOpenLogin={onOpenLogin}
+          onOpenQuickLogin={onOpenQuickLogin}
+        />
+      </div>
 
-        {/* 6. Island Stays & Eco-Lodges Directory */}
-        <div className="w-full content-auto">
-          <EcoStayCatalogSection
-            onNavigate={onNavigate}
-            onOpenLogin={onOpenLogin}
-            onOpenQuickLogin={onOpenQuickLogin}
-          />
-        </div>
+      {/* 7. Resident Services & Digital Island Ecosystem */}
+      <div className="w-full">
+        <EcosystemFeaturesSection
+          onNavigate={onNavigate}
+          onOpenLogin={onOpenLogin}
+          currentUser={currentUser}
+        />
+      </div>
 
-        {/* 7. Resident Services & Digital Island Ecosystem */}
-        <div className="w-full content-auto">
-          <EcosystemFeaturesSection
-            onNavigate={onNavigate}
-            onOpenLogin={onOpenLogin}
-            currentUser={currentUser}
-          />
-        </div>
+      {/* 8. Verified Blockchain Marketplace & Local UMKM */}
+      <div className="w-full">
+        <TraceabilityMarketplaceSection
+          onNavigate={onNavigate}
+          onOpenMarketplace={onOpenMarketplace}
+          onPublicVerify={onPublicVerify}
+        />
+      </div>
 
-        {/* 8. Verified Blockchain Marketplace & Local UMKM */}
-        <div className="w-full content-auto">
-          <TraceabilityMarketplaceSection
-            onNavigate={onNavigate}
-            onOpenMarketplace={onOpenMarketplace}
-            onPublicVerify={onPublicVerify}
-          />
-        </div>
+      {/* 9. Demographics & Island Vitality Stats */}
+      <div className="w-full">
+        <SustainableTravelSection
+          onNavigate={onNavigate}
+          onOpenLogin={onOpenLogin}
+          currentUser={currentUser}
+        />
+      </div>
 
-        {/* 9. Demographics & Island Vitality Stats */}
-        <div className="w-full content-auto">
-          <SustainableTravelSection
-            onNavigate={onNavigate}
-            onOpenLogin={onOpenLogin}
-            currentUser={currentUser}
-          />
-        </div>
+      {/* 10. Plan Your Visit CTA */}
+      <div className="w-full">
+        <PlanYourVisitSection
+          onNavigate={onNavigate}
+        />
+      </div>
 
-        {/* 10. Plan Your Visit CTA */}
-        <div className="w-full content-auto">
-          <PlanYourVisitSection
-            onNavigate={onNavigate}
-          />
-        </div>
+      {/* 11. Comprehensive Ecosystem Footer */}
+      <div className="w-full">
+        <LandingFooterSection
+          onNavigate={onNavigate}
+          onOpenLogin={onOpenLogin}
+          onOpenQuickLogin={onOpenQuickLogin}
+          setActiveNav={setActiveNav}
+        />
+      </div>
 
-        {/* 11. Comprehensive Ecosystem Footer */}
-        <div className="w-full content-auto">
-          <LandingFooterSection
-            onNavigate={onNavigate}
-            onOpenLogin={onOpenLogin}
-            onOpenQuickLogin={onOpenQuickLogin}
-            setActiveNav={setActiveNav}
-          />
-        </div>
-
-        {/* 12. Floating Tourism Recommendation Chatbot Bubble */}
-        <TourismChatbotBubble onNavigate={onNavigate} />
-      </Suspense>
+      {/* 12. Floating Tourism Recommendation Chatbot Bubble */}
+      <TourismChatbotBubble onNavigate={onNavigate} />
     </div>
   )
 }

@@ -1396,41 +1396,29 @@ export const App: React.FC = () => {
       )}
 
       {/* 1. LANDING PORTAL UTAMA (SATU PINTU UTAMA EKOSISTEM - HANYA 1 LANDING PAGE) */}
-      {activeTab === 'landing' && (
+      <div style={{ display: activeTab === 'landing' ? 'block' : 'none' }}>
         <ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Beranda Utama">
-          <React.Suspense
-            fallback={
-              <div className="min-h-screen bg-[#081D35] flex items-center justify-center text-white">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-10 h-10 border-3 border-[#F4B75E] border-t-transparent rounded-full animate-spin" />
-                  <span className="text-sm font-medium tracking-wide text-[#F4B75E]">
-                    Memuat Ekosistem Banda Neira...
-                  </span>
-                </div>
-              </div>
-            }
-          >
-            <LandingPortalWorkspace
-              onNavigate={(tab, slug) => {
-                if (tab === 'sejarah') {
-                  handleNavigateToSejarah(slug)
-                  return
-                }
-                setActiveTab(
-                  tab === 'population' && currentUser ? getRoleDefaultTab(currentUser) : (tab as TabId)
-                )
-              }}
-              onOpenLogin={() => setActiveTab('population')}
-              onOpenMarketplace={() => setActiveTab('marketplace')}
-              onPublicVerify={(token) => handlePublicVerify(token)}
-              currentUser={currentUser}
-              isOnline={isOnline}
-              onLogout={handleLogout}
-              onOpenQuickLogin={() => setShowQuickLoginModal(true)}
-            />
-          </React.Suspense>
+          <LandingPortalWorkspace
+            activeTab={activeTab}
+            onNavigate={(tab, slug) => {
+              if (tab === 'sejarah') {
+                handleNavigateToSejarah(slug)
+                return
+              }
+              setActiveTab(
+                tab === 'population' && currentUser ? getRoleDefaultTab(currentUser) : (tab as TabId)
+              )
+            }}
+            onOpenLogin={() => setActiveTab('population')}
+            onOpenMarketplace={() => setActiveTab('marketplace')}
+            onPublicVerify={(token) => handlePublicVerify(token)}
+            currentUser={currentUser}
+            isOnline={isOnline}
+            onLogout={handleLogout}
+            onOpenQuickLogin={() => setShowQuickLoginModal(true)}
+          />
         </ErrorBoundary>
-      )}
+      </div>
 
       {/* 2. Login Portal Section for Non-authenticated Users on Protected Operational Routes */}
       {!currentUser &&

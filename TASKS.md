@@ -1824,10 +1824,13 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 96.2 Perekaman Posisi Scroll & Tombol Terpilih (`BandanairaBeranda.tsx` & `App.tsx`):
   - Menambahkan capture-phase click listener global pada beranda untuk merekam `banda_landing_scroll_y` dan `banda_landing_scroll_anchor` ke `sessionStorage` seketika saat tombol ditekan.
   - Menambahkan fallback penyimpanan scroll Y pada `handleNavigateToSejarah` dan `setActiveTab` di `App.tsx` sebelum perutean berpindah.
-- [x] 96.3 Mesin Restorasi Scroll Reaktif dengan Dukungan Suspense & Lenis (`BandanairaBeranda.tsx`):
-  - Mengimplementasikan observer siklus restorasi yang mendeteksi tersedianya elemen target di DOM pasca pemuatan komponen malas (`React.lazy` / `Suspense`).
-  - Mengarahkan viewport kembali tepat ke posisi tombol yang ditekan menggunakan `el.scrollIntoView({ behavior: 'auto', block: 'center' })`.
-  - Mengintegrasikan pembaruan posisi virtual Lenis (`lenisRef.current.scrollTo`) agar scroll halus desktop dan momentum mobile tetap sinkron sempurna tanpa memicu lompatan kembali ke atas.
+- [x] 96.3 Eliminasi Akar Masalah Kegagalan Restorasi (DOM Destruction, Suspense Delay & Content Visibility):
+  - Mengubah perenderan `LandingPortalWorkspace` di `App.tsx` menjadi persistent DOM (`style={{ display: activeTab === 'landing' ? 'block' : 'none' }}`) sehingga struktur DOM beranda tidak pernah dihancurkan dan tidak perlu reload saat navigasi bolak-balik.
+  - Mengubah impor 10 seksi beranda di `BandanairaBeranda.tsx` dari `React.lazy` menjadi impor langsung (synchronous), mengeliminasi keterlambatan Suspense fallback sehingga tombol dan seksi target tersedia 100% pada frame awal.
+  - Menghapus kelas `content-auto` (`content-visibility: auto`) yang sebelumnya menahan layouting dan menyebabkan dimensi elemen luar layar bernilai 0 sebelum discroll.
+  - Menghubungkan inisialisasi Lenis desktop agar langsung mengatur `lenis.scrollTo(finalTarget, { immediate: true, offset: -80 })`, mencegah Lenis mereset scroll ke 0 pada siklus requestAnimationFrame pertama.
+  - Mendukung target elemen ganda: tombol spesifik (`savedAnchor`), seksi wilayah (`savedSection` seperti `#wisata`, `#eco-stay`, `#layanan-umkm`), dan koordinat piksel `targetY`.
 - [x] 96.4 Pengujian & Verifikasi:
-  - Kompilasi build produksi Vite sukses 100% tanpa error TypeScript (2.059 modul dalam 15.80s).
+  - Kompilasi build produksi Vite sukses 100% tanpa error TypeScript (2.059 modul dalam 16.84s).
+  - 16/16 automated test suite pariwisata backend lulus 100% (48.90s).
 
