@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
-import { motion } from 'framer-motion'
 import logoImg from '../../assets/logo.png'
 import {
   LayoutDashboard,
@@ -2582,10 +2581,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             const isTabActive = activeTab === tabItem.id && !mobileSidebarOpen
 
             return (
-              <motion.button
+              <button
                 key={tabItem.id}
                 type="button"
-                whileTap={{ scale: 0.86 }}
                 onClick={() => {
                   if (activeTab === tabItem.id) {
                     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -2595,33 +2593,26 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   setMobileSidebarOpen(false)
                 }}
                 aria-label={`Beralih ke ${tabItem.label}`}
-                className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-colors duration-200 cursor-pointer min-h-[44px] relative ${
+                className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-all duration-200 cursor-pointer min-h-[44px] relative active:scale-90 ${
                   isTabActive ? 'text-[#F4B75E]' : 'text-slate-400 hover:text-white'
                 }`}
               >
                 {/* Active Indicator Glow Animation */}
                 {isTabActive && (
-                  <motion.div
-                    layoutId="dashboard-bottom-indicator"
-                    className="absolute inset-0 bg-gradient-to-b from-[#F4B75E]/20 via-[#F4B75E]/10 to-transparent rounded-2xl -z-10 border border-[#F4B75E]/25"
-                    transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                  <div
+                    className="absolute inset-0 bg-gradient-to-b from-[#F4B75E]/20 via-[#F4B75E]/10 to-transparent rounded-2xl -z-10 border border-[#F4B75E]/25 transition-all duration-300"
                   />
                 )}
 
-                <motion.div
-                  animate={{
-                    scale: isTabActive ? 1.15 : 1,
-                    y: isTabActive ? -2 : 0,
-                  }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                  className="relative flex items-center justify-center"
+                <div
+                  className={`relative flex items-center justify-center transition-all duration-200 ${
+                    isTabActive ? 'scale-110 -translate-y-0.5' : ''
+                  }`}
                 >
                   <TabIcon size={20} className={isTabActive ? 'text-[#F4B75E]' : 'text-slate-400'} />
                   {isTabActive && (
-                    <motion.span
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#F4B75E] shadow-[0_0_8px_#F4B75E]"
+                    <span
+                      className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#F4B75E] shadow-[0_0_8px_#F4B75E] animate-pulse"
                     />
                   )}
                   {tabItem.badge !== undefined && (
@@ -2629,11 +2620,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                       {tabItem.badge}
                     </span>
                   )}
-                </motion.div>
+                </div>
                 <span className="text-[10px] font-sans font-medium tracking-tight mt-1 leading-none truncate max-w-[58px]">
                   {tabItem.shortLabel || tabItem.label}
                 </span>
-              </motion.button>
+              </button>
             )
           })}
 
@@ -2642,30 +2633,24 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             const isMenuSpecialActive = !mobileBottomTabs.some((t) => t.id === activeTab) || mobileSidebarOpen
 
             return (
-              <motion.button
+              <button
                 type="button"
-                whileTap={{ scale: 0.86 }}
                 onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
                 aria-label={mobileSidebarOpen ? 'Tutup Menu Sidebar' : 'Buka Semua Menu Ruang Kerja'}
-                className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-colors duration-200 cursor-pointer min-h-[44px] relative ${
+                className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-all duration-200 cursor-pointer min-h-[44px] relative active:scale-90 ${
                   mobileSidebarOpen || isMenuSpecialActive ? 'text-[#F4B75E]' : 'text-slate-400 hover:text-white'
                 }`}
               >
                 {isMenuSpecialActive && (
-                  <motion.div
-                    layoutId="dashboard-bottom-indicator"
-                    className="absolute inset-0 bg-gradient-to-b from-[#F4B75E]/20 via-[#F4B75E]/10 to-transparent rounded-2xl -z-10 border border-[#F4B75E]/25"
-                    transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                  <div
+                    className="absolute inset-0 bg-gradient-to-b from-[#F4B75E]/20 via-[#F4B75E]/10 to-transparent rounded-2xl -z-10 border border-[#F4B75E]/25 transition-all duration-300"
                   />
                 )}
 
-                <motion.div
-                  animate={{
-                    scale: mobileSidebarOpen || isMenuSpecialActive ? 1.15 : 1,
-                    y: mobileSidebarOpen || isMenuSpecialActive ? -2 : 0,
-                  }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                  className="relative flex items-center justify-center"
+                <div
+                  className={`relative flex items-center justify-center transition-all duration-200 ${
+                    mobileSidebarOpen || isMenuSpecialActive ? 'scale-110 -translate-y-0.5' : ''
+                  }`}
                 >
                   {mobileSidebarOpen ? (
                     <X size={20} strokeWidth={2.2} />
@@ -2673,17 +2658,15 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     <LayoutGrid size={20} strokeWidth={isMenuSpecialActive ? 2.2 : 1.8} />
                   )}
                   {isMenuSpecialActive && (
-                    <motion.span
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#F4B75E] shadow-[0_0_8px_#F4B75E]"
+                    <span
+                      className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#F4B75E] shadow-[0_0_8px_#F4B75E] animate-pulse"
                     />
                   )}
-                </motion.div>
+                </div>
                 <span className="text-[10px] font-sans font-medium tracking-tight mt-1 leading-none">
                   {mobileSidebarOpen ? 'Tutup' : 'Semua'}
                 </span>
-              </motion.button>
+              </button>
             )
           })()}
         </div>

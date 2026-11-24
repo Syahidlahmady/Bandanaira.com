@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
 import { Home, Compass, Map, Store, User, LogIn } from 'lucide-react'
 
 export interface MobileBottomNavProps {
@@ -149,185 +148,147 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
     >
       <div className="max-w-md mx-auto grid grid-cols-5 items-center justify-around relative">
         {/* 1. Beranda */}
-        <motion.button
+        <button
           type="button"
-          whileTap={{ scale: 0.86 }}
           onClick={handleHomeClick}
           aria-label="Navigasi ke Beranda"
-          className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-colors duration-200 cursor-pointer min-h-[44px] relative ${
+          className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-all duration-200 cursor-pointer min-h-[44px] relative active:scale-90 ${
             isHomeActive ? 'text-[#f4b75e]' : 'text-slate-400 hover:text-white'
           }`}
         >
           {isHomeActive && (
-            <motion.div
-              layoutId="landing-mobile-indicator"
-              className="absolute inset-0 bg-gradient-to-b from-[#f4b75e]/20 via-[#f4b75e]/10 to-transparent rounded-2xl -z-10 border border-[#f4b75e]/25"
-              transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+            <div
+              className="absolute inset-0 bg-gradient-to-b from-[#f4b75e]/20 via-[#f4b75e]/10 to-transparent rounded-2xl -z-10 border border-[#f4b75e]/25 transition-all duration-300"
             />
           )}
-          <motion.div
-            animate={{
-              scale: isHomeActive ? 1.15 : 1,
-              y: isHomeActive ? -2 : 0,
-            }}
-            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-            className="relative flex items-center justify-center"
+          <div
+            className={`relative flex items-center justify-center transition-all duration-200 ${
+              isHomeActive ? 'scale-110 -translate-y-0.5' : ''
+            }`}
           >
             <Home size={20} strokeWidth={isHomeActive ? 2.5 : 1.8} />
             {isHomeActive && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#f4b75e] shadow-[0_0_8px_#f4b75e]"
+              <span
+                className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#f4b75e] shadow-[0_0_8px_#f4b75e] animate-pulse"
               />
             )}
-          </motion.div>
+          </div>
           <span className="text-[10px] font-sans font-medium tracking-tight mt-1 leading-none">
             Beranda
           </span>
-        </motion.button>
+        </button>
 
         {/* 2. Peta Spasial (GIS) - Sesuai urutan alur scroll landing page */}
-        <motion.button
+        <button
           type="button"
-          whileTap={{ scale: 0.86 }}
           onClick={handlePetaClick}
           aria-label="Buka Peta Spasial Kepulauan"
-          className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-colors duration-200 cursor-pointer min-h-[44px] relative ${
+          className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-all duration-200 cursor-pointer min-h-[44px] relative active:scale-90 ${
             isPetaActive ? 'text-[#f4b75e]' : 'text-slate-400 hover:text-white'
           }`}
         >
           {isPetaActive && (
-            <motion.div
-              layoutId="landing-mobile-indicator"
-              className="absolute inset-0 bg-gradient-to-b from-[#f4b75e]/20 via-[#f4b75e]/10 to-transparent rounded-2xl -z-10 border border-[#f4b75e]/25"
-              transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+            <div
+              className="absolute inset-0 bg-gradient-to-b from-[#f4b75e]/20 via-[#f4b75e]/10 to-transparent rounded-2xl -z-10 border border-[#f4b75e]/25 transition-all duration-300"
             />
           )}
-          <motion.div
-            animate={{
-              scale: isPetaActive ? 1.15 : 1,
-              y: isPetaActive ? -2 : 0,
-            }}
-            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-            className="relative flex items-center justify-center"
+          <div
+            className={`relative flex items-center justify-center transition-all duration-200 ${
+              isPetaActive ? 'scale-110 -translate-y-0.5' : ''
+            }`}
           >
             <Map size={20} strokeWidth={isPetaActive ? 2.5 : 1.8} />
             {isPetaActive && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#f4b75e] shadow-[0_0_8px_#f4b75e]"
+              <span
+                className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#f4b75e] shadow-[0_0_8px_#f4b75e] animate-pulse"
               />
             )}
-          </motion.div>
+          </div>
           <span className="text-[10px] font-sans font-medium tracking-tight mt-1 leading-none">
             Peta
           </span>
-        </motion.button>
+        </button>
 
         {/* 3. Wisata & Eco-Stay */}
-        <motion.button
+        <button
           type="button"
-          whileTap={{ scale: 0.86 }}
           onClick={handleWisataClick}
           aria-label="Navigasi ke Destinasi & Penginapan"
-          className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-colors duration-200 cursor-pointer min-h-[44px] relative ${
+          className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-all duration-200 cursor-pointer min-h-[44px] relative active:scale-90 ${
             isWisataActive ? 'text-[#f4b75e]' : 'text-slate-400 hover:text-white'
           }`}
         >
           {isWisataActive && (
-            <motion.div
-              layoutId="landing-mobile-indicator"
-              className="absolute inset-0 bg-gradient-to-b from-[#f4b75e]/20 via-[#f4b75e]/10 to-transparent rounded-2xl -z-10 border border-[#f4b75e]/25"
-              transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+            <div
+              className="absolute inset-0 bg-gradient-to-b from-[#f4b75e]/20 via-[#f4b75e]/10 to-transparent rounded-2xl -z-10 border border-[#f4b75e]/25 transition-all duration-300"
             />
           )}
-          <motion.div
-            animate={{
-              scale: isWisataActive ? 1.15 : 1,
-              y: isWisataActive ? -2 : 0,
-            }}
-            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-            className="relative flex items-center justify-center"
+          <div
+            className={`relative flex items-center justify-center transition-all duration-200 ${
+              isWisataActive ? 'scale-110 -translate-y-0.5' : ''
+            }`}
           >
             <Compass size={20} strokeWidth={isWisataActive ? 2.5 : 1.8} />
             {isWisataActive && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#f4b75e] shadow-[0_0_8px_#f4b75e]"
+              <span
+                className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#f4b75e] shadow-[0_0_8px_#f4b75e] animate-pulse"
               />
             )}
-          </motion.div>
+          </div>
           <span className="text-[10px] font-sans font-medium tracking-tight mt-1 leading-none">
             Wisata
           </span>
-        </motion.button>
+        </button>
 
         {/* 4. Pasar / Marketplace */}
-        <motion.button
+        <button
           type="button"
-          whileTap={{ scale: 0.86 }}
           onClick={handleMarketplaceClick}
           aria-label="Buka Marketplace UMKM Banda"
-          className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-colors duration-200 cursor-pointer min-h-[44px] relative ${
+          className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-all duration-200 cursor-pointer min-h-[44px] relative active:scale-90 ${
             isMarketplaceActive ? 'text-[#f4b75e]' : 'text-slate-400 hover:text-white'
           }`}
         >
           {isMarketplaceActive && (
-            <motion.div
-              layoutId="landing-mobile-indicator"
-              className="absolute inset-0 bg-gradient-to-b from-[#f4b75e]/20 via-[#f4b75e]/10 to-transparent rounded-2xl -z-10 border border-[#f4b75e]/25"
-              transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+            <div
+              className="absolute inset-0 bg-gradient-to-b from-[#f4b75e]/20 via-[#f4b75e]/10 to-transparent rounded-2xl -z-10 border border-[#f4b75e]/25 transition-all duration-300"
             />
           )}
-          <motion.div
-            animate={{
-              scale: isMarketplaceActive ? 1.15 : 1,
-              y: isMarketplaceActive ? -2 : 0,
-            }}
-            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-            className="relative flex items-center justify-center"
+          <div
+            className={`relative flex items-center justify-center transition-all duration-200 ${
+              isMarketplaceActive ? 'scale-110 -translate-y-0.5' : ''
+            }`}
           >
             <Store size={20} strokeWidth={isMarketplaceActive ? 2.5 : 1.8} />
             {isMarketplaceActive && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#f4b75e] shadow-[0_0_8px_#f4b75e]"
+              <span
+                className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#f4b75e] shadow-[0_0_8px_#f4b75e] animate-pulse"
               />
             )}
-          </motion.div>
+          </div>
           <span className="text-[10px] font-sans font-medium tracking-tight mt-1 leading-none">
             Pasar
           </span>
-        </motion.button>
+        </button>
 
         {/* 5. Akun / Masuk */}
-        <motion.button
+        <button
           type="button"
-          whileTap={{ scale: 0.86 }}
           onClick={handleAccountClick}
           aria-label={currentUser ? 'Buka Dashboard Akun' : 'Masuk ke Portal'}
-          className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-colors duration-200 cursor-pointer min-h-[44px] relative ${
+          className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-all duration-200 cursor-pointer min-h-[44px] relative active:scale-90 ${
             isAccountActive ? 'text-[#f4b75e]' : 'text-slate-400 hover:text-white'
           }`}
         >
           {isAccountActive && (
-            <motion.div
-              layoutId="landing-mobile-indicator"
-              className="absolute inset-0 bg-gradient-to-b from-[#f4b75e]/20 via-[#f4b75e]/10 to-transparent rounded-2xl -z-10 border border-[#f4b75e]/25"
-              transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+            <div
+              className="absolute inset-0 bg-gradient-to-b from-[#f4b75e]/20 via-[#f4b75e]/10 to-transparent rounded-2xl -z-10 border border-[#f4b75e]/25 transition-all duration-300"
             />
           )}
-          <motion.div
-            animate={{
-              scale: isAccountActive ? 1.15 : 1,
-              y: isAccountActive ? -2 : 0,
-            }}
-            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-            className="relative flex items-center justify-center"
+          <div
+            className={`relative flex items-center justify-center transition-all duration-200 ${
+              isAccountActive ? 'scale-110 -translate-y-0.5' : ''
+            }`}
           >
             {currentUser ? (
               <User size={20} strokeWidth={isAccountActive ? 2.5 : 1.8} />
@@ -337,11 +298,11 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             {currentUser && (
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-[#081d35]" />
             )}
-          </motion.div>
+          </div>
           <span className="text-[10px] font-sans font-medium tracking-tight mt-1 leading-none truncate max-w-[56px]">
             {currentUser ? (currentUser.full_name?.split(' ')[0] || 'Akun') : 'Masuk'}
           </span>
-        </motion.button>
+        </button>
       </div>
     </nav>
   )
