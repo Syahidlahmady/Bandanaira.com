@@ -81,6 +81,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 91: Pembersihan Kolom Akses Akun pada Footer Ekosistem & Penyelarasan Layout Grid**
 - [x] **Phase 92: Pengetatan Hak Akses DSS/SAW Smart Planner Khusus Administrator Sistem**
 - [x] **Phase 93: Penghapusan Switcher Bahasa pada Dashboard Admin (Penyelarasan Pengguna Lokal Banda & Penegasan Fokus Smart Tourism-Kependudukan)**
+- [x] **Phase 94: Personalisasi Notifikasi Ekosistem Berdasarkan Peran Hak Akses Pengguna (Role-Scoped Ecosystem Notifications)**
 ---
 
 ## Detailed Task Checklist
@@ -1767,3 +1768,24 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Fokus utama operasional ekosistem dikonsolidasi penuh pada **Smart Tourism** (akomodasi eco-stay, direktori pemandu, cagar budaya, pemesanan WhatsApp) dan **Kependudukan Desa** (profil warga terenkripsi AES-256/HMAC, surat keterangan desa, tata kelola dusun).
 - [x] 93.3 Pengujian & Verifikasi:
   - Build produksi frontend Vite sukses 100% (2.059 modul ter-bundle dalam 17.04s).
+
+---
+
+## [Phase 94] - Personalisasi Notifikasi Ekosistem Berdasarkan Peran Hak Akses Pengguna
+- [x] 94.1 Pemetaan Notifikasi Tertutup Khusus Peran Pengguna (`frontend/src/views/dashboard/DashboardLayout.tsx`):
+  - Mengeliminasi notifikasi statis global yang tampil bercampur untuk semua pengguna.
+  - Mengonfigurasi generator `initialNotifications` agar mengevaluasi hak akses aktif pengguna secara dinamis:
+    - **Administrator Sistem**: Mendapatkan notifikasi eksekutif lintas pilar (surat, verifikasi lahan, master data pariwisata, telemetri IoT, sirkularitas koperasi, dan blockchain EVM).
+    - **Perangkat Kantor Desa / Kepala Desa**: Notifikasi permohonan surat masuk warga (`letters`), verifikasi plot kebun pala poktan (`farming`), keamanan enkripsi kependudukan (`population`), dan pengawasan reservasi tamu menginap 1x24 jam (`tourism`).
+    - **Operator Homestay / Eco-Stay**: Notifikasi reservasi kamar WhatsApp (`tourism`), verifikasi fasilitas air RO & listrik surya (`tourism`), dan katalog suvenir untuk tamu (`marketplace`).
+    - **Pokdarwis / Admin Wisata**: Notifikasi draf publikasi artikel sejarah (`tourism`), direktori pemandu wisata terakreditasi HPI (`tourism`), dan audio guide 177 situs cagar budaya (`tourism`).
+    - **Petani Rempah**: Notifikasi pencatatan panen pala & fuli (`traceability`), plot kebun terpetakan (`farming`), dan layanan surat usaha tani mandiri (`letters`).
+    - **Ketua Kelompok Tani (Poktan)**: Notifikasi status verifikasi lahan anggota poktan (`farming`), penggabungan batch rempah kelompok (`traceability`), dan rekomendasi surat usaha tani (`letters`).
+    - **Pengelola Koperasi Hatta**: Notifikasi kasir timbangan & penukaran botol sampah (`koperasi`), penerimaan batch rempah gudang (`traceability`), dan inventaris marketplace rempah (`marketplace`).
+    - **Surveyor Lapangan & IoT**: Notifikasi sensor IoT 4 stasiun (`iot`), formulir survei NoSQL dinamis (`survei`), dan layer peta spasial GIS (`gis`).
+    - **Warga Masyarakat Desa**: Notifikasi status permohonan surat keterangan mandiri (`letters`), saldo tabungan koperasi & kuota air dispenser pintar (`koperasi`), serta informasi perlindungan NIK UU PDP No. 27/2022.
+- [x] 94.2 Dukungan Kategori Baru `tourism` pada Komponen Notifikasi:
+  - Menambahkan kategori `'tourism'` pada ikon notifikasi (Home emas) dan gaya badge responsif (`bg-amber-50 border-amber-200`).
+  - Menyelaraskan filter kategori notifikasi agar mencakup layanan pariwisata.
+- [x] 94.3 Pengujian & Verifikasi:
+  - Kompilasi build produksi Vite sukses 100% (2.059 modul ter-bundle dalam 34.14s).
