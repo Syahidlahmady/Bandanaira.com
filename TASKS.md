@@ -1910,4 +1910,20 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 99.6 Pengujian & Verifikasi:
   - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
   - Build produksi frontend Vite (`npm run build`) sukses 100% (2.059 modul ter-bundle dalam 7.62s).
+---
+
+## [Phase 100] - Eliminasi Glitch Visual Kedipan Beranda Saat Login Menuju Dashboard
+- [x] 100.1 Investigasi Akar Masalah Glitch:
+  - Mengidentifikasi pemanggilan `window.location.href = TAB_ROUTES[targetTab] || '/dashboard'` pada `handleLogin` dan `handleQuickLogin` di `frontend/src/App.tsx`.
+  - Pemanggilan `window.location.href` memaksa peramban melakukan *hard reload* (membongkar DOM dan memuat ulang JavaScript dari awal).
+  - Selama proses reload tersebut, sebelum bundle React dan sesi autentikasi selesai dimuat, peramban sempat merender tampilan Beranda/Landing sesaat sebelum berpindah ke `/dashboard`, menyebabkan visual flicker/glitch.
+- [x] 100.2 Penerapan Transisi Single Page Application (SPA) Murni 0ms:
+  - Menghapus pemanggilan hard reload `window.location.href` pada `handleLogin`, `handleQuickLogin`, dan `handleLogout` di `frontend/src/App.tsx`.
+  - Mengandalkan transisi state reaktif React (`setCurrentUser`, `setActiveTab(targetTab)` dengan `window.history.pushState`).
+  - Menambahkan `setShowQuickLoginModal(false)` otomatis saat login berhasil agar modal simulator aktor langsung tertutup seketika.
+  - Memastikan transisi dari Beranda ke Dasbor berjalan instan dalam 0 milidetik langsung merender `DashboardLayout` tanpa kedipan, tanpa reload, dan tanpa glitch ke Beranda.
+- [x] 100.3 Pengujian & Verifikasi:
+  - Kompilasi build produksi Vite sukses 100% tanpa error (2.057 modul dalam 16.36s).
+  - Backend pytest test suite (100 tes) lulus 100% (0 error, 4 warnings deprecation standar).
+ (fix(auth): eliminate login glitch to beranda via seamless client-side SPA routing)
 

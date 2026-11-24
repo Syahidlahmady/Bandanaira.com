@@ -299,6 +299,9 @@ export const App: React.FC = () => {
           window.history.pushState({ tab }, '', targetPath)
         }
       }
+      if (tab !== 'landing' && typeof window !== 'undefined') {
+        window.scrollTo({ top: 0, behavior: 'instant' })
+      }
     } catch {
       // ignore
     }
@@ -824,9 +827,7 @@ export const App: React.FC = () => {
       setCurrentUser(response.user)
       const targetTab = getRoleDefaultTab(response.user)
       setActiveTab(targetTab)
-      if (typeof window !== 'undefined') {
-        window.location.href = TAB_ROUTES[targetTab] || '/dashboard'
-      }
+      setShowQuickLoginModal(false)
     } catch (err: unknown) {
       if (err instanceof Error) setAuthError(err.message)
     } finally {
@@ -844,9 +845,7 @@ export const App: React.FC = () => {
       setCurrentUser(response.user)
       const targetTab = getRoleDefaultTab(response.user)
       setActiveTab(targetTab)
-      if (typeof window !== 'undefined') {
-        window.location.href = TAB_ROUTES[targetTab] || '/dashboard'
-      }
+      setShowQuickLoginModal(false)
     } catch (err: unknown) {
       if (err instanceof Error) setAuthError(err.message)
     } finally {
@@ -867,9 +866,6 @@ export const App: React.FC = () => {
     authService.logout().catch(() => {})
     setCurrentUser(null)
     setActiveTab('landing')
-    if (typeof window !== 'undefined') {
-      window.location.href = '/'
-    }
   }
 
   const handleManualSync = async () => {
