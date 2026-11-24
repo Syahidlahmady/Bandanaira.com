@@ -1,7 +1,7 @@
 import React from 'react'
 import { NavTabType } from '../../landing/BandanairaBeranda'
 
-export type DashboardNavTab = NavTabType | 'landing' | 'dashboard' | 'marketplace'
+export type DashboardNavTab = NavTabType | 'landing' | 'dashboard' | 'marketplace' | 'help'
 
 export type RoleKey =
   | 'admin'

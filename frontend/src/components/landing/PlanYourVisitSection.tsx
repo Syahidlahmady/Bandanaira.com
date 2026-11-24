@@ -46,29 +46,29 @@ export const PlanYourVisitSection: React.FC<PlanYourVisitSectionProps> = ({ onNa
         {t.planYourVisit.quote}
       </h2>
 
-      {/* Action buttons */}
-      <div className="inline-flex flex-wrap justify-center items-center gap-4 pt-4 relative z-10">
+      {/* Action buttons: Balanced Row on Mobile & Desktop */}
+      <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 pt-4 relative z-10 w-full max-w-md sm:max-w-none">
         <button
           type="button"
           onClick={() => {
             setPreferredTourismSubTab('destinations')
             onNavigate('tourism')
           }}
-          className="inline-flex h-[50px] items-center gap-3 px-7 rounded-full bg-amber-600 hover:bg-amber-500 text-white font-sans text-xs font-semibold tracking-wide transition-all shadow-lg hover:shadow-amber-600/30 group"
+          className="flex-1 sm:flex-initial inline-flex h-[46px] sm:h-[50px] items-center justify-center gap-2 sm:gap-3 px-5 sm:px-7 rounded-full bg-amber-600 hover:bg-amber-500 text-white font-sans text-xs font-semibold tracking-wide transition-all shadow-lg hover:shadow-amber-600/30 group cursor-pointer"
           aria-label={t.planYourVisit.exploreBtn}
         >
           <span>{t.planYourVisit.exploreBtn}</span>
-          <ArrowUpRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          <ArrowUpRightIcon className="w-3.5 sm:w-4 h-3.5 sm:h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </button>
 
         <button
           type="button"
           onClick={() => onNavigate('gis')}
-          className="inline-flex h-[50px] items-center gap-3 px-6 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-white font-sans text-xs font-semibold tracking-wide transition-all"
+          className="flex-1 sm:flex-initial inline-flex h-[46px] sm:h-[50px] items-center justify-center gap-2 sm:gap-3 px-4 sm:px-6 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-white font-sans text-xs font-semibold tracking-wide transition-all cursor-pointer"
           aria-label={t.planYourVisit.openMapBtn}
         >
           <span>{t.planYourVisit.openMapBtn}</span>
-          <ArrowUpRightIcon className="w-4 h-4" />
+          <ArrowUpRightIcon className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
         </button>
       </div>
     </section>

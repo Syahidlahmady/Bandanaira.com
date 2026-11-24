@@ -171,7 +171,7 @@ export const LandingFooterSection: React.FC<LandingFooterSectionProps> = ({
                     onClick={() =>
                       link.action === 'quicklogin' && onOpenQuickLogin
                         ? onOpenQuickLogin()
-                        : onOpenLogin()
+                        : onOpenLogin?.()
                     }
                     className="relative w-fit font-normal text-[#c1ced8] hover:text-[#f4b75e] transition-colors text-xs tracking-[0] leading-[normal] text-left"
                   >
@@ -184,27 +184,27 @@ export const LandingFooterSection: React.FC<LandingFooterSectionProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-col items-start gap-6 relative self-stretch w-full flex-[0_0_auto]">
+      <div className="flex flex-col items-start gap-4 sm:gap-6 relative self-stretch w-full flex-[0_0_auto]">
         <div className="relative self-stretch w-full h-px bg-[#ffffff38]" />
-        <div className="flex flex-wrap items-center justify-between gap-4 relative self-stretch w-full flex-[0_0_auto]">
-          <p className="relative w-fit mt-[-1.00px] font-normal text-[#c1ced8] text-[10px] tracking-[0] leading-[normal] whitespace-normal sm:whitespace-nowrap">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 relative self-stretch w-full flex-[0_0_auto] text-center sm:text-left">
+          <p className="relative w-fit font-normal text-[#c1ced8] text-[10px] sm:text-[11px] tracking-[0] leading-[normal] whitespace-normal sm:whitespace-nowrap">
             © 2026 bandanaira.com. {t.footer.allRightsReserved}
           </p>
-          <p className="w-fit mt-[-1.00px] font-serif font-normal italic text-[#f4b75e] text-[17px] tracking-[0] relative leading-[normal]">
+          <p className="w-fit font-serif font-normal italic text-[#f4b75e] text-xs sm:text-[15px] tracking-[0] relative leading-[normal]">
             {t.footer.taglineQuote}
           </p>
           <nav
-            className="inline-flex items-start gap-6 relative flex-[0_0_auto]"
+            className="inline-flex items-center gap-4 sm:gap-6 relative flex-[0_0_auto]"
             aria-label="Informasi legal"
           >
             <a
-              className="relative w-fit mt-[-1.00px] font-normal text-[#c1ced8] hover:text-white text-[10px] tracking-[0] leading-[normal] whitespace-nowrap"
+              className="relative w-fit font-normal text-[#c1ced8] hover:text-white text-[10px] sm:text-[11px] tracking-[0] leading-[normal] whitespace-nowrap"
               href="#beranda"
             >
               {t.footer.privacyPolicy}
             </a>
             <a
-              className="relative w-fit mt-[-1.00px] font-normal text-[#c1ced8] hover:text-white text-[10px] tracking-[0] leading-[normal] whitespace-nowrap"
+              className="relative w-fit font-normal text-[#c1ced8] hover:text-white text-[10px] sm:text-[11px] tracking-[0] leading-[normal] whitespace-nowrap"
               href="#beranda"
             >
               {t.footer.termsOfUse}

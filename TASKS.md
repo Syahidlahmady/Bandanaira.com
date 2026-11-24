@@ -81,6 +81,9 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 91: Pembersihan Kolom Akses Akun pada Footer Ekosistem & Penyelarasan Layout Grid**
 - [x] **Phase 92: Pengetatan Hak Akses DSS/SAW Smart Planner Khusus Administrator Sistem**
 - [x] **Phase 93: Penghapusan Switcher Bahasa pada Dashboard Admin (Penyelarasan Pengguna Lokal Banda & Penegasan Fokus Smart Tourism-Kependudukan)**
+- [x] **Phase 94: Redesain Halaman Destinasi & Penginapan Publik, Pembersihan Grafik Dasbor, dan Penegasan Alur Hak Akses Role**
+- [x] **Phase 95: Redesain Help Center Sesuai Gambar Referensi & CMS Pengelolaan Informasi pada Dashboard Admin**
+- [x] **Phase 96: Penyelarasan Tata Letak Mobile Landing Page Semirip Mungkin dengan Tampilan Desktop (Anti-Slop & Hybrid Responsive Blueprint)**
 ---
 
 ## Detailed Task Checklist
@@ -1767,3 +1770,77 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Fokus utama operasional ekosistem dikonsolidasi penuh pada **Smart Tourism** (akomodasi eco-stay, direktori pemandu, cagar budaya, pemesanan WhatsApp) dan **Kependudukan Desa** (profil warga terenkripsi AES-256/HMAC, surat keterangan desa, tata kelola dusun).
 - [x] 93.3 Pengujian & Verifikasi:
   - Build produksi frontend Vite sukses 100% (2.059 modul ter-bundle dalam 17.04s).
+
+---
+
+## [Phase 94] - Redesain Halaman Destinasi & Penginapan Publik, Pembersihan Grafik Dasbor, dan Penegasan Alur Hak Akses Role
+- [x] 94.1 Penghapusan Grafik/Tabel Dasbor pada Halaman Destinasi Publik (`TourismEcoStayWorkspace.tsx`):
+  - Menghapus 5 kartu KPI eksekutif (Destinasi & Cagar 9+, Eco-Stay 6, Kesiapan 83%, Pemandu 6, Reservasi 18) yang sebelumnya keliru terpasang pada tampilan publik.
+  - Menghapus 2 klaster visualisasi grafik Recharts (Bar chart sebaran destinasi per pulau & Donut chart komposisi cagar budaya dan alam) beserta tombol tersasar di kanvas visualisasi.
+  - Membersihkan seluruh dependensi impor pustaka Recharts (`BarChart`, `PieChart`, `ResponsiveContainer`, dll.) dan kalkulasi memo terkait.
+- [x] 94.2 Redesain Halaman Destinasi & Penginapan Publik Menggunakan Prinsip `frontend-design` & `21st-cli-use`:
+  - Mengimplementasikan Editorial Welcome Hero dengan tipografi display serif anggun, palet warna maritim VOC (`#081D35`, `#F4B75E`, `#FDFBF7`), dan narasi autentik kepulauan rempah Banda Neira.
+  - Menambahkan pita penanda nilai editorial (177 Cagar Budaya Maritim, 100% Bebas Komisi OTA via WhatsApp Warga, Suplai Air Minum RO Mandiri, Pemandu Berlisensi HPI Banda).
+  - Merancang Tab Switcher Segmented Pills modern ala 21st UI dengan indikator aktif tegas dan lencana hitung item dinamis.
+  - Memodernisasi tampilan daftar Eco-Stay & Vila serta Pemandu Wisata dari inline styles menjadi utility Tailwind CSS responsif, lengkap dengan lencana fasilitas eco-stay, harga transparan, tautan Peta Spasial, dan tombol reservasi instan WhatsApp warga.
+  - Memodernisasi daftar 177 Cagar Budaya & Pemutar Audio Guide Interaktif ke gaya kartu kontemporer.
+- [x] 94.3 Penegasan Alur Navigasi Tombol Beranda & Hak Akses Role:
+  - Tombol "Jelajahi Semua Destinasi" pada seksi rekomendasi SAW beranda (`TourismSawSection`) dan tombol "Lihat Selengkapnya" pada seksi katalog penginapan (`EcoStayCatalogSection`) kini membawa pengunjung publik ke halaman direktori wisata dan penginapan yang bersih dari grafik dasbor internal.
+  - Menegaskan pemisahan hak akses: grafik dan statistik performa hanya berlaku dan ditampilkan ketika pengguna telah memiliki akun dan sedang berada di dalam dasbor ekosistem (`DashboardLayout` / role view dasbor).
+  - Menambahkan alias rute URL `/destinasi` dan `/penginapan` pada tabel routing `App.tsx` dengan auto-selection subtab yang sesuai.
+  - Melengkapi halaman publik pariwisata di `App.tsx` dengan tombol "Masuk Akun" di header serta komponen penutup terpadu `BandaUnifiedFooter`.
+- [x] 94.4 Pengujian & Verifikasi:
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
+  - Build produksi frontend Vite (`npm run build`) sukses 100% (2.059 modul ter-bundle dalam 7.40s).
+
+---
+
+## [Phase 95] - Redesain Help Center Sesuai Gambar Referensi & CMS Pengelolaan Informasi pada Dashboard Admin
+- [x] 95.1 Redesain Antarmuka Pusat Bantuan Sesuai Gambar Referensi (`HelpDeskWorkspace.tsx`):
+  - Mengimplementasikan Dark Hero Header dengan palet warna Deep Oceanic Navy (`#081D35` / `--secondary`), tipografi kontras tinggi, narasi pembuka ekosistem, pill button "Chat with Support", tautan telepon posko, email dukungan resmi, dan tombol kembali ke beranda.
+  - Merancang 8 Kartu Kategori ("How can we help?") dalam grid 2x4 (desktop) / 1x2 (mobile) sesuai gambar referensi:
+    1. *Community* (Tags: Share, Discussion, Network; Icon: Users)
+    2. *Orders* (Tags: Tracking, Delivery, Management; Icon: FileText)
+    3. *Return and Refund* (Tags: Methods, Process; Icon: Package)
+    4. *Account Issues* (Tags: Profile, Settings, Password; Icon: UserCheck)
+    5. *Business Help* (Tags: Dashboard, Reports, Logistics; Icon: TrendingUp)
+    6. *Payment* (Tags: Methods, VAT, Security; Icon: CreditCard)
+    7. *Guides* (Tags: Tutorials, Blogs, Newsletters; Icon: PlaySquare)
+    8. *FAQ* (Tags: Help, Articles; Icon: HelpCircle)
+  - Setiap kartu dilengkapi badge ikon ber-squircle lembut (pastel badge) di kiri-bawah dan interaksi klik responsif untuk memfilter daftar pertanyaan secara instan.
+  - Merancang seksi "Common Questions" dengan bar pencarian cerdas, filter chip kategori dinamis, akordion tanya jawab, tombol direct navigation "Buka Ruang Kerja Terkait", fitur salin teks, serta tombol feedback bermanfaat.
+  - Menyediakan modal interaktif "Chat with Support" yang menghubungkan warga langsung ke WhatsApp posko desa (+62 812-4099-2026) dan formulir tiket aduan tertulis.
+- [x] 95.2 Workspace Manajemen Help Center (CMS) pada Dashboard Admin (`HelpDeskWorkspace.tsx` & `AdminDashboardView.tsx`):
+  - Menambahkan bar pengontrol CMS khusus Administrator sistem (`currentUser?.is_superuser` / peran `admin` / `village_officer`) dengan switcher mode "Pratinjau Pengunjung" vs "Kelola Informasi (CMS)".
+  - Menyediakan formulir lengkap penambahan & pembaruan artikel bantuan (FAQ) baru di masa mendatang (Pertanyaan, Kategori 8 pilar, Sub-topik/Tags, Tautkan Ruang Kerja Terkait, Kata Kunci Pencarian, dan Jawaban Lengkap).
+  - Menyediakan formulir pengaturan kontak posko darurat kepulauan & teks banner hero (Judul hero, Call center, Email, Tautan WhatsApp, dan Narasi subtitle).
+  - Menyediakan repositori tabel manajemen seluruh artikel aktif dengan kemampuan filter, edit cepat, hapus artikel, dan reset ke standar bawaan ekosistem.
+  - Menyinkronkan seluruh perubahan ke penyimpanan browser (`localStorage` terisolasi) serta broadcast event real-time sehingga pembaruan dari admin langsung tampil bagi seluruh pengunjung.
+  - Menambahkan kartu peluncur cepat "Kelola Pusat Bantuan (CMS)" pada dasbor Administrator Sistem (`AdminDashboardView.tsx`) dan menyelaraskan tipe navigasi `DashboardNavTab` di `types.ts`.
+- [x] 95.3 Pengujian & Verifikasi:
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
+  - Build produksi frontend Vite (`npm run build`) sukses 100% (2.059 modul ter-bundle dalam 12.70s).
+
+---
+
+## [Phase 96] - Penyelarasan Tata Letak Mobile Landing Page Semirip Mungkin dengan Tampilan Desktop (Anti-Slop & Hybrid Responsive Blueprint)
+- [x] 96.1 Penyelarasan Navbar Seluler & Menu Aksi Cepat (`HeroSection.tsx`):
+  - Mengubah daftar navigasi vertikal memanjang di menu dropdown mobile menjadi **Grid 2-Kolom Kompak**, sehingga seluruh 7 tautan penjelajahan langsung terlihat dalam satu layar tanpa scroll vertikal.
+  - Mempertahankan kesejajaran tombol aksi ganda hero ("Jelajahi Wisata" dan "Peta Interaktif") berdampingan (*balanced row*) pada ponsel pintar.
+- [x] 96.2 Restorasi Kerapian Peta Interaktif & Snap-Rail Desa (`PetaInteractiveSection.tsx`):
+  - Mengubah pembungkus 11 tombol desa yang sebelumnya bertumpuk 4 baris menjadi **Single-Row Horizontal Snap Rail** yang mulus dengan akselerasi perangkat keras browser, menjaga format baris horizontal persis seperti tampilan desktop.
+  - Mengintegrasikan floating card informasi desa pada mobile agar nama desa, lencana pulau, deskripsi, dan tombol buka peta berada dalam tata letak yang proporsional dan mudah dijangkau jempol.
+- [x] 96.3 Sinkronisasi Rel Geser Kartu Wisata SAW & Destinasi (`TourismSawSection.tsx`):
+  - Mengatur ulang rasio kartu spotlight mobile menjadi `w-[78vw]` dengan efek *peeking edge* (tepi kartu berikutnya terlihat 22%), sehingga pengguna ponsel langsung mengenali postur horizontal multi-kartu seperti desktop.
+  - Menyeimbangkan 2 tombol CTA spotlight ("Jelajahi Semua Destinasi" dan "Perencana Cerdas DSS") agar berdampingan horizontal.
+- [x] 96.4 Rel Geser Katalog Eco-Stay & Layanan UMKM (`EcoStayCatalogSection.tsx` & `TraceabilityMarketplaceSection.tsx`):
+  - Mengatur baris kontrol judul dan tombol aksi ("Lihat Selengkapnya" dan panah navigasi carousel) agar berada dalam satu baris seimbang di mobile.
+  - Mengoptimasi kartu penginapan dan produk UMKM rempah dengan lebar responsif `w-[78vw]` dan native scroll-snap, menjaga estetika visual yang konsisten dengan desktop.
+- [x] 96.5 Penyelarasan Seksi Ajakan Kunjungan & Footer Ekosistem (`PlanYourVisitSection.tsx` & `LandingFooterSection.tsx`):
+  - Mengatur tombol ganda ajakan kunjungan di mobile agar berada dalam satu baris berdampingan (`flex-1 sm:flex-initial`).
+  - Menjaga grup tautan navigasi footer tetap tampil dalam **Grid 2-Kolom Berdampingan** di ponsel, menghindari daftar vertikal berderet yang melelahkan.
+- [x] 96.6 Pengujian & Verifikasi:
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
+  - Build produksi frontend Vite (`npm run build`) sukses 100% (2.059 modul ter-bundle dalam 7.62s).
+
+

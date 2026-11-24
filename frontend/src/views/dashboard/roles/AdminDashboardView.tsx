@@ -25,6 +25,7 @@ import {
   FileJson,
   FileSpreadsheet,
   FileText,
+  LifeBuoy,
   Luggage,
   QrCode,
   RefreshCw,
@@ -601,6 +602,30 @@ export const AdminDashboardView: React.FC<RoleViewProps> = ({
           <ShoppingBag size={15} className="text-[#D97706]" />
           <span>Buka Marketplace Komoditas</span>
         </button>
+
+        {/* KARTU PUSAT BANTUAN & CMS HELP CENTER */}
+        <div className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs flex flex-col gap-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <LifeBuoy size={16} className="text-[#081D35]" />
+              <span className="text-xs font-bold text-[#081D35]">Kelola Pusat Bantuan (CMS)</span>
+            </div>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
+              CMS Helpdesk
+            </span>
+          </div>
+          <p className="text-[11px] text-slate-500 leading-snug">
+            Kelola artikel FAQ, formulir aduan warga, panduan SOP, dan kontak posko darurat kepulauan.
+          </p>
+          <button
+            type="button"
+            onClick={() => onNavigate && onNavigate('help')}
+            className="w-full py-2 px-3 rounded-xl bg-[#081D35] hover:bg-[#0F2C59] text-[#F4B75E] text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer shadow-xs"
+          >
+            <LifeBuoy size={14} />
+            <span>Buka Manajemen Pusat Bantuan</span>
+          </button>
+        </div>
 
         {/* PINTASAN LAUNCHPAD RUANG KERJA TERPADU */}
         <button

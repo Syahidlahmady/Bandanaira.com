@@ -169,9 +169,9 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
     >
       <div className="max-w-7xl mx-auto">
         {/* Header Row: Title on Left, Controls & Actions on Right */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div>
-            <div className="inline-flex items-center gap-2 mb-3">
+            <div className="inline-flex items-center gap-2 mb-2 sm:mb-3">
               <span className="w-5 h-px bg-amber-600" />
               <p className="font-sans text-[11px] font-bold tracking-[0.2em] text-amber-600 uppercase">
                 {t.traceability.tagline}
@@ -180,35 +180,35 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
 
             <h2
               id="local-cuisine-heading"
-              className="font-sans font-bold text-3xl sm:text-4xl lg:text-[42px] leading-tight tracking-tight text-[#0f2c59]"
+              className="font-sans font-bold text-2xl sm:text-4xl lg:text-[42px] leading-tight tracking-tight text-[#0f2c59]"
             >
               {t.traceability.headingPrefix}{' '}
-              <span className="font-script text-amber-600 font-normal text-4xl sm:text-5xl lg:text-[50px] inline-block tracking-normal ml-1">
+              <span className="font-script text-amber-600 font-normal text-3xl sm:text-5xl lg:text-[50px] inline-block tracking-normal ml-1">
                 {t.traceability.headingScript}
               </span>{' '}
               {t.traceability.headingSuffix}
             </h2>
-            <p className="font-sans text-sm sm:text-base text-slate-600 max-w-xl mt-2 leading-relaxed">
+            <p className="font-sans text-xs sm:text-base text-slate-600 max-w-xl mt-1.5 sm:mt-2 leading-relaxed">
               {t.traceability.description}
             </p>
           </div>
 
-          {/* Actions & Carousel Navigation */}
-          <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
+          {/* Actions & Carousel Navigation in Balanced Row */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
             {/* Carousel navigation arrows */}
-            <div className="flex items-center gap-1.5 mr-1">
+            <div className="flex items-center gap-1.5 mr-0.5">
               <button
                 type="button"
                 onClick={() => scroll('left')}
                 disabled={!canScrollLeft}
                 aria-label={t.ecoStay.prev}
-                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors duration-200 ${
+                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center transition-colors duration-200 ${
                   canScrollLeft
-                    ? 'border-slate-300 text-slate-800 hover:border-[#0f2c59] hover:bg-[#0f2c59] hover:text-white cursor-pointer shadow-sm'
+                    ? 'border-slate-300 text-slate-800 hover:border-[#0f2c59] hover:bg-[#0f2c59] hover:text-white cursor-pointer shadow-xs'
                     : 'border-slate-200 text-slate-300 cursor-not-allowed opacity-50'
                 }`}
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M15 18l-6-6 6-6" />
                 </svg>
               </button>
@@ -218,13 +218,13 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
                 onClick={() => scroll('right')}
                 disabled={!canScrollRight}
                 aria-label={t.ecoStay.next}
-                className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors duration-200 ${
+                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center transition-colors duration-200 ${
                   canScrollRight
-                    ? 'border-slate-300 text-slate-800 hover:border-[#0f2c59] hover:bg-[#0f2c59] hover:text-white cursor-pointer shadow-sm'
+                    ? 'border-slate-300 text-slate-800 hover:border-[#0f2c59] hover:bg-[#0f2c59] hover:text-white cursor-pointer shadow-xs'
                     : 'border-slate-200 text-slate-300 cursor-not-allowed opacity-50'
                 }`}
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M9 18l6-6-6-6" />
                 </svg>
               </button>
@@ -233,7 +233,7 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
             <button
               type="button"
               onClick={onOpenMarketplace}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#0f2c59] text-white hover:bg-[#183d75] text-xs font-semibold tracking-wide transition-all duration-200 shadow-sm group cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#0f2c59] text-white hover:bg-[#183d75] text-xs font-semibold tracking-wide transition-all duration-200 shadow-xs group cursor-pointer"
             >
               <span>{t.traceability.viewMore}</span>
               <ArrowUpRightIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -242,7 +242,7 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
             <button
               type="button"
               onClick={() => onPublicVerify('BN_VERIFY_PALA_SUPER_2026_LONTHOIR')}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full border border-slate-300 bg-white hover:bg-amber-50 text-slate-700 text-xs font-semibold tracking-wide transition-all duration-200 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full border border-slate-300 bg-white hover:bg-amber-50 text-slate-700 text-xs font-semibold tracking-wide transition-all duration-200 cursor-pointer shadow-2xs"
             >
               <svg className="w-3.5 h-3.5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -289,7 +289,7 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
             return (
               <div
                 key={prod.id}
-                className="group relative shrink-0 w-[85vw] sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] min-w-[260px] max-w-[420px] snap-start flex flex-col rounded-[2rem] overflow-hidden bg-slate-900 aspect-[3/4] shadow-md hover:shadow-2xl transition-all duration-300 select-none"
+                className="group relative shrink-0 w-[78vw] sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] min-w-[250px] max-w-[420px] snap-start flex flex-col rounded-[1.75rem] sm:rounded-[2rem] overflow-hidden bg-slate-900 aspect-[3/4] shadow-md hover:shadow-2xl transition-all duration-300 select-none"
               >
                 {/* Product Photo */}
                 <img
@@ -344,7 +344,7 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
           })}
 
           {/* "Selengkapnya" Final Card in Carousel */}
-          <div className="group relative shrink-0 w-[85vw] sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] min-w-[260px] max-w-[420px] snap-start flex flex-col justify-between rounded-[2rem] bg-gradient-to-br from-[#0f2c59] to-[#081d35] p-8 text-white aspect-[3/4] shadow-md border border-white/10 hover:border-amber-400/40 transition-all select-none">
+          <div className="group relative shrink-0 w-[78vw] sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] min-w-[250px] max-w-[420px] snap-start flex flex-col justify-between rounded-[1.75rem] sm:rounded-[2rem] bg-gradient-to-br from-[#0f2c59] to-[#081d35] p-6 sm:p-8 text-white aspect-[3/4] shadow-md border border-white/10 hover:border-amber-400/40 transition-all select-none">
             <div>
               <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-300 flex items-center justify-center mb-6">
                 <ArrowUpRightIcon className="w-6 h-6" />

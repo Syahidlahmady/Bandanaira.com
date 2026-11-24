@@ -231,16 +231,16 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const isCoopManager = roles.includes('coop_manager') || roles.includes('pengelola_koperasi')
   const isSmartTourismAdmin = roles.includes('smart_tourism_admin') || roles.includes('admin_wisata')
   const isSurveyor = roles.includes('field_surveyor') || roles.includes('surveyor')
-  const isResident =
-    roles.includes('resident') ||
-    (!isAdmin &&
-      !roles.includes('village_officer') &&
-      !isFarmer &&
-      !isFarmerGroupAdmin &&
-      !isHomestayOperator &&
-      !isCoopManager &&
-      !isSmartTourismAdmin &&
-      !isSurveyor)
+  // const isResident =
+  //   roles.includes('resident') ||
+  //   (!isAdmin &&
+  //     !roles.includes('village_officer') &&
+  //     !isFarmer &&
+  //     !isFarmerGroupAdmin &&
+  //     !isHomestayOperator &&
+  //     !isCoopManager &&
+  //     !isSmartTourismAdmin &&
+  //     !isSurveyor)
 
   // State accordion dropdown untuk 5 Pilar Super Admin
   const [openAdminGroups, setOpenAdminGroups] = useState<Record<string, boolean>>({

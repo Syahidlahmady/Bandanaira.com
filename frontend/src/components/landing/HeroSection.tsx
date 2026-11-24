@@ -258,8 +258,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 </div>
               )}
 
-              {/* Navigation Items */}
-              <div className="flex flex-col gap-1 py-1">
+              {/* Navigation Items in Compact 2-Column Micro-Grid */}
+              <div className="grid grid-cols-2 gap-1.5 py-1">
                 {navigationItems.map((item) => (
                   <a
                     key={item.label}
@@ -268,13 +268,16 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                       setActiveNav(item.href)
                       setMobileMenuOpen(false)
                     }}
-                    className={`text-sm font-medium py-2 px-2.5 rounded-lg transition-colors ${
+                    className={`text-xs font-semibold py-2 px-2.5 rounded-lg transition-colors flex items-center justify-between ${
                       activeNav === item.href
                         ? 'text-[#f4b75e] bg-white/10 font-bold'
                         : 'text-white/90 hover:text-white hover:bg-white/5'
                     }`}
                   >
-                    {item.label}
+                    <span>{item.label}</span>
+                    {activeNav === item.href && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#f4b75e]" />
+                    )}
                   </a>
                 ))}
               </div>

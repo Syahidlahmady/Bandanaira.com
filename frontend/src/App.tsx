@@ -53,6 +53,8 @@ import { DashboardLayout } from './views/dashboard/DashboardLayout.tsx'
 import { ArrowLeft, Compass, Sparkles } from 'lucide-react'
 import { ErrorBoundary } from './components/common/ErrorBoundary.tsx'
 import { AccessRestrictedNotice } from './components/common/AccessRestrictedNotice.tsx'
+import { BandaUnifiedFooter } from './components/common/BandaUnifiedFooter.tsx'
+import { setPreferredTourismSubTab } from './services/tourism.ts'
 import { offlineDB } from './offline/db.ts'
 import { syncManager, SyncQueueItem } from './offline/syncManager.ts'
 
@@ -135,6 +137,8 @@ export const ROUTE_TO_TAB: Record<string, TabId> = {
   '/iot': 'iot',
   '/telemetri': 'iot',
   '/tourism': 'tourism',
+  '/destinasi': 'tourism',
+  '/penginapan': 'tourism',
   '/wisata': 'tourism',
   '/homestay': 'tourism',
   '/gis': 'gis',
@@ -162,6 +166,16 @@ export const getInitialTab = (): TabId => {
 
   if (path === '/sejarah' || path.startsWith('/sejarah/') || path.startsWith('/artikel') || path.startsWith('/history')) {
     return 'sejarah'
+  }
+
+  if (path === '/destinasi' || path.startsWith('/destinasi/')) {
+    setPreferredTourismSubTab('destinations')
+    return 'tourism'
+  }
+
+  if (path === '/penginapan' || path.startsWith('/penginapan/')) {
+    setPreferredTourismSubTab('accommodations')
+    return 'tourism'
   }
 
   const hasToken = Boolean(authService.getAccessToken())
@@ -1619,6 +1633,13 @@ export const App: React.FC = () => {
                       <Sparkles size={13} className="text-amber-500" />
                       <span className="hidden sm:inline">Perencana Wisata</span>
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowQuickLoginModal(true)}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#081D35] hover:bg-[#0c2340] text-[#F4B75E] text-xs font-semibold transition cursor-pointer shadow-xs"
+                    >
+                      <span>Masuk Akun</span>
+                    </button>
                   </div>
                 </div>
               </header>
@@ -1630,6 +1651,12 @@ export const App: React.FC = () => {
                   onOpenQuickLogin={() => setShowQuickLoginModal(true)}
                 />
               </main>
+
+              <BandaUnifiedFooter
+                onNavigateTab={(tab) => setActiveTab(tab)}
+                onOpenLogin={() => setShowQuickLoginModal(true)}
+                onOpenQuickLogin={() => setShowQuickLoginModal(true)}
+              />
             </div>
           </React.Suspense>
         </ErrorBoundary>

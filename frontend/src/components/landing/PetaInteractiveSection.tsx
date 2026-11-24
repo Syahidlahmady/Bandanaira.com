@@ -189,13 +189,13 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
         </div>
 
         {/* Elegant Floating Details Bar & Navigation (Matching indonesia.travel) */}
-        <div className="w-full max-w-4xl mt-6 sm:mt-10 bg-white/80 backdrop-blur-md rounded-2xl border border-[#cfe2f4] p-5 sm:p-7 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5">
-          <div className="flex-1 pr-0 md:pr-4">
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="font-serif text-xl sm:text-2xl text-[#0c2340] font-medium">
+        <div className="w-full max-w-4xl mt-6 sm:mt-10 bg-white/80 backdrop-blur-md rounded-2xl border border-[#cfe2f4] p-4 sm:p-7 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex-1 pr-0 sm:pr-4">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-serif text-lg sm:text-2xl text-[#0c2340] font-medium">
                 {selectedVillage.name}
               </span>
-              <span className="text-[11px] font-sans font-semibold px-2 py-0.5 rounded-full bg-[#e3effa] text-[#2c4e6e]">
+              <span className="text-[10px] sm:text-[11px] font-sans font-semibold px-2 py-0.5 rounded-full bg-[#e3effa] text-[#2c4e6e]">
                 {selectedVillage.island}
               </span>
             </div>
@@ -208,16 +208,16 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
             <button
               type="button"
               onClick={() => onNavigate('gis')}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full bg-[#0c2340] hover:bg-[#183e75] text-white text-xs sm:text-sm font-medium transition-all shadow-sm cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-2.5 sm:py-3 rounded-full bg-[#0c2340] hover:bg-[#183e75] text-white text-xs sm:text-sm font-medium transition-all shadow-xs cursor-pointer"
             >
               <span>{t.mapSection.openFullMap}</span>
-              <ArrowUpRightIcon className="w-4 h-4" />
+              <ArrowUpRightIcon className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
             </button>
           </div>
         </div>
 
-        {/* Clean Village Selector Pills (Soft Cohesive Tones) */}
-        <div className="w-full max-w-4xl mt-6 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+        {/* Clean Village Selector Pills (Single Row Horizontal Snap Rail on Mobile, Centered Wrap on Desktop) */}
+        <div className="w-full max-w-4xl mt-4 sm:mt-6 flex items-center justify-start sm:justify-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 px-2 -mx-2 sm:mx-0 snap-x">
           {BANDA_VILLAGES_SVG.map((v) => {
             const isSelected = v.id === selectedVillageId
             return (
@@ -225,7 +225,7 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
                 type="button"
                 key={v.id}
                 onClick={() => handleSelectVillage(v)}
-                className={`px-3 py-1.5 rounded-full text-xs font-sans transition-all cursor-pointer ${
+                className={`shrink-0 snap-start px-3 py-1.5 rounded-full text-xs font-sans whitespace-nowrap transition-all cursor-pointer ${
                   isSelected
                     ? 'bg-[#0c2340] text-white shadow-xs font-medium'
                     : 'bg-white/70 hover:bg-white text-[#2c4e6e] border border-[#cfe2f4]/80'
