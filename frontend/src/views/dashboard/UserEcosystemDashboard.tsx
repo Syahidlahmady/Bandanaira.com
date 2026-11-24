@@ -84,6 +84,10 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
   // State peran aktif: Jika Admin, dapat berganti pratinjau seluruh role. Jika Non-Admin, dikunci sesuai perannya!
   const [selectedRoleKey, setSelectedRoleKey] = useState<RoleKey>(detectInitialRoleKey)
 
+  useEffect(() => {
+    setSelectedRoleKey(detectInitialRoleKey())
+  }, [currentUser])
+
   // Peran aktif yang efektif: jika bukan Admin, SELALU gunakan role asli pengguna (tidak bisa bypass ke admin)
   const activeRoleKey: RoleKey = isAdmin ? selectedRoleKey : detectInitialRoleKey()
   const profile = ROLE_PROFILES[activeRoleKey] || ROLE_PROFILES.resident

@@ -340,6 +340,8 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = ({ onNa
                   {story.slug && (
                     <button
                       type="button"
+                      id={`btn-kisah-${story.slug}`}
+                      data-scroll-anchor={`btn-kisah-${story.slug}`}
                       onClick={() => onNavigate?.('sejarah', story.slug)}
                       className="mt-3.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-[#f4b75e] text-[#f4b75e] hover:text-[#081d35] border border-[#f4b75e]/30 text-xs font-semibold tracking-wide transition-all cursor-pointer pointer-events-auto"
                     >
@@ -380,6 +382,8 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = ({ onNa
                   {story.slug && (
                     <button
                       type="button"
+                      id={`btn-kisah-${story.slug}`}
+                      data-scroll-anchor={`btn-kisah-${story.slug}`}
                       onClick={() => onNavigate?.('sejarah', story.slug)}
                       className="mt-3.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-[#f4b75e] text-[#f4b75e] hover:text-[#081d35] border border-[#f4b75e]/30 text-xs font-semibold tracking-wide transition-all cursor-pointer pointer-events-auto"
                     >
@@ -413,6 +417,8 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = ({ onNa
           {currentStory.slug && (
             <button
               type="button"
+              id={`btn-kisah-mobile-${currentStory.slug}`}
+              data-scroll-anchor={`btn-kisah-mobile-${currentStory.slug}`}
               onClick={() => onNavigate?.('sejarah', currentStory.slug)}
               className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 active:bg-[#f4b75e] text-[#f4b75e] active:text-[#081d35] border border-[#f4b75e]/30 text-[11px] font-semibold tracking-wide transition-all cursor-pointer"
             >
@@ -446,6 +452,8 @@ export const HeritageSpiceSection: React.FC<HeritageSpiceSectionProps> = ({ onNa
 
           <button
             type="button"
+            id="btn-jelajahi-sejarah-selengkapnya"
+            data-scroll-anchor="btn-jelajahi-sejarah-selengkapnya"
             onClick={() => onNavigate?.('sejarah')}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-slate-950/70 hover:bg-[#f4b75e] text-[#f4b75e] hover:text-[#081d35] border border-[#f4b75e]/40 text-xs font-semibold backdrop-blur-md transition-all cursor-pointer shadow-lg group"
           >

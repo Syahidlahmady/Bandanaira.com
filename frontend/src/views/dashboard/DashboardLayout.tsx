@@ -231,16 +231,16 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const isCoopManager = roles.includes('coop_manager') || roles.includes('pengelola_koperasi')
   const isSmartTourismAdmin = roles.includes('smart_tourism_admin') || roles.includes('admin_wisata')
   const isSurveyor = roles.includes('field_surveyor') || roles.includes('surveyor')
-  // const isResident =
-  //   roles.includes('resident') ||
-  //   (!isAdmin &&
-  //     !roles.includes('village_officer') &&
-  //     !isFarmer &&
-  //     !isFarmerGroupAdmin &&
-  //     !isHomestayOperator &&
-  //     !isCoopManager &&
-  //     !isSmartTourismAdmin &&
-  //     !isSurveyor)
+  const isResident =
+    roles.includes('resident') ||
+    (!isAdmin &&
+      !roles.includes('village_officer') &&
+      !isFarmer &&
+      !isFarmerGroupAdmin &&
+      !isHomestayOperator &&
+      !isCoopManager &&
+      !isSmartTourismAdmin &&
+      !isSurveyor)
 
   // State accordion dropdown untuk 5 Pilar Super Admin
   const [openAdminGroups, setOpenAdminGroups] = useState<Record<string, boolean>>({
@@ -281,13 +281,13 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const userDisplayEmail =
     currentUser?.email || (currentUser?.username ? `${currentUser.username}@bandanaira.com` : 'admin@bandanaira.com')
 
-  // Notifikasi Ekosistem Banda Neira
+  // Notifikasi Ekosistem Banda Neira Berbasis Peran
   interface EcosystemNotificationItem {
     id: string
     title: string
     description: string
     timestamp: string
-    category: 'letter' | 'farm' | 'iot' | 'coop' | 'blockchain' | 'system'
+    category: 'letter' | 'farm' | 'iot' | 'coop' | 'blockchain' | 'tourism' | 'system'
     read: boolean
     priority: 'high' | 'normal' | 'info'
     targetTab?: DashboardNavTab
@@ -297,93 +297,422 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const initialNotifications: EcosystemNotificationItem[] = useMemo(() => {
     const items: EcosystemNotificationItem[] = []
 
-    if (adminPendingLettersCount > 0) {
+    if (isAdmin) {
+      // 1. Administrator Sistem (Akses Lengkap Seluruh Pilar)
+      if (adminPendingLettersCount > 0) {
+        items.push({
+          id: 'notif-admin-letters',
+          title: `Permohonan Surat Masuk (${adminPendingLettersCount} Menunggu)`,
+          description: `${adminPendingLettersCount} berkas permohonan surat warga memerlukan verifikasi dan tanda tangan Kepala Desa.`,
+          timestamp: '10 menit yang lalu',
+          category: 'letter',
+          read: false,
+          priority: 'high',
+          targetTab: 'letters',
+          actionLabel: 'Tinjau Berkas',
+        })
+      } else {
+        items.push({
+          id: 'notif-admin-letters-ok',
+          title: 'Pelayanan Surat Desa Tertib',
+          description: 'Seluruh permohonan administrasi warga telah diverifikasi dan diterbitkan sah.',
+          timestamp: '1 jam yang lalu',
+          category: 'letter',
+          read: true,
+          priority: 'info',
+          targetTab: 'letters',
+          actionLabel: 'Buka Surat',
+        })
+      }
+
+      if (pendingFarmsCount > 0) {
+        items.push({
+          id: 'notif-admin-farms',
+          title: `Verifikasi Lahan Pala (${pendingFarmsCount} Plot Baru)`,
+          description: `${pendingFarmsCount} plot perkebunan pala diajukan oleh Poktan untuk sinkronisasi kadastral PostGIS.`,
+          timestamp: '25 menit yang lalu',
+          category: 'farm',
+          read: false,
+          priority: 'high',
+          targetTab: 'farming',
+          actionLabel: 'Validasi Lahan',
+        })
+      }
+
       items.push({
-        id: 'notif-letters',
-        title: `Permohonan Surat Masuk (${adminPendingLettersCount} Menunggu)`,
-        description: `${adminPendingLettersCount} berkas permohonan surat keterangan usaha & domisili warga memerlukan persetujuan Kepala Desa.`,
-        timestamp: '10 menit yang lalu',
+        id: 'notif-admin-tourism',
+        title: 'Pengawasan Wisata & Tamu Desa',
+        description: 'Pemantauan akomodasi eco-stay, direktori pemandu berlisensi, dan registrasi tamu kepulauan.',
+        timestamp: '35 menit yang lalu',
+        category: 'tourism',
+        read: false,
+        priority: 'normal',
+        targetTab: 'tourism',
+        actionLabel: 'Master Wisata',
+      })
+
+      items.push({
+        id: 'notif-admin-iot',
+        title: 'Telemetri IoT 4 Stasiun Normal',
+        description: 'Stasiun Neira, Lonthoir, Ay, dan Rhun melaporkan kemurnian air RO 38 PPM & daya PLTS 100%.',
+        timestamp: '40 menit yang lalu',
+        category: 'iot',
+        read: true,
+        priority: 'normal',
+        targetTab: 'iot',
+        actionLabel: 'Pantau IoT',
+      })
+
+      items.push({
+        id: 'notif-admin-coop',
+        title: 'Sirkularitas Koperasi Hatta',
+        description: 'Penyetoran sampah plastik warga terkonversi menjadi kuota air minum RO bersih di dispenser pintar desa.',
+        timestamp: '3 jam yang lalu',
+        category: 'coop',
+        read: true,
+        priority: 'normal',
+        targetTab: 'koperasi',
+        actionLabel: 'Buka Kasir',
+      })
+
+      items.push({
+        id: 'notif-admin-trace',
+        title: 'Rantai Pasok Pala Terjangkar EVM',
+        description: 'Batch BND-2026-03 tervalidasi hash SHA-256 kanonikal tanpa data pribadi pada ledger konsorsium.',
+        timestamp: '5 jam yang lalu',
+        category: 'blockchain',
+        read: true,
+        priority: 'info',
+        targetTab: 'traceability',
+        actionLabel: 'Cek Pasok',
+      })
+    } else if (roles.includes('village_officer')) {
+      // 2. Petugas Kantor Desa / Kepala Desa
+      if (adminPendingLettersCount > 0) {
+        items.push({
+          id: 'notif-officer-letters',
+          title: `Permohonan Surat Masuk (${adminPendingLettersCount} Menunggu)`,
+          description: `${adminPendingLettersCount} berkas permohonan surat warga memerlukan verifikasi dan tanda tangan aparatur desa.`,
+          timestamp: '10 menit yang lalu',
+          category: 'letter',
+          read: false,
+          priority: 'high',
+          targetTab: 'letters',
+          actionLabel: 'Tinjau Berkas',
+        })
+      } else {
+        items.push({
+          id: 'notif-officer-letters-ok',
+          title: 'Pelayanan Surat Desa Tertib',
+          description: 'Seluruh permohonan administrasi warga telah diverifikasi dan diterbitkan sah.',
+          timestamp: '1 jam yang lalu',
+          category: 'letter',
+          read: true,
+          priority: 'info',
+          targetTab: 'letters',
+          actionLabel: 'Buka Surat',
+        })
+      }
+
+      if (pendingFarmsCount > 0) {
+        items.push({
+          id: 'notif-officer-farms',
+          title: `Pengajuan Plot Kebun Pala (${pendingFarmsCount} Menunggu)`,
+          description: `${pendingFarmsCount} plot perkebunan rempah diajukan kelompok tani untuk persetujuan desa.`,
+          timestamp: '30 menit yang lalu',
+          category: 'farm',
+          read: false,
+          priority: 'high',
+          targetTab: 'farming',
+          actionLabel: 'Validasi Lahan',
+        })
+      }
+
+      items.push({
+        id: 'notif-officer-pop',
+        title: 'Master Data Kependudukan Terenkripsi',
+        description: 'Data penduduk desa tersimpan aman dengan enkripsi AES-256 dan kepatuhan UU PDP No. 27/2022.',
+        timestamp: '2 jam yang lalu',
         category: 'letter',
+        read: true,
+        priority: 'info',
+        targetTab: 'population',
+        actionLabel: 'Buka Data',
+      })
+
+      items.push({
+        id: 'notif-officer-tourism',
+        title: 'Pengawasan Tamu Menginap (1x24 Jam)',
+        description: 'Buku reservasi tamu wisatawan di wilayah desa terpantau untuk ketertiban lingkungan.',
+        timestamp: '4 jam yang lalu',
+        category: 'tourism',
+        read: true,
+        priority: 'normal',
+        targetTab: 'tourism',
+        actionLabel: 'Daftar Tamu',
+      })
+    } else if (isHomestayOperator) {
+      // 3. Mitra Usaha & Operator Homestay / Eco-Stay
+      items.push({
+        id: 'notif-homestay-booking',
+        title: 'Pemesanan Kamar Eco-Stay Siap',
+        description: 'Sistem pemesanan langsung WhatsApp aktif untuk konfirmasi ketersediaan kamar tamu wisatawan.',
+        timestamp: '15 menit yang lalu',
+        category: 'tourism',
         read: false,
         priority: 'high',
-        targetTab: 'letters',
-        actionLabel: 'Tinjau Berkas',
+        targetTab: 'tourism',
+        actionLabel: 'Kelola Kamar',
       })
-    } else {
+
       items.push({
-        id: 'notif-letters-ok',
-        title: 'Pelayanan Surat Desa Tertib',
-        description: 'Seluruh permohonan administrasi warga telah diverifikasi dan diterbitkan sah.',
+        id: 'notif-homestay-amenities',
+        title: 'Standar Fasilitas Air RO & Listrik Surya',
+        description: 'Status keberlanjutan eco-stay Anda terverifikasi dengan pasokan air minum RO dan cadangan solar panel.',
         timestamp: '1 jam yang lalu',
+        category: 'tourism',
+        read: true,
+        priority: 'normal',
+        targetTab: 'tourism',
+        actionLabel: 'Info Fasilitas',
+      })
+
+      items.push({
+        id: 'notif-homestay-market',
+        title: 'Katalog Oleh-Oleh Khas untuk Tamu',
+        description: 'Rekomendasikan produk rempah pala dan cenderamata khas Banda Neira kepada wisatawan yang menginap.',
+        timestamp: '3 jam yang lalu',
+        category: 'tourism',
+        read: true,
+        priority: 'info',
+        targetTab: 'marketplace',
+        actionLabel: 'Buka Katalog',
+      })
+    } else if (isSmartTourismAdmin) {
+      // 4. Pokdarwis & Pengelola Artikel Sejarah (smart_tourism_admin)
+      items.push({
+        id: 'notif-smart-articles',
+        title: 'CMS Artikel Sejarah & Cagar Budaya',
+        description: 'Kelola draf narasi sejarah 177 situs cagar budaya untuk dipublikasikan di halaman /sejarah.',
+        timestamp: '20 menit yang lalu',
+        category: 'tourism',
+        read: false,
+        priority: 'high',
+        targetTab: 'tourism',
+        actionLabel: 'Buka CMS',
+      })
+
+      items.push({
+        id: 'notif-smart-guides',
+        title: 'Direktori Pemandu Wisata Berlisensi',
+        description: 'Daftar pemandu wisata resmi HPI aktif dan siap mendampingi kunjungan wisatawan di Kepulauan Banda.',
+        timestamp: '2 jam yang lalu',
+        category: 'tourism',
+        read: true,
+        priority: 'normal',
+        targetTab: 'tourism',
+        actionLabel: 'Data Pemandu',
+      })
+
+      items.push({
+        id: 'notif-smart-audio',
+        title: 'Audio Guide Cagar Budaya Siap',
+        description: 'Audio guide narasi sejarah Benteng Belgica, Nassau, dan Rumah Hatta dapat diakses pengunjung via scan QR.',
+        timestamp: '4 jam yang lalu',
+        category: 'tourism',
+        read: true,
+        priority: 'info',
+        targetTab: 'tourism',
+        actionLabel: 'Katalog Cagar',
+      })
+    } else if (isFarmer) {
+      // 5. Petani Rempah Pala
+      items.push({
+        id: 'notif-farmer-harvest',
+        title: 'Pencatatan Panen Pala & Fuli',
+        description: 'Catat hasil panen pala biji dan fuli merah untuk verifikasi mutu panen dan penerbitan kode batch.',
+        timestamp: '15 menit yang lalu',
+        category: 'farm',
+        read: false,
+        priority: 'high',
+        targetTab: 'traceability',
+        actionLabel: 'Catat Panen',
+      })
+
+      items.push({
+        id: 'notif-farmer-farm',
+        title: 'Batas Lahan Perkebunan Terdaftar',
+        description: 'Plot kebun Anda terhubung ke kelompok tani dan tervalidasi kadastral pada peta GIS.',
+        timestamp: '1 jam yang lalu',
+        category: 'farm',
+        read: true,
+        priority: 'normal',
+        targetTab: 'farming',
+        actionLabel: 'Peta Kebun',
+      })
+
+      items.push({
+        id: 'notif-farmer-letter',
+        title: 'Layanan Surat Keterangan Usaha Tani',
+        description: 'Ajukan surat pengantar atau keterangan usaha tani ke kantor desa secara mandiri.',
+        timestamp: '3 jam yang lalu',
+        category: 'letter',
+        read: true,
+        priority: 'info',
+        targetTab: 'letters',
+        actionLabel: 'Ajukan Surat',
+      })
+    } else if (isFarmerGroupAdmin) {
+      // 6. Ketua Kelompok Tani (Poktan)
+      items.push({
+        id: 'notif-poktan-farm',
+        title: pendingFarmsCount > 0 ? `Plot Kebun Menunggu Verifikasi (${pendingFarmsCount})` : 'Plot Kebun Anggota Terverifikasi',
+        description: pendingFarmsCount > 0
+          ? `${pendingFarmsCount} plot perkebunan diajukan ke kantor desa untuk sinkronisasi kadastral.`
+          : 'Seluruh plot kebun pala anggota kelompok tani terverifikasi pada peta spasial PostGIS.',
+        timestamp: '20 menit yang lalu',
+        category: 'farm',
+        read: pendingFarmsCount > 0 ? false : true,
+        priority: pendingFarmsCount > 0 ? 'high' : 'normal',
+        targetTab: 'farming',
+        actionLabel: 'Kelola Lahan',
+      })
+
+      items.push({
+        id: 'notif-poktan-batch',
+        title: 'Grading Mutu & Batch Kelompok Tani',
+        description: 'Kombinasikan catatan panen petani anggota menjadi batch rempah terverifikasi blockchain.',
+        timestamp: '1 jam yang lalu',
+        category: 'blockchain',
+        read: true,
+        priority: 'normal',
+        targetTab: 'traceability',
+        actionLabel: 'Batch Rempah',
+      })
+
+      items.push({
+        id: 'notif-poktan-letter',
+        title: 'Administrasi Surat Rekomendasi Poktan',
+        description: 'Permohonan surat keterangan kelompok tani dapat diproses bersama aparatur desa.',
+        timestamp: '4 jam yang lalu',
         category: 'letter',
         read: true,
         priority: 'info',
         targetTab: 'letters',
         actionLabel: 'Buka Surat',
       })
-    }
-
-    if (pendingFarmsCount > 0) {
+    } else if (isCoopManager) {
+      // 7. Pengelola Koperasi Hatta & Air RO
       items.push({
-        id: 'notif-farms',
-        title: `Verifikasi Lahan Pala (${pendingFarmsCount} Plot Baru)`,
-        description: `${pendingFarmsCount} plot perkebunan pala diajukan oleh Poktan Dusun Lonthoir & Ratu untuk sinkronisasi kadastral PostGIS.`,
-        timestamp: '25 menit yang lalu',
-        category: 'farm',
+        id: 'notif-coop-pos',
+        title: 'Kasir Timbangan & Bank Sampah',
+        description: 'Layanan penimbangan setoran komoditas pala/ikan dan penukaran sampah botol plastik aktif.',
+        timestamp: '10 menit yang lalu',
+        category: 'coop',
         read: false,
         priority: 'high',
-        targetTab: 'farming',
-        actionLabel: 'Validasi Lahan',
+        targetTab: 'koperasi',
+        actionLabel: 'Buka Kasir',
       })
-    } else {
+
       items.push({
-        id: 'notif-farms-ok',
-        title: 'Sertifikasi Spasial Kebun Rempah',
-        description: '35 plot kebun rempah pala terverifikasi kadastral dan siap untuk pemantauan panen.',
-        timestamp: '2 jam yang lalu',
+        id: 'notif-coop-warehouse',
+        title: 'Penerimaan Rempah Gudang Koperasi',
+        description: 'Batch rempah pala terverifikasi hash blockchain siap diproses dan dikemas.',
+        timestamp: '1 jam yang lalu',
+        category: 'blockchain',
+        read: true,
+        priority: 'normal',
+        targetTab: 'traceability',
+        actionLabel: 'Cek Gudang',
+      })
+
+      items.push({
+        id: 'notif-coop-market',
+        title: 'Manajemen Inventaris Marketplace',
+        description: 'Pantau stok produk rempah kemasan dan pesanan produk oleh-oleh di etalase pasar.',
+        timestamp: '3 jam yang lalu',
+        category: 'coop',
+        read: true,
+        priority: 'info',
+        targetTab: 'marketplace',
+        actionLabel: 'Inventaris',
+      })
+    } else if (isSurveyor) {
+      // 8. Surveyor Lapangan & IoT
+      items.push({
+        id: 'notif-surveyor-iot',
+        title: 'Telemetri Sensor IoT 4 Stasiun',
+        description: 'Stasiun Neira, Lonthoir, Ay, dan Rhun melaporkan sensor TDS dan daya PLTS aktif terkalibrasi.',
+        timestamp: '15 menit yang lalu',
+        category: 'iot',
+        read: false,
+        priority: 'high',
+        targetTab: 'iot',
+        actionLabel: 'Pantau IoT',
+      })
+
+      items.push({
+        id: 'notif-surveyor-survey',
+        title: 'Formulir Survei Lapangan Dinamis',
+        description: 'Formulir akuisisi data NoSQL siap digunakan untuk pendataan kondisi infrastruktur air dan wilayah.',
+        timestamp: '1 jam yang lalu',
+        category: 'system',
+        read: true,
+        priority: 'normal',
+        targetTab: 'survei',
+        actionLabel: 'Form Survei',
+      })
+
+      items.push({
+        id: 'notif-surveyor-gis',
+        title: 'Peta Spasial GIS 7-Layer',
+        description: 'Titik koordinat fasilitas umum dan zonasi pulau siap disinkronkan ke layer PostGIS.',
+        timestamp: '3 jam yang lalu',
         category: 'farm',
         read: true,
         priority: 'info',
-        targetTab: 'farming',
-        actionLabel: 'Peta Lahan',
+        targetTab: 'gis',
+        actionLabel: 'Peta Spasial',
+      })
+    } else {
+      // 9. Warga Masyarakat Desa (Resident / Default)
+      items.push({
+        id: 'notif-resident-letter',
+        title: 'Permohonan Surat Keterangan Desa',
+        description: 'Ajukan permohonan surat keterangan usaha, domisili, atau pengantar desa langsung dari ponsel.',
+        timestamp: '15 menit yang lalu',
+        category: 'letter',
+        read: false,
+        priority: 'high',
+        targetTab: 'letters',
+        actionLabel: 'Ajukan Surat',
+      })
+
+      items.push({
+        id: 'notif-resident-coop',
+        title: 'Tabungan Koperasi & Kuota Air RO',
+        description: 'Cek saldo tabungan hasil setor rempah dan kuota air minum RO bersih di dispenser pintar desa.',
+        timestamp: '1 jam yang lalu',
+        category: 'coop',
+        read: true,
+        priority: 'normal',
+        targetTab: 'koperasi',
+        actionLabel: 'Cek Tabungan',
+      })
+
+      items.push({
+        id: 'notif-resident-pdp',
+        title: 'Perlindungan Data Pribadi NIK',
+        description: 'Identitas kependudukan Anda terenkripsi aman sesuai standar UU PDP No. 27/2022.',
+        timestamp: '3 jam yang lalu',
+        category: 'system',
+        read: true,
+        priority: 'info',
+        targetTab: 'letters',
+        actionLabel: 'Info Data',
       })
     }
-
-    items.push({
-      id: 'notif-iot',
-      title: 'Telemetri IoT 4 Stasiun Normal',
-      description: 'Stasiun Neira, Lonthoir, Ay, dan Rhun melaporkan kemurnian air RO 38 PPM (Standar WHO) & daya PLTS 100%.',
-      timestamp: '40 menit yang lalu',
-      category: 'iot',
-      read: false,
-      priority: 'normal',
-      targetTab: 'iot',
-      actionLabel: 'Pantau IoT',
-    })
-
-    items.push({
-      id: 'notif-coop',
-      title: 'Sirkularitas Koperasi Hatta',
-      description: 'Penyetoran sampah plastik warga terkonversi menjadi kuota air minum RO bersih di dispenser pintar desa.',
-      timestamp: '3 jam yang lalu',
-      category: 'coop',
-      read: true,
-      priority: 'normal',
-      targetTab: 'koperasi',
-      actionLabel: 'Buka Kasir',
-    })
-
-    items.push({
-      id: 'notif-trace',
-      title: 'Rantai Pasok Pala Terjangkar EVM',
-      description: 'Batch BND-2026-03 tervalidasi hash SHA-256 kanonikal tanpa data pribadi pada ledger konsorsium.',
-      timestamp: '5 jam yang lalu',
-      category: 'blockchain',
-      read: true,
-      priority: 'info',
-      targetTab: 'traceability',
-      actionLabel: 'Cek Pasok',
-    })
 
     if (!isOnline) {
       items.unshift({
@@ -410,7 +739,21 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     }
 
     return items
-  }, [adminPendingLettersCount, pendingFarmsCount, pendingSyncCount, isOnline])
+  }, [
+    adminPendingLettersCount,
+    pendingFarmsCount,
+    pendingSyncCount,
+    isOnline,
+    isAdmin,
+    roles,
+    isHomestayOperator,
+    isSmartTourismAdmin,
+    isFarmer,
+    isFarmerGroupAdmin,
+    isCoopManager,
+    isSurveyor,
+    isResident,
+  ])
 
   const [notifications, setNotifications] = useState<EcosystemNotificationItem[]>(initialNotifications)
 
@@ -444,8 +787,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
   const filteredNotifications = notifications.filter((item) => {
     if (notificationFilter === 'unread') return !item.read
-    if (notificationFilter === 'letters') return item.category === 'letter' || item.category === 'farm'
-    if (notificationFilter === 'system') return item.category === 'iot' || item.category === 'system' || item.category === 'blockchain'
+    if (notificationFilter === 'letters') return item.category === 'letter' || item.category === 'farm' || item.category === 'tourism'
+    if (notificationFilter === 'system') return item.category === 'iot' || item.category === 'system' || item.category === 'blockchain' || item.category === 'coop'
     return true
   })
 
@@ -455,6 +798,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         return <Mail size={14} className="text-blue-600" />
       case 'farm':
         return <Sprout size={14} className="text-emerald-600" />
+      case 'tourism':
+        return <Home size={14} className="text-amber-500" />
       case 'iot':
         return <Radio size={14} className="text-sky-600" />
       case 'coop':
@@ -473,6 +818,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         return 'bg-blue-50 border-blue-200'
       case 'farm':
         return 'bg-emerald-50 border-emerald-200'
+      case 'tourism':
+        return 'bg-amber-50 border-amber-200'
       case 'iot':
         return 'bg-sky-50 border-sky-200'
       case 'coop':

@@ -234,6 +234,16 @@ export const App: React.FC = () => {
   const [selectedArticleSlug, setSelectedArticleSlug] = useState<string | null>(getInitialArticleSlug)
 
   const handleNavigateToSejarah = (slug?: string) => {
+    if (activeTab === 'landing' && typeof window !== 'undefined') {
+      const scrollY = window.scrollY || document.documentElement.scrollTop || 0
+      if (scrollY > 0) {
+        try {
+          sessionStorage.setItem('banda_landing_scroll_y', String(scrollY))
+        } catch {
+          // ignore
+        }
+      }
+    }
     setSelectedArticleSlug(slug || null)
     setActiveTabState('sejarah')
     try {
@@ -263,6 +273,16 @@ export const App: React.FC = () => {
   }
 
   const setActiveTab = (tab: TabId, replace: boolean = false) => {
+    if (activeTab === 'landing' && tab !== 'landing' && typeof window !== 'undefined') {
+      const scrollY = window.scrollY || document.documentElement.scrollTop || 0
+      if (scrollY > 0) {
+        try {
+          sessionStorage.setItem('banda_landing_scroll_y', String(scrollY))
+        } catch {
+          // ignore
+        }
+      }
+    }
     if (tab !== 'sejarah') {
       setSelectedArticleSlug(null)
     }
@@ -802,7 +822,11 @@ export const App: React.FC = () => {
     try {
       const response = await authService.login(username, password)
       setCurrentUser(response.user)
-      setActiveTab(getRoleDefaultTab(response.user))
+      const targetTab = getRoleDefaultTab(response.user)
+      setActiveTab(targetTab)
+      if (typeof window !== 'undefined') {
+        window.location.href = TAB_ROUTES[targetTab] || '/dashboard'
+      }
     } catch (err: unknown) {
       if (err instanceof Error) setAuthError(err.message)
     } finally {
@@ -818,7 +842,11 @@ export const App: React.FC = () => {
     try {
       const response = await authService.login(u, p)
       setCurrentUser(response.user)
-      setActiveTab(getRoleDefaultTab(response.user))
+      const targetTab = getRoleDefaultTab(response.user)
+      setActiveTab(targetTab)
+      if (typeof window !== 'undefined') {
+        window.location.href = TAB_ROUTES[targetTab] || '/dashboard'
+      }
     } catch (err: unknown) {
       if (err instanceof Error) setAuthError(err.message)
     } finally {
@@ -827,27 +855,21 @@ export const App: React.FC = () => {
   }
 
   const handleLogout = () => {
-    authService.logout()
+    authService.clearTokens()
     try {
       localStorage.removeItem('banda_active_tab')
+      localStorage.removeItem('banda_active_user_profile')
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
     } catch {
       // ignore
     }
-    try {
-      window.scrollTo({ top: 0, behavior: 'instant' })
-    } catch {
-      // ignore
+    authService.logout().catch(() => {})
+    setCurrentUser(null)
+    setActiveTab('landing')
+    if (typeof window !== 'undefined') {
+      window.location.href = '/'
     }
-    React.startTransition(() => {
-      setCurrentUser(null)
-      setActiveTab('landing')
-      setResidents([])
-      setFarmers([])
-      setFarms([])
-      setHarvests([])
-      setBatches([])
-      setSelectedBatch(null)
-    })
   }
 
   const handleManualSync = async () => {
@@ -1388,41 +1410,29 @@ export const App: React.FC = () => {
       )}
 
       {/* 1. LANDING PORTAL UTAMA (SATU PINTU UTAMA EKOSISTEM - HANYA 1 LANDING PAGE) */}
-      {activeTab === 'landing' && (
+      <div style={{ display: activeTab === 'landing' ? 'block' : 'none' }}>
         <ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Beranda Utama">
-          <React.Suspense
-            fallback={
-              <div className="min-h-screen bg-[#081D35] flex items-center justify-center text-white">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-10 h-10 border-3 border-[#F4B75E] border-t-transparent rounded-full animate-spin" />
-                  <span className="text-sm font-medium tracking-wide text-[#F4B75E]">
-                    Memuat Ekosistem Banda Neira...
-                  </span>
-                </div>
-              </div>
-            }
-          >
-            <LandingPortalWorkspace
-              onNavigate={(tab, slug) => {
-                if (tab === 'sejarah') {
-                  handleNavigateToSejarah(slug)
-                  return
-                }
-                setActiveTab(
-                  tab === 'population' && currentUser ? getRoleDefaultTab(currentUser) : (tab as TabId)
-                )
-              }}
-              onOpenLogin={() => setActiveTab('population')}
-              onOpenMarketplace={() => setActiveTab('marketplace')}
-              onPublicVerify={(token) => handlePublicVerify(token)}
-              currentUser={currentUser}
-              isOnline={isOnline}
-              onLogout={handleLogout}
-              onOpenQuickLogin={() => setShowQuickLoginModal(true)}
-            />
-          </React.Suspense>
+          <LandingPortalWorkspace
+            activeTab={activeTab}
+            onNavigate={(tab, slug) => {
+              if (tab === 'sejarah') {
+                handleNavigateToSejarah(slug)
+                return
+              }
+              setActiveTab(
+                tab === 'population' && currentUser ? getRoleDefaultTab(currentUser) : (tab as TabId)
+              )
+            }}
+            onOpenLogin={() => setActiveTab('population')}
+            onOpenMarketplace={() => setActiveTab('marketplace')}
+            onPublicVerify={(token) => handlePublicVerify(token)}
+            currentUser={currentUser}
+            isOnline={isOnline}
+            onLogout={handleLogout}
+            onOpenQuickLogin={() => setShowQuickLoginModal(true)}
+          />
         </ErrorBoundary>
-      )}
+      </div>
 
       {/* 2. Login Portal Section for Non-authenticated Users on Protected Operational Routes */}
       {!currentUser &&

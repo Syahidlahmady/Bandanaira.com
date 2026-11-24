@@ -232,6 +232,8 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
 
             <button
               type="button"
+              id="btn-marketplace-selengkapnya"
+              data-scroll-anchor="btn-marketplace-selengkapnya"
               onClick={onOpenMarketplace}
               className="inline-flex items-center gap-1.5 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#0f2c59] text-white hover:bg-[#183d75] text-xs font-semibold tracking-wide transition-all duration-200 shadow-xs group cursor-pointer"
             >
@@ -362,6 +364,8 @@ export const TraceabilityMarketplaceSection: React.FC<TraceabilityMarketplaceSec
 
             <button
               type="button"
+              id="btn-marketplace-carousel-selengkapnya"
+              data-scroll-anchor="btn-marketplace-carousel-selengkapnya"
               onClick={onOpenMarketplace}
               className="inline-flex items-center justify-center gap-2 w-full py-3.5 px-6 rounded-full bg-amber-600 hover:bg-amber-500 text-white font-sans text-xs font-semibold tracking-wide transition-all shadow-md group cursor-pointer"
             >

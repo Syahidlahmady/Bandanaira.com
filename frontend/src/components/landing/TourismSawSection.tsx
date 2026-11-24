@@ -241,6 +241,8 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
             <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 mb-6 sm:mb-8 w-full sm:w-auto">
               <button
                 type="button"
+                id="btn-tourism-explore-all"
+                data-scroll-anchor="btn-tourism-explore-all"
                 onClick={() => openTourismSubTab('destinations')}
                 className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full border border-white/30 bg-white/10 hover:bg-white hover:text-[#071322] text-white text-xs font-semibold tracking-wide transition-all duration-200 group cursor-pointer"
               >
@@ -250,6 +252,8 @@ export const TourismSawSection: React.FC<TourismSawSectionProps> = ({ onNavigate
 
               <button
                 type="button"
+                id="btn-tourism-smart-planner"
+                data-scroll-anchor="btn-tourism-smart-planner"
                 onClick={() => onNavigate('smart_planner')}
                 className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full border border-amber-400/40 bg-amber-400/10 hover:bg-amber-400 hover:text-slate-950 text-amber-300 text-xs font-semibold transition-all duration-200 cursor-pointer"
               >

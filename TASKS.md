@@ -81,9 +81,12 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 91: Pembersihan Kolom Akses Akun pada Footer Ekosistem & Penyelarasan Layout Grid**
 - [x] **Phase 92: Pengetatan Hak Akses DSS/SAW Smart Planner Khusus Administrator Sistem**
 - [x] **Phase 93: Penghapusan Switcher Bahasa pada Dashboard Admin (Penyelarasan Pengguna Lokal Banda & Penegasan Fokus Smart Tourism-Kependudukan)**
-- [x] **Phase 94: Redesain Halaman Destinasi & Penginapan Publik, Pembersihan Grafik Dasbor, dan Penegasan Alur Hak Akses Role**
-- [x] **Phase 95: Redesain Help Center Sesuai Gambar Referensi & CMS Pengelolaan Informasi pada Dashboard Admin**
-- [x] **Phase 96: Penyelarasan Tata Letak Mobile Landing Page Semirip Mungkin dengan Tampilan Desktop (Anti-Slop & Hybrid Responsive Blueprint)**
+- [x] **Phase 94: Personalisasi Notifikasi Ekosistem Berdasarkan Peran Hak Akses Pengguna (Role-Scoped Ecosystem Notifications)**
+- [x] **Phase 95: Perbaikan Fungsionalitas Logout & Penjagaan Desain Antarmuka Asli Sesuai Sebelumnya**
+- [x] **Phase 96: Preservasi & Restorasi Posisi Scroll Beranda Saat Kembali dari Aksi "Jelajahi Selengkapnya" / "Selengkapnya"**
+- [x] **Phase 97: Redesain Halaman Destinasi & Penginapan Publik, Pembersihan Grafik Dasbor, dan Penegasan Alur Hak Akses Role**
+- [x] **Phase 98: Redesain Help Center Sesuai Gambar Referensi & CMS Pengelolaan Informasi pada Dashboard Admin**
+- [x] **Phase 99: Penyelarasan Tata Letak Mobile Landing Page Semirip Mungkin dengan Tampilan Desktop (Anti-Slop & Hybrid Responsive Blueprint)**
 ---
 
 ## Detailed Task Checklist
@@ -1773,30 +1776,94 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 
 ---
 
-## [Phase 94] - Redesain Halaman Destinasi & Penginapan Publik, Pembersihan Grafik Dasbor, dan Penegasan Alur Hak Akses Role
-- [x] 94.1 Penghapusan Grafik/Tabel Dasbor pada Halaman Destinasi Publik (`TourismEcoStayWorkspace.tsx`):
+## [Phase 94] - Personalisasi Notifikasi Ekosistem Berdasarkan Peran Hak Akses Pengguna
+- [x] 94.1 Pemetaan Notifikasi Tertutup Khusus Peran Pengguna (`frontend/src/views/dashboard/DashboardLayout.tsx`):
+  - Mengeliminasi notifikasi statis global yang tampil bercampur untuk semua pengguna.
+  - Mengonfigurasi generator `initialNotifications` agar mengevaluasi hak akses aktif pengguna secara dinamis:
+    - **Administrator Sistem**: Mendapatkan notifikasi eksekutif lintas pilar (surat, verifikasi lahan, master data pariwisata, telemetri IoT, sirkularitas koperasi, dan blockchain EVM).
+    - **Perangkat Kantor Desa / Kepala Desa**: Notifikasi permohonan surat masuk warga (`letters`), verifikasi plot kebun pala poktan (`farming`), keamanan enkripsi kependudukan (`population`), dan pengawasan reservasi tamu menginap 1x24 jam (`tourism`).
+    - **Operator Homestay / Eco-Stay**: Notifikasi reservasi kamar WhatsApp (`tourism`), verifikasi fasilitas air RO & listrik surya (`tourism`), dan katalog suvenir untuk tamu (`marketplace`).
+    - **Pokdarwis / Admin Wisata**: Notifikasi draf publikasi artikel sejarah (`tourism`), direktori pemandu wisata terakreditasi HPI (`tourism`), dan audio guide 177 situs cagar budaya (`tourism`).
+    - **Petani Rempah**: Notifikasi pencatatan panen pala & fuli (`traceability`), plot kebun terpetakan (`farming`), dan layanan surat usaha tani mandiri (`letters`).
+    - **Ketua Kelompok Tani (Poktan)**: Notifikasi status verifikasi lahan anggota poktan (`farming`), penggabungan batch rempah kelompok (`traceability`), dan rekomendasi surat usaha tani (`letters`).
+    - **Pengelola Koperasi Hatta**: Notifikasi kasir timbangan & penukaran botol sampah (`koperasi`), penerimaan batch rempah gudang (`traceability`), dan inventaris marketplace rempah (`marketplace`).
+    - **Surveyor Lapangan & IoT**: Notifikasi sensor IoT 4 stasiun (`iot`), formulir survei NoSQL dinamis (`survei`), dan layer peta spasial GIS (`gis`).
+    - **Warga Masyarakat Desa**: Notifikasi status permohonan surat keterangan mandiri (`letters`), saldo tabungan koperasi & kuota air dispenser pintar (`koperasi`), serta informasi perlindungan NIK UU PDP No. 27/2022.
+- [x] 94.2 Dukungan Kategori Baru `tourism` pada Komponen Notifikasi:
+  - Menambahkan kategori `'tourism'` pada ikon notifikasi (Home emas) dan gaya badge responsif (`bg-amber-50 border-amber-200`).
+  - Menyelaraskan filter kategori notifikasi agar mencakup layanan pariwisata.
+- [x] 94.3 Pengujian & Verifikasi:
+  - Kompilasi build produksi Vite sukses 100% (2.059 modul ter-bundle dalam 34.14s).
+
+---
+
+## [Phase 95] - Perbaikan Fungsionalitas Logout, Endpoint Ganda GET/POST & Navigasi Otomatis Bebas Refresh
+- [x] 95.1 Penjagaan Desain Antarmuka Asli ("Sesuaikan dengan Sebelumnya"):
+  - Menghilangkan tombol-tombol logout tambahan yang sempat disematkan di topbar desktop, topbar mobile, sidebar footer, dan dashboard view.
+  - Mempertahankan tata letak visual elegan asli di mana tombol "Keluar Akun" berada di dalam menu pengaturan profil sidebar bawah (`showSettingsDropdown`) serta navbar/hero landing page.
+- [x] 95.2 Dukungan Endpoint Ganda GET & POST pada Logout API (`backend/app/modules/auth/router.py`):
+  - Menambahkan dekorator `@router.get("/logout")` bersama `@router.post("/logout")` pada backend FastAPI.
+  - Memastikan pemanggilan logout dari browser link, GET request, maupun form POST selalu mengembalikan respons HTTP 200 OK standar (`status: "success", message: "Sesi berhasil ditutup"`).
+- [x] 95.3 Penanganan Navigasi Otomatis Bebas Refresh Saat Masuk & Keluar (`frontend/src/services/auth.ts`, `frontend/src/App.tsx`, & `frontend/src/views/dashboard/UserEcosystemDashboard.tsx`):
+  - Mengeliminasi akar masalah "perlu di-refresh": transisi sesi sebelumnya hanya memperbarui React state tanpa membersihkan memori dan perutean secara tuntas.
+  - Mengimplementasikan navigasi langsung sinkron (`window.location.href`) pada `handleLogin`/`handleQuickLogin` (langsung menuju `/dashboard`) dan `handleLogout` (langsung menuju `/`).
+  - Pembersihan token secara sinkron di `clearTokens()` mencakup `access_token`, `refresh_token`, `ACTIVE_PROFILE_KEY`, dan `banda_active_tab`.
+  - Sinkronisasi otomatis `selectedRoleKey` di `UserEcosystemDashboard.tsx` melalui `useEffect` reaktif terhadap perubahan `currentUser`.
+- [x] 95.4 Pengujian & Verifikasi:
+  - Kompilasi build produksi Vite sukses 100% tanpa error (2.059 modul dalam 16.35s).
+  - Verifikasi endpoint `curl -s -X GET http://localhost:8005/api/v1/auth/logout` sukses HTTP 200 OK.
+  - Automated test suite backend lulus 100%.
+
+---
+
+## [Phase 96] - Preservasi & Restorasi Posisi Scroll Beranda Saat Kembali dari Aksi "Jelajahi Selengkapnya" / "Selengkapnya"
+- [x] 96.1 Pemberian Anchor Semantik pada Seluruh Tombol Aksi "Selengkapnya" / "Jelajahi":
+  - Menambahkan atribut `id` dan `data-scroll-anchor` eksplisit pada tombol-tombol penjelajahan:
+    - `HeritageSpiceSection`: `btn-jelajahi-sejarah-selengkapnya`, `btn-kisah-{slug}`, dan `btn-kisah-mobile-{slug}`.
+    - `EcoStayCatalogSection`: `btn-ecostay-selengkapnya` dan `btn-ecostay-carousel-selengkapnya`.
+    - `TraceabilityMarketplaceSection`: `btn-marketplace-selengkapnya` dan `btn-marketplace-carousel-selengkapnya`.
+    - `PetaInteractiveSection`: `btn-peta-fullscreen`.
+    - `TourismSawSection`: `btn-tourism-explore-all` dan `btn-tourism-smart-planner`.
+    - `PlanYourVisitSection`: `btn-plan-explore` dan `btn-plan-open-map`.
+- [x] 96.2 Perekaman Posisi Scroll & Tombol Terpilih (`BandanairaBeranda.tsx` & `App.tsx`):
+  - Menambahkan capture-phase click listener global pada beranda untuk merekam `banda_landing_scroll_y` dan `banda_landing_scroll_anchor` ke `sessionStorage` seketika saat tombol ditekan.
+  - Menambahkan fallback penyimpanan scroll Y pada `handleNavigateToSejarah` dan `setActiveTab` di `App.tsx` sebelum perutean berpindah.
+- [x] 96.3 Eliminasi Akar Masalah Kegagalan Restorasi (DOM Destruction, Suspense Delay & Content Visibility):
+  - Mengubah perenderan `LandingPortalWorkspace` di `App.tsx` menjadi persistent DOM (`style={{ display: activeTab === 'landing' ? 'block' : 'none' }}`) sehingga struktur DOM beranda tidak pernah dihancurkan dan tidak perlu reload saat navigasi bolak-balik.
+  - Mengubah impor 10 seksi beranda di `BandanairaBeranda.tsx` dari `React.lazy` menjadi impor langsung (synchronous), mengeliminasi keterlambatan Suspense fallback sehingga tombol dan seksi target tersedia 100% pada frame awal.
+  - Menghapus kelas `content-auto` (`content-visibility: auto`) yang sebelumnya menahan layouting dan menyebabkan dimensi elemen luar layar bernilai 0 sebelum discroll.
+  - Menghubungkan inisialisasi Lenis desktop agar langsung mengatur `lenis.scrollTo(finalTarget, { immediate: true, offset: -80 })`, mencegah Lenis mereset scroll ke 0 pada siklus requestAnimationFrame pertama.
+  - Mendukung target elemen ganda: tombol spesifik (`savedAnchor`), seksi wilayah (`savedSection` seperti `#wisata`, `#eco-stay`, `#layanan-umkm`), dan koordinat piksel `targetY`.
+- [x] 96.4 Pengujian & Verifikasi:
+  - Kompilasi build produksi Vite sukses 100% tanpa error TypeScript (2.059 modul dalam 16.84s).
+  - 16/16 automated test suite pariwisata backend lulus 100% (48.90s).
+
+---
+
+## [Phase 97] - Redesain Halaman Destinasi & Penginapan Publik, Pembersihan Grafik Dasbor, dan Penegasan Alur Hak Akses Role
+- [x] 97.1 Penghapusan Grafik/Tabel Dasbor pada Halaman Destinasi Publik (`TourismEcoStayWorkspace.tsx`):
   - Menghapus 5 kartu KPI eksekutif (Destinasi & Cagar 9+, Eco-Stay 6, Kesiapan 83%, Pemandu 6, Reservasi 18) yang sebelumnya keliru terpasang pada tampilan publik.
   - Menghapus 2 klaster visualisasi grafik Recharts (Bar chart sebaran destinasi per pulau & Donut chart komposisi cagar budaya dan alam) beserta tombol tersasar di kanvas visualisasi.
   - Membersihkan seluruh dependensi impor pustaka Recharts (`BarChart`, `PieChart`, `ResponsiveContainer`, dll.) dan kalkulasi memo terkait.
-- [x] 94.2 Redesain Halaman Destinasi & Penginapan Publik Menggunakan Prinsip `frontend-design` & `21st-cli-use`:
+- [x] 97.2 Redesain Halaman Destinasi & Penginapan Publik Menggunakan Prinsip `frontend-design` & `21st-cli-use`:
   - Mengimplementasikan Editorial Welcome Hero dengan tipografi display serif anggun, palet warna maritim VOC (`#081D35`, `#F4B75E`, `#FDFBF7`), dan narasi autentik kepulauan rempah Banda Neira.
   - Menambahkan pita penanda nilai editorial (177 Cagar Budaya Maritim, 100% Bebas Komisi OTA via WhatsApp Warga, Suplai Air Minum RO Mandiri, Pemandu Berlisensi HPI Banda).
   - Merancang Tab Switcher Segmented Pills modern ala 21st UI dengan indikator aktif tegas dan lencana hitung item dinamis.
   - Memodernisasi tampilan daftar Eco-Stay & Vila serta Pemandu Wisata dari inline styles menjadi utility Tailwind CSS responsif, lengkap dengan lencana fasilitas eco-stay, harga transparan, tautan Peta Spasial, dan tombol reservasi instan WhatsApp warga.
   - Memodernisasi daftar 177 Cagar Budaya & Pemutar Audio Guide Interaktif ke gaya kartu kontemporer.
-- [x] 94.3 Penegasan Alur Navigasi Tombol Beranda & Hak Akses Role:
+- [x] 97.3 Penegasan Alur Navigasi Tombol Beranda & Hak Akses Role:
   - Tombol "Jelajahi Semua Destinasi" pada seksi rekomendasi SAW beranda (`TourismSawSection`) dan tombol "Lihat Selengkapnya" pada seksi katalog penginapan (`EcoStayCatalogSection`) kini membawa pengunjung publik ke halaman direktori wisata dan penginapan yang bersih dari grafik dasbor internal.
   - Menegaskan pemisahan hak akses: grafik dan statistik performa hanya berlaku dan ditampilkan ketika pengguna telah memiliki akun dan sedang berada di dalam dasbor ekosistem (`DashboardLayout` / role view dasbor).
   - Menambahkan alias rute URL `/destinasi` dan `/penginapan` pada tabel routing `App.tsx` dengan auto-selection subtab yang sesuai.
   - Melengkapi halaman publik pariwisata di `App.tsx` dengan tombol "Masuk Akun" di header serta komponen penutup terpadu `BandaUnifiedFooter`.
-- [x] 94.4 Pengujian & Verifikasi:
+- [x] 97.4 Pengujian & Verifikasi:
   - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
   - Build produksi frontend Vite (`npm run build`) sukses 100% (2.059 modul ter-bundle dalam 7.40s).
 
 ---
 
-## [Phase 95] - Redesain Help Center Sesuai Gambar Referensi & CMS Pengelolaan Informasi pada Dashboard Admin
-- [x] 95.1 Redesain Antarmuka Pusat Bantuan Sesuai Gambar Referensi (`HelpDeskWorkspace.tsx`):
+## [Phase 98] - Redesain Help Center Sesuai Gambar Referensi & CMS Pengelolaan Informasi pada Dashboard Admin
+- [x] 98.1 Redesain Antarmuka Pusat Bantuan Sesuai Gambar Referensi (`HelpDeskWorkspace.tsx`):
   - Mengimplementasikan Dark Hero Header dengan palet warna Deep Oceanic Navy (`#081D35` / `--secondary`), tipografi kontras tinggi, narasi pembuka ekosistem, pill button "Chat with Support", tautan telepon posko, email dukungan resmi, dan tombol kembali ke beranda.
   - Merancang 8 Kartu Kategori ("How can we help?") dalam grid 2x4 (desktop) / 1x2 (mobile) sesuai gambar referensi:
     1. *Community* (Tags: Share, Discussion, Network; Icon: Users)
@@ -1810,37 +1877,36 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Setiap kartu dilengkapi badge ikon ber-squircle lembut (pastel badge) di kiri-bawah dan interaksi klik responsif untuk memfilter daftar pertanyaan secara instan.
   - Merancang seksi "Common Questions" dengan bar pencarian cerdas, filter chip kategori dinamis, akordion tanya jawab, tombol direct navigation "Buka Ruang Kerja Terkait", fitur salin teks, serta tombol feedback bermanfaat.
   - Menyediakan modal interaktif "Chat with Support" yang menghubungkan warga langsung ke WhatsApp posko desa (+62 812-4099-2026) dan formulir tiket aduan tertulis.
-- [x] 95.2 Workspace Manajemen Help Center (CMS) pada Dashboard Admin (`HelpDeskWorkspace.tsx` & `AdminDashboardView.tsx`):
+- [x] 98.2 Workspace Manajemen Help Center (CMS) pada Dashboard Admin (`HelpDeskWorkspace.tsx` & `AdminDashboardView.tsx`):
   - Menambahkan bar pengontrol CMS khusus Administrator sistem (`currentUser?.is_superuser` / peran `admin` / `village_officer`) dengan switcher mode "Pratinjau Pengunjung" vs "Kelola Informasi (CMS)".
   - Menyediakan formulir lengkap penambahan & pembaruan artikel bantuan (FAQ) baru di masa mendatang (Pertanyaan, Kategori 8 pilar, Sub-topik/Tags, Tautkan Ruang Kerja Terkait, Kata Kunci Pencarian, dan Jawaban Lengkap).
   - Menyediakan formulir pengaturan kontak posko darurat kepulauan & teks banner hero (Judul hero, Call center, Email, Tautan WhatsApp, dan Narasi subtitle).
   - Menyediakan repositori tabel manajemen seluruh artikel aktif dengan kemampuan filter, edit cepat, hapus artikel, dan reset ke standar bawaan ekosistem.
   - Menyinkronkan seluruh perubahan ke penyimpanan browser (`localStorage` terisolasi) serta broadcast event real-time sehingga pembaruan dari admin langsung tampil bagi seluruh pengunjung.
   - Menambahkan kartu peluncur cepat "Kelola Pusat Bantuan (CMS)" pada dasbor Administrator Sistem (`AdminDashboardView.tsx`) dan menyelaraskan tipe navigasi `DashboardNavTab` di `types.ts`.
-- [x] 95.3 Pengujian & Verifikasi:
+- [x] 98.3 Pengujian & Verifikasi:
   - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
   - Build produksi frontend Vite (`npm run build`) sukses 100% (2.059 modul ter-bundle dalam 12.70s).
 
 ---
 
-## [Phase 96] - Penyelarasan Tata Letak Mobile Landing Page Semirip Mungkin dengan Tampilan Desktop (Anti-Slop & Hybrid Responsive Blueprint)
-- [x] 96.1 Penyelarasan Navbar Seluler & Menu Aksi Cepat (`HeroSection.tsx`):
+## [Phase 99] - Penyelarasan Tata Letak Mobile Landing Page Semirip Mungkin dengan Tampilan Desktop (Anti-Slop & Hybrid Responsive Blueprint)
+- [x] 99.1 Penyelarasan Navbar Seluler & Menu Aksi Cepat (`HeroSection.tsx`):
   - Mengubah daftar navigasi vertikal memanjang di menu dropdown mobile menjadi **Grid 2-Kolom Kompak**, sehingga seluruh 7 tautan penjelajahan langsung terlihat dalam satu layar tanpa scroll vertikal.
   - Mempertahankan kesejajaran tombol aksi ganda hero ("Jelajahi Wisata" dan "Peta Interaktif") berdampingan (*balanced row*) pada ponsel pintar.
-- [x] 96.2 Restorasi Kerapian Peta Interaktif & Snap-Rail Desa (`PetaInteractiveSection.tsx`):
+- [x] 99.2 Restorasi Kerapian Peta Interaktif & Snap-Rail Desa (`PetaInteractiveSection.tsx`):
   - Mengubah pembungkus 11 tombol desa yang sebelumnya bertumpuk 4 baris menjadi **Single-Row Horizontal Snap Rail** yang mulus dengan akselerasi perangkat keras browser, menjaga format baris horizontal persis seperti tampilan desktop.
   - Mengintegrasikan floating card informasi desa pada mobile agar nama desa, lencana pulau, deskripsi, dan tombol buka peta berada dalam tata letak yang proporsional dan mudah dijangkau jempol.
-- [x] 96.3 Sinkronisasi Rel Geser Kartu Wisata SAW & Destinasi (`TourismSawSection.tsx`):
+- [x] 99.3 Sinkronisasi Rel Geser Kartu Wisata SAW & Destinasi (`TourismSawSection.tsx`):
   - Mengatur ulang rasio kartu spotlight mobile menjadi `w-[78vw]` dengan efek *peeking edge* (tepi kartu berikutnya terlihat 22%), sehingga pengguna ponsel langsung mengenali postur horizontal multi-kartu seperti desktop.
   - Menyeimbangkan 2 tombol CTA spotlight ("Jelajahi Semua Destinasi" dan "Perencana Cerdas DSS") agar berdampingan horizontal.
-- [x] 96.4 Rel Geser Katalog Eco-Stay & Layanan UMKM (`EcoStayCatalogSection.tsx` & `TraceabilityMarketplaceSection.tsx`):
+- [x] 99.4 Rel Geser Katalog Eco-Stay & Layanan UMKM (`EcoStayCatalogSection.tsx` & `TraceabilityMarketplaceSection.tsx`):
   - Mengatur baris kontrol judul dan tombol aksi ("Lihat Selengkapnya" dan panah navigasi carousel) agar berada dalam satu baris seimbang di mobile.
   - Mengoptimasi kartu penginapan dan produk UMKM rempah dengan lebar responsif `w-[78vw]` dan native scroll-snap, menjaga estetika visual yang konsisten dengan desktop.
-- [x] 96.5 Penyelarasan Seksi Ajakan Kunjungan & Footer Ekosistem (`PlanYourVisitSection.tsx` & `LandingFooterSection.tsx`):
+- [x] 99.5 Penyelarasan Seksi Ajakan Kunjungan & Footer Ekosistem (`PlanYourVisitSection.tsx` & `LandingFooterSection.tsx`):
   - Mengatur tombol ganda ajakan kunjungan di mobile agar berada dalam satu baris berdampingan (`flex-1 sm:flex-initial`).
   - Menjaga grup tautan navigasi footer tetap tampil dalam **Grid 2-Kolom Berdampingan** di ponsel, menghindari daftar vertikal berderet yang melelahkan.
-- [x] 96.6 Pengujian & Verifikasi:
+- [x] 99.6 Pengujian & Verifikasi:
   - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
   - Build produksi frontend Vite (`npm run build`) sukses 100% (2.059 modul ter-bundle dalam 7.62s).
-
 

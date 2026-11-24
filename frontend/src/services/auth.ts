@@ -176,6 +176,7 @@ export const authService = {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     localStorage.removeItem(ACTIVE_PROFILE_KEY)
+    localStorage.removeItem('banda_active_tab')
   },
 
   registerAccount(account: RegisteredAccountRecord) {
@@ -494,11 +495,11 @@ export const authService = {
   },
 
   async logout() {
+    this.clearTokens()
     try {
       await fetch(`${getApiBase()}/auth/logout`, { method: 'POST' })
     } catch {
       // safe fallback if offline
     }
-    this.clearTokens()
   },
 }
