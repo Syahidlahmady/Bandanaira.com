@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Suspense } from 'react'
+import React, { useEffect, useState, useRef, Suspense } from 'react'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import { HeroSection } from '../../components/landing/HeroSection'
@@ -57,6 +57,86 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
   onOpenQuickLogin,
 }) => {
   const [activeNav, setActiveNav] = useState<string>('#beranda')
+  const lenisRef = useRef<Lenis | null>(null)
+
+  // 1. Intercept all button and anchor clicks on landing page to capture scroll position & button anchor
+  useEffect(() => {
+    const handleDocumentClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null
+      const btn = target?.closest('button, a, [data-scroll-anchor]') as HTMLElement | null
+      if (btn) {
+        const scrollY = window.scrollY || document.documentElement.scrollTop || 0
+        const anchor = btn.getAttribute('data-scroll-anchor') || btn.id
+        try {
+          sessionStorage.setItem('banda_landing_scroll_y', String(scrollY))
+          if (anchor) {
+            sessionStorage.setItem('banda_landing_scroll_anchor', anchor)
+          } else {
+            const label = (btn.textContent || '').trim().slice(0, 25).replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()
+            const dynamicId = `btn-${label || 'nav'}-${Math.floor(scrollY)}`
+            btn.setAttribute('data-scroll-anchor', dynamicId)
+            sessionStorage.setItem('banda_landing_scroll_anchor', dynamicId)
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
+
+    document.addEventListener('click', handleDocumentClick, true)
+    return () => {
+      document.removeEventListener('click', handleDocumentClick, true)
+    }
+  }, [])
+
+  // 2. Restore scroll position back to the exact pressed button when returning to Beranda
+  useEffect(() => {
+    const savedAnchor = sessionStorage.getItem('banda_landing_scroll_anchor')
+    const savedYStr = sessionStorage.getItem('banda_landing_scroll_y')
+    if (!savedAnchor && !savedYStr) return
+
+    const targetY = savedYStr ? parseFloat(savedYStr) : null
+    let attempts = 0
+    const maxAttempts = 35 // polling across ~1.75s to allow Suspense/lazy sections to mount
+
+    const attemptScrollRestore = () => {
+      attempts++
+      let restored = false
+
+      if (savedAnchor) {
+        const targetEl = document.getElementById(savedAnchor) || document.querySelector(`[data-scroll-anchor="${savedAnchor}"]`)
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'auto', block: 'center' })
+          if (lenisRef.current) {
+            lenisRef.current.scrollTo(targetEl as HTMLElement, { immediate: true, offset: -60 })
+          }
+          restored = true
+        }
+      }
+
+      if (!restored && targetY !== null && !isNaN(targetY)) {
+        if (document.documentElement.scrollHeight >= targetY + 100 || attempts >= maxAttempts) {
+          window.scrollTo({ top: targetY, behavior: 'auto' })
+          if (lenisRef.current) {
+            lenisRef.current.scrollTo(targetY, { immediate: true })
+          }
+          restored = true
+        }
+      }
+
+      if (restored || attempts >= maxAttempts) {
+        sessionStorage.removeItem('banda_landing_scroll_anchor')
+        sessionStorage.removeItem('banda_landing_scroll_y')
+      } else {
+        requestAnimationFrame(() => {
+          setTimeout(attemptScrollRestore, 50)
+        })
+      }
+    }
+
+    const timer = setTimeout(attemptScrollRestore, 40)
+    return () => clearTimeout(timer)
+  }, [])
 
   // Smooth scrolling initialization via Lenis (Desktop only; native momentum scrolling for mobile)
   useEffect(() => {
@@ -92,6 +172,7 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
       wheelMultiplier: 1.0,
       touchMultiplier: 1.0,
     })
+    lenisRef.current = lenis
 
     // Smooth anchor link click handling
     const handleAnchorClick = (e: MouseEvent) => {
@@ -109,6 +190,7 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
 
     return () => {
       document.removeEventListener('click', handleAnchorClick)
+      lenisRef.current = null
       lenis.destroy()
     }
   }, [])

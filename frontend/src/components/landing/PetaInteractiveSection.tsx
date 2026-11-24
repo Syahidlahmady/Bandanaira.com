@@ -207,6 +207,8 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
           <div className="shrink-0 flex items-center">
             <button
               type="button"
+              id="btn-peta-fullscreen"
+              data-scroll-anchor="btn-peta-fullscreen"
               onClick={() => onNavigate('gis')}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full bg-[#0c2340] hover:bg-[#183e75] text-white text-xs sm:text-sm font-medium transition-all shadow-sm cursor-pointer"
             >

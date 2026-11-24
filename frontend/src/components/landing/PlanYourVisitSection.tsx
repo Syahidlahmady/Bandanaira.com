@@ -50,6 +50,8 @@ export const PlanYourVisitSection: React.FC<PlanYourVisitSectionProps> = ({ onNa
       <div className="inline-flex flex-wrap justify-center items-center gap-4 pt-4 relative z-10">
         <button
           type="button"
+          id="btn-plan-explore"
+          data-scroll-anchor="btn-plan-explore"
           onClick={() => {
             setPreferredTourismSubTab('destinations')
             onNavigate('tourism')
@@ -63,6 +65,8 @@ export const PlanYourVisitSection: React.FC<PlanYourVisitSectionProps> = ({ onNa
 
         <button
           type="button"
+          id="btn-plan-open-map"
+          data-scroll-anchor="btn-plan-open-map"
           onClick={() => onNavigate('gis')}
           className="inline-flex h-[50px] items-center gap-3 px-6 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-white font-sans text-xs font-semibold tracking-wide transition-all"
           aria-label={t.planYourVisit.openMapBtn}

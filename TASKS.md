@@ -1809,3 +1809,25 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Kompilasi build produksi Vite sukses 100% tanpa error (2.059 modul dalam 16.35s).
   - Verifikasi endpoint `curl -s -X GET http://localhost:8005/api/v1/auth/logout` sukses HTTP 200 OK.
   - Automated test suite backend lulus 100%.
+
+---
+
+## [Phase 96] - Preservasi & Restorasi Posisi Scroll Beranda Saat Kembali dari Aksi "Jelajahi Selengkapnya" / "Selengkapnya"
+- [x] 96.1 Pemberian Anchor Semantik pada Seluruh Tombol Aksi "Selengkapnya" / "Jelajahi":
+  - Menambahkan atribut `id` dan `data-scroll-anchor` eksplisit pada tombol-tombol penjelajahan:
+    - `HeritageSpiceSection`: `btn-jelajahi-sejarah-selengkapnya`, `btn-kisah-{slug}`, dan `btn-kisah-mobile-{slug}`.
+    - `EcoStayCatalogSection`: `btn-ecostay-selengkapnya` dan `btn-ecostay-carousel-selengkapnya`.
+    - `TraceabilityMarketplaceSection`: `btn-marketplace-selengkapnya` dan `btn-marketplace-carousel-selengkapnya`.
+    - `PetaInteractiveSection`: `btn-peta-fullscreen`.
+    - `TourismSawSection`: `btn-tourism-explore-all` dan `btn-tourism-smart-planner`.
+    - `PlanYourVisitSection`: `btn-plan-explore` dan `btn-plan-open-map`.
+- [x] 96.2 Perekaman Posisi Scroll & Tombol Terpilih (`BandanairaBeranda.tsx` & `App.tsx`):
+  - Menambahkan capture-phase click listener global pada beranda untuk merekam `banda_landing_scroll_y` dan `banda_landing_scroll_anchor` ke `sessionStorage` seketika saat tombol ditekan.
+  - Menambahkan fallback penyimpanan scroll Y pada `handleNavigateToSejarah` dan `setActiveTab` di `App.tsx` sebelum perutean berpindah.
+- [x] 96.3 Mesin Restorasi Scroll Reaktif dengan Dukungan Suspense & Lenis (`BandanairaBeranda.tsx`):
+  - Mengimplementasikan observer siklus restorasi yang mendeteksi tersedianya elemen target di DOM pasca pemuatan komponen malas (`React.lazy` / `Suspense`).
+  - Mengarahkan viewport kembali tepat ke posisi tombol yang ditekan menggunakan `el.scrollIntoView({ behavior: 'auto', block: 'center' })`.
+  - Mengintegrasikan pembaruan posisi virtual Lenis (`lenisRef.current.scrollTo`) agar scroll halus desktop dan momentum mobile tetap sinkron sempurna tanpa memicu lompatan kembali ke atas.
+- [x] 96.4 Pengujian & Verifikasi:
+  - Kompilasi build produksi Vite sukses 100% tanpa error TypeScript (2.059 modul dalam 15.80s).
+

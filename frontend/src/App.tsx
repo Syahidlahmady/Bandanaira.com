@@ -220,6 +220,16 @@ export const App: React.FC = () => {
   const [selectedArticleSlug, setSelectedArticleSlug] = useState<string | null>(getInitialArticleSlug)
 
   const handleNavigateToSejarah = (slug?: string) => {
+    if (activeTab === 'landing' && typeof window !== 'undefined') {
+      const scrollY = window.scrollY || document.documentElement.scrollTop || 0
+      if (scrollY > 0) {
+        try {
+          sessionStorage.setItem('banda_landing_scroll_y', String(scrollY))
+        } catch {
+          // ignore
+        }
+      }
+    }
     setSelectedArticleSlug(slug || null)
     setActiveTabState('sejarah')
     try {
@@ -249,6 +259,16 @@ export const App: React.FC = () => {
   }
 
   const setActiveTab = (tab: TabId, replace: boolean = false) => {
+    if (activeTab === 'landing' && tab !== 'landing' && typeof window !== 'undefined') {
+      const scrollY = window.scrollY || document.documentElement.scrollTop || 0
+      if (scrollY > 0) {
+        try {
+          sessionStorage.setItem('banda_landing_scroll_y', String(scrollY))
+        } catch {
+          // ignore
+        }
+      }
+    }
     if (tab !== 'sejarah') {
       setSelectedArticleSlug(null)
     }

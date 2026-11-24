@@ -246,6 +246,8 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
 
             <button
               type="button"
+              id="btn-ecostay-selengkapnya"
+              data-scroll-anchor="btn-ecostay-selengkapnya"
               onClick={openAccommodations}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#0f2c59] text-[#0f2c59] hover:bg-[#0f2c59] hover:text-white text-xs font-semibold tracking-wide transition-all duration-200 group cursor-pointer"
             >
@@ -369,6 +371,8 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
 
             <button
               type="button"
+              id="btn-ecostay-carousel-selengkapnya"
+              data-scroll-anchor="btn-ecostay-carousel-selengkapnya"
               onClick={openAccommodations}
               className="inline-flex items-center justify-center gap-2 w-full py-3.5 px-6 rounded-full bg-amber-600 hover:bg-amber-500 text-white font-sans text-xs font-semibold tracking-wide transition-all shadow-md group cursor-pointer"
             >
