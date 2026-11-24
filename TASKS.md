@@ -80,6 +80,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 90: Penghapusan Fitur Registrasi Mandiri & Eliminasi DSS/SAW pada Ruang Kerja Warga**
 - [x] **Phase 91: Pembersihan Kolom Akses Akun pada Footer Ekosistem & Penyelarasan Layout Grid**
 - [x] **Phase 92: Pengetatan Hak Akses DSS/SAW Smart Planner Khusus Administrator Sistem**
+- [x] **Phase 93: Penghapusan Switcher Bahasa pada Dashboard Admin (Penyelarasan Pengguna Lokal Banda & Penegasan Fokus Smart Tourism-Kependudukan)**
 ---
 
 ## Detailed Task Checklist
@@ -1754,3 +1755,15 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 92.5 Pengujian & Verifikasi:
   - Build produksi frontend sukses (2.059 modul terkompilasi dalam 25.77s).
   - 100/100 automated test suite backend lulus 100% (321.84s).
+
+---
+
+## [Phase 93] - Penghapusan Switcher Bahasa pada Dashboard Admin & Penegasan Fokus Utama
+- [x] 93.1 Penghapusan Language Switcher pada Topbar Dashboard (`DashboardLayout.tsx`):
+  - Menghapus impor `LanguageSwitcher` dan pemanggilan komponen `<LanguageSwitcher variant="topbar" />` dari bilah atas dashboard.
+  - Dasbor komando admin kini berfokus pada bahasa operasional lokal Indonesia bagi perangkat desa dan pengelola di Banda Neira.
+- [x] 93.2 Penegasan Ruang Lingkup Sistem:
+  - Modul firmware IoT mikrokontroler fisik dan Koperasi ditegaskan sebagai prototipe mockup fungsional simulator.
+  - Fokus utama operasional ekosistem dikonsolidasi penuh pada **Smart Tourism** (akomodasi eco-stay, direktori pemandu, cagar budaya, pemesanan WhatsApp) dan **Kependudukan Desa** (profil warga terenkripsi AES-256/HMAC, surat keterangan desa, tata kelola dusun).
+- [x] 93.3 Pengujian & Verifikasi:
+  - Build produksi frontend Vite sukses 100% (2.059 modul ter-bundle dalam 17.04s).
