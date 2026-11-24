@@ -2,6 +2,15 @@ import React, { useState, useRef, useEffect } from 'react'
 import { AccommodationItem, setPreferredTourismSubTab } from '../../services/tourism'
 import { ArrowUpRightIcon } from './LandingIcons'
 import { useLanguage } from '../../context/LanguageContext'
+import {
+  MapPin,
+  ChevronLeft,
+  ChevronRight,
+  MessageCircle,
+  Droplets,
+  Sun,
+  ShieldCheck,
+} from 'lucide-react'
 
 export const FALLBACK_ACCOMMODATIONS: AccommodationItem[] = [
   {
@@ -130,10 +139,10 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
   const [canScrollRight, setCanScrollRight] = useState(true)
 
   const filterOptions = [
-    { key: 'ALL', label: t.ecoStay.filterAll },
-    { key: 'BOUTIQUE', label: 'Boutique Eco-Hotel' },
-    { key: 'HOMESTAY', label: 'Homestay Warga' },
-    { key: 'BUNGALOW', label: 'Beach Bungalow' },
+    { key: 'ALL', label: t.ecoStay.filterAll || 'Semua Penginapan', count: FALLBACK_ACCOMMODATIONS.length },
+    { key: 'BOUTIQUE', label: 'Boutique Eco-Hotel', count: 2 },
+    { key: 'HOMESTAY', label: 'Homestay Warga', count: 2 },
+    { key: 'BUNGALOW', label: 'Beach Bungalow', count: 2 },
   ] as const
 
   const filteredItems = FALLBACK_ACCOMMODATIONS.filter((item) => {
@@ -167,7 +176,7 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
     const el = scrollContainerRef.current
     if (!el) return
     const card = el.querySelector('div')
-    const scrollAmount = card ? (card.clientWidth + 24) * (direction === 'left' ? -1 : 1) : 380 * (direction === 'left' ? -1 : 1)
+    const scrollAmount = card ? (card.clientWidth + 20) * (direction === 'left' ? -1 : 1) : 320 * (direction === 'left' ? -1 : 1)
     el.scrollBy({ left: scrollAmount, behavior: 'smooth' })
   }
 
@@ -180,11 +189,11 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
     <section
       id="eco-stay"
       aria-labelledby="island-stays-heading"
-      className="relative w-full py-16 px-6 sm:px-12 lg:px-20 bg-[#f9f8f5] text-slate-900 border-t border-slate-200/80"
+      className="relative w-full py-12 sm:py-16 lg:py-20 px-4 sm:px-8 lg:px-16 bg-[#f9f8f5] text-slate-900 border-t border-slate-200/80 scroll-mt-20"
     >
       <div className="max-w-7xl mx-auto">
-        {/* Header Row: Title on Left, Controls & Selengkapnya on Right */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
+        {/* Header Row: Judul di Kiri, Kontrol & Aksi di Kanan */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 mb-5 sm:mb-8">
           <div>
             <div className="inline-flex items-center gap-2 mb-2 sm:mb-3">
               <span className="w-5 h-px bg-amber-600" />
@@ -207,24 +216,22 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
             </p>
           </div>
 
-          {/* Actions: Prev/Next Carousel Arrows + Selengkapnya button in Balanced Row */}
-          <div className="flex items-center justify-between sm:justify-start gap-2.5 sm:gap-3 w-full sm:w-auto">
-            {/* Carousel navigation arrows */}
+          {/* Aksi & Navigasi Panah Carousel */}
+          <div className="flex items-center justify-between sm:justify-start gap-2.5 sm:gap-3 w-full sm:w-auto pt-2 sm:pt-0 border-t border-slate-200/60 sm:border-0">
+            {/* Tombol Panah Paginasi Berdimensi 44x44px */}
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => scroll('left')}
                 disabled={!canScrollLeft}
                 aria-label={t.ecoStay.prev}
-                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center transition-colors duration-200 ${
+                className={`w-11 h-11 rounded-full border flex items-center justify-center transition-all duration-200 ${
                   canScrollLeft
-                    ? 'border-slate-300 text-slate-800 hover:border-[#0f2c59] hover:bg-[#0f2c59] hover:text-white cursor-pointer shadow-xs'
-                    : 'border-slate-200 text-slate-300 cursor-not-allowed opacity-50'
+                    ? 'border-slate-300 text-slate-800 hover:border-[#0f2c59] hover:bg-[#0f2c59] hover:text-white cursor-pointer shadow-xs active:scale-90'
+                    : 'border-slate-200 text-slate-300 cursor-not-allowed opacity-40'
                 }`}
               >
-                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
+                <ChevronLeft size={18} />
               </button>
 
               <button
@@ -232,15 +239,13 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
                 onClick={() => scroll('right')}
                 disabled={!canScrollRight}
                 aria-label={t.ecoStay.next}
-                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center transition-colors duration-200 ${
+                className={`w-11 h-11 rounded-full border flex items-center justify-center transition-all duration-200 ${
                   canScrollRight
-                    ? 'border-slate-300 text-slate-800 hover:border-[#0f2c59] hover:bg-[#0f2c59] hover:text-white cursor-pointer shadow-xs'
-                    : 'border-slate-200 text-slate-300 cursor-not-allowed opacity-50'
+                    ? 'border-slate-300 text-slate-800 hover:border-[#0f2c59] hover:bg-[#0f2c59] hover:text-white cursor-pointer shadow-xs active:scale-90'
+                    : 'border-slate-200 text-slate-300 cursor-not-allowed opacity-40'
                 }`}
               >
-                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
+                <ChevronRight size={18} />
               </button>
             </div>
 
@@ -249,16 +254,16 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
               id="btn-ecostay-selengkapnya"
               data-scroll-anchor="btn-ecostay-selengkapnya"
               onClick={openAccommodations}
-              className="inline-flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full border border-[#0f2c59] text-[#0f2c59] hover:bg-[#0f2c59] hover:text-white text-xs font-semibold tracking-wide transition-all duration-200 group cursor-pointer"
+              className="inline-flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2.5 rounded-full border border-[#0f2c59] text-[#0f2c59] hover:bg-[#0f2c59] hover:text-white text-xs font-semibold tracking-wide transition-all duration-200 group cursor-pointer active:scale-95 shadow-xs"
             >
               <span>{t.ecoStay.viewMore}</span>
-              <ArrowUpRightIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              <ArrowUpRightIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </button>
           </div>
         </div>
 
-        {/* Filter Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 scrollbar-none">
+        {/* Filter Kategori Pil (Bisa Digulir Horisontal di Mobile Tanpa Bar) */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-5 sm:mb-6 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
           {filterOptions.map((opt) => (
             <button
               key={opt.key}
@@ -267,21 +272,28 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
                 setSelectedFilter(opt.key)
                 scrollContainerRef.current?.scrollTo({ left: 0, behavior: 'smooth' })
               }}
-              className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer active:scale-95 shrink-0 ${
                 selectedFilter === opt.key
-                  ? 'bg-[#0f2c59] text-white shadow-sm'
+                  ? 'bg-[#0f2c59] text-white shadow-sm font-bold'
                   : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300'
               }`}
             >
-              {opt.label}
+              <span>{opt.label}</span>
+              <span
+                className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                  selectedFilter === opt.key ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                }`}
+              >
+                {opt.count}
+              </span>
             </button>
           ))}
         </div>
 
-        {/* Carousel Showcase (Single row of top 3 visible, smooth horizontal snap) */}
+        {/* Carousel Kartu Penginapan */}
         <div
           ref={scrollContainerRef}
-          className="flex gap-6 overflow-x-auto pb-6 scroll-smooth snap-x snap-mandatory scrollbar-none -mx-6 px-6 sm:-mx-12 sm:px-12 lg:-mx-20 lg:px-20"
+          className="flex gap-4 sm:gap-6 overflow-x-auto pb-6 scroll-smooth snap-x snap-mandatory scrollbar-none -mx-4 px-4 sm:-mx-8 sm:px-8 lg:-mx-16 lg:px-16"
         >
           {filteredItems.map((stay) => {
             const formattedPrice = new Intl.NumberFormat('id-ID', {
@@ -293,9 +305,9 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
             return (
               <div
                 key={stay.id}
-                className="group relative shrink-0 w-[78vw] sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] min-w-[250px] max-w-[420px] snap-start flex flex-col rounded-[1.75rem] sm:rounded-[2rem] overflow-hidden bg-slate-900 aspect-[3/4] shadow-md hover:shadow-2xl transition-all duration-300 select-none"
+                className="group relative shrink-0 w-[80vw] max-w-[330px] sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] min-w-[250px] snap-center sm:snap-start flex flex-col rounded-2xl sm:rounded-[2rem] overflow-hidden bg-slate-900 aspect-[3/4] shadow-md hover:shadow-2xl transition-all duration-300 select-none"
               >
-                {/* Background Image */}
+                {/* Foto Latar Penginapan */}
                 <img
                   src={stay.photo_url || '/images/landmarks/hotel-maulana.jpg'}
                   alt={stay.name}
@@ -305,66 +317,97 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
                 />
 
                 {/* Scrim Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a1626]/95 via-[#0a1626]/40 to-black/20" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a1626]/95 via-[#0a1626]/50 to-black/25" />
 
-                {/* Bottom Information Overlay */}
-                <div className="relative z-10 mt-auto p-6 flex flex-col justify-end text-white">
-                  <h3 className="font-sans font-bold text-lg sm:text-xl text-white leading-snug group-hover:text-amber-300 transition-colors mb-2">
+                {/* Badge Melayang Atas: Pulau & Eco-Stay Terverifikasi */}
+                <div className="absolute top-3 inset-x-3 flex items-center justify-between z-10 pointer-events-none">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-950/70 backdrop-blur-md border border-white/20 text-[10px] sm:text-[11px] font-semibold text-white">
+                    <MapPin size={11} className="text-amber-400" />
+                    <span>{stay.island_name}</span>
+                  </span>
+
+                  {stay.eco_stay_badge && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/30 backdrop-blur-md border border-emerald-400/50 text-[10px] sm:text-[11px] font-bold text-emerald-300">
+                      <ShieldCheck size={11} />
+                      <span>Eco-Stay</span>
+                    </span>
+                  )}
+                </div>
+
+                {/* Lapisan Informasi Bawah */}
+                <div className="relative z-10 mt-auto p-4 sm:p-5 flex flex-col justify-end text-white">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 mb-1">
+                    {stay.type}
+                  </span>
+
+                  <h3 className="font-sans font-bold text-base sm:text-lg text-white leading-snug group-hover:text-amber-300 transition-colors mb-1.5 line-clamp-1">
                     {stay.name}
                   </h3>
 
-                  {/* Price info */}
+                  {/* Informasi Tarif */}
                   <div className="flex items-center gap-2 mb-2 font-mono text-sm text-amber-300 font-bold">
                     <span>{formattedPrice}</span>
-                    <span className="text-xs font-normal text-slate-300 font-sans">/ {t.ecoStay.night}</span>
+                    <span className="text-[11px] font-normal text-slate-300 font-sans">/ {t.ecoStay.night}</span>
                   </div>
 
-                  {/* Island & Address Pin */}
-                  <div className="flex items-center gap-1.5 text-xs text-slate-300 mb-3 font-sans">
-                    <svg className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z" />
-                      <circle cx="12" cy="10" r="2.5" />
-                    </svg>
-                    <span className="truncate">{stay.island_name} &bull; {stay.address}</span>
+                  {/* Fasilitas Ramah Lingkungan (Air RO & Listrik Surya) */}
+                  <div className="flex items-center gap-1.5 mb-2.5 text-[10px] text-slate-300">
+                    {stay.has_clean_ro_water && (
+                      <span className="inline-flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded-md">
+                        <Droplets size={10} className="text-sky-300" />
+                        <span>Air RO</span>
+                      </span>
+                    )}
+                    {stay.has_solar_backup && (
+                      <span className="inline-flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded-md">
+                        <Sun size={10} className="text-amber-300" />
+                        <span>Solar Listrik</span>
+                      </span>
+                    )}
+                    <span className="bg-white/10 px-2 py-0.5 rounded-md text-slate-400">
+                      {stay.rooms_available} kamar
+                    </span>
                   </div>
 
-                  {/* WhatsApp Direct Action */}
-                  <div className="pt-3 border-t border-white/15 flex items-center justify-between">
+                  {/* Tombol Reservasi WhatsApp & Detail */}
+                  <div className="pt-2.5 border-t border-white/15 flex items-center justify-between">
                     <a
                       href={`https://wa.me/${stay.contact_whatsapp}?text=Halo%2C%20saya%20ingin%20reservasi%20di%20${encodeURIComponent(stay.name)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`${t.ecoStay.bookWhatsapp} ${stay.name}`}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-300 hover:text-white transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-xs font-semibold text-emerald-300 hover:text-white transition-all active:scale-95"
                     >
-                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                      </svg>
+                      <MessageCircle size={14} />
                       <span>{t.ecoStay.bookWhatsapp}</span>
                     </a>
 
-                    <span className="text-[11px] text-slate-400 font-sans">
-                      {stay.rooms_available} kamar tersisa
-                    </span>
+                    <button
+                      type="button"
+                      onClick={openAccommodations}
+                      className="text-[11px] font-semibold text-slate-300 hover:text-amber-300 transition-colors cursor-pointer"
+                    >
+                      Detail &rarr;
+                    </button>
                   </div>
                 </div>
               </div>
             )
           })}
 
-          {/* "Selengkapnya" Final Card in Carousel */}
-          <div className="group relative shrink-0 w-[85vw] sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] min-w-[260px] max-w-[420px] snap-start flex flex-col justify-between rounded-[2rem] bg-gradient-to-br from-[#0f2c59] to-[#081d35] p-8 text-white aspect-[3/4] shadow-md border border-white/10 hover:border-amber-400/40 transition-all select-none">
+          {/* Kartu Akhir Carousel: Buka Direktori Lengkap */}
+          <div className="group relative shrink-0 w-[80vw] max-w-[330px] sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] min-w-[250px] snap-center sm:snap-start flex flex-col justify-between rounded-2xl sm:rounded-[2rem] bg-gradient-to-br from-[#0f2c59] to-[#081d35] p-5 sm:p-7 text-white aspect-[3/4] shadow-md border border-white/10 hover:border-amber-400/40 transition-all select-none">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-300 flex items-center justify-center mb-6">
-                <ArrowUpRightIcon className="w-6 h-6" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-500/20 text-amber-300 flex items-center justify-center mb-4 sm:mb-6">
+                <ArrowUpRightIcon className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <span className="font-sans text-[11px] font-bold tracking-[0.2em] text-[#f4b75e] uppercase block mb-2">
+              <span className="font-sans text-[10px] sm:text-[11px] font-bold tracking-[0.2em] text-[#f4b75e] uppercase block mb-1.5 sm:mb-2">
                 DIREKTORI LENGKAP
               </span>
-              <h3 className="font-sans font-bold text-2xl text-white leading-tight mb-3">
+              <h3 className="font-sans font-bold text-xl sm:text-2xl text-white leading-tight mb-2 sm:mb-3">
                 30+ Penginapan di Seluruh Banda
               </h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
+              <p className="text-xs text-slate-300 leading-relaxed line-clamp-3 sm:line-clamp-none">
                 Temukan pilihan homestay cagar budaya, boutique villa, dan beach bungalow di Pulau Neira, Banda Besar, Ay, Rhun, dan Hatta.
               </p>
             </div>
@@ -374,7 +417,7 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
               id="btn-ecostay-carousel-selengkapnya"
               data-scroll-anchor="btn-ecostay-carousel-selengkapnya"
               onClick={openAccommodations}
-              className="inline-flex items-center justify-center gap-2 w-full py-3.5 px-6 rounded-full bg-amber-600 hover:bg-amber-500 text-white font-sans text-xs font-semibold tracking-wide transition-all shadow-md group cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 w-full py-3 px-5 rounded-full bg-amber-600 hover:bg-amber-500 active:scale-95 text-white font-sans text-xs font-semibold tracking-wide transition-all shadow-md group cursor-pointer"
             >
               <span>Buka Direktori Penginapan</span>
               <ArrowUpRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

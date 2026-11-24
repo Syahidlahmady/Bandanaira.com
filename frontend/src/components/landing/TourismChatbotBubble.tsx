@@ -243,7 +243,7 @@ export const TourismChatbotBubbleComponent: React.FC<TourismChatbotBubbleProps> 
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end will-change-transform transform-gpu">
+    <div className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] right-4 lg:bottom-6 lg:right-6 z-40 flex flex-col items-end will-change-transform transform-gpu">
       {/* Floating Chatbot Bubble Trigger */}
       {!isOpen && (
         <button
@@ -270,7 +270,7 @@ export const TourismChatbotBubbleComponent: React.FC<TourismChatbotBubbleProps> 
       {isOpen && (
         <div
           data-lenis-prevent
-          className="w-[92vw] sm:w-[400px] h-[550px] max-h-[82vh] bg-white rounded-3xl shadow-[0_20px_60px_rgba(15,44,89,0.25)] border border-slate-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-300 select-none"
+          className="w-[calc(100vw-2rem)] sm:w-[400px] h-[520px] max-h-[72vh] sm:max-h-[82vh] bg-white rounded-3xl shadow-[0_20px_60px_rgba(15,44,89,0.25)] border border-slate-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-300 select-none"
         >
           {/* Chat Window Header */}
           <div className="bg-[#0f2c59] text-white px-5 py-4 flex items-center justify-between shadow-sm">

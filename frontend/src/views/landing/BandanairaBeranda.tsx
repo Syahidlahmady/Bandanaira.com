@@ -10,6 +10,7 @@ import SustainableTravelSection from '../../components/landing/SustainableTravel
 import PlanYourVisitSection from '../../components/landing/PlanYourVisitSection'
 import LandingFooterSection from '../../components/landing/LandingFooterSection'
 import TourismChatbotBubble from '../../components/landing/TourismChatbotBubble'
+import MobileBottomNav from '../../components/landing/MobileBottomNav'
 
 export type NavTabType =
   | 'population'
@@ -159,7 +160,7 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
   }, [])
 
   return (
-    <div className="flex min-h-[100dvh] w-full flex-col items-start bg-[#f7f5f0] text-[#0f2c59] selection:bg-[#f4b75e] selection:text-[#081d35] overflow-x-clip">
+    <div className="flex min-h-[100dvh] w-full flex-col items-start bg-[#f7f5f0] text-[#0f2c59] selection:bg-[#f4b75e] selection:text-[#081d35] overflow-x-clip pb-16 lg:pb-0">
       {/* 1. Hero & Navbar Section */}
       <HeroSection
         onNavigate={onNavigate}
@@ -245,6 +246,16 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
 
       {/* 12. Floating Tourism Recommendation Chatbot Bubble */}
       <TourismChatbotBubble onNavigate={onNavigate} />
+
+      {/* 13. Mobile App Bottom Navigation Bar (Capacitor & Mobile DevTools Viewport) */}
+      <MobileBottomNav
+        activeTab={activeTab}
+        externalActiveNav={activeNav}
+        onNavigate={onNavigate}
+        onOpenLogin={onOpenLogin}
+        currentUser={currentUser}
+        onOpenMarketplace={onOpenMarketplace}
+      />
     </div>
   )
 }

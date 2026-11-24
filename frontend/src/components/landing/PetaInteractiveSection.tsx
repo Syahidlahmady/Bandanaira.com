@@ -62,10 +62,10 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
           </div>
 
           {/* Native Vector SVG Map with indonesia.travel Monochromatic Oceanic Aesthetic */}
-          <div className="w-full max-w-5xl relative flex items-center justify-center px-2 py-4">
+          <div className="w-full max-w-5xl relative flex items-center justify-center px-2 py-2 sm:py-4">
             <svg
               viewBox="0 -80 3507 2620"
-              className="w-full h-auto max-h-[580px] object-contain select-none"
+              className="w-full h-auto max-h-[340px] sm:max-h-[580px] object-contain select-none"
               preserveAspectRatio="xMidYMid meet"
               aria-label="Peta Wilayah Kepulauan Banda Neira"
             >
@@ -210,10 +210,10 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
               id="btn-peta-fullscreen"
               data-scroll-anchor="btn-peta-fullscreen"
               onClick={() => onNavigate('gis')}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-2.5 sm:py-3 rounded-full bg-[#0c2340] hover:bg-[#183e75] text-white text-xs sm:text-sm font-medium transition-all shadow-xs cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-3 min-h-[44px] rounded-full bg-[#0c2340] hover:bg-[#183e75] active:scale-[0.98] text-white text-xs sm:text-sm font-medium transition-all shadow-xs cursor-pointer whitespace-nowrap"
             >
               <span>{t.mapSection.openFullMap}</span>
-              <ArrowUpRightIcon className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+              <ArrowUpRightIcon className="w-3.5 sm:w-4 h-3.5 sm:h-4 shrink-0" />
             </button>
           </div>
         </div>
@@ -227,9 +227,9 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
                 type="button"
                 key={v.id}
                 onClick={() => handleSelectVillage(v)}
-                className={`shrink-0 snap-start px-3 py-1.5 rounded-full text-xs font-sans whitespace-nowrap transition-all cursor-pointer ${
+                className={`shrink-0 snap-start px-3.5 py-2 min-h-[36px] rounded-full text-xs font-sans whitespace-nowrap transition-all active:scale-95 cursor-pointer ${
                   isSelected
-                    ? 'bg-[#0c2340] text-white shadow-xs font-medium'
+                    ? 'bg-[#0c2340] text-white shadow-xs font-medium ring-2 ring-[#0c2340]/20'
                     : 'bg-white/70 hover:bg-white text-[#2c4e6e] border border-[#cfe2f4]/80'
                 }`}
               >

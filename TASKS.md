@@ -87,6 +87,9 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 97: Redesain Halaman Destinasi & Penginapan Publik, Pembersihan Grafik Dasbor, dan Penegasan Alur Hak Akses Role**
 - [x] **Phase 98: Redesain Help Center Sesuai Gambar Referensi & CMS Pengelolaan Informasi pada Dashboard Admin**
 - [x] **Phase 99: Penyelarasan Tata Letak Mobile Landing Page Semirip Mungkin dengan Tampilan Desktop (Anti-Slop & Hybrid Responsive Blueprint)**
+- [x] **Phase 100: Eliminasi Glitch Visual Kedipan Beranda Saat Login Menuju Dashboard**
+- [x] **Phase 101: Optimasi Kinerja Dashboard Admin, Eliminasi Render Loop & Reduksi Panggilan Endpoint Duplikat**
+- [x] **Phase 102: Implementasi Dedicated Mobile App Shell Landing Page (Capacitor & Mobile DevTools Viewport)**
 ---
 
 ## Detailed Task Checklist
@@ -1945,4 +1948,165 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 101.5 Pengujian & Verifikasi:
   - Kompilasi build produksi Vite sukses 100% tanpa error TypeScript (2.057 modul dalam 25.36s).
   - Backend pytest test suite (100 tes) lulus 100% (0 error, 3 warnings deprecation standar).
+
+---
+
+## [Phase 102] - Implementasi Dedicated Mobile App Shell Landing Page (Capacitor & Mobile DevTools Viewport)
+- [x] 102.1 Pembuatan Komponen Navigasi Bawah Seluler (`frontend/src/components/landing/MobileBottomNav.tsx`):
+  - Membangun Mobile App Bottom Navigation Bar ramah sentuhan jempol (*thumb-friendly ergonomic navigation*, target sentuh >= 48px).
+  - 5 tab terpadu: Beranda (Home), Wisata (Compass), Peta Spasial (Map), Bantuan (LifeBuoy), dan Akun/Masuk (User/LogIn).
+  - Mengintegrasikan deteksi scroll aktif untuk menyorot ikon sesuai seksi yang sedang dilihat pengunjung.
+  - Mendukung CSS Safe Area Inset (`pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))]`) untuk iPhone Dynamic Island / Android gesture bar.
+  - Tampil khusus pada resolusi mobile/tablet (`lg:hidden`) dan tersembunyi di desktop.
+- [x] 102.2 Integrasi App Shell pada Landing Page (`frontend/src/views/landing/BandanairaBeranda.tsx`):
+  - Memasang `MobileBottomNav` di level root beranda.
+  - Menambahkan bantalan bawah `pb-16 lg:pb-0` agar konten halaman tidak tertutup oleh bar navigasi bawah.
+- [x] 102.3 Header Mobile Native & Aksesibilitas Langsung (`frontend/src/components/landing/HeroSection.tsx`):
+  - Mengonfigurasi `navVisible` agar langsung aktif pada resolusi mobile (`< 1024px` atau touch device), memberi pengguna akses instan ke logo `bandanaira.com`, switcher bahasa ID/EN, dan tombol masuk.
+  - Menambahkan *safe area top headroom* (`pt-[calc(0.5rem+env(safe-area-inset-top,0px))]`).
+- [x] 102.4 Penataan Floating Chatbot Bubble di Layar Ponsel (`frontend/src/components/landing/TourismChatbotBubble.tsx`):
+  - Mengangkat posisi floating trigger di mobile menjadi `bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))]` sehingga melayang nyaman tepat di atas bottom bar tanpa tumpang tindih.
+  - Membatasi dimensi jendela obrolan mobile menjadi `w-[calc(100vw-2rem)]` dan `max-h-[72vh]` agar pas dengan layar HP.
+- [x] 102.5 Optimasi Spasial & Touch Target Desa (`frontend/src/components/landing/PetaInteractiveSection.tsx` & `LandingFooterSection.tsx`):
+  - Mengatur tinggi maksimal peta SVG di mobile menjadi `max-h-[340px] sm:max-h-[580px]` agar proporsional dan tidak memakan 2 layar penuh.
+  - Memperluas target sentuh pil desa menjadi `min-h-[36px]` dengan feedback sentuh `active:scale-95`.
+  - Menambahkan `pb-28 lg:pb-7` pada footer beranda.
+- [x] 102.6 Penyelarasan Visibilitas Responsif Navbar Atas vs Navigasi Bawah Seluler (`frontend/src/components/landing/HeroSection.tsx`):
+  - Mengonfigurasi pembungkus navbar atas di `HeroSection.tsx` dengan kelas `hidden lg:block`.
+  - Pada mode mobile (< 1024px / Inspect HP), navbar atas menghilang 100% sehingga layar mobile bersih dan luas, dengan kendali penuh di navigasi bawah (`MobileBottomNav`).
+  - Ketika layar diperlebar kembali ke ukuran desktop (>= 1024px), navbar atas otomatis kembali muncul (`lg:block`), sementara navigasi bawah seluler otomatis menghilang (`lg:hidden`).
+- [x] 102.7 Header Minimalis Mobile (Logo + Ikon 3 Garis), Pusat Bantuan di Drawer Hamburger, & Tab Pasar di Navigasi Bawah:
+  - Header atas pada mode mobile (< 1024px) diaktifkan kembali secara minimalis dan ergonomis: HANYA menampilkan Logo situs (`NutmegLogoIcon` + `bandanaira.com`) di kiri dan Ikon Garis 3 (Hamburger Menu) di kanan.
+  - Tombol Masuk mandiri, switcher bahasa, dan link navigasi desktop disembunyikan dari header mobile (`hidden lg:...`) dan dialihkan ke dalam drawer menu 3 garis.
+  - Di dalam menu 3 garis (Hamburger Drawer):
+    - Menambahkan kartu prioritas **Pusat Bantuan & Panduan** (Help Center) dengan tautan langsung `onNavigate('help')` dan tombol telepon darurat Posko SAR Banda (`tel:112`).
+    - Menambahkan grid 2 kolom navigasi ekosistem lengkap (Beranda, Peta Spasial GIS, Destinasi, Eco-Stay, Pasar Rempah, Sejarah & Warga).
+    - Menambahkan kartu profil pengguna / tombol masuk ke akun serta switcher bahasa terpadu.
+  - Pada bar navigasi bawah (`MobileBottomNav.tsx`):
+    - Mengganti ikon Bantuan dengan ikon **Pasar (Marketplace)** menggunakan `Store` dari `lucide-react`.
+    - Mengintegrasikan aksi `onOpenMarketplace` dan deteksi scroll aktif `#layanan-umkm`.
+- [x] 102.8 Pengujian & Verifikasi:
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
+  - Build produksi Vite (`npm run build`) sukses 100% (2.058 modul dalam 12.65s).
+- [x] 102.9 Perapian Tata Letak & Tombol Seksi Destinasi Mode Mobile (`TourismSawSection.tsx`):
+  - Menyesuaikan tata letak tombol aksi utama (`btn-tourism-explore-all` dan `btn-tourism-smart-planner`) menjadi `flex flex-col sm:flex-row w-full sm:w-auto` dengan tinggi ramah sentuhan jempol (`py-3`), mencegah teks tombol terpotong atau terbungkus berantakan di layar ponsel sempit.
+  - Memperbesar target sentuh tombol panah paginasi menjadi 44x44px (`w-11 h-11`) dengan feedback taktil `active:scale-90`.
+  - Mengintegrasikan sinkronisasi sentuh usap (*touch-swipe listener*): menggeser kartu carousel secara horizontal di layar HP kini langsung menyinkronkan nama destinasi, counter (`01 / 08`), dan garis progress bar secara reaktif.
+  - Mengatur padding dalam kartu destinasi menjadi responsif (`p-4 sm:p-6`) dengan kartu horizontal edge-to-edge (`-mx-4 px-4 sm:mx-0 sm:px-0`), membuat foto tetap jernih dan teks terbaca jelas.
+  - Menyesuaikan leading dan ukuran judul responsif (`text-2xl sm:text-4xl lg:text-[44px]` dengan `leading-snug`) agar tidak saling bertubrukan.
+- [x] 102.10 Pengujian & Verifikasi Build:
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
+  - Build produksi Vite (`npm run build`) sukses 100% (2.058 modul dalam 12.89s).
+- [x] 102.11 Penyesuaian Responsif Direktori Penginapan & Eco-Stay pada Landing Page (`EcoStayCatalogSection.tsx`):
+  - Memperbesar target sentuh tombol panah paginasi menjadi 44x44px (`w-11 h-11`) dengan mikro-interaksi `active:scale-90`.
+  - Mengonfigurasi bilah filter pil kategori penginapan agar dapat digeser horisontal secara mulus di mobile (`-mx-4 px-4 sm:mx-0 sm:px-0`) dengan badge jumlah unit (`count`).
+  - Menata kartu penginapan agar terpusat rapi saat digulir di HP (`w-[80vw] max-w-[330px] aspect-[3/4] snap-center sm:snap-start`).
+  - Menambahkan badge nama pulau dan badge *Eco-Stay Terverifikasi* di sudut atas kartu, serta tag fasilitas ramah lingkungan (*Air RO* & *Solar Listrik*).
+  - Merapikan tombol reservasi WhatsApp menjadi pil tombol jelas dengan teks kontras tinggi dan aksi klik teruji.
+- [x] 102.12 Pengujian & Verifikasi Build:
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
+  - Build produksi Vite (`npm run build`) sukses 100% (2.058 modul dalam 12.88s).
+- [x] 102.13 Penyelarasan Responsif Seksi Marketplace & Traceability Rempah pada Landing Page (`TraceabilityMarketplaceSection.tsx`):
+  - Mengelompokkan tombol header aksi di mobile: baris pertama berisi tombol panah navigasi 44x44px (`w-11 h-11`) dan tombol Cek Keaslian Batch QR (`btn-traceability-verify`), baris kedua berisi tombol jelajah etalase penuh `Buka Marketplace` (`btn-marketplace-open-catalog`), mencegah tombol terpotong atau wrap tidak beraturan di layar sempit.
+  - Memperbarui bilah filter kategori komoditas menjadi kontainer gulir horizontal mulus (`-mx-4 px-4 sm:mx-0 sm:px-0`) dengan badge penghitung produk (*count*).
+  - Mengonfigurasi kartu produk dengan lebar responsif dan snap-centering (`w-[80vw] max-w-[330px] aspect-[3/4] snap-center sm:snap-start`), serta padding kartu proporsional (`p-4 sm:p-5`) agar foto produk pala/rempah tetap dominan dan tajam.
+  - Menambahkan badge kategori produk dengan ikon tag di pojok kiri atas dan badge verifikasi blockchain (*Terverifikasi*) dengan ikon perisai di pojok kanan atas kartu.
+  - Menyediakan tombol aksi langsung "Lihat Produk" dengan warna aksen amber Banda Neira dan tombol pintas QR "Cek Asli" yang ramah jempol (`active:scale-95`).
+- [x] 102.14 Pengujian & Verifikasi Build:
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
+  - Build produksi Vite (`npm run build`) sukses 100% tanpa regresi.
+- [x] 102.15 Penyelarasan Responsif Tombol "Jelajahi Banda Sekarang" & "Buka Peta Interaktif" (`PlanYourVisitSection.tsx`, `HeroSection.tsx`, `PetaInteractiveSection.tsx`):
+  - Mengonfigurasi tombol CTA ganda pada `PlanYourVisitSection.tsx` agar pada mobile tersusun vertikal penuh (`flex flex-col sm:flex-row items-stretch sm:items-center max-w-xs sm:max-w-none`) dengan tinggi ramah jempol 48px (`h-12`), mencegah pembungkusan kata canggung atau overflow pada layar sempit 360px-414px.
+  - Menambahkan `whitespace-nowrap`, ikon panah `shrink-0`, dan feedback taktil `active:scale-[0.98]` pada tombol "Jelajahi Banda Sekarang" dan "Buka Peta Interaktif".
+  - Menyelaraskan tombol CTA pada `HeroSection.tsx` ("Mulai jelajahi Banda" & "Lihat peta interaktif") agar bertumpuk rapi di mobile dan tetap sejajar horizontal di layar desktop.
+  - Memastikan tombol Buka Peta pada `PetaInteractiveSection.tsx` memiliki tinggi sentuh minimum 44px (`min-h-[44px]`), responsif, dan stabil.
+- [x] 102.16 Pengujian & Verifikasi Build:
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
+  - Build produksi Vite (`npm run build`) sukses 100% tanpa regresi.
+- [x] 102.17 Penataan Responsif & Ergonomi Mobile Footer Landing Page (`LandingFooterSection.tsx`):
+  - Menyelaraskan padding tepi footer menjadi `px-4 sm:px-8 lg:px-16` agar seimbang dengan seksi lainnya pada layar ponsel.
+  - Memperlebar ruang bawah aman (`pb-28 sm:pb-32 lg:pb-10`) sehingga elemen hak cipta dan navigasi legal tidak tertutup oleh navigasi bawah mengambang (`MobileBottomNav`).
+  - Menjamin target sentuh tautan navigasi ramah jempol (`min-h-[36px] py-1.5 sm:py-0.5 inline-flex items-center text-xs sm:text-[13px]`) dengan mikro-interaksi `active:scale-[0.98]`.
+  - Menambahkan tombol pintas *Scroll to Top* ("Ke Atas") yang ringkas dan elegan untuk memudahkan pengguna ponsel melompat kembali ke puncak halaman.
+  - Merapikan baris atribusi Living Lab UGM & Kemenparekraf serta baris kutipan filosofis dan tautan kebijakan privasi.
+- [x] 102.18 Pengujian & Verifikasi Build:
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
+  - Build produksi Vite (`npm run build`) sukses 100% tanpa regresi.
+- [x] 102.19 Penyelarasan Aksi Login Navigasi Bawah Seluler (`MobileBottomNav.tsx`):
+  - Mengubah aksi tombol "Masuk" pada bilah navigasi bawah (`MobileBottomNav.tsx`) agar langsung memanggil `onOpenLogin()` (mengarahkan pengguna ke halaman login lengkap `LoginSection`, selaras persis dengan perilaku tombol Masuk pada mode desktop).
+  - Menghilangkan intersep modal quick-login popup pada klik tombol Masuk bar bawah agar alur autentikasi seragam di semua titik masuk (Desktop Navbar, Drawer Menu 3 Garis, dan Bottom Navigation Bar).
+- [x] 102.20 Pengujian & Verifikasi Build:
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
+  - Build produksi Vite (`npm run build`) sukses 100% tanpa regresi.
+- [x] 102.21 Perapian Tata Letak & UX Halaman Login Mode Mobile (`LoginSection.tsx`):
+  - Mengganti banner desktop statis 520px pada smartphone dengan *Mobile Top Branded Header* yang ringkas (tinggi ~160px) berlatar pemandangan autentik Banda Neira, tombol kembali ke beranda, dan logo bandanaira.com, sehingga formulir login langsung tampil tanpa perlu menggulir jauh.
+  - Mengonfigurasi kartu form login melayang (*floating sheet*) dengan sudut membulat elegan (`-mt-4 rounded-t-3xl bg-white shadow-2xl`) di mobile, dan tetap split-screen utuh di desktop (`lg:flex-row`).
+  - Menambahkan rel horizontal pil akun demo simulasi cepat (`[Warga] [Petani Rempah] [Homestay] [Koperasi] [Admin]`) untuk kemudahan pengujian dan demonstrasi peran di perangkat mobile.
+  - Memperbaiki ergonomi input: menambahkan `inputMode="numeric"` pada kolom NIK dan PIN agar keyboard numerik otomatis muncul di layar ponsel, memperbesar target sentuh tombol toggle lihat PIN menjadi 44x44px, dan menata badge enkripsi/blockchain agar tidak berantakan pada layar sempit 360px.
+- [x] 102.22 Pengujian & Verifikasi Build:
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
+  - Build produksi Vite (`npm run build`) sukses 100% tanpa regresi.
+- [x] 102.23 Pembersihan Fitur Simulasi Akun Demo pada Halaman Login (`LoginSection.tsx`):
+  - Menghapus blok pilihan akun demo simulasi cepat (`DEMO_PRESETS`, ikon Sparkles, dan bilah tombol pil) sesuai permintaan pengguna agar tampilan formulir login tetap bersih, formal, dan fokus pada input autentikasi mandiri.
+- [x] 102.24 Pengujian & Verifikasi Build:
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
+  - Build produksi Vite (`npm run build`) sukses 100% tanpa regresi.
+- [x] 102.25 Redesain Mobile Navigation Dashboard & Penggabungan Tombol Akun-Sidebar (`DashboardLayout.tsx`):
+  - Menggabungkan ikon garis 3 (togle sidebar) dengan ikon avatar/inisial user di sudut kanan atas topbar mobile menjadi satu tombol pil terpadu yang elegan (`size-7 avatar + Menu/X icon`) dengan feedback sentuh aktif.
+  - Memindahkan posisi logo `bandanaira.com` dan judul peran aktif (`getRoleDisplayName()`) di sisi kiri header mobile agar informasi identitas sistem dan hak akses peran terlihat jelas.
+  - Menambahkan *Dashboard Mobile Bottom App Bar* pada bagian bawah layar (`lg:hidden fixed bottom-0 left-0 right-0 z-40`) dengan 5 tab: 4 tab operasional utama berbasis peran pengguna untuk beralih ruang kerja seketika, dan 1 tab 'Semua' (`LayoutGrid`) untuk membuka laci sidebar lengkap.
+  - Menambahkan safe bottom padding `pb-24 lg:pb-8` pada kontainer konten dinamis agar seluruh tabel, grafik, dan kartu di bagian bawah tidak tertutup oleh bilah navigasi bawah.
+- [x] 102.26 Pengujian & Verifikasi Build:
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
+  - Build produksi Vite (`npm run build`) sukses 100% tanpa regresi.
+- [x] 102.27 Penyederhanaan Tombol Profil Topbar Mobile (`DashboardLayout.tsx`):
+  - Menghapus ikon garis 3 pada tombol user di kanan atas header mobile sesuai instruksi pengguna, menampilkan avatar inisial bulat yang bersih (`size-9 rounded-full`) yang tetap berfungsi membuka laci menu akun dan sidebar saat disentuh.
+- [x] 102.28 Pengujian & Verifikasi Build:
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
+  - Build produksi Vite (`npm run build`) sukses 100% tanpa regresi.
+- [x] 102.29 Penghapusan Ikon User Kanan Atas Header Mobile Dashboard (`DashboardLayout.tsx`):
+  - Menghapus ikon/avatar user di sudut kanan atas topbar mobile dashboard (`lg:hidden h-16`) sepenuhnya sesuai instruksi pengguna, karena pembukaan sidebar/menu navigasi telah terpusat penuh pada bilah navigasi bawah (tombol 'Semua' `LayoutGrid`).
+  - Menambahkan tombol tutup silang (`X`) di dalam header laci sidebar drawer saat terbuka di mobile, menjaga pengalaman UX penutupan laci yang ergonomis selain melalui backdrop dan bottom app bar.
+- [x] 102.30 Pengujian & Verifikasi Build:
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
+  - Build produksi Vite (`npm run build`) sukses 100% tanpa regresi.
+- [x] 102.31 Integrasi Komponen UI `futuristic-nav.tsx` (LumaBar) & Arsitektur shadcn (`components/ui`):
+  - Mengonfigurasi `components.json` standar shadcn, utilitas `src/lib/utils.ts`, dan alias path `@/*` pada `tsconfig.json` dan `vite.config.ts`.
+  - Menginstal dependensi `framer-motion` dan memastikan `lucide-react` aktif.
+  - Membuat komponen `frontend/src/components/ui/futuristic-nav.tsx` (LumaBar) dengan tooltip, glow layoutId, dan interaktivitas spring motion.
+  - Membuat `frontend/src/components/ui/demo.tsx` untuk kemudahan pengujian komponen.
+- [x] 102.32 Animasi Framer-Motion Navigasi Mode Mobile (`MobileBottomNav.tsx` & `DashboardLayout.tsx`):
+  - Menerapkan efek animasi futuristik pada bar navigasi bawah landing page (`MobileBottomNav.tsx`) dan dashboard (`DashboardLayout.tsx`):
+    - Indikator aktif meluncur mulus dengan pegas fisika (*spring layout transition* `layoutId`).
+    - Animasi tekan taktil (*tactile micro-interaction*) `whileTap={{ scale: 0.86 }}` pada setiap tombol tab.
+    - Mikro-elevasi dan pembesaran halus pada ikon tab aktif (`scale: 1.15, y: -2`).
+    - Dot indikator bersinar dengan animasi pegas masuk (`initial: scale: 0, animate: scale: 1`).
+- [x] 102.33 Pengujian & Verifikasi Build:
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
+  - Build produksi Vite (`npm run build`) sukses 100% tanpa regresi.
+- [x] 102.34 Investigasi & Perbaikan Error Resolusi Modul `framer-motion` di Docker Container:
+  - Melakukan inspeksi log container `banda_frontend` yang mengalami Vite Internal Server Error 500 karena paket `framer-motion` baru terpasang di host dan belum tersinkronisasi ke dalam volume `node_modules` container Docker.
+  - Menyinkronkan seluruh pohon paket yang dibutuhkan (`framer-motion`, `motion-dom`, `motion-utils`, dan `tslib`) ke dalam `/app/node_modules/` container `banda_frontend`.
+  - Merestart container Vite dev server dan memvalidasi pra-bundling dependensi baru (`✨ new dependencies optimized: framer-motion`).
+- [x] 102.35 Verifikasi Status HTTP & Hot Module Replacement:
+  - Menguji endpoint `http://localhost:5175/` dan modul `MobileBottomNav.tsx` serta `DashboardLayout.tsx` melalui HTTP request: kembali **200 OK** tanpa error resolusi.
+- [x] 102.36 Penyelarasan Urutan Tab Navigasi Bawah Seluler (`MobileBottomNav.tsx`):
+  - Menyesuaikan susunan tombol navigasi bawah seluler menjadi: **Beranda -> Peta -> Wisata -> Pasar -> Masuk/Akun**.
+  - Mengeliminasi fenomena indikator aktif melompat bolak-balik (dari Beranda melompati Wisata langsung ke Peta), sehingga pergerakan animasi indikator pegas `framer-motion` meluncur linier dan alami seiring arah gulir halaman dari atas ke bawah.
+- [x] 102.37 Pengujian & Verifikasi Build:
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
+  - Build produksi Vite (`npm run build`) sukses 100% tanpa regresi.
+
+
+
+
+
+
+
+
+
+
+
+
+
 

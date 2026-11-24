@@ -10,4 +10,5 @@ export { SustainableTravelSection } from './SustainableTravelSection';
 export { PlanYourVisitSection } from './PlanYourVisitSection';
 export { LandingFooterSection } from './LandingFooterSection';
 export { TourismChatbotBubble } from './TourismChatbotBubble';
+export { MobileBottomNav } from './MobileBottomNav';
 export * from './LandingIcons';

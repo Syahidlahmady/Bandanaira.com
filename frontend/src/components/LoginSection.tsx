@@ -1,5 +1,5 @@
 import React, { FormEvent, useState } from 'react'
-import { AlertCircle, CheckCircle2 } from 'lucide-react'
+import { AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react'
 import pelabuhanBandaNeiraDanGunungBandaApi from '../assets/image.webp'
 import { authService } from '../services/auth'
 
@@ -26,7 +26,7 @@ export interface LoginSectionProps {
 
 const trustItems = [
   { label: 'Enkripsi AES-256', iconType: 'encryption' as const },
-  { label: 'Terhubung Blockchain Koperasi', iconType: 'blockchain' as const },
+  { label: 'Blockchain Koperasi', iconType: 'blockchain' as const },
   { label: 'Pemdes Banda', iconType: 'pemdes' as const },
 ]
 
@@ -90,7 +90,7 @@ const FieldIconSvg = ({ type }: { type: 'nik' | 'pin' }) => {
   if (type === 'nik') {
     return (
       <svg
-        className="w-[19px] h-[19px] text-[#627085]"
+        className="w-[19px] h-[19px] text-[#627085] shrink-0"
         viewBox="0 0 20 20"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -117,7 +117,7 @@ const FieldIconSvg = ({ type }: { type: 'nik' | 'pin' }) => {
   }
   return (
     <svg
-      className="w-[19px] h-[19px] text-[#627085]"
+      className="w-[19px] h-[19px] text-[#627085] shrink-0"
       viewBox="0 0 20 20"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -176,7 +176,7 @@ const TrustBadgeIconSvg = ({
   if (type === 'encryption') {
     return (
       <svg
-        className="w-5 h-5 text-[#0f2c59]"
+        className="w-4 sm:w-5 h-4 sm:h-5 text-[#0f2c59] shrink-0"
         viewBox="0 0 20 20"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -201,7 +201,7 @@ const TrustBadgeIconSvg = ({
   if (type === 'blockchain') {
     return (
       <svg
-        className="w-5 h-5 text-[#0f2c59]"
+        className="w-4 sm:w-5 h-4 sm:h-5 text-[#0f2c59] shrink-0"
         viewBox="0 0 20 20"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -225,7 +225,7 @@ const TrustBadgeIconSvg = ({
   }
   return (
     <svg
-      className="w-5 h-5 text-[#0f2c59]"
+      className="w-4 sm:w-5 h-4 sm:h-5 text-[#0f2c59] shrink-0"
       viewBox="0 0 20 20"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -248,7 +248,7 @@ const TrustBadgeIconSvg = ({
 }
 
 /* ============================================================================
-   1. Left Panel: BandaServicesIntroSection (desainsaatini/login-desktop)
+   1. Left Panel: BandaServicesIntroSection (Desktop Split View Only)
 ============================================================================ */
 
 export const BandaServicesIntroSection: React.FC<{
@@ -257,7 +257,7 @@ export const BandaServicesIntroSection: React.FC<{
   return (
     <section
       aria-label="Layanan Kepulauan Banda"
-      className="flex flex-col w-full lg:w-[48%] xl:w-[720px] min-h-[520px] lg:min-h-[1024px] items-start justify-between pt-10 lg:pt-12 pb-8 lg:pb-[42px] px-7 sm:px-12 lg:px-14 relative self-stretch bg-[#0f2c59] overflow-hidden shrink-0"
+      className="hidden lg:flex flex-col w-full lg:w-[46%] xl:w-[680px] min-h-screen items-start justify-between pt-10 lg:pt-12 pb-8 lg:pb-[42px] px-8 sm:px-12 lg:px-14 relative self-stretch bg-[#0f2c59] overflow-hidden shrink-0"
     >
       <img
         className="absolute w-full h-full top-0 left-0 object-cover"
@@ -271,7 +271,7 @@ export const BandaServicesIntroSection: React.FC<{
 
       <header
         onClick={onBackToHome}
-        className="inline-flex items-center gap-2.5 relative z-10 flex-[0_0_auto] cursor-pointer"
+        className="inline-flex items-center gap-2.5 relative z-10 flex-[0_0_auto] cursor-pointer hover:opacity-90 transition-opacity"
       >
         <NutmegAndWavesSvg />
         <div className="relative w-fit font-normal text-white text-[25px] tracking-[-0.90px] leading-[normal] whitespace-nowrap">
@@ -279,7 +279,7 @@ export const BandaServicesIntroSection: React.FC<{
         </div>
       </header>
 
-      <div className="flex flex-col items-start gap-6 py-12 lg:pt-[180px] lg:pb-0 px-0 relative z-10 self-stretch w-full flex-[0_0_auto]">
+      <div className="flex flex-col items-start gap-6 py-12 lg:pt-[140px] lg:pb-0 px-0 relative z-10 self-stretch w-full flex-[0_0_auto]">
         <div className="inline-flex items-center gap-2.5 relative flex-[0_0_auto]">
           <div aria-hidden="true" className="relative w-7 h-px bg-amber-600" />
           <p className="relative w-fit mt-[-1.00px] font-normal text-white text-[11px] tracking-[2.00px] leading-[normal] whitespace-nowrap">
@@ -317,7 +317,7 @@ export const BandaServicesIntroSection: React.FC<{
 }
 
 /* ============================================================================
-   2. Right Panel: AccountLoginSection (Unified Login Without Role Selection)
+   2. Right Panel: AccountLoginSection (Unified Login with Mobile Optimization)
 ============================================================================ */
 
 export const AccountLoginSection: React.FC<LoginSectionProps> = ({
@@ -352,144 +352,149 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
   }
 
   return (
-    <main className="flex flex-col flex-1 w-full lg:max-w-[720px] min-h-[1024px] items-start justify-between pt-9 pb-8 px-6 sm:px-12 lg:px-[100px] relative bg-white">
-      <button
-        type="button"
-        onClick={onBackToHome}
-        className="inline-flex h-11 items-center relative font-medium text-[#0f2c59] text-[13px] tracking-[0] leading-[normal] bg-transparent border-0 p-0 hover:opacity-80 cursor-pointer"
-        aria-label="Kembali ke Beranda"
-      >
-        <span aria-hidden="true" className="mr-1">
-          ←
-        </span>
-        <span>Kembali ke Beranda</span>
-      </button>
+    <main className="flex flex-col flex-1 w-full lg:max-w-[720px] min-h-screen justify-between pt-5 sm:pt-9 pb-8 px-4 sm:px-10 lg:px-[80px] xl:px-[100px] relative bg-white">
+      {/* Desktop Top Back Button */}
+      <div className="hidden lg:flex items-center justify-between w-full">
+        <button
+          type="button"
+          onClick={onBackToHome}
+          className="inline-flex h-10 items-center gap-1.5 font-medium text-[#0f2c59] text-[13px] hover:opacity-80 transition-opacity cursor-pointer"
+          aria-label="Kembali ke Beranda"
+        >
+          <ArrowLeft size={16} />
+          <span>Kembali ke Beranda</span>
+        </button>
+      </div>
 
-      <div className="flex flex-col items-start gap-7 px-0 py-[30px] relative self-stretch w-full flex-[0_0_auto]">
-        <header className="flex flex-col items-start gap-2.5 relative self-stretch w-full flex-[0_0_auto]">
-          <p className="relative w-fit mt-[-1.00px] font-semibold text-amber-600 text-[10px] tracking-[1.70px] leading-[normal] whitespace-nowrap">
-            PORTAL WARGA &amp; EKOSISTEM BANDA
-          </p>
-          <h1 className="relative self-stretch font-semibold text-[#0f2c59] text-[30px] sm:text-[34px] tracking-[-1.10px] leading-[40.1px]">
+      <div className="flex flex-col items-start gap-5 sm:gap-7 px-0 py-2 sm:py-6 relative self-stretch w-full flex-1">
+        {/* Header Title */}
+        <header className="flex flex-col items-start gap-1.5 sm:gap-2.5 relative self-stretch w-full">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            <p className="font-semibold text-amber-600 text-[10px] sm:text-[11px] tracking-[1.5px] uppercase">
+              PORTAL WARGA &amp; EKOSISTEM BANDA
+            </p>
+          </div>
+          <h1 className="font-bold text-[#0f2c59] text-2xl sm:text-3xl lg:text-[34px] tracking-tight leading-tight">
             Selamat Datang Kembali
           </h1>
-          <p className="relative self-stretch font-normal text-[#627085] text-sm tracking-[0] leading-[22.4px]">
-            Masukkan NIK atau ID akun beserta PIN pengaman Anda. Peran layanan
-            otomatis menyesuaikan akun yang telah Anda daftarkan.
+          <p className="font-normal text-[#627085] text-xs sm:text-sm leading-relaxed">
+            Masukkan 16 digit NIK atau ID akun beserta PIN pengaman Anda. Hak akses peran terverifikasi otomatis.
           </p>
         </header>
 
         {error && (
-          <div className="w-full flex items-center gap-2.5 rounded-lg border border-rose-300 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
-            <AlertCircle size={17} className="shrink-0" />
+          <div className="w-full flex items-center gap-2.5 rounded-xl border border-rose-300 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
+            <AlertCircle size={18} className="shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         <form
-          className="flex flex-col items-start gap-[22px] relative self-stretch w-full flex-[0_0_auto]"
+          className="flex flex-col items-start gap-4 sm:gap-5 relative self-stretch w-full"
           onSubmit={handleSubmit}
         >
-          <div className="flex flex-col items-start gap-2 relative self-stretch w-full flex-[0_0_auto]">
+          {/* NIK Input */}
+          <div className="flex flex-col items-start gap-1.5 relative self-stretch w-full">
             <label
               htmlFor="nik"
-              className="relative self-stretch mt-[-1.00px] font-semibold text-[#24364f] text-[13px] tracking-[0] leading-[19.5px]"
+              className="font-semibold text-[#24364f] text-xs sm:text-[13px] leading-snug"
             >
               16 Digit Nomor Induk Kependudukan (NIK) / ID Akun
             </label>
-            <div className="flex h-[54px] items-center gap-3 px-4 py-0 relative self-stretch w-full bg-slate-50 rounded-lg overflow-hidden border border-solid border-slate-200 focus-within:border-[#0f2c59] focus-within:ring-1 focus-within:ring-[#0f2c59] focus-within:bg-white transition-colors">
+            <div className="flex h-12 sm:h-[54px] items-center gap-3 px-3.5 sm:px-4 relative self-stretch w-full bg-slate-50 rounded-xl overflow-hidden border border-slate-200 focus-within:border-[#0f2c59] focus-within:ring-1 focus-within:ring-[#0f2c59] focus-within:bg-white transition-colors">
               <FieldIconSvg type="nik" />
               <input
                 id="nik"
                 name="nik"
                 type="text"
+                inputMode="numeric"
                 autoComplete="username"
                 value={identifier}
                 onChange={(event) => setIdentifier(event.target.value)}
                 placeholder="XXXX-XXXX-XXXX-XXXX"
                 aria-describedby="nik-help"
                 required
-                className="relative flex-1 min-w-0 bg-transparent border-0 outline-none font-normal text-[#0f2c59] text-lg tracking-[1.10px] leading-[normal] placeholder:text-[#627085]"
+                className="flex-1 min-w-0 bg-transparent border-0 outline-none font-normal text-[#0f2c59] text-base sm:text-lg tracking-normal sm:tracking-[1.10px] placeholder:text-[#627085]"
               />
             </div>
             {detectedAccount ? (
               <p
                 id="nik-help"
-                className="inline-flex items-center gap-1.5 font-medium text-emerald-700 text-xs tracking-[0] leading-[19.2px]"
+                className="inline-flex items-center gap-1.5 font-medium text-emerald-700 text-xs leading-snug pt-0.5"
               >
-                <CheckCircle2 size={14} className="shrink-0" />
+                <CheckCircle2 size={15} className="shrink-0 text-emerald-600" />
                 <span>
-                  Akun dikenali: <strong>{detectedAccount.name}</strong> · Peran
-                  terdaftar: <strong>{detectedAccount.roleTitle}</strong>
+                  Akun: <strong>{detectedAccount.name}</strong> · Peran: <strong>{detectedAccount.roleTitle}</strong>
                 </span>
               </p>
             ) : (
               <p
                 id="nik-help"
-                className="font-normal text-[#627085] text-xs tracking-[0] leading-[19.2px] relative self-stretch"
+                className="font-normal text-[#627085] text-[11px] sm:text-xs leading-tight"
               >
-                Cukup masukkan 16 digit NIK yang tertera di KTP atau ID akun
-                yang Anda daftarkan.
+                Masukkan 16 digit NIK tertera di KTP atau ID akun resmi terdaftar.
               </p>
             )}
           </div>
 
-          <div className="flex flex-col items-start gap-2 relative self-stretch w-full flex-[0_0_auto]">
-            <label
-              htmlFor="pin"
-              className="relative self-stretch mt-[-1.00px] font-semibold text-[#24364f] text-[13px] tracking-[0] leading-[19.5px]"
-            >
-              PIN Pengaman (4 Digit)
-            </label>
-            <div className="flex h-[54px] items-center gap-3 px-4 py-0 relative self-stretch w-full bg-slate-50 rounded-lg overflow-hidden border border-solid border-slate-200 focus-within:border-[#0f2c59] focus-within:ring-1 focus-within:ring-[#0f2c59] focus-within:bg-white transition-colors">
+          {/* PIN Input */}
+          <div className="flex flex-col items-start gap-1.5 relative self-stretch w-full">
+            <div className="flex items-center justify-between w-full">
+              <label
+                htmlFor="pin"
+                className="font-semibold text-[#24364f] text-xs sm:text-[13px] leading-snug"
+              >
+                PIN Pengaman (4 Digit)
+              </label>
+              <button
+                type="button"
+                onClick={() =>
+                  alert(
+                    'Untuk bantuan reset PIN akun warga desa, silakan hubungi operator kantor desa Banda Neira.'
+                  )
+                }
+                className="font-medium text-[#0f2c59] hover:text-amber-600 text-xs transition-colors cursor-pointer"
+              >
+                Lupa PIN?
+              </button>
+            </div>
+            <div className="flex h-12 sm:h-[54px] items-center gap-3 px-3.5 sm:px-4 relative self-stretch w-full bg-slate-50 rounded-xl overflow-hidden border border-slate-200 focus-within:border-[#0f2c59] focus-within:ring-1 focus-within:ring-[#0f2c59] focus-within:bg-white transition-colors">
               <FieldIconSvg type="pin" />
               <input
                 id="pin"
                 name="pin"
                 type={showPin ? 'text' : 'password'}
+                inputMode="numeric"
+                maxLength={6}
                 autoComplete="current-password"
                 value={pin}
                 onChange={(event) => setPin(event.target.value)}
                 placeholder="• • • •"
                 required
-                className="relative flex-1 min-w-0 bg-transparent border-0 outline-none font-normal text-[#0f2c59] text-lg tracking-[1.10px] leading-[normal] placeholder:text-[#627085]"
+                className="flex-1 min-w-0 bg-transparent border-0 outline-none font-normal text-[#0f2c59] text-base sm:text-lg tracking-wider placeholder:text-[#627085]"
               />
               <button
                 type="button"
                 aria-label={showPin ? 'Sembunyikan PIN' : 'Tampilkan PIN'}
                 aria-pressed={showPin}
                 onClick={() => setShowPin((visible) => !visible)}
-                className="relative w-[28px] h-[28px] flex items-center justify-center shrink-0 bg-transparent border-0 p-0 hover:opacity-80 cursor-pointer"
+                className="w-11 h-11 -mr-2 flex items-center justify-center shrink-0 text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
               >
                 <EyeToggleSvg visible={showPin} />
               </button>
             </div>
           </div>
 
-          <div className="flex h-11 items-center justify-end w-full relative self-stretch">
-            <button
-              type="button"
-              onClick={() =>
-                alert(
-                  'Untuk bantuan reset PIN akun warga desa, silakan hubungi operator kantor desa Banda Neira.'
-                )
-              }
-              className="relative w-fit font-medium text-[#0f2c59] text-xs tracking-[0] leading-[normal] hover:underline bg-transparent border-0 p-0 cursor-pointer"
-            >
-              Lupa PIN? Hubungi pemdes
-            </button>
-          </div>
-
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className="flex h-[54px] items-center justify-center gap-3 px-5 py-0 relative self-stretch w-full bg-amber-600 rounded-lg overflow-hidden hover:bg-amber-700 active:bg-amber-800 transition-colors cursor-pointer disabled:opacity-60"
+            className="flex h-12 sm:h-[54px] items-center justify-center gap-2.5 px-5 relative self-stretch w-full bg-amber-600 hover:bg-amber-500 active:bg-amber-700 text-white rounded-xl font-bold text-base sm:text-lg shadow-md hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer disabled:opacity-60 mt-1"
           >
-            <span className="w-fit font-bold text-white text-[17px] sm:text-[19px] leading-[normal] relative tracking-[0]">
-              {loading ? 'Memverifikasi...' : 'Masuk ke Portal Warga'}
-            </span>
+            <span>{loading ? 'Memverifikasi...' : 'Masuk ke Portal Warga'}</span>
             <svg
-              className="w-[18px] h-[18px] text-white"
+              className="w-4 h-4 sm:w-5 sm:h-5 text-white shrink-0"
               viewBox="0 0 18 18"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -506,43 +511,45 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
           </button>
         </form>
 
-        <p className="relative self-stretch py-2 px-3 rounded-lg bg-slate-50 border border-slate-200/80 flex items-center justify-center text-[12px] text-center text-[#627085] leading-relaxed my-2">
-          <span>Akun kependudukan terintegrasi NIK diterbitkan secara resmi melalui Kantor Desa.</span>
+        <p className="w-full py-2.5 px-3 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] sm:text-xs text-center text-[#627085] leading-relaxed">
+          Akun kependudukan terintegrasi NIK diterbitkan secara resmi melalui Kantor Desa.
         </p>
 
-        <div className="gap-4 pt-[22px] pb-0 px-0 border-t border-solid border-slate-200 flex flex-col items-start relative self-stretch w-full flex-[0_0_auto]">
-          <div className="items-start gap-4 self-stretch w-full flex-[0_0_auto] flex relative">
+        {/* Trust Badges */}
+        <div className="w-full pt-3 pb-1 border-t border-slate-100">
+          <div className="grid grid-cols-3 gap-2 w-full">
             {trustItems.map((item) => (
               <div
                 key={item.label}
-                className="flex-col items-center gap-2 flex-1 grow flex relative"
+                className="flex flex-col items-center gap-1.5 p-2 rounded-xl bg-slate-50/70 border border-slate-100 text-center"
               >
                 <TrustBadgeIconSvg type={item.iconType} />
-                <div className="self-stretch font-normal text-[#627085] text-[11px] text-center leading-[16.5px] relative tracking-[0]">
+                <span className="font-medium text-[#475569] text-[10px] sm:text-[11px] leading-tight">
                   {item.label}
-                </div>
+                </span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      <footer className="flex flex-col items-center gap-3 relative self-stretch w-full flex-[0_0_auto]">
+      {/* Footer Legal & Info */}
+      <footer className="flex flex-col items-center gap-2 pt-4 relative self-stretch w-full border-t border-slate-100">
         <nav
           aria-label="Tautan informasi"
-          className="inline-flex h-11 items-center gap-5 relative"
+          className="inline-flex items-center gap-5 relative text-xs"
         >
           {['Bantuan', 'Privasi', 'Ketentuan'].map((item) => (
             <button
               key={item}
               type="button"
-              className="relative w-fit font-normal text-[#627085] hover:text-[#0f2c59] text-[11px] tracking-[0] leading-[normal] whitespace-nowrap bg-transparent border-0 p-0 cursor-pointer"
+              className="font-normal text-[#627085] hover:text-[#0f2c59] text-[11px] sm:text-xs transition-colors bg-transparent border-0 p-0 cursor-pointer"
             >
               {item}
             </button>
           ))}
         </nav>
-        <p className="relative w-fit font-normal text-[#627085] text-[10px] tracking-[0] leading-[normal] whitespace-nowrap">
+        <p className="font-normal text-[#94a3b8] text-[10px] sm:text-[11px]">
           © 2026 bandanaira.com · Kepulauan Banda
         </p>
       </footer>
@@ -551,14 +558,64 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
 }
 
 /* ============================================================================
-   3. Main Container: LoginDesktop Split-Screen Component
+   3. Main Container: Responsive Split Screen with Mobile Header Banner
 ============================================================================ */
 
 export const LoginSection: React.FC<LoginSectionProps> = (props) => {
   return (
-    <div className="flex min-h-screen w-full flex-col bg-white lg:flex-row">
+    <div className="flex min-h-screen w-full flex-col bg-[#081d35] lg:bg-white lg:flex-row">
+      {/* Mobile Top Branded Header (Replaces bulky 520px desktop block on smartphone screens) */}
+      <div className="lg:hidden relative w-full h-40 sm:h-48 bg-[#081d35] overflow-hidden shrink-0">
+        <img
+          className="absolute inset-0 w-full h-full object-cover opacity-60"
+          alt="Pelabuhan Banda Neira dan Gunung Api"
+          src={pelabuhanBandaNeiraDanGunungBandaApi}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-b from-[#081d35]/95 via-[#081d35]/75 to-[#081d35]"
+        />
+        <div className="relative z-10 flex flex-col justify-between h-full p-4 sm:p-6">
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={props.onBackToHome}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 text-white text-xs font-medium active:scale-95 transition-all cursor-pointer"
+              aria-label="Kembali ke Beranda"
+            >
+              <ArrowLeft size={14} className="text-[#f4b75e]" />
+              <span>Beranda</span>
+            </button>
+
+            <div className="inline-flex items-center gap-2">
+              <NutmegAndWavesSvg />
+              <span className="font-serif font-normal text-white text-base tracking-tight">
+                bandanaira.com
+              </span>
+            </div>
+          </div>
+
+          <div className="space-y-0.5 pb-1">
+            <div className="inline-flex items-center gap-1.5">
+              <span className="w-3.5 h-0.5 bg-[#f4b75e]" />
+              <span className="text-[10px] font-bold text-[#f4b75e] tracking-widest uppercase">
+                PORTAL EKOSISTEM BANDA
+              </span>
+            </div>
+            <h2 className="text-white font-serif font-bold text-lg sm:text-xl tracking-tight leading-tight">
+              Satu Pintu Layanan Kepulauan
+            </h2>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Left Split Panel */}
       <BandaServicesIntroSection onBackToHome={props.onBackToHome} />
-      <AccountLoginSection {...props} />
+
+      {/* Form Container (Floats with rounded top corners on Mobile, flat on Desktop) */}
+      <div className="flex-1 w-full flex flex-col bg-white -mt-4 lg:mt-0 rounded-t-3xl lg:rounded-none relative z-20 shadow-2xl lg:shadow-none overflow-hidden">
+        <AccountLoginSection {...props} />
+      </div>
     </div>
   )
 }

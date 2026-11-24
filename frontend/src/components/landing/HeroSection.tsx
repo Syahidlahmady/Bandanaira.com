@@ -3,7 +3,21 @@ import { NutmegLogoIcon, ArrowUpRightIcon } from './LandingIcons'
 import { ScrollExpand } from '../ui/ScrollExpand'
 import { useLanguage } from '../../context/LanguageContext'
 import LanguageSwitcher from '../common/LanguageSwitcher'
-import { LogIn, LogOut, LayoutDashboard, User } from 'lucide-react'
+import {
+  LogIn,
+  LogOut,
+  LayoutDashboard,
+  User,
+  LifeBuoy,
+  HelpCircle,
+  PhoneCall,
+  Home,
+  Map,
+  Compass,
+  Palmtree,
+  Store,
+  BookOpen,
+} from 'lucide-react'
 
 const HERO_IMAGE_URL = '/banda.webp'
 
@@ -81,31 +95,31 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       aria-labelledby="banda-hero-title"
       className="relative w-full bg-black text-white selection:bg-[#f4b75e] selection:text-black"
     >
-      {/* 1. FIXED TOP NAVBAR (Hides during resting/expansion, smoothly emerges once fully expanded) */}
+      {/* 1. FIXED TOP NAVBAR (Visible on mobile as Logo + 3-Lines Icon; expands gracefully on desktop) */}
       <div
-        className={`fixed top-0 left-0 right-0 z-50 px-2 sm:px-8 lg:px-12 pt-2 sm:pt-5 transition-all duration-500 ease-out ${
-          navVisible
+        className={`fixed top-0 left-0 right-0 z-50 px-3 sm:px-8 lg:px-12 pt-[calc(0.5rem+env(safe-area-inset-top,0px))] sm:pt-5 transition-all duration-500 ease-out ${
+          isMobile || navVisible
             ? 'opacity-100 translate-y-0 pointer-events-auto'
             : 'opacity-0 -translate-y-8 pointer-events-none'
         }`}
       >
         <header
-          className="flex h-14 sm:h-20 items-center justify-between px-2.5 sm:px-6 py-0 w-full max-w-7xl mx-auto rounded-xl sm:rounded-2xl overflow-visible border border-solid border-white/20 transition-all duration-300 backdrop-blur-md bg-[#081d35f2] shadow-2xl pointer-events-auto will-change-transform transform-gpu"
+          className="flex h-13 sm:h-20 items-center justify-between px-3 sm:px-6 py-0 w-full max-w-7xl mx-auto rounded-xl sm:rounded-2xl overflow-visible border border-solid border-white/20 transition-all duration-300 backdrop-blur-md bg-[#081d35f2] shadow-2xl pointer-events-auto will-change-transform transform-gpu"
         >
-          {/* Brand Logo */}
+          {/* Brand Logo - On mobile only Logo and Hamburger icon are shown */}
           <a
             href="#beranda"
             onClick={() => setActiveNav('#beranda')}
             aria-label="bandanaira.com, kembali ke Beranda"
-            className="inline-flex items-center gap-1.5 sm:gap-2.5 relative shrink min-w-0"
+            className="inline-flex items-center gap-2 sm:gap-2.5 relative shrink min-w-0"
           >
             <NutmegLogoIcon />
-            <span className="font-semibold text-white text-[15px] sm:text-[20px] md:text-[23px] tracking-tight truncate leading-none">
+            <span className="font-semibold text-white text-[16px] sm:text-[20px] md:text-[23px] tracking-tight truncate leading-none">
               bandanaira.com
             </span>
           </a>
 
-          {/* Desktop Navigation Links */}
+          {/* Desktop Navigation Links (hidden on mobile) */}
           <nav
             aria-label="Navigasi utama"
             className="hidden lg:inline-flex items-center gap-[25px] relative flex-[0_0_auto]"
@@ -138,6 +152,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
           {/* Right Action Buttons */}
           <div className="inline-flex items-center gap-1.5 sm:gap-2.5 relative shrink-0">
+            {/* Desktop User Profile / Dashboard (hidden on mobile, in 3-lines menu) */}
             {currentUser ? (
               <div className="hidden lg:inline-flex items-center gap-2">
                 <button
@@ -163,10 +178,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 )}
               </div>
             ) : (
+              /* Desktop Sign In (hidden on mobile, in 3-lines menu) */
               <button
                 type="button"
                 onClick={onOpenLogin}
-                className="inline-flex h-[34px] sm:h-[40px] items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-0 bg-gradient-to-r from-amber-500 to-[#F4B75E] hover:from-amber-400 hover:to-[#f6c276] rounded-lg sm:rounded-xl border border-amber-300/40 text-[#081D35] text-xs sm:text-sm font-bold shadow-xs hover:shadow-[0_0_15px_rgba(244,183,94,0.35)] transition-all active:scale-[0.98] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e]"
+                className="hidden lg:inline-flex h-[34px] sm:h-[40px] items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-0 bg-gradient-to-r from-amber-500 to-[#F4B75E] hover:from-amber-400 hover:to-[#f6c276] rounded-lg sm:rounded-xl border border-amber-300/40 text-[#081D35] text-xs sm:text-sm font-bold shadow-xs hover:shadow-[0_0_15px_rgba(244,183,94,0.35)] transition-all active:scale-[0.98] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f4b75e]"
               >
                 <LogIn size={13} className="shrink-0 text-[#081D35] sm:w-[14px] sm:h-[14px]" />
                 <span className="tracking-wide">
@@ -175,23 +191,25 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               </button>
             )}
 
-            {/* Switcher Bahasa Ikon Murni (Hemat ruang & responsif di semua frame termasuk mobile) */}
-            <LanguageSwitcher variant="icon" />
+            {/* Desktop Switcher Bahasa (hidden on mobile, in 3-lines menu) */}
+            <div className="hidden lg:block">
+              <LanguageSwitcher variant="icon" />
+            </div>
 
-            {/* Mobile Menu Hamburger */}
+            {/* Mobile Menu Hamburger (Icon 3 Garis - SATU-SATUNYA yang tampil di kanan pada mode mobile) */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen((prev) => !prev)}
               aria-label={mobileMenuOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
               aria-expanded={mobileMenuOpen}
-              className="inline-flex lg:hidden h-[34px] w-[34px] sm:h-[40px] sm:w-[40px] items-center justify-center rounded-lg sm:rounded-xl border border-solid border-white/20 bg-slate-900/60 text-white cursor-pointer hover:bg-slate-900/80 transition-colors shrink-0"
+              className="inline-flex lg:hidden h-10 w-10 items-center justify-center rounded-xl border border-solid border-white/20 bg-slate-900/70 text-white cursor-pointer hover:bg-slate-900 transition-all active:scale-95 shrink-0"
             >
               {mobileMenuOpen ? (
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <svg className="w-5 h-5 text-[#f4b75e]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               ) : (
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               )}
@@ -199,15 +217,54 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </div>
         </header>
 
-        {/* Mobile Navigation Dropdown */}
+        {/* Mobile Navigation Dropdown / Drawer */}
         {mobileMenuOpen && (
-          <div className="relative z-50 w-full max-w-7xl mx-auto mt-2 rounded-xl sm:rounded-2xl bg-[#081d35f8] border border-solid border-white/20 backdrop-blur-xl p-4 sm:p-5 lg:hidden pointer-events-auto shadow-2xl">
-            <nav aria-label="Navigasi seluler" className="flex flex-col gap-3">
-              {/* Mobile Language Switcher */}
-              <LanguageSwitcher variant="mobile" />
+          <div className="relative z-50 w-full max-w-7xl mx-auto mt-2 rounded-2xl bg-[#081d35]/98 border border-white/20 backdrop-blur-2xl p-4 sm:p-5 lg:hidden pointer-events-auto shadow-[0_20px_50px_rgba(0,0,0,0.85)] max-h-[calc(100vh-5.5rem)] overflow-y-auto overscroll-contain pb-6">
+            <nav aria-label="Navigasi seluler" className="flex flex-col gap-3.5">
+              
+              {/* 1. PUSAT BANTUAN & PANDUAN (Permintaan Pengguna: di dalam garis 3 isikan dengan bantuan) */}
+              <div className="p-3.5 rounded-xl bg-gradient-to-br from-amber-500/15 via-[#0c2444] to-blue-950/40 border border-[#f4b75e]/30 shadow-md">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#f4b75e]/20 border border-[#f4b75e]/40 flex items-center justify-center text-[#f4b75e] shrink-0">
+                    <LifeBuoy size={22} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-xs font-bold text-white tracking-tight">Pusat Bantuan & Panduan</span>
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/20 text-[#f4b75e] border border-amber-400/30">
+                        24 Jam
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-snug mt-0.5">
+                      Panduan tiket Pelni, reservasi eco-stay, FAQ, & nomor posko darurat Banda.
+                    </p>
+                  </div>
+                </div>
 
-              {/* 1. JIKA USER TELAH LOGIN: TAMPILKAN USER PROFILE & AKSI LOGOUT DI DALAM MENU SESUAI PERMINTAAN */}
-              {currentUser && (
+                <div className="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-white/10">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false)
+                      onNavigate('help')
+                    }}
+                    className="h-9 flex items-center justify-center gap-1.5 rounded-lg bg-[#f4b75e] hover:bg-amber-400 text-[#081d35] text-xs font-bold shadow-sm active:scale-95 transition-all cursor-pointer"
+                  >
+                    <HelpCircle size={15} />
+                    <span>Buka Bantuan</span>
+                  </button>
+                  <a
+                    href="tel:112"
+                    className="h-9 flex items-center justify-center gap-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-400/40 text-rose-200 text-xs font-semibold active:scale-95 transition-all"
+                  >
+                    <PhoneCall size={14} />
+                    <span>Posko SAR / Darurat</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* 2. JIKA USER TELAH LOGIN: TAMPILKAN USER PROFILE & AKSI LOGOUT */}
+              {currentUser ? (
                 <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/25 to-amber-600/35 border border-[#F4B75E]/60 text-[#F4B75E] font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
@@ -256,51 +313,129 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     )}
                   </div>
                 </div>
+              ) : (
+                /* JIKA BELUM LOGIN: TOMBOL MASUK KE PORTAL */
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    onOpenLogin()
+                  }}
+                  className="w-full h-11 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-[#F4B75E] text-[#081D35] font-bold text-xs shadow-md active:scale-[0.98] transition-all cursor-pointer"
+                >
+                  <LogIn size={16} />
+                  <span>{t.navbar.signIn} / Masuk ke Akun</span>
+                </button>
               )}
 
-              {/* Navigation Items in Compact 2-Column Micro-Grid */}
-              <div className="grid grid-cols-2 gap-1.5 py-1">
-                {navigationItems.map((item) => (
+              {/* 3. MENU NAVIGASI EKOSISTEM BANDA NEIRA (Grid 2 Kolom Ergonomis) */}
+              <div className="space-y-1.5">
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-1">
+                  Navigasi Ekosistem
+                </div>
+                <div className="grid grid-cols-2 gap-2">
                   <a
-                    key={item.label}
-                    href={item.href}
+                    href="#beranda"
                     onClick={() => {
-                      setActiveNav(item.href)
+                      setActiveNav('#beranda')
                       setMobileMenuOpen(false)
                     }}
-                    className={`text-xs font-semibold py-2 px-2.5 rounded-lg transition-colors flex items-center justify-between ${
-                      activeNav === item.href
-                        ? 'text-[#f4b75e] bg-white/10 font-bold'
-                        : 'text-white/90 hover:text-white hover:bg-white/5'
+                    className={`p-2.5 rounded-xl border transition-all flex items-center gap-2.5 ${
+                      activeNav === '#beranda'
+                        ? 'bg-amber-500/20 border-[#f4b75e] text-[#f4b75e] font-bold'
+                        : 'bg-white/5 border-white/10 text-white/90 hover:bg-white/10'
                     }`}
                   >
-                    <span>{item.label}</span>
-                    {activeNav === item.href && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#f4b75e]" />
-                    )}
+                    <Home size={16} className="shrink-0 text-[#f4b75e]" />
+                    <span className="text-xs truncate">Beranda</span>
                   </a>
-                ))}
+
+                  <a
+                    href="#peta"
+                    onClick={() => {
+                      setActiveNav('#peta')
+                      setMobileMenuOpen(false)
+                    }}
+                    className={`p-2.5 rounded-xl border transition-all flex items-center gap-2.5 ${
+                      activeNav === '#peta'
+                        ? 'bg-amber-500/20 border-[#f4b75e] text-[#f4b75e] font-bold'
+                        : 'bg-white/5 border-white/10 text-white/90 hover:bg-white/10'
+                    }`}
+                  >
+                    <Map size={16} className="shrink-0 text-cyan-400" />
+                    <span className="text-xs truncate">Peta Spasial GIS</span>
+                  </a>
+
+                  <a
+                    href="#wisata"
+                    onClick={() => {
+                      setActiveNav('#wisata')
+                      setMobileMenuOpen(false)
+                    }}
+                    className={`p-2.5 rounded-xl border transition-all flex items-center gap-2.5 ${
+                      activeNav === '#wisata'
+                        ? 'bg-amber-500/20 border-[#f4b75e] text-[#f4b75e] font-bold'
+                        : 'bg-white/5 border-white/10 text-white/90 hover:bg-white/10'
+                    }`}
+                  >
+                    <Compass size={16} className="shrink-0 text-amber-400" />
+                    <span className="text-xs truncate">Destinasi</span>
+                  </a>
+
+                  <a
+                    href="#eco-stay"
+                    onClick={() => {
+                      setActiveNav('#eco-stay')
+                      setMobileMenuOpen(false)
+                    }}
+                    className={`p-2.5 rounded-xl border transition-all flex items-center gap-2.5 ${
+                      activeNav === '#eco-stay'
+                        ? 'bg-amber-500/20 border-[#f4b75e] text-[#f4b75e] font-bold'
+                        : 'bg-white/5 border-white/10 text-white/90 hover:bg-white/10'
+                    }`}
+                  >
+                    <Palmtree size={16} className="shrink-0 text-emerald-400" />
+                    <span className="text-xs truncate">Eco-Stay</span>
+                  </a>
+
+                  <a
+                    href="#layanan-umkm"
+                    onClick={() => {
+                      setActiveNav('#layanan-umkm')
+                      setMobileMenuOpen(false)
+                    }}
+                    className={`p-2.5 rounded-xl border transition-all flex items-center gap-2.5 ${
+                      activeNav === '#layanan-umkm'
+                        ? 'bg-amber-500/20 border-[#f4b75e] text-[#f4b75e] font-bold'
+                        : 'bg-white/5 border-white/10 text-white/90 hover:bg-white/10'
+                    }`}
+                  >
+                    <Store size={16} className="shrink-0 text-orange-400" />
+                    <span className="text-xs truncate">Pasar Rempah</span>
+                  </a>
+
+                  <a
+                    href="#sejarah"
+                    onClick={() => {
+                      setActiveNav('#sejarah')
+                      setMobileMenuOpen(false)
+                    }}
+                    className={`p-2.5 rounded-xl border transition-all flex items-center gap-2.5 ${
+                      activeNav === '#sejarah'
+                        ? 'bg-amber-500/20 border-[#f4b75e] text-[#f4b75e] font-bold'
+                        : 'bg-white/5 border-white/10 text-white/90 hover:bg-white/10'
+                    }`}
+                  >
+                    <BookOpen size={16} className="shrink-0 text-indigo-400" />
+                    <span className="text-xs truncate">Sejarah & Warga</span>
+                  </a>
+                </div>
               </div>
 
-              {/* JIKA BELUM LOGIN: TAMPILKAN TOMBOL MASUK */}
-              {!currentUser && (
-                <>
-                  <div className="h-px bg-white/15 my-1" />
-                  <div className="pt-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMobileMenuOpen(false)
-                        onOpenLogin()
-                      }}
-                      className="w-full h-11 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-[#F4B75E] text-[#081D35] font-bold text-sm shadow-md hover:brightness-105 active:scale-[0.98] transition-all cursor-pointer"
-                    >
-                      <LogIn size={16} />
-                      <span>{t.navbar.signIn}</span>
-                    </button>
-                  </div>
-                </>
-              )}
+              {/* 4. PENGATURAN BAHASA */}
+              <div className="pt-1 border-t border-white/10">
+                <LanguageSwitcher variant="mobile" />
+              </div>
             </nav>
           </div>
         )}
@@ -355,23 +490,23 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </div>
 
             {/* Dual Action CTAs */}
-            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-1 sm:pt-2 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 pt-1 sm:pt-2 w-full sm:w-auto max-w-xs sm:max-w-none">
               <a
                 href="#wisata"
                 onClick={() => setActiveNav('#wisata')}
-                className="flex-1 sm:flex-initial inline-flex h-11 sm:h-[52px] items-center justify-center gap-2 sm:gap-3 px-5 sm:px-6 bg-amber-600 hover:bg-amber-500 transition-colors rounded-xl border border-amber-400 font-semibold text-white text-xs sm:text-sm tracking-wide shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white active:scale-95"
+                className="w-full sm:w-auto inline-flex h-12 sm:h-[52px] items-center justify-center gap-2.5 sm:gap-3 px-5 sm:px-6 bg-amber-600 hover:bg-amber-500 transition-colors rounded-xl border border-amber-400 font-semibold text-white text-xs sm:text-sm tracking-wide shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white active:scale-95 whitespace-nowrap cursor-pointer"
               >
                 <span>{t.hero.ctaExplore}</span>
-                <ArrowUpRightIcon className="w-4 h-4 text-white" />
+                <ArrowUpRightIcon className="w-4 h-4 text-white shrink-0" />
               </a>
 
               <button
                 type="button"
                 onClick={() => onNavigate('gis')}
-                className="flex-1 sm:flex-initial inline-flex h-11 sm:h-[52px] items-center justify-center gap-2 sm:gap-3 px-5 sm:px-6 bg-white/10 hover:bg-white/20 transition-colors rounded-xl border border-white/25 backdrop-blur-md font-semibold text-white text-xs sm:text-sm tracking-wide focus:outline-none focus-visible:ring-2 focus-visible:ring-white active:scale-95"
+                className="w-full sm:w-auto inline-flex h-12 sm:h-[52px] items-center justify-center gap-2.5 sm:gap-3 px-5 sm:px-6 bg-white/10 hover:bg-white/20 transition-colors rounded-xl border border-white/25 backdrop-blur-md font-semibold text-white text-xs sm:text-sm tracking-wide focus:outline-none focus-visible:ring-2 focus-visible:ring-white active:scale-95 whitespace-nowrap cursor-pointer"
               >
                 <span>{t.hero.ctaMap}</span>
-                <ArrowUpRightIcon className="w-4 h-4 text-white" />
+                <ArrowUpRightIcon className="w-4 h-4 text-white shrink-0" />
               </button>
             </div>
           </main>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
+import { motion } from 'framer-motion'
 import logoImg from '../../assets/logo.png'
 import {
   LayoutDashboard,
@@ -17,7 +18,6 @@ import {
   QrCode,
   LogOut,
   ChevronDown,
-  Menu,
   X,
   Bell,
   HelpCircle,
@@ -950,6 +950,23 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
   const visibleItems = sidebarNavItems.filter((item) => item.visible)
 
+  // 4 Tab Utama Navigasi Bawah Mobile Dashboard (Beralih Cepat Sesuai Hak Akses Peran)
+  const mobileBottomTabs = useMemo<SidebarItem[]>(() => {
+    const dashboardItem: SidebarItem = sidebarNavItems.find((i) => i.id === 'dashboard') || {
+      id: 'dashboard',
+      label: 'Dashboard',
+      shortLabel: 'Dashboard',
+      icon: LayoutDashboard,
+      badge: undefined,
+      visible: true,
+    }
+
+    const otherVisible = visibleItems.filter((i) => i.id !== 'dashboard')
+    const primary3 = otherVisible.slice(0, 3)
+
+    return [dashboardItem, ...primary3]
+  }, [visibleItems, sidebarNavItems])
+
   // 5 Pilar Pengelompokan Khusus Super Administrator
   interface AdminSidebarSubItem {
     id: DashboardNavTab
@@ -1435,28 +1452,18 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           1. MOBILE TOPBAR (Untuk Layar Handphone / Tablet Kecil)
       ====================================================================== */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#081D35] text-white flex items-center justify-between px-4 z-40 border-b border-[#1E3A5F] shadow-lg">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-[#F4B75E] transition"
-            aria-label="Buka Menu Sidebar"
-          >
-            {mobileSidebarOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-          <div className="flex items-center gap-2.5">
-            <div className="size-8 rounded-full bg-[#0F2C59] border border-[#F4B75E]/40 flex items-center justify-center p-1 overflow-hidden shrink-0 shadow-inner">
-              <img src={logoImg} alt="Logo Banda Digital" className="size-full object-contain" />
-            </div>
-            <span className="font-semibold text-sm tracking-tight text-white font-serif">
+        {/* Sisi Kiri: Logo Asli & Identitas Ekosistem Banda Digital */}
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="size-9 rounded-full bg-[#0F2C59] border border-[#F4B75E]/40 flex items-center justify-center p-1 overflow-hidden shrink-0 shadow-inner">
+            <img src={logoImg} alt="Logo Banda Digital" className="size-full object-contain" />
+          </div>
+          <div className="flex flex-col min-w-0 truncate">
+            <span className="font-bold text-sm tracking-tight text-white font-serif leading-tight">
               bandanaira<span className="text-[#F4B75E]">.com</span>
             </span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <div className="size-8 rounded-full bg-[#0F2C59] border border-[#F4B75E]/30 text-[#F4B75E] font-bold text-xs flex items-center justify-center">
-            {getUserInitials()}
+            <span className="text-[10px] text-[#F4B75E] font-medium leading-none truncate max-w-[240px] mt-0.5">
+              {getRoleDisplayName()}
+            </span>
           </div>
         </div>
       </div>
@@ -1501,15 +1508,26 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 </div>
               </div>
 
-              {/* Tombol ciutkan / toggle chevron */}
-              <button
-                type="button"
-                onClick={() => setCollapsed(!collapsed)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-[#F4B75E] hover:bg-white/10 transition"
-                title="Ciutkan Sidebar"
-              >
-                <ChevronDown size={17} className="transition-transform duration-200" />
-              </button>
+              {/* Tombol ciutkan desktop / tombol tutup mobile drawer */}
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setMobileSidebarOpen(false)}
+                  className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-[#F4B75E] hover:bg-white/10 transition active:scale-90"
+                  title="Tutup Menu Sidebar"
+                  aria-label="Tutup Menu Sidebar"
+                >
+                  <X size={18} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCollapsed(!collapsed)}
+                  className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-[#F4B75E] hover:bg-white/10 transition"
+                  title="Ciutkan Sidebar"
+                >
+                  <ChevronDown size={17} className="transition-transform duration-200" />
+                </button>
+              </div>
             </div>
           ) : (
             /* Mode Collapsed: Emblem di tengah */
@@ -2543,11 +2561,133 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           </div>
         </header>
 
-        {/* Konten Ruang Kerja Dinamis */}
-        <div className="flex-1 p-4 sm:p-6 lg:p-8">
+        {/* Konten Ruang Kerja Dinamis (dengan safe bottom padding pb-24 untuk mobile bottom bar) */}
+        <div className="flex-1 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8">
           {children}
         </div>
       </main>
+
+      {/* =====================================================================
+          4. MOBILE BOTTOM APP BAR (Navigasi Bawah Dashboard untuk Beralih Lebih Cepat)
+      ====================================================================== */}
+      <nav
+        id="dashboard-mobile-bottom-bar"
+        aria-label="Navigasi Bawah Dashboard"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#081D35]/95 backdrop-blur-xl border-t border-[#1E3A5F] px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] shadow-[0_-8px_32px_rgba(0,0,0,0.6)] select-none pointer-events-auto will-change-transform"
+      >
+        <div className="max-w-md mx-auto grid grid-cols-5 items-center justify-around relative">
+          {/* 4 Tab Cepat Utama Berbasis Hak Akses Peran */}
+          {mobileBottomTabs.map((tabItem) => {
+            const TabIcon = tabItem.icon
+            const isTabActive = activeTab === tabItem.id && !mobileSidebarOpen
+
+            return (
+              <motion.button
+                key={tabItem.id}
+                type="button"
+                whileTap={{ scale: 0.86 }}
+                onClick={() => {
+                  if (activeTab === tabItem.id) {
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  } else {
+                    onSelectTab(tabItem.id)
+                  }
+                  setMobileSidebarOpen(false)
+                }}
+                aria-label={`Beralih ke ${tabItem.label}`}
+                className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-colors duration-200 cursor-pointer min-h-[44px] relative ${
+                  isTabActive ? 'text-[#F4B75E]' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                {/* Active Indicator Glow Animation */}
+                {isTabActive && (
+                  <motion.div
+                    layoutId="dashboard-bottom-indicator"
+                    className="absolute inset-0 bg-gradient-to-b from-[#F4B75E]/20 via-[#F4B75E]/10 to-transparent rounded-2xl -z-10 border border-[#F4B75E]/25"
+                    transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                  />
+                )}
+
+                <motion.div
+                  animate={{
+                    scale: isTabActive ? 1.15 : 1,
+                    y: isTabActive ? -2 : 0,
+                  }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                  className="relative flex items-center justify-center"
+                >
+                  <TabIcon size={20} className={isTabActive ? 'text-[#F4B75E]' : 'text-slate-400'} />
+                  {isTabActive && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#F4B75E] shadow-[0_0_8px_#F4B75E]"
+                    />
+                  )}
+                  {tabItem.badge !== undefined && (
+                    <span className="absolute -top-1.5 -right-2 px-1 min-w-[14px] h-3.5 rounded-full bg-[#F4B75E] text-[#081D35] font-black text-[9px] flex items-center justify-center">
+                      {tabItem.badge}
+                    </span>
+                  )}
+                </motion.div>
+                <span className="text-[10px] font-sans font-medium tracking-tight mt-1 leading-none truncate max-w-[58px]">
+                  {tabItem.shortLabel || tabItem.label}
+                </span>
+              </motion.button>
+            )
+          })}
+
+          {/* Tab 5: Menu / Semua Workspace (Membuka Sidebar Drawer Lengkap) */}
+          {(() => {
+            const isMenuSpecialActive = !mobileBottomTabs.some((t) => t.id === activeTab) || mobileSidebarOpen
+
+            return (
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.86 }}
+                onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+                aria-label={mobileSidebarOpen ? 'Tutup Menu Sidebar' : 'Buka Semua Menu Ruang Kerja'}
+                className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-colors duration-200 cursor-pointer min-h-[44px] relative ${
+                  mobileSidebarOpen || isMenuSpecialActive ? 'text-[#F4B75E]' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                {isMenuSpecialActive && (
+                  <motion.div
+                    layoutId="dashboard-bottom-indicator"
+                    className="absolute inset-0 bg-gradient-to-b from-[#F4B75E]/20 via-[#F4B75E]/10 to-transparent rounded-2xl -z-10 border border-[#F4B75E]/25"
+                    transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                  />
+                )}
+
+                <motion.div
+                  animate={{
+                    scale: mobileSidebarOpen || isMenuSpecialActive ? 1.15 : 1,
+                    y: mobileSidebarOpen || isMenuSpecialActive ? -2 : 0,
+                  }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                  className="relative flex items-center justify-center"
+                >
+                  {mobileSidebarOpen ? (
+                    <X size={20} strokeWidth={2.2} />
+                  ) : (
+                    <LayoutGrid size={20} strokeWidth={isMenuSpecialActive ? 2.2 : 1.8} />
+                  )}
+                  {isMenuSpecialActive && (
+                    <motion.span
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-[#F4B75E] shadow-[0_0_8px_#F4B75E]"
+                    />
+                  )}
+                </motion.div>
+                <span className="text-[10px] font-sans font-medium tracking-tight mt-1 leading-none">
+                  {mobileSidebarOpen ? 'Tutup' : 'Semua'}
+                </span>
+              </motion.button>
+            )
+          })()}
+        </div>
+      </nav>
     </div>
   )
 }

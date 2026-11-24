@@ -13,7 +13,7 @@ export const PlanYourVisitSection: React.FC<PlanYourVisitSectionProps> = ({ onNa
 
   return (
     <section
-      className="flex flex-col min-h-[500px] items-center justify-center gap-6 px-6 sm:px-12 lg:px-20 py-[80px] relative self-stretch w-full bg-[#081d35] overflow-hidden text-center"
+      className="flex flex-col min-h-[460px] sm:min-h-[500px] items-center justify-center gap-4 sm:gap-6 px-4 sm:px-12 lg:px-20 py-14 sm:py-20 lg:py-[80px] relative self-stretch w-full bg-[#081d35] overflow-hidden text-center"
       aria-labelledby="plan-your-visit-heading"
     >
       <img
@@ -41,13 +41,13 @@ export const PlanYourVisitSection: React.FC<PlanYourVisitSectionProps> = ({ onNa
       {/* Legendary Quote in Intro Script cursive */}
       <h2
         id="plan-your-visit-heading"
-        className="relative z-10 max-w-4xl font-script font-normal text-amber-200 text-4xl sm:text-7xl lg:text-8xl leading-[1.18] tracking-wide drop-shadow-[0_4px_30px_rgba(0,0,0,0.85)] px-2 sm:px-4"
+        className="relative z-10 max-w-4xl font-script font-normal text-amber-200 text-3xl sm:text-6xl md:text-7xl lg:text-8xl leading-[1.2] sm:leading-[1.18] tracking-wide drop-shadow-[0_4px_30px_rgba(0,0,0,0.85)] px-2 sm:px-4"
       >
         {t.planYourVisit.quote}
       </h2>
 
-      {/* Action buttons: Balanced Row on Mobile & Desktop */}
-      <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 pt-4 relative z-10 w-full max-w-md sm:max-w-none">
+      {/* Action buttons: Stacked on Mobile, Inline on Desktop */}
+      <div className="flex flex-col sm:flex-row justify-center items-stretch sm:items-center gap-3 sm:gap-4 pt-2 sm:pt-4 relative z-10 w-full max-w-xs sm:max-w-none mx-auto">
         <button
           type="button"
           id="btn-plan-explore"
@@ -56,11 +56,11 @@ export const PlanYourVisitSection: React.FC<PlanYourVisitSectionProps> = ({ onNa
             setPreferredTourismSubTab('destinations')
             onNavigate('tourism')
           }}
-          className="flex-1 sm:flex-initial inline-flex h-[46px] sm:h-[50px] items-center justify-center gap-2 sm:gap-3 px-5 sm:px-7 rounded-full bg-amber-600 hover:bg-amber-500 text-white font-sans text-xs font-semibold tracking-wide transition-all shadow-lg hover:shadow-amber-600/30 group cursor-pointer"
+          className="w-full sm:w-auto inline-flex h-12 sm:h-[50px] items-center justify-center gap-2.5 sm:gap-3 px-6 sm:px-7 rounded-full bg-amber-600 hover:bg-amber-500 text-white font-sans text-xs sm:text-sm font-semibold tracking-wide transition-all shadow-lg hover:shadow-amber-600/30 active:scale-[0.98] group cursor-pointer whitespace-nowrap"
           aria-label={t.planYourVisit.exploreBtn}
         >
           <span>{t.planYourVisit.exploreBtn}</span>
-          <ArrowUpRightIcon className="w-3.5 sm:w-4 h-3.5 sm:h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          <ArrowUpRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 shrink-0" />
         </button>
 
         <button
@@ -68,11 +68,11 @@ export const PlanYourVisitSection: React.FC<PlanYourVisitSectionProps> = ({ onNa
           id="btn-plan-open-map"
           data-scroll-anchor="btn-plan-open-map"
           onClick={() => onNavigate('gis')}
-          className="flex-1 sm:flex-initial inline-flex h-[46px] sm:h-[50px] items-center justify-center gap-2 sm:gap-3 px-4 sm:px-6 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-white font-sans text-xs font-semibold tracking-wide transition-all cursor-pointer"
+          className="w-full sm:w-auto inline-flex h-12 sm:h-[50px] items-center justify-center gap-2.5 sm:gap-3 px-5 sm:px-6 rounded-full border border-white/25 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-sans text-xs sm:text-sm font-semibold tracking-wide transition-all active:scale-[0.98] cursor-pointer whitespace-nowrap"
           aria-label={t.planYourVisit.openMapBtn}
         >
           <span>{t.planYourVisit.openMapBtn}</span>
-          <ArrowUpRightIcon className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+          <ArrowUpRightIcon className="w-4 h-4 shrink-0" />
         </button>
       </div>
     </section>
