@@ -372,3 +372,64 @@ async def test_village_officer_territorial_scoping_residents_and_stats(client: A
     )
     assert fail_verify.status_code == 403
     assert "hanya berwenang memverifikasi data warga desa lonthoir" in fail_verify.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_create_resident_auto_provisions_user_and_allows_login(client: AsyncClient):
+    token = await get_admin_token(client)
+    nik = "8171010101900555"
+    pin = "Warga2026!"
+
+    res = await client.post(
+        "/api/v1/population/residents",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "nik": nik,
+            "full_name": "Siti Nurul Hidayah",
+            "gender": "P",
+            "village": "Lonthoir",
+            "access_pin": pin,
+        },
+    )
+    assert res.status_code == 201
+    data = res.json()
+    assert data["nik"] == nik
+    assert data["access_pin"] == pin
+    assert data["account_username"] == nik
+    resident_id = data["id"]
+
+    # Login using resident NIK and PIN
+    login_res = await client.post(
+        "/api/v1/auth/login",
+        json={"username_or_email": nik, "password": pin},
+    )
+    assert login_res.status_code == 200
+    login_data = login_res.json()
+    assert login_data["user"]["username"] == nik
+    assert any(r["name"] == "resident" for r in login_data["user"]["roles"])
+
+    # Reset PIN by officer
+    new_pin = "SandiBaru2026!"
+    reset_res = await client.post(
+        f"/api/v1/population/residents/{resident_id}/reset-pin",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"pin": new_pin},
+    )
+    assert reset_res.status_code == 200
+    reset_data = reset_res.json()
+    assert reset_data["access_pin"] == new_pin
+    assert reset_data["username"] == nik
+
+    # Verify old PIN is rejected
+    old_login = await client.post(
+        "/api/v1/auth/login",
+        json={"username_or_email": nik, "password": pin},
+    )
+    assert old_login.status_code == 401
+
+    # Verify new PIN succeeds
+    new_login = await client.post(
+        "/api/v1/auth/login",
+        json={"username_or_email": nik, "password": new_pin},
+    )
+    assert new_login.status_code == 200

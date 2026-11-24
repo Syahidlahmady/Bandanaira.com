@@ -12,6 +12,8 @@ import {
   Copy,
   Check,
   Eye,
+  EyeOff,
+  KeyRound,
   Printer,
   Sparkles,
   AlertCircle,
@@ -33,7 +35,7 @@ import {
   Cell,
   CartesianGrid,
 } from 'recharts'
-import { Resident, ResidentCreateInput, PopulationStatistics } from '../services/population'
+import { Resident, ResidentCreateInput, PopulationStatistics, populationService } from '../services/population'
 import { User } from '../services/auth'
 import { BANDA_OCCUPATIONS, getOccupationBadge } from '../components/OccupationBadge'
 
@@ -52,6 +54,20 @@ interface ResidentsWorkspaceProps {
   fetchPopulationData: (query?: string, occ?: string) => void
   handleCreateResident: (e: React.FormEvent) => void
   handleVerifyResident: (id: string, status: 'verified' | 'rejected') => void
+  credentialReceipt?: {
+    nik: string
+    full_name: string
+    username: string
+    access_pin: string
+    village: string
+  } | null
+  setCredentialReceipt?: (val: {
+    nik: string
+    full_name: string
+    username: string
+    access_pin: string
+    village: string
+  } | null) => void
 }
 
 export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
@@ -69,12 +85,34 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
   fetchPopulationData,
   handleCreateResident,
   handleVerifyResident,
+  credentialReceipt,
+  setCredentialReceipt,
 }) => {
   // UI States
   const [showForm, setShowForm] = useState(false)
   const [statusFilter, setStatusFilter] = useState<'all' | 'verified' | 'pending' | 'rejected'>('all')
   const [selectedResident, setSelectedResident] = useState<Resident | null>(null)
   const [copiedNik, setCopiedNik] = useState<string | null>(null)
+
+  // Resident Account & PIN Credential States
+  const [localReceipt, setLocalReceipt] = useState<{
+    nik: string
+    full_name: string
+    username: string
+    access_pin: string
+    village: string
+  } | null>(null)
+  const activeReceipt = credentialReceipt !== undefined ? credentialReceipt : localReceipt
+  const setActiveReceipt = setCredentialReceipt || setLocalReceipt
+
+  const [showFormPin, setShowFormPin] = useState(false)
+  const [resetPinTarget, setResetPinTarget] = useState<Resident | null>(null)
+  const [resetPinValue, setResetPinValue] = useState('')
+  const [showResetPinValue, setShowResetPinValue] = useState(true)
+  const [loadingResetPin, setLoadingResetPin] = useState(false)
+  const [resetPinError, setResetPinError] = useState<string | null>(null)
+  const [copiedReceipt, setCopiedReceipt] = useState(false)
+  const [showReceiptPin, setShowReceiptPin] = useState(false)
 
   // Sync village with currentUser.village for village officers
   useEffect(() => {
@@ -768,6 +806,60 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
                   />
                 </div>
               </div>
+
+              {/* Field PIN / Kata Sandi Akun Mandiri Warga */}
+              <div className="md:col-span-2 lg:col-span-3 p-4 bg-gradient-to-r from-amber-50/90 to-amber-50/40 border border-amber-200/80 rounded-2xl">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-800 flex items-center justify-center">
+                      <KeyRound size={15} />
+                    </div>
+                    <div>
+                      <label className="text-xs font-extrabold text-[#081D35]">
+                        PIN / Kata Sandi Akses Warga
+                      </label>
+                      <span className="text-[10px] text-slate-500 ml-2 font-normal">
+                        (Opsional • Minimal 6 karakter / digit angka)
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const autoPin = Math.floor(100000 + Math.random() * 900000).toString()
+                      setPopForm({ ...popForm, access_pin: autoPin })
+                      setShowFormPin(true)
+                    }}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-900 bg-amber-200/80 hover:bg-amber-300 px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
+                  >
+                    <Sparkles size={13} className="text-amber-700" />
+                    <span>Generate PIN Otomatis</span>
+                  </button>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showFormPin ? 'text' : 'password'}
+                    value={popForm.access_pin || ''}
+                    onChange={(e) => setPopForm({ ...popForm, access_pin: e.target.value })}
+                    className="w-full pl-3.5 pr-10 py-2.5 bg-white border border-amber-200 rounded-xl text-sm font-mono font-bold text-slate-800 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none transition-all placeholder:font-sans placeholder:font-normal"
+                    placeholder="Contoh: 240589 (Biarkan kosong jika ingin sistem membuat PIN 6 digit otomatis)"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowFormPin(!showFormPin)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                    title={showFormPin ? 'Sembunyikan PIN' : 'Tampilkan PIN'}
+                  >
+                    {showFormPin ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                <div className="flex items-center gap-2 mt-2 text-[11px] text-slate-500">
+                  <ShieldCheck size={13} className="text-emerald-600 shrink-0" />
+                  <span>
+                    Akun warga otomatis dibuat dengan <b>Username = NIK</b>. Warga dapat login langsung untuk permohonan surat & cek saldo air RO.
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* Bottom Form Actions */}
@@ -1091,6 +1183,19 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
                           </button>
                         )}
                         <button
+                          onClick={() => {
+                            setResetPinTarget(r)
+                            setResetPinValue(Math.floor(100000 + Math.random() * 900000).toString())
+                            setShowResetPinValue(true)
+                            setResetPinError(null)
+                          }}
+                          className="px-2 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 border border-amber-200"
+                          title="Atur ulang PIN akun mandiri warga"
+                        >
+                          <KeyRound size={12} className="text-amber-700" />
+                          <span className="hidden xl:inline">Reset PIN</span>
+                        </button>
+                        <button
                           onClick={() => setSelectedResident(r)}
                           className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
                           title="Lihat KTP Digital Warga"
@@ -1258,6 +1363,317 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
                   className="px-4 py-2 bg-[#081D35] hover:bg-[#0F2C59] text-white text-xs font-bold rounded-xl transition-colors"
                 >
                   Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          9. MODAL ATUR ULANG (RESET) PIN AKUN WARGA
+      ========================================================================== */}
+      {resetPinTarget && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-200 animate-scale-in">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-amber-600 to-amber-700 text-white p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white border border-white/30">
+                    <KeyRound size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-extrabold tracking-tight">Atur Ulang PIN Akun Warga</h4>
+                    <p className="text-[11px] text-amber-100">Kredensial Akses Mandiri Penduduk Desa</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setResetPinTarget(null)}
+                  className="text-white/80 hover:text-white p-1 rounded-lg"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-4">
+              <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-1 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-slate-500 font-semibold">Nama Warga:</span>
+                  <span className="font-extrabold text-slate-900">{resetPinTarget.full_name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500 font-semibold">NIK (Username):</span>
+                  <span className="font-mono font-bold text-blue-700">{resetPinTarget.nik}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500 font-semibold">Desa:</span>
+                  <span className="font-semibold text-slate-800">Desa {resetPinTarget.village || 'Lonthoir'}</span>
+                </div>
+              </div>
+
+              {resetPinError && (
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-center gap-2">
+                  <AlertCircle size={15} className="shrink-0" />
+                  <span>{resetPinError}</span>
+                </div>
+              )}
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-extrabold text-slate-800">PIN Baru Warga</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setResetPinValue(Math.floor(100000 + Math.random() * 900000).toString())
+                      setShowResetPinValue(true)
+                    }}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 hover:text-amber-900 bg-amber-100 hover:bg-amber-200 px-2 py-0.5 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <Sparkles size={11} /> Generate Acak
+                  </button>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showResetPinValue ? 'text' : 'password'}
+                    value={resetPinValue}
+                    onChange={(e) => setResetPinValue(e.target.value)}
+                    required
+                    minLength={6}
+                    className="w-full pl-3.5 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-bold text-slate-800 focus:bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none"
+                    placeholder="Minimal 6 karakter / digit angka"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowResetPinValue(!showResetPinValue)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                  >
+                    {showResetPinValue ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-1.5">
+                  Setelah direset, PIN lama tidak berlaku lagi dan warga dapat langsung login menggunakan PIN baru ini.
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setResetPinTarget(null)}
+                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                disabled={loadingResetPin || !resetPinValue || resetPinValue.length < 6}
+                onClick={async () => {
+                  try {
+                    setLoadingResetPin(true)
+                    setResetPinError(null)
+                    const res = await populationService.resetResidentPin(resetPinTarget.id, resetPinValue)
+                    setActiveReceipt({
+                      nik: res.nik,
+                      full_name: res.full_name,
+                      username: res.username,
+                      access_pin: res.access_pin,
+                      village: resetPinTarget.village || 'Lonthoir',
+                    })
+                    setResetPinTarget(null)
+                  } catch (err: unknown) {
+                    if (err instanceof Error) {
+                      setResetPinError(err.message)
+                    } else {
+                      setResetPinError('Gagal mengatur ulang PIN')
+                    }
+                  } finally {
+                    setLoadingResetPin(false)
+                  }
+                }}
+                className="px-5 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+              >
+                {loadingResetPin ? (
+                  <>
+                    <RefreshCw size={13} className="animate-spin" /> Menyimpan...
+                  </>
+                ) : (
+                  <>
+                    <CheckCheck size={14} /> Simpan PIN Baru
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          10. MODAL KARTU KREDENSIAL / SLIP TANDA AKSES PORTAL WARGA
+      ========================================================================== */}
+      {activeReceipt && (
+        <div className="fixed inset-0 z-50 bg-slate-900/65 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-200 animate-scale-in">
+            {/* Header Kredensial */}
+            <div className="bg-[#081D35] text-white p-5 border-b border-amber-500/30">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-[#F4B75E] border border-amber-500/40 flex items-center justify-center">
+                    <ShieldCheck size={22} />
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-[#F4B75E] block">
+                      Pemerintah Desa Kepulauan Banda
+                    </span>
+                    <h4 className="text-sm font-extrabold tracking-tight">Kredensial Akses Layanan Mandiri Warga</h4>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setActiveReceipt(null)}
+                  className="text-white/70 hover:text-white p-1 rounded-lg"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Body: Card Identitas Akses */}
+            <div className="p-6 space-y-4">
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center gap-2">
+                <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                <span>
+                  Akun portal mandiri warga aktif! Kredensial ini dapat diberikan kepada warga untuk masuk ke sistem.
+                </span>
+              </div>
+
+              {/* Box Kredensial Formal */}
+              <div className="p-5 rounded-2xl bg-gradient-to-b from-slate-50 to-amber-50/30 border-2 border-amber-200/80 space-y-3.5 relative overflow-hidden">
+                <div className="absolute right-3 top-3 opacity-10 pointer-events-none">
+                  <QrCode size={110} />
+                </div>
+
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block">
+                    Nama Warga
+                  </span>
+                  <span className="text-base font-extrabold text-[#081D35]">{activeReceipt.full_name}</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-200/80">
+                  <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                    <span className="text-[10px] uppercase text-slate-400 font-bold block mb-1">
+                      Username / NIK Login
+                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs font-black text-blue-700">
+                        {activeReceipt.nik}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(activeReceipt.nik)
+                          setCopiedReceipt(true)
+                          setTimeout(() => setCopiedReceipt(false), 2000)
+                        }}
+                        className="text-slate-400 hover:text-slate-700 p-1"
+                        title="Salin NIK"
+                      >
+                        <Copy size={13} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-white rounded-xl border border-amber-200 shadow-2xs">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] uppercase text-amber-700 font-bold block">
+                        PIN Akses Warga
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setShowReceiptPin(!showReceiptPin)}
+                        className="text-slate-400 hover:text-slate-700 text-[10px] font-bold"
+                      >
+                        {showReceiptPin ? 'Tutup' : 'Lihat'}
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs font-black text-amber-900 tracking-wider">
+                        {showReceiptPin ? activeReceipt.access_pin : '••••••'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(activeReceipt.access_pin)
+                          setCopiedReceipt(true)
+                          setTimeout(() => setCopiedReceipt(false), 2000)
+                        }}
+                        className="text-slate-400 hover:text-slate-700 p-1"
+                        title="Salin PIN"
+                      >
+                        <Copy size={13} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-slate-600 pt-2 border-t border-slate-200/60">
+                  <span>Desa Domisili: <b>Desa {activeReceipt.village || 'Lonthoir'}</b></span>
+                  <span className="text-emerald-700 font-bold">Status: Akun Aktif</span>
+                </div>
+              </div>
+
+              <div className="text-[11px] text-slate-500 space-y-1">
+                <p>• Warga dapat masuk melalui tombol <b>"Masuk"</b> pada beranda atau portal layanan.</p>
+                <p>• PIN dapat diganti secara mandiri oleh warga melalui menu Keamanan Akun di Dasbor Warga.</p>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const clipText = `KREDENSIAL LAYANAN MANDIRI WARGA DESA BANDA NEIRA\n` +
+                    `Nama: ${activeReceipt.full_name}\n` +
+                    `NIK (Username): ${activeReceipt.nik}\n` +
+                    `PIN Akses: ${activeReceipt.access_pin}\n` +
+                    `Desa: Desa ${activeReceipt.village || 'Lonthoir'}\n` +
+                    `Status: Aktif\n` +
+                    `Website: https://bandanaira.com`
+                  navigator.clipboard.writeText(clipText)
+                  setCopiedReceipt(true)
+                  setTimeout(() => setCopiedReceipt(false), 2500)
+                }}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 transition-colors shadow-2xs cursor-pointer"
+              >
+                {copiedReceipt ? (
+                  <>
+                    <Check size={14} className="text-emerald-600" /> Tersalin ke Clipboard!
+                  </>
+                ) : (
+                  <>
+                    <Copy size={14} /> Salin Slip Lengkap
+                  </>
+                )}
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="inline-flex items-center gap-1 px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 transition-colors cursor-pointer"
+                >
+                  <Printer size={14} /> Cetak Slip
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveReceipt(null)}
+                  className="px-5 py-2 bg-[#081D35] hover:bg-[#0F2C59] text-white text-xs font-bold rounded-xl transition-colors cursor-pointer shadow-xs"
+                >
+                  Selesai
                 </button>
               </div>
             </div>

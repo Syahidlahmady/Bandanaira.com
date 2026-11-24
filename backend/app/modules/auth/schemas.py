@@ -51,3 +51,13 @@ class UserCreate(BaseModel):
     village: Optional[str] = None
     roles: List[str] = Field(default_factory=lambda: ["village_officer"])
     is_superuser: bool = False
+
+
+class ChangePasswordRequest(BaseModel):
+    old_password: str = Field(..., min_length=1)
+    new_password: str = Field(..., min_length=6, max_length=128)
+
+
+class ChangePasswordResponse(BaseModel):
+    success: bool = True
+    message: str = "Kata sandi / PIN berhasil diperbarui"

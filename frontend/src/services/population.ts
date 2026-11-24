@@ -19,6 +19,8 @@ export interface Resident {
   verified_by?: string
   verified_at?: string
   created_at: string
+  access_pin?: string
+  account_username?: string
 }
 
 export interface ResidentListResponse {
@@ -48,6 +50,16 @@ export interface ResidentCreateInput {
   village?: string
   occupation?: string
   phone_number?: string
+  access_pin?: string
+}
+
+export interface ResidentCredentialResult {
+  resident_id: string
+  nik: string
+  full_name: string
+  username: string
+  access_pin: string
+  message: string
 }
 
 export interface AdministrativeRequestItem {
@@ -120,6 +132,18 @@ export const populationService = {
     })
     if (!res.ok) {
       throw new Error(`Gagal memverifikasi penduduk (${res.status})`)
+    }
+    return res.json()
+  },
+
+  async resetResidentPin(id: string, newPin?: string): Promise<ResidentCredentialResult> {
+    const res = await this.requestWithAuth(`/population/residents/${id}/reset-pin`, {
+      method: 'POST',
+      body: JSON.stringify({ pin: newPin }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail || `Gagal mengatur ulang PIN akun warga (${res.status})`)
     }
     return res.json()
   },

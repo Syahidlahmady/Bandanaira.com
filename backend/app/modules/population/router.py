@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import random
 from typing import Optional
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -8,13 +9,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.app.core.permissions import (
     ROLE_ADMIN,
     ROLE_FARMER_GROUP_ADMIN,
+    ROLE_RESIDENT,
     ROLE_VILLAGE_OFFICER,
     get_current_active_user,
     require_roles,
 )
+from backend.app.core.security import hash_password
 from backend.app.database.session import get_db
 from backend.app.modules.audit.service import log_audit_event
-from backend.app.modules.auth.models import User
+from backend.app.modules.auth.models import Role, User
 from backend.app.modules.population.models import AdministrativeRequest, Resident
 from backend.app.modules.population.schemas import (
     AdministrativeRequestCreate,
@@ -24,7 +27,9 @@ from backend.app.modules.population.schemas import (
     AdministrativeRequestStatusUpdate,
     PopulationStatisticsResponse,
     ResidentCreate,
+    ResidentCredentialResponse,
     ResidentListResponse,
+    ResidentResetPinRequest,
     ResidentResponse,
     ResidentUpdate,
     ResidentVerificationUpdate,
@@ -104,6 +109,9 @@ async def create_resident(
     is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
 
     data = resident_in.model_dump()
+    access_pin = data.pop("access_pin", None)
+    raw_pin = access_pin.strip() if access_pin and access_pin.strip() else f"{random.randint(100000, 999999)}"
+
     if not is_admin and current_user.village:
         if resident_in.village and resident_in.village.lower() != current_user.village.lower():
             raise HTTPException(
@@ -126,6 +134,29 @@ async def create_resident(
     db.add(resident)
     await db.flush()
 
+    # Automatically provision User account for resident (username = NIK, role = resident)
+    u_stmt = select(User).where(User.username == resident.nik)
+    existing_u = (await db.execute(u_stmt)).scalar_one_or_none()
+    if not existing_u:
+        role_stmt = select(Role).where(Role.name == ROLE_RESIDENT)
+        res_role = (await db.execute(role_stmt)).scalar_one_or_none()
+        if not res_role:
+            res_role = Role(name=ROLE_RESIDENT, description="Village resident accessing civil services and water quotas")
+            db.add(res_role)
+            await db.flush()
+
+        new_user = User(
+            email=f"{resident.nik}@warga.bandadigital.id",
+            username=resident.nik,
+            password_hash=hash_password(raw_pin),
+            full_name=resident.full_name,
+            is_active=True,
+            is_superuser=False,
+            village=resident.village,
+            roles=[res_role],
+        )
+        db.add(new_user)
+
     # Log audit event
     await log_audit_event(
         db=db,
@@ -133,12 +164,87 @@ async def create_resident(
         entity_name="residents",
         entity_id=resident.id,
         user_id=current_user.id,
-        changes=jsonable_encoder(data),
+        changes={**jsonable_encoder(data), "account_created": True},
     )
 
     await db.commit()
     await db.refresh(resident)
+    setattr(resident, "access_pin", raw_pin)
+    setattr(resident, "account_username", resident.nik)
     return resident
+
+
+@router.post("/residents/{id}/reset-pin", response_model=ResidentCredentialResponse)
+async def reset_resident_pin(
+    id: uuid.UUID,
+    req: ResidentResetPinRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(OFFICER_ROLES),
+):
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+
+    stmt = select(Resident).where(Resident.id == id)
+    resident = (await db.execute(stmt)).scalar_one_or_none()
+    if not resident:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Data penduduk tidak ditemukan",
+        )
+
+    if not is_admin and current_user.village:
+        if resident.village and resident.village.lower() != current_user.village.lower():
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Anda hanya berwenang mengatur akun warga Desa {current_user.village}."
+            )
+
+    new_pin = req.pin.strip() if req.pin and req.pin.strip() else f"{random.randint(100000, 999999)}"
+
+    # Find or provision user by username == resident.nik
+    u_stmt = select(User).where(User.username == resident.nik)
+    user_obj = (await db.execute(u_stmt)).scalar_one_or_none()
+    if not user_obj:
+        role_stmt = select(Role).where(Role.name == ROLE_RESIDENT)
+        res_role = (await db.execute(role_stmt)).scalar_one_or_none()
+        if not res_role:
+            res_role = Role(name=ROLE_RESIDENT, description="Village resident accessing civil services and water quotas")
+            db.add(res_role)
+            await db.flush()
+
+        user_obj = User(
+            email=f"{resident.nik}@warga.bandadigital.id",
+            username=resident.nik,
+            password_hash=hash_password(new_pin),
+            full_name=resident.full_name,
+            is_active=True,
+            is_superuser=False,
+            village=resident.village,
+            roles=[res_role],
+        )
+        db.add(user_obj)
+    else:
+        user_obj.password_hash = hash_password(new_pin)
+        db.add(user_obj)
+
+    await log_audit_event(
+        db=db,
+        action="RESET_RESIDENT_PIN",
+        entity_name="residents",
+        entity_id=resident.id,
+        user_id=current_user.id,
+        changes={"nik": resident.nik, "reset_by": current_user.username},
+    )
+
+    await db.commit()
+    return ResidentCredentialResponse(
+        resident_id=resident.id,
+        nik=resident.nik,
+        full_name=resident.full_name,
+        username=resident.nik,
+        access_pin=new_pin,
+        message="PIN akses akun warga berhasil diatur ulang."
+    )
 
 
 @router.get("/residents/{id}", response_model=ResidentResponse)

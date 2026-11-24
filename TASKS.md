@@ -2115,6 +2115,37 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Build produksi Vite (`npm run build`) sukses 100% (2.058 modul ter-bundle dalam 17.47 detik).
   - Pengguna yang melakukan `git pull` tidak akan lagi mengalami error modul hilang.
 
+---
+
+## [Phase 104] - Otomatisasi Pembuatan Akun Warga (NIK & PIN Akses), Reset Kredensial Aparatur Desa, dan Penggantian PIN Mandiri
+- [x] 104.1 Skema & Endpoint Otomatisasi Akun Kependudukan (`ResidentCreate`, `create_resident`):
+  - Menambahkan kolom opsional `access_pin` pada `ResidentCreate` (minimal 6 digit/karakter).
+  - Mengotomatisasi pembuatan akun `User` baru setiap kali aparatur desa/Kepala Desa menambahkan warga baru:
+    - Username = NIK warga (16 digit e-KTP).
+    - Role = `resident`.
+    - Email deterministik = `{nik}@warga.bandadigital.id`.
+    - Kata sandi / PIN: menggunakan PIN yang diinput aparatur desa, atau menghasilkan PIN 6-digit acak aman jika dikosongkan.
+    - Password di-hash menggunakan standard bcrypt 12 rounds.
+  - Memperluas respons `ResidentResponse` untuk menyertakan `access_pin` dan `account_username` pada penciptaan awal agar kredensial dapat langsung ditampilkan ke aparatur desa.
+- [x] 104.2 Endpoint Reset PIN Akses Warga oleh Aparatur Desa (`POST /api/v1/population/residents/{id}/reset-pin`):
+  - Mengizinkan aparatur desa berwenang (`village_officer`, `admin`) untuk mereset PIN akun warga desa domisilinya jika warga lupa PIN.
+  - Mengamankan hak akses berbasis desa (scoping teritorial per desa).
+  - Menghasilkan kredensial baru dan mencatat audit trail `RESET_RESIDENT_PIN`.
+- [x] 104.3 Endpoint Penggantian PIN Mandiri Warga (`POST /api/v1/auth/change-password`):
+  - Menyediakan endpoint aman bagi pengguna yang telah login untuk mengganti PIN/kata sandi secara mandiri dengan memvalidasi PIN lama (`old_password`) dan PIN baru (`new_password`).
+- [x] 104.4 Antarmuka Pendaftaran Penduduk & Slip Kredensial Akses (`ResidentsWorkspace.tsx`):
+  - Menambahkan input "PIN / Kata Sandi Akses Warga" pada formulir pendaftaran penduduk baru lengkap dengan tombol generator acak ("Generate PIN Otomatis") dan toggle lihat/sembunyikan PIN.
+  - Menambahkan tombol "Reset PIN" pada tabel daftar penduduk aparatur desa dengan modal konfirmasi dan input PIN baru.
+  - Menampilkan Modal Kartu Tanda Akses & Slip Kredensial Warga beresolusi tinggi setelah registrasi atau reset PIN sukses (lengkap dengan nama warga, NIK login, PIN, tombol salin lengkap, dan cetak slip).
+- [x] 104.5 Antarmuka Penggantian PIN Mandiri di Dasbor Warga (`ResidentDashboardView.tsx`):
+  - Menambahkan tombol "Keamanan Akun & Ubah PIN" pada dasbor mandiri warga.
+  - Menyediakan modal interaktif untuk verifikasi PIN lama dan penginputan PIN baru dengan konfirmasi.
+- [x] 104.6 Pengujian Otomatis & Verifikasi Build:
+  - Seluruh pengujian unit backend (`test_population.py`, `test_auth.py`) lulus 100% (27 passed).
+  - Seluruh rangkaian pengujian backend sistem (100 test cases) lulus tanpa regresi.
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% (0 error).
+  - Build produksi Vite (`npm run build`) sukses 100% (2.058 modul ter-bundle).
+
 
 
 

@@ -208,3 +208,45 @@ async def test_logout_endpoint(client: AsyncClient):
     assert "Sesi berhasil ditutup" in data["message"]
 
 
+@pytest.mark.asyncio
+async def test_change_password_self_service(client: AsyncClient):
+    # 1. Login as admin
+    login_res = await client.post(
+        "/api/v1/auth/login",
+        json={"username_or_email": "admin", "password": "Admin123!"},
+    )
+    token = login_res.json()["access_token"]
+
+    # 2. Try changing with wrong old password -> 400
+    fail_res = await client.post(
+        "/api/v1/auth/change-password",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"old_password": "WrongOldPassword", "new_password": "AdminNew123!"},
+    )
+    assert fail_res.status_code == 400
+
+    # 3. Successful password change
+    succ_res = await client.post(
+        "/api/v1/auth/change-password",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"old_password": "Admin123!", "new_password": "AdminNew123!"},
+    )
+    assert succ_res.status_code == 200
+
+    # 4. Login with new password
+    new_login = await client.post(
+        "/api/v1/auth/login",
+        json={"username_or_email": "admin", "password": "AdminNew123!"},
+    )
+    assert new_login.status_code == 200
+
+    # 5. Restore original password so subsequent test runs aren't affected
+    new_token = new_login.json()["access_token"]
+    restore_res = await client.post(
+        "/api/v1/auth/change-password",
+        headers={"Authorization": f"Bearer {new_token}"},
+        json={"old_password": "AdminNew123!", "new_password": "Admin123!"},
+    )
+    assert restore_res.status_code == 200
+
+

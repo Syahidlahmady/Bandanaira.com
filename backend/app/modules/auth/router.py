@@ -17,6 +17,8 @@ from backend.app.database.session import get_db
 from backend.app.modules.auth.models import Role, User
 from backend.app.modules.auth.seed import seed_roles_and_admin
 from backend.app.modules.auth.schemas import (
+    ChangePasswordRequest,
+    ChangePasswordResponse,
     LoginRequest,
     RefreshTokenRequest,
     RoleResponse,
@@ -127,6 +129,24 @@ async def get_me(current_user: User = Depends(get_current_active_user)):
 async def logout():
     """Logout session endpoint to clear client credentials gracefully."""
     return {"status": "success", "message": "Sesi berhasil ditutup"}
+
+
+@router.post("/change-password", response_model=ChangePasswordResponse)
+async def change_password(
+    data: ChangePasswordRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Allow an authenticated user (including residents) to change their password / PIN."""
+    if not verify_password(data.old_password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Kata sandi / PIN lama tidak sesuai",
+        )
+    current_user.password_hash = hash_password(data.new_password)
+    db.add(current_user)
+    await db.commit()
+    return ChangePasswordResponse(message="Kata sandi / PIN berhasil diperbarui.")
 
 
 @router.get("/roles", response_model=List[RoleResponse])

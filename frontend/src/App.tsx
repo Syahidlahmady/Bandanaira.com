@@ -381,6 +381,13 @@ export const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('')
   const [selectedOccupationFilter, setSelectedOccupationFilter] = useState<string>('')
   const [popMsg, setPopMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [credentialReceipt, setCredentialReceipt] = useState<{
+    nik: string
+    full_name: string
+    username: string
+    access_pin: string
+    village: string
+  } | null>(null)
   const [adminRequests, setAdminRequests] = useState<AdministrativeRequestItem[]>([])
   const [requestFilterStatus, setRequestFilterStatus] = useState<string>('')
   const [updatingRequestId, setUpdatingRequestId] = useState<string | null>(null)
@@ -994,10 +1001,19 @@ export const App: React.FC = () => {
     }
 
     try {
-      await populationService.createResident(popForm)
+      const created = await populationService.createResident(popForm)
       setPopMsg({ type: 'success', text: `Penduduk ${popForm.full_name} berhasil didaftarkan!` })
+      if (created.access_pin) {
+        setCredentialReceipt({
+          nik: created.nik,
+          full_name: created.full_name,
+          username: created.account_username || created.nik,
+          access_pin: created.access_pin,
+          village: created.village || popForm.village || 'Lonthoir',
+        })
+      }
       const nextNik = (BigInt(popForm.nik) + 1n).toString()
-      setPopForm({ ...popForm, nik: nextNik, full_name: '' })
+      setPopForm({ ...popForm, nik: nextNik, full_name: '', access_pin: '' })
       fetchPopulationData()
     } catch (err: unknown) {
       if (err instanceof TypeError || (err instanceof Error && err.message.toLowerCase().includes('fetch'))) {
@@ -1784,6 +1800,8 @@ export const App: React.FC = () => {
                 fetchPopulationData={fetchPopulationData}
                 handleCreateResident={handleCreateResident}
                 handleVerifyResident={handleVerifyResident}
+                credentialReceipt={credentialReceipt}
+                setCredentialReceipt={setCredentialReceipt}
               />
             ) : (
               <AccessRestrictedNotice

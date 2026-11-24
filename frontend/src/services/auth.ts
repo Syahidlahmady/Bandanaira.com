@@ -502,4 +502,16 @@ export const authService = {
       // safe fallback if offline
     }
   },
+
+  async changePassword(oldPassword: string, newPassword: string): Promise<{ success: boolean; message: string }> {
+    const res = await this.fetchWithAuth(`${getApiBase()}/auth/change-password`, {
+      method: 'POST',
+      body: JSON.stringify({ old_password: oldPassword, new_password: newPassword }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail || `Gagal memperbarui kata sandi / PIN (${res.status})`)
+    }
+    return res.json()
+  },
 }

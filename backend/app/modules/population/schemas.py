@@ -63,6 +63,7 @@ class ResidentCreate(BaseModel):
     marital_status: Optional[str] = Field(None, max_length=50)
     occupation: Optional[str] = Field(None, max_length=100)
     phone_number: Optional[str] = Field(None, max_length=20)
+    access_pin: Optional[str] = Field(None, min_length=6, max_length=100, description="PIN (min 6 digit angka) atau kata sandi akun warga. Jika dikosongkan, PIN akan dibuat otomatis.")
 
 
 class ResidentUpdate(BaseModel):
@@ -106,8 +107,23 @@ class ResidentResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     administrative_requests: List[AdministrativeRequestResponse] = []
+    access_pin: Optional[str] = None
+    account_username: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ResidentResetPinRequest(BaseModel):
+    pin: Optional[str] = Field(None, min_length=6, max_length=100, description="PIN baru (min 6 digit angka). Jika dikosongkan, PIN akan dibuat otomatis.")
+
+
+class ResidentCredentialResponse(BaseModel):
+    resident_id: uuid.UUID
+    nik: str
+    full_name: str
+    username: str
+    access_pin: str
+    message: str
 
 
 class ResidentListResponse(BaseModel):
