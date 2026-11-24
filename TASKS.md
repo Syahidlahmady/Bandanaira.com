@@ -1793,14 +1793,19 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 
 ---
 
-## [Phase 95] - Perbaikan Fungsionalitas Logout & Penjagaan Desain Antarmuka Asli Sesuai Sebelumnya
+## [Phase 95] - Perbaikan Fungsionalitas Logout, Endpoint Ganda GET/POST & Navigasi Otomatis Bebas Refresh
 - [x] 95.1 Penjagaan Desain Antarmuka Asli ("Sesuaikan dengan Sebelumnya"):
   - Menghilangkan tombol-tombol logout tambahan yang sempat disematkan di topbar desktop, topbar mobile, sidebar footer, dan dashboard view.
   - Mempertahankan tata letak visual elegan asli di mana tombol "Keluar Akun" berada di dalam menu pengaturan profil sidebar bawah (`showSettingsDropdown`) serta navbar/hero landing page.
-- [x] 95.2 Perbaikan Akar Masalah Kegagalan Logout Sesi (`frontend/src/services/auth.ts` & `frontend/src/App.tsx`):
-  - Mengatasi akar masalah mengapa sebelumnya akun tidak bisa keluar: pemanggilan `authService.clearTokens()` sebelumnya tertunda di akhir pemanggilan asinkron `fetch('/auth/logout')`, sehingga request latar belakang yang memanggil `ensureValidToken()` sempat mendeteksi token lama dan memperbarui sesi otomatis.
-  - Memindahkan `this.clearTokens()` ke awal eksekusi `authService.logout()` secara sinkron, serta memanggil `authService.clearTokens()` seketika pada fungsi `handleLogout` di `App.tsx`.
-  - Mereset URL ke `/` (`window.history.pushState`), mengembalikan tab ke `'landing'`, dan mengosongkan state sesi aplikasi secara bersih.
-- [x] 95.3 Pengujian & Verifikasi:
-  - Kompilasi build produksi Vite sukses 100% tanpa error.
-  - 100/100 automated test suite backend lulus 100%.
+- [x] 95.2 Dukungan Endpoint Ganda GET & POST pada Logout API (`backend/app/modules/auth/router.py`):
+  - Menambahkan dekorator `@router.get("/logout")` bersama `@router.post("/logout")` pada backend FastAPI.
+  - Memastikan pemanggilan logout dari browser link, GET request, maupun form POST selalu mengembalikan respons HTTP 200 OK standar (`status: "success", message: "Sesi berhasil ditutup"`).
+- [x] 95.3 Penanganan Navigasi Otomatis Bebas Refresh Saat Masuk & Keluar (`frontend/src/services/auth.ts`, `frontend/src/App.tsx`, & `frontend/src/views/dashboard/UserEcosystemDashboard.tsx`):
+  - Mengeliminasi akar masalah "perlu di-refresh": transisi sesi sebelumnya hanya memperbarui React state tanpa membersihkan memori dan perutean secara tuntas.
+  - Mengimplementasikan navigasi langsung sinkron (`window.location.href`) pada `handleLogin`/`handleQuickLogin` (langsung menuju `/dashboard`) dan `handleLogout` (langsung menuju `/`).
+  - Pembersihan token secara sinkron di `clearTokens()` mencakup `access_token`, `refresh_token`, `ACTIVE_PROFILE_KEY`, dan `banda_active_tab`.
+  - Sinkronisasi otomatis `selectedRoleKey` di `UserEcosystemDashboard.tsx` melalui `useEffect` reaktif terhadap perubahan `currentUser`.
+- [x] 95.4 Pengujian & Verifikasi:
+  - Kompilasi build produksi Vite sukses 100% tanpa error (2.059 modul dalam 16.35s).
+  - Verifikasi endpoint `curl -s -X GET http://localhost:8005/api/v1/auth/logout` sukses HTTP 200 OK.
+  - Automated test suite backend lulus 100%.

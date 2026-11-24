@@ -176,6 +176,7 @@ export const authService = {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     localStorage.removeItem(ACTIVE_PROFILE_KEY)
+    localStorage.removeItem('banda_active_tab')
   },
 
   registerAccount(account: RegisteredAccountRecord) {

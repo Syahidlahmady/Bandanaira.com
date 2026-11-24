@@ -788,7 +788,11 @@ export const App: React.FC = () => {
     try {
       const response = await authService.login(username, password)
       setCurrentUser(response.user)
-      setActiveTab(getRoleDefaultTab(response.user))
+      const targetTab = getRoleDefaultTab(response.user)
+      setActiveTab(targetTab)
+      if (typeof window !== 'undefined') {
+        window.location.href = TAB_ROUTES[targetTab] || '/dashboard'
+      }
     } catch (err: unknown) {
       if (err instanceof Error) setAuthError(err.message)
     } finally {
@@ -804,7 +808,11 @@ export const App: React.FC = () => {
     try {
       const response = await authService.login(u, p)
       setCurrentUser(response.user)
-      setActiveTab(getRoleDefaultTab(response.user))
+      const targetTab = getRoleDefaultTab(response.user)
+      setActiveTab(targetTab)
+      if (typeof window !== 'undefined') {
+        window.location.href = TAB_ROUTES[targetTab] || '/dashboard'
+      }
     } catch (err: unknown) {
       if (err instanceof Error) setAuthError(err.message)
     } finally {
@@ -814,32 +822,20 @@ export const App: React.FC = () => {
 
   const handleLogout = () => {
     authService.clearTokens()
-    authService.logout().catch(() => {})
     try {
       localStorage.removeItem('banda_active_tab')
+      localStorage.removeItem('banda_active_user_profile')
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
     } catch {
       // ignore
     }
-    try {
-      window.history.pushState({ tab: 'landing' }, '', '/')
-    } catch {
-      // ignore
+    authService.logout().catch(() => {})
+    setCurrentUser(null)
+    setActiveTab('landing')
+    if (typeof window !== 'undefined') {
+      window.location.href = '/'
     }
-    try {
-      window.scrollTo({ top: 0, behavior: 'instant' })
-    } catch {
-      // ignore
-    }
-    React.startTransition(() => {
-      setCurrentUser(null)
-      setActiveTab('landing')
-      setResidents([])
-      setFarmers([])
-      setFarms([])
-      setHarvests([])
-      setBatches([])
-      setSelectedBatch(null)
-    })
   }
 
   const handleManualSync = async () => {
