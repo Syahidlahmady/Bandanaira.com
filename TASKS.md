@@ -2229,18 +2229,30 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Test case `test_identify_account_and_farmer_login_with_nik` di `test_auth.py` lulus 100%.
   - Seluruh pengujian `test_auth.py` dan `test_farmers_and_farms.py` lulus 100% (26 passed).
   - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% (0 error).
-  - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 18.81 detik).
+  - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 18.81 detik).---
 
+## [Phase 108] - Navigasi Multi-Role & Switcher Perspektif Antar Peran Aktif Pengguna
+- [x] 108.1 Switcher Perspektif Peran Multi-Role Dinamis (`UserEcosystemDashboard.tsx`):
+  - Memungkinkan pengguna non-admin yang memegang peran ganda (misal warga desa yang menjadi petani: `['resident', 'farmer']`, atau warga yang menjadi operator homestay: `['resident', 'homestay_operator']`) untuk beralih perspektif dasbor secara instan antara dasbor warga (`ResidentDashboardView`) dan dasbor keahlian/vokasinya (`FarmerDashboardView`).
+  - Menghitung daftar peran sah `userAllowedRoleKeys` secara aman dan mengunci akses agar pengguna hanya dapat memilih peran yang memang tercantum dalam `currentUser.roles`, mencegah eskalasi hak akses (*privilege escalation*).
+  - Menampilkan panel peralihan peran (*Multi-Role Switcher*) secara adaptif baik bagi Super Admin (simulasi 10 peran) maupun bagi pengguna multi-role.
+- [x] 108.2 Gelar & Header Multi-Role Adaptif (`DashboardLayout.tsx`):
+  - Menyesuaikan fungsi `getRoleDisplayName()` untuk menampilkan identitas peran ganda secara presisi (misal: "Petani Rempah & Warga").
+- [x] 108.3 Pengujian & Verifikasi Build:
+  - Pemeriksaan tipe TypeScript (`npm run typecheck` / `tsc --noEmit`) lulus 100% (0 error).
+  - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 16.50 detik).
+---
 
-
-
-
-
-
-
-
-
-
+## [Phase 108] - Navigasi Multi-Role & Switcher Perspektif Antar Peran Aktif Pengguna
+- [x] 108.1 Switcher Perspektif Peran Multi-Role Dinamis (`UserEcosystemDashboard.tsx`):
+  - Memungkinkan pengguna non-admin yang memegang peran ganda (misal warga desa yang menjadi petani: `['resident', 'farmer']`, atau warga yang menjadi operator homestay: `['resident', 'homestay_operator']`) untuk beralih perspektif dasbor secara instan antara dasbor warga (`ResidentDashboardView`) dan dasbor keahlian/vokasinya (`FarmerDashboardView`).
+  - Menghitung daftar peran sah `userAllowedRoleKeys` secara aman dan mengunci akses agar pengguna hanya dapat memilih peran yang memang tercantum dalam `currentUser.roles`, mencegah eskalasi hak akses (*privilege escalation*).
+  - Menampilkan panel peralihan peran (*Multi-Role Switcher*) secara adaptif baik bagi Super Admin (simulasi 10 peran) maupun bagi pengguna multi-role.
+- [x] 108.2 Gelar & Header Multi-Role Adaptif (`DashboardLayout.tsx`):
+  - Menyesuaikan fungsi `getRoleDisplayName()` untuk menampilkan identitas peran ganda secara presisi (misal: "Petani Rempah & Warga").
+- [x] 108.3 Pengujian & Verifikasi Build:
+  - Pemeriksaan tipe TypeScript (`npm run typecheck` / `tsc --noEmit`) lulus 100% (0 error).
+  - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 16.50 detik).
 
 
 
