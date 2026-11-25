@@ -18,6 +18,13 @@ export interface Resident {
   verification_status: 'pending' | 'verified' | 'rejected'
   verified_by?: string
   verified_at?: string
+  residence_status?: 'active' | 'moving' | 'moved_out' | 'temporary' | 'deceased'
+  death_date?: string
+  death_place?: string
+  death_cause?: string
+  death_certificate_no?: string
+  death_notes?: string
+  reported_death_at?: string
   created_at: string
   access_pin?: string
   account_username?: string
@@ -80,6 +87,56 @@ export interface AdministrativeRequestListResponse {
   total: number
   page: number
   limit: number
+}
+
+export interface ResidentReportDeathInput {
+  death_date: string
+  death_place?: string
+  death_cause?: string
+  death_certificate_no?: string
+  death_notes?: string
+}
+
+export interface ResidentMutation {
+  id: string
+  resident_id: string
+  resident_nik?: string
+  resident_name?: string
+  origin_village: string
+  destination_village: string
+  new_address?: string
+  new_rt?: string
+  new_rw?: string
+  reason?: string
+  skpwni_number?: string
+  status: 'pending_destination' | 'pending_origin' | 'completed' | 'rejected' | 'cancelled'
+  initiated_by_village: string
+  origin_approved_by?: string
+  origin_approved_at?: string
+  destination_approved_by?: string
+  destination_approved_at?: string
+  rejection_reason?: string
+  rejected_by?: string
+  rejected_at?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface ResidentMutationListResponse {
+  items: ResidentMutation[]
+  total: number
+  page: number
+  limit: number
+}
+
+export interface ResidentMutationCreateInput {
+  resident_id: string
+  destination_village: string
+  new_address?: string
+  new_rt?: string
+  new_rw?: string
+  reason?: string
+  skpwni_number?: string
 }
 
 export const populationService = {
@@ -198,6 +255,83 @@ export const populationService = {
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
       throw new Error(err.detail || `Gagal memperbarui status permohonan (${res.status})`)
+    }
+    return res.json()
+  },
+
+  async reportDeath(residentId: string, input: ResidentReportDeathInput): Promise<Resident> {
+    const res = await this.requestWithAuth(`/population/residents/${residentId}/report-death`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail || `Gagal mencatat kematian warga (${res.status})`)
+    }
+    return res.json()
+  },
+
+  async revokeDeath(residentId: string): Promise<Resident> {
+    const res = await this.requestWithAuth(`/population/residents/${residentId}/revoke-death`, {
+      method: 'POST',
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail || `Gagal membatalkan status kematian (${res.status})`)
+    }
+    return res.json()
+  },
+
+  async listMutations(page = 1, limit = 50, mutationType?: 'incoming' | 'outgoing', status?: string): Promise<ResidentMutationListResponse> {
+    let path = `/population/mutations?page=${page}&limit=${limit}`
+    if (mutationType) {
+      path += `&mutation_type=${encodeURIComponent(mutationType)}`
+    }
+    if (status) {
+      path += `&status=${encodeURIComponent(status)}`
+    }
+    const res = await this.requestWithAuth(path)
+    if (!res.ok) {
+      throw new Error(`Gagal memuat daftar mutasi kependudukan (${res.status})`)
+    }
+    return res.json()
+  },
+
+  async createMutation(input: ResidentMutationCreateInput): Promise<ResidentMutation> {
+    const res = await this.requestWithAuth('/population/mutations', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail || `Gagal mengajukan mutasi kependudukan (${res.status})`)
+    }
+    return res.json()
+  },
+
+  async approveMutation(
+    mutationId: string,
+    details?: { new_address?: string; new_rt?: string; new_rw?: string; notes?: string }
+  ): Promise<ResidentMutation> {
+    const res = await this.requestWithAuth(`/population/mutations/${mutationId}/approve`, {
+      method: 'POST',
+      body: JSON.stringify(details || {}),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail || `Gagal menyetujui mutasi kependudukan (${res.status})`)
+    }
+    return res.json()
+  },
+
+  async rejectMutation(mutationId: string, reason: string): Promise<ResidentMutation> {
+    const res = await this.requestWithAuth(`/population/mutations/${mutationId}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail || `Gagal menolak mutasi kependudukan (${res.status})`)
     }
     return res.json()
   },

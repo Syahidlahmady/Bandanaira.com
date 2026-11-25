@@ -18,7 +18,7 @@ from backend.app.core.security import hash_password
 from backend.app.database.session import get_db
 from backend.app.modules.audit.service import log_audit_event
 from backend.app.modules.auth.models import Role, User
-from backend.app.modules.population.models import AdministrativeRequest, Resident
+from backend.app.modules.population.models import AdministrativeRequest, Resident, ResidentMutation
 from backend.app.modules.population.schemas import (
     AdministrativeRequestCreate,
     AdministrativeRequestDetailResponse,
@@ -29,6 +29,12 @@ from backend.app.modules.population.schemas import (
     ResidentCreate,
     ResidentCredentialResponse,
     ResidentListResponse,
+    ResidentMutationApproveRequest,
+    ResidentMutationCreate,
+    ResidentMutationListResponse,
+    ResidentMutationRejectRequest,
+    ResidentMutationResponse,
+    ResidentReportDeathRequest,
     ResidentResetPinRequest,
     ResidentResponse,
     ResidentUpdate,
@@ -47,6 +53,7 @@ async def list_residents(
     limit: int = Query(20, ge=1, le=100),
     search: Optional[str] = None,
     status_filter: Optional[str] = Query(None, alias="status"),
+    residence_status: Optional[str] = Query(None, alias="residence_status"),
     rt: Optional[str] = None,
     rw: Optional[str] = None,
     occupation: Optional[str] = None,
@@ -74,6 +81,8 @@ async def list_residents(
         )
     if status_filter:
         query = query.where(Resident.verification_status == status_filter)
+    if residence_status:
+        query = query.where(Resident.residence_status == residence_status)
     if occupation:
         query = query.where(Resident.occupation.ilike(f"%{occupation}%"))
     if rt:
@@ -387,29 +396,110 @@ async def verify_resident(
     await db.commit()
     await db.refresh(resident)
     return resident
+
+
+@router.post("/residents/{id}/report-death", response_model=ResidentResponse)
+async def report_resident_death(
+    id: uuid.UUID,
+    death_in: ResidentReportDeathRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(OFFICER_ROLES),
+):
+    stmt = select(Resident).where(Resident.id == id)
+    resident = (await db.execute(stmt)).scalar_one_or_none()
     if not resident:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Resident record not found",
+            detail="Data warga tidak ditemukan.",
         )
 
-    previous_status = resident.verification_status
-    resident.verification_status = verification.verification_status
-    resident.verified_by = current_user.id
-    resident.verified_at = datetime.now(timezone.utc)
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+    if not is_admin and current_user.village and resident.village.lower() != current_user.village.lower():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Anda hanya berwenang mencatat peristiwa kematian untuk warga Desa {current_user.village}."
+        )
 
-    # Log audit event
+    resident.residence_status = "deceased"
+    resident.death_date = death_in.death_date
+    resident.death_place = death_in.death_place
+    resident.death_cause = death_in.death_cause
+    resident.death_certificate_no = death_in.death_certificate_no
+    resident.death_notes = death_in.death_notes
+    resident.reported_death_at = datetime.now(timezone.utc)
+    resident.reported_death_by = current_user.id
+
+    # Nonaktifkan akun pengguna portal warga jika ada
+    user_stmt = select(User).where(User.username == resident.nik)
+    linked_user = (await db.execute(user_stmt)).scalar_one_or_none()
+    if linked_user:
+        linked_user.is_active = False
+
     await log_audit_event(
         db=db,
-        action="VERIFY_RESIDENT",
+        action="REPORT_RESIDENT_DEATH",
         entity_name="residents",
         entity_id=resident.id,
         user_id=current_user.id,
         changes={
-            "previous_status": previous_status,
-            "new_status": verification.verification_status,
-            "notes": verification.notes,
+            "nik": resident.nik,
+            "death_date": str(death_in.death_date),
+            "death_place": death_in.death_place,
+            "death_certificate_no": death_in.death_certificate_no,
+            "account_deactivated": bool(linked_user),
         },
+    )
+
+    await db.commit()
+    await db.refresh(resident)
+    return resident
+
+
+@router.post("/residents/{id}/revoke-death", response_model=ResidentResponse)
+async def revoke_resident_death(
+    id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(OFFICER_ROLES),
+):
+    stmt = select(Resident).where(Resident.id == id)
+    resident = (await db.execute(stmt)).scalar_one_or_none()
+    if not resident:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Data warga tidak ditemukan.",
+        )
+
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+    if not is_admin and current_user.village and resident.village.lower() != current_user.village.lower():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Anda hanya berwenang membatalkan status kematian warga Desa {current_user.village}."
+        )
+
+    resident.residence_status = "active"
+    resident.death_date = None
+    resident.death_place = None
+    resident.death_cause = None
+    resident.death_certificate_no = None
+    resident.death_notes = None
+    resident.reported_death_at = None
+    resident.reported_death_by = None
+
+    # Reaktifkan akun pengguna portal warga jika ada
+    user_stmt = select(User).where(User.username == resident.nik)
+    linked_user = (await db.execute(user_stmt)).scalar_one_or_none()
+    if linked_user:
+        linked_user.is_active = True
+
+    await log_audit_event(
+        db=db,
+        action="REVOKE_RESIDENT_DEATH",
+        entity_name="residents",
+        entity_id=resident.id,
+        user_id=current_user.id,
+        changes={"nik": resident.nik, "reverted_to": "active"},
     )
 
     await db.commit()
@@ -644,3 +734,342 @@ async def get_population_statistics(
         gender_distribution=gender_dist,
         top_occupations=top_occupations,
     )
+
+
+# ---------------------------------------------------------------------------
+# RESIDENT MUTATION WORKFLOW (DUAL-VILLAGE VERIFICATION)
+# ---------------------------------------------------------------------------
+
+@router.post("/mutations", response_model=ResidentMutationResponse, status_code=status.HTTP_201_CREATED)
+async def create_resident_mutation(
+    mutation_in: ResidentMutationCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(OFFICER_ROLES),
+):
+    """Inisiasi permohonan mutasi domisili warga antar desa (bisa diajukan desa asal atau desa tujuan)."""
+    stmt = select(Resident).where(Resident.id == mutation_in.resident_id)
+    resident = (await db.execute(stmt)).scalar_one_or_none()
+    if not resident:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Data warga tidak ditemukan.",
+        )
+
+    if resident.residence_status == "deceased":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Tidak dapat mengajukan mutasi untuk warga yang berstatus meninggal dunia.",
+        )
+
+    origin_village = resident.village.strip()
+    dest_village = mutation_in.destination_village.strip()
+    if origin_village.lower() == dest_village.lower():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Desa asal dan desa tujuan mutasi tidak boleh sama.",
+        )
+
+    # Cek apakah sedang ada proses mutasi yang aktif untuk warga ini
+    active_mut_stmt = select(ResidentMutation).where(
+        ResidentMutation.resident_id == resident.id,
+        ResidentMutation.status.in_(["pending_destination", "pending_origin"]),
+    )
+    existing_active = (await db.execute(active_mut_stmt)).scalar_one_or_none()
+    if existing_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Warga ini sudah memiliki permohonan mutasi yang sedang berjalan (Status: {existing_active.status}).",
+        )
+
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+
+    is_origin = bool(current_user.village and current_user.village.lower() == origin_village.lower())
+    is_destination = bool(current_user.village and current_user.village.lower() == dest_village.lower())
+
+    if not is_admin and not is_origin and not is_destination:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Anda hanya berwenang mengajukan mutasi dari atau ke Desa {current_user.village}."
+        )
+
+    now = datetime.now(timezone.utc)
+    if is_admin or is_origin:
+        # Inisiasi dari Desa Asal (Pindah Keluar): desa asal langsung approve, status menunggu verifikasi desa tujuan
+        status_val = "pending_destination"
+        origin_approved_by = current_user.id
+        origin_approved_at = now
+        dest_approved_by = None
+        dest_approved_at = None
+        initiated_by_village = origin_village
+    else:
+        # Inisiasi dari Desa Tujuan (Pindah Datang): diajukan desa tujuan, status menunggu persetujuan pelepasan desa asal
+        status_val = "pending_origin"
+        origin_approved_by = None
+        origin_approved_at = None
+        dest_approved_by = current_user.id
+        dest_approved_at = now
+        initiated_by_village = dest_village
+
+    mutation = ResidentMutation(
+        resident_id=resident.id,
+        origin_village=origin_village,
+        destination_village=dest_village,
+        new_address=mutation_in.new_address,
+        new_rt=mutation_in.new_rt,
+        new_rw=mutation_in.new_rw,
+        reason=mutation_in.reason,
+        skpwni_number=mutation_in.skpwni_number,
+        status=status_val,
+        initiated_by_village=initiated_by_village,
+        origin_approved_by=origin_approved_by,
+        origin_approved_at=origin_approved_at,
+        destination_approved_by=dest_approved_by,
+        destination_approved_at=dest_approved_at,
+    )
+    db.add(mutation)
+    resident.residence_status = "moving"
+    await db.flush()
+
+    await log_audit_event(
+        db=db,
+        action="INITIATE_RESIDENT_MUTATION",
+        entity_name="resident_mutations",
+        entity_id=mutation.id,
+        user_id=current_user.id,
+        changes={
+            "resident_nik": resident.nik,
+            "origin_village": origin_village,
+            "destination_village": dest_village,
+            "status": status_val,
+        },
+    )
+
+    await db.commit()
+    await db.refresh(mutation)
+
+    resp = ResidentMutationResponse.model_validate(mutation)
+    resp.resident_nik = resident.nik
+    resp.resident_name = resident.full_name
+    return resp
+
+
+@router.get("/mutations", response_model=ResidentMutationListResponse)
+async def list_resident_mutations(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    mutation_type: Optional[str] = Query(None, description="'incoming' (pindah datang) atau 'outgoing' (pindah keluar)"),
+    status_filter: Optional[str] = Query(None, alias="status"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(OFFICER_ROLES),
+):
+    """Mendapatkan daftar mutasi kependudukan (masuk/keluar) dengan filter hak akses desa."""
+    query = select(ResidentMutation, Resident.nik, Resident.full_name).join(
+        Resident, ResidentMutation.resident_id == Resident.id
+    )
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+
+    if not is_admin and current_user.village:
+        v_name = current_user.village.lower()
+        if mutation_type == "incoming":
+            query = query.where(func.lower(ResidentMutation.destination_village) == v_name)
+        elif mutation_type == "outgoing":
+            query = query.where(func.lower(ResidentMutation.origin_village) == v_name)
+        else:
+            query = query.where(
+                or_(
+                    func.lower(ResidentMutation.origin_village) == v_name,
+                    func.lower(ResidentMutation.destination_village) == v_name,
+                )
+            )
+    elif mutation_type:
+        if mutation_type == "incoming" and current_user.village:
+            query = query.where(func.lower(ResidentMutation.destination_village) == current_user.village.lower())
+        elif mutation_type == "outgoing" and current_user.village:
+            query = query.where(func.lower(ResidentMutation.origin_village) == current_user.village.lower())
+
+    if status_filter:
+        query = query.where(ResidentMutation.status == status_filter)
+
+    count_query = select(func.count()).select_from(query.subquery())
+    total = (await db.execute(count_query)).scalar_one()
+
+    offset = (page - 1) * limit
+    paginated_query = query.order_by(ResidentMutation.created_at.desc()).offset(offset).limit(limit)
+    result = await db.execute(paginated_query)
+    rows = result.all()
+
+    items = []
+    for mutation, r_nik, r_name in rows:
+        m_dict = ResidentMutationResponse.model_validate(mutation)
+        m_dict.resident_nik = r_nik
+        m_dict.resident_name = r_name
+        items.append(m_dict)
+
+    return ResidentMutationListResponse(
+        items=items,
+        total=total,
+        page=page,
+        limit=limit,
+    )
+
+
+@router.post("/mutations/{id}/approve", response_model=ResidentMutationResponse)
+async def approve_resident_mutation(
+    id: uuid.UUID,
+    approve_in: ResidentMutationApproveRequest = ResidentMutationApproveRequest(),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(OFFICER_ROLES),
+):
+    """Memverifikasi/menyetujui mutasi (oleh Desa Tujuan jika pending_destination, atau Desa Asal jika pending_origin)."""
+    stmt = select(ResidentMutation, Resident).join(
+        Resident, ResidentMutation.resident_id == Resident.id
+    ).where(ResidentMutation.id == id)
+    row = (await db.execute(stmt)).first()
+    if not row:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Data mutasi tidak ditemukan.")
+
+    mutation, resident = row
+    if mutation.status in ["completed", "rejected", "cancelled"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Permohonan mutasi sudah selesai atau ditutup (Status: {mutation.status}).",
+        )
+
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+    now = datetime.now(timezone.utc)
+
+    if mutation.status == "pending_destination":
+        # Menunggu verifikasi penerimaan dari Desa Tujuan
+        if not is_admin and (not current_user.village or current_user.village.lower() != mutation.destination_village.lower()):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Hanya Kepala Desa / Perangkat Desa {mutation.destination_village} yang berwenang memverifikasi penerimaan warga.",
+            )
+        mutation.destination_approved_by = current_user.id
+        mutation.destination_approved_at = now
+        if approve_in.new_address:
+            mutation.new_address = approve_in.new_address
+        if approve_in.new_rt:
+            mutation.new_rt = approve_in.new_rt
+        if approve_in.new_rw:
+            mutation.new_rw = approve_in.new_rw
+
+    elif mutation.status == "pending_origin":
+        # Menunggu persetujuan pelepasan dari Desa Asal
+        if not is_admin and (not current_user.village or current_user.village.lower() != mutation.origin_village.lower()):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Hanya Kepala Desa / Perangkat Desa {mutation.origin_village} yang berwenang menyetujui pelepasan warga.",
+            )
+        mutation.origin_approved_by = current_user.id
+        mutation.origin_approved_at = now
+
+    # Kedua desa kini telah menyetujui mutasi, status menjadi completed!
+    mutation.status = "completed"
+
+    # Pindahkan domisili resident
+    resident.village = mutation.destination_village
+    if mutation.new_address:
+        resident.address = mutation.new_address
+    if mutation.new_rt:
+        resident.rt = mutation.new_rt
+    if mutation.new_rw:
+        resident.rw = mutation.new_rw
+    resident.residence_status = "active"
+
+    # Perbarui scope village pada akun User (jika ada)
+    user_stmt = select(User).where(User.username == resident.nik)
+    linked_user = (await db.execute(user_stmt)).scalar_one_or_none()
+    if linked_user:
+        linked_user.village = mutation.destination_village
+
+    await log_audit_event(
+        db=db,
+        action="COMPLETE_RESIDENT_MUTATION",
+        entity_name="resident_mutations",
+        entity_id=mutation.id,
+        user_id=current_user.id,
+        changes={
+            "resident_nik": resident.nik,
+            "origin_village": mutation.origin_village,
+            "destination_village": mutation.destination_village,
+            "status": "completed",
+            "account_updated": bool(linked_user),
+        },
+    )
+
+    await db.commit()
+    await db.refresh(mutation)
+
+    resp = ResidentMutationResponse.model_validate(mutation)
+    resp.resident_nik = resident.nik
+    resp.resident_name = resident.full_name
+    return resp
+
+
+@router.post("/mutations/{id}/reject", response_model=ResidentMutationResponse)
+async def reject_resident_mutation(
+    id: uuid.UUID,
+    reject_in: ResidentMutationRejectRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(OFFICER_ROLES),
+):
+    """Menolak permohonan mutasi oleh salah satu desa terkait."""
+    stmt = select(ResidentMutation, Resident).join(
+        Resident, ResidentMutation.resident_id == Resident.id
+    ).where(ResidentMutation.id == id)
+    row = (await db.execute(stmt)).first()
+    if not row:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Data mutasi tidak ditemukan.")
+
+    mutation, resident = row
+    if mutation.status in ["completed", "rejected", "cancelled"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Permohonan mutasi sudah selesai atau ditutup (Status: {mutation.status}).",
+        )
+
+    user_role_names = {r.name for r in current_user.roles}
+    is_admin = current_user.is_superuser or ROLE_ADMIN in user_role_names
+
+    is_origin = bool(current_user.village and current_user.village.lower() == mutation.origin_village.lower())
+    is_destination = bool(current_user.village and current_user.village.lower() == mutation.destination_village.lower())
+
+    if not is_admin and not is_origin and not is_destination:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Anda tidak berwenang menolak mutasi ini karena bukan dari desa terkait.",
+        )
+
+    mutation.status = "rejected"
+    mutation.rejection_reason = reject_in.reason
+    mutation.rejected_by = current_user.id
+    mutation.rejected_at = datetime.now(timezone.utc)
+
+    # Kembalikan status residence resident menjadi active di desa asal
+    resident.residence_status = "active"
+
+    await log_audit_event(
+        db=db,
+        action="REJECT_RESIDENT_MUTATION",
+        entity_name="resident_mutations",
+        entity_id=mutation.id,
+        user_id=current_user.id,
+        changes={
+            "resident_nik": resident.nik,
+            "status": "rejected",
+            "reason": reject_in.reason,
+            "rejected_by_village": current_user.village or "Admin",
+        },
+    )
+
+    await db.commit()
+    await db.refresh(mutation)
+
+    resp = ResidentMutationResponse.model_validate(mutation)
+    resp.resident_nik = resident.nik
+    resp.resident_name = resident.full_name
+    return resp

@@ -64,6 +64,7 @@ class ResidentCreate(BaseModel):
     occupation: Optional[str] = Field(None, max_length=100)
     phone_number: Optional[str] = Field(None, max_length=20)
     access_pin: Optional[str] = Field(None, min_length=6, max_length=100, description="PIN (min 6 digit angka) atau kata sandi akun warga. Jika dikosongkan, PIN akan dibuat otomatis.")
+    residence_status: Optional[str] = Field("active", pattern=r"^(active|moving|moved_out|temporary|deceased)$")
 
 
 class ResidentUpdate(BaseModel):
@@ -79,11 +80,20 @@ class ResidentUpdate(BaseModel):
     marital_status: Optional[str] = None
     occupation: Optional[str] = None
     phone_number: Optional[str] = None
+    residence_status: Optional[str] = Field(None, pattern=r"^(active|moving|moved_out|temporary|deceased)$")
 
 
 class ResidentVerificationUpdate(BaseModel):
     verification_status: str = Field(..., pattern=r"^(verified|rejected)$")
     notes: Optional[str] = None
+
+
+class ResidentReportDeathRequest(BaseModel):
+    death_date: date = Field(..., description="Tanggal wafat/meninggal dunia")
+    death_place: Optional[str] = Field(None, max_length=150, description="Tempat wafat (RS, rumah, dll)")
+    death_cause: Optional[str] = Field(None, max_length=150, description="Penyebab wafat (sakit, usia, dll)")
+    death_certificate_no: Optional[str] = Field(None, max_length=100, description="Nomor surat keterangan / akta kematian")
+    death_notes: Optional[str] = Field(None, description="Catatan pelapor / keterangan tambahan")
 
 
 class ResidentResponse(BaseModel):
@@ -104,6 +114,14 @@ class ResidentResponse(BaseModel):
     verification_status: str
     verified_by: Optional[uuid.UUID] = None
     verified_at: Optional[datetime] = None
+    residence_status: str = "active"
+    death_date: Optional[date] = None
+    death_place: Optional[str] = None
+    death_cause: Optional[str] = None
+    death_certificate_no: Optional[str] = None
+    death_notes: Optional[str] = None
+    reported_death_at: Optional[datetime] = None
+    reported_death_by: Optional[uuid.UUID] = None
     created_at: datetime
     updated_at: datetime
     administrative_requests: List[AdministrativeRequestResponse] = []
@@ -111,6 +129,61 @@ class ResidentResponse(BaseModel):
     account_username: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ResidentMutationCreate(BaseModel):
+    resident_id: uuid.UUID
+    destination_village: str = Field(..., min_length=2, max_length=100)
+    new_address: Optional[str] = None
+    new_rt: Optional[str] = Field(None, max_length=5)
+    new_rw: Optional[str] = Field(None, max_length=5)
+    reason: Optional[str] = Field(None, description="Alasan mutasi/pindah domisili")
+    skpwni_number: Optional[str] = Field(None, max_length=100, description="Nomor Surat Keterangan Pindah (SKPWNI)")
+
+
+class ResidentMutationApproveRequest(BaseModel):
+    new_address: Optional[str] = None
+    new_rt: Optional[str] = Field(None, max_length=5)
+    new_rw: Optional[str] = Field(None, max_length=5)
+    notes: Optional[str] = None
+
+
+class ResidentMutationRejectRequest(BaseModel):
+    reason: str = Field(..., min_length=3, max_length=500, description="Alasan penolakan mutasi")
+
+
+class ResidentMutationResponse(BaseModel):
+    id: uuid.UUID
+    resident_id: uuid.UUID
+    resident_nik: Optional[str] = None
+    resident_name: Optional[str] = None
+    origin_village: str
+    destination_village: str
+    new_address: Optional[str] = None
+    new_rt: Optional[str] = None
+    new_rw: Optional[str] = None
+    reason: Optional[str] = None
+    skpwni_number: Optional[str] = None
+    status: str
+    initiated_by_village: str
+    origin_approved_by: Optional[uuid.UUID] = None
+    origin_approved_at: Optional[datetime] = None
+    destination_approved_by: Optional[uuid.UUID] = None
+    destination_approved_at: Optional[datetime] = None
+    rejection_reason: Optional[str] = None
+    rejected_by: Optional[uuid.UUID] = None
+    rejected_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ResidentMutationListResponse(BaseModel):
+    items: List[ResidentMutationResponse]
+    total: int
+    page: int
+    limit: int
 
 
 class ResidentResetPinRequest(BaseModel):

@@ -2173,6 +2173,31 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% (0 error).
   - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 24.50 detik).
 
+---
+
+## [Phase 106] - Siklus Hidup & Mutasi Kependudukan Antar-Desa (Verifikasi 2 Arah) & Pencatatan Kematian
+- [x] 106.1 Skema Basis Data & Migrasi Alembic (`015_resident_mutation_death.py`):
+  - Menambahkan kolom status kependudukan `residence_status` (`active`, `moving`, `moved_out`, `temporary`, `deceased`) dan atribut pencatatan kematian (`death_date`, `death_place`, `death_cause`, `death_certificate_no`, `death_notes`, `reported_death_at`, `reported_death_by`) pada tabel `residents`.
+  - Membuat tabel `resident_mutations` dengan lifecycle verifikasi dua arah (`pending_destination`, `pending_origin`, `completed`, `rejected`, `cancelled`), atribut desa asal, desa tujuan, alamat baru, RT/RW, no SKPWNI, alasan, serta referensi persetujuan kedua pihak (`origin_approved_by`, `destination_approved_by`).
+- [x] 106.2 API Backend Mutasi Dua Arah & Pelaporan Kematian:
+  - `POST /api/v1/population/mutations`: Inisiasi permohonan mutasi domisili (mendukung inisiasi dari desa asal maupun desa tujuan).
+  - `GET /api/v1/population/mutations`: Daftar permohonan mutasi dengan filter tipe mutasi (`incoming`, `outgoing`) dan filter yurisdiksi desa.
+  - `POST /api/v1/population/mutations/{id}/approve`: Persetujuan verifikasi mutasi oleh desa terkait. Begitu kedua desa menyetujui, status menjadi `completed`, data domisili resident diperbarui ke desa tujuan, dan akun login pengguna (`users.village`) otomatis dipindahkan.
+  - `POST /api/v1/population/mutations/{id}/reject`: Penolakan permohonan mutasi dengan alasan resmi; memulihkan status kependudukan warga ke aktif di desa asal.
+  - `POST /api/v1/population/residents/{id}/report-death`: Pencatatan peristiwa kematian warga, pengisian akta kematian, dan penonaktifan otomatis akun portal warga (`users.is_active = False`) demi keamanan identitas.
+  - `POST /api/v1/population/residents/{id}/revoke-death`: Pembatalan status kematian (koreksi administratif) dan pengaktifan kembali akun warga.
+- [x] 106.3 Antarmuka Pengguna Kependudukan (`ResidentsWorkspace.tsx`):
+  - Tab navigasi antarmuka: **Data Penduduk & Kematian** vs **Mutasi Antar-Desa (Verifikasi 2 Arah)**.
+  - Filter status kependudukan baru: Tetap Aktif, Sedang Mutasi, Meninggal (Wafat), Non-Permanen.
+  - Badge penanda status kependudukan di tabel warga (`WAFAT`, `MUTASI`, `TETAP AKTIF`).
+  - Tindakan pada baris warga: tombol **Mutasi Antar-Desa**, **Catat Kematian**, dan **Koreksi Wafat**.
+  - Tampilan manajemen mutasi lengkap dengan 4 kartu metrik (Total, Pindah Datang, Pindah Keluar, Menunggu Verifikasi), filter sub-tab, dan tabel daftar mutasi.
+  - Modal interaktif inisiasi mutasi antar desa, modal verifikasi penerimaan (dengan penetapan RT/RW baru), modal penolakan, dan modal buku registrasi kematian desa.
+- [x] 106.4 Pengujian Otomatis & Verifikasi Build:
+  - Seluruh pengujian unit backend (`test_population.py`, `test_auth.py`) lulus 100% (31 passed).
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% (0 error).
+  - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 21.08 detik).
+
 
 
 
