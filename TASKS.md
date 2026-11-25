@@ -2096,6 +2096,14 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 102.37 Pengujian & Verifikasi Build:
   - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% tanpa error.
   - Build produksi Vite (`npm run build`) sukses 100% tanpa regresi.
+- [x] 102.38 Rebuild Image Docker `banda_frontend` & Verifikasi Permanen `framer-motion`:
+  - Menjalankan perintah `docker compose build frontend` untuk mengompilasi ulang image Docker `penduduk-frontend` dari `Dockerfile` sehingga dependensi `framer-motion` terpasang secara permanen di dalam image Docker.
+  - Menjalankan `docker compose up -d frontend` untuk meregenerasi container `banda_frontend` dengan image terbaru.
+  - Memverifikasi output build produksi di dalam container (`built in 9.11s`) dan server preview `http://localhost:5175/`.
+- [x] 102.39 Pengujian & Verifikasi Respon Server:
+  - Pemeriksaan HTTP Status pada `http://localhost:5175/` mengembalikan kode **HTTP 200 OK**.
+  - Pemeriksaan aset bundle `assets/index-Ccf8QCqy.js` (527 kB) mengembalikan kode **HTTP 200 OK** tanpa error resolusi modul `framer-motion`.
+
 
 ---
 
