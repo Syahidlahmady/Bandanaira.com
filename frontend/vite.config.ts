@@ -13,7 +13,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5175,
-    allowedHosts: ['bandanaira.cloud', 'www.bandanaira.cloud', 'localhost'],
+    allowedHosts: true,
     proxy: {
       '/api': {
         target: process.env.VITE_PROXY_TARGET || 'http://127.0.0.1:8005',
@@ -27,7 +27,7 @@ export default defineConfig({
   preview: {
     host: '0.0.0.0',
     port: 5175,
-    allowedHosts: ['bandanaira.cloud', 'www.bandanaira.cloud', 'localhost'],
+    allowedHosts: true,
     proxy: {
       '/api': {
         target: process.env.VITE_PROXY_TARGET || 'http://127.0.0.1:8005',

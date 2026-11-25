@@ -2103,6 +2103,11 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 102.39 Pengujian & Verifikasi Respon Server:
   - Pemeriksaan HTTP Status pada `http://localhost:5175/` mengembalikan kode **HTTP 200 OK**.
   - Pemeriksaan aset bundle `assets/index-Ccf8QCqy.js` (527 kB) mengembalikan kode **HTTP 200 OK** tanpa error resolusi modul `framer-motion`.
+- [x] 102.40 Penambahan Pemetaan Dual-Port `5175` & `5173` serta Pengaktifan `allowedHosts: true`:
+  - Mengonfigurasi `docker-compose.yml` agar membuka kedua port `5175` dan `5173` sekaligus menuju container `banda_frontend`, mengatasi masalah salah port saat dibuka dari browser.
+  - Mengubah opsi `allowedHosts: true` pada `frontend/vite.config.ts` untuk lingkungan server dan preview, mencegah pemblokiran koneksi saat website diakses melalui IP lokal (uji coba smartphone di jaringan Wi-Fi lokal) atau `127.0.0.1`.
+  - Memverifikasi respon server: kedua endpoint `http://localhost:5175/` dan `http://localhost:5173/` merespons dengan **HTTP 200 OK**.
+
 
 
 ---
