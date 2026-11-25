@@ -7,14 +7,16 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.app.core.permissions import (
     ROLE_ADMIN,
+    ROLE_FARMER,
     ROLE_FARMER_GROUP_ADMIN,
+    ROLE_RESIDENT,
     ROLE_VILLAGE_OFFICER,
     get_current_active_user,
     require_roles,
 )
 from backend.app.database.session import get_db
 from backend.app.modules.audit.service import log_audit_event
-from backend.app.modules.auth.models import User
+from backend.app.modules.auth.models import Role, User
 from backend.app.modules.farmers.models import Farmer, FarmerGroup
 from backend.app.modules.farmers.schemas import (
     CandidateResidentResponse,
@@ -115,6 +117,15 @@ async def ensure_default_farmers_seeded(db: AsyncSession) -> None:
                 if grp.village.lower() in village_lower or village_lower in grp.village.lower():
                     matched_group = grp
                     break
+            # Cari atau buat akun user warga untuk disinkronkan ke farmer
+            u_stmt = select(User).where(User.username == res.nik)
+            res_user = (await db.execute(u_stmt)).scalar_one_or_none()
+            if res_user:
+                f_role = (await db.execute(select(Role).where(Role.name == ROLE_FARMER))).scalar_one_or_none()
+                if f_role and f_role not in res_user.roles:
+                    res_user.roles.append(f_role)
+                    db.add(res_user)
+
             db.add(
                 Farmer(
                     farmer_code=code,
@@ -122,6 +133,7 @@ async def ensure_default_farmers_seeded(db: AsyncSession) -> None:
                     phone=res.phone_number,
                     status="active",
                     resident_id=res.id,
+                    user_id=res_user.id if res_user else None,
                     farmer_group_id=matched_group.id if matched_group else None,
                 )
             )
@@ -419,6 +431,60 @@ async def create_farmer(
     farmer_dict["farmer_code"] = farmer_code
     farmer_dict["name"] = farmer_name
     farmer_dict["phone"] = farmer_phone
+
+    # Hubungkan akun User kependudukan warga & berikan peran ROLE_FARMER secara dinamis
+    if resident:
+        u_stmt = select(User).where(User.username == resident.nik)
+        res_user = (await db.execute(u_stmt)).scalar_one_or_none()
+        if not res_user:
+            # Provision user akun warga jika belum ada
+            r_stmt = select(Role).where(Role.name == ROLE_RESIDENT)
+            res_role = (await db.execute(r_stmt)).scalar_one_or_none()
+            if not res_role:
+                res_role = Role(name=ROLE_RESIDENT, description="Warga Desa")
+                db.add(res_role)
+                await db.flush()
+
+            from backend.app.core.security import hash_password
+            res_user = User(
+                email=f"{resident.nik}@warga.bandadigital.id",
+                username=resident.nik,
+                password_hash=hash_password("1234"),
+                full_name=resident.full_name,
+                is_active=True,
+                is_superuser=False,
+                village=resident.village,
+                roles=[res_role],
+            )
+            db.add(res_user)
+            await db.flush()
+
+        # Sematkan peran ROLE_FARMER agar warga dapat login sebagai petani menggunakan NIK-nya
+        f_role_stmt = select(Role).where(Role.name == ROLE_FARMER)
+        farmer_role = (await db.execute(f_role_stmt)).scalar_one_or_none()
+        if not farmer_role:
+            farmer_role = Role(name=ROLE_FARMER, description="Petani Rempah & Komoditas Banda")
+            db.add(farmer_role)
+            await db.flush()
+
+        if farmer_role not in res_user.roles:
+            res_user.roles.append(farmer_role)
+            db.add(res_user)
+
+        farmer_dict["user_id"] = res_user.id
+    elif farmer_dict.get("user_id"):
+        # Jika user_id diberikan langsung, pastikan user memiliki peran farmer
+        u_target = (await db.execute(select(User).where(User.id == farmer_dict["user_id"]))).scalar_one_or_none()
+        if u_target:
+            f_role_stmt = select(Role).where(Role.name == ROLE_FARMER)
+            farmer_role = (await db.execute(f_role_stmt)).scalar_one_or_none()
+            if not farmer_role:
+                farmer_role = Role(name=ROLE_FARMER, description="Petani Rempah & Komoditas Banda")
+                db.add(farmer_role)
+                await db.flush()
+            if farmer_role not in u_target.roles:
+                u_target.roles.append(farmer_role)
+                db.add(u_target)
 
     farmer = Farmer(**farmer_dict)
     db.add(farmer)

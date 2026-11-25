@@ -2211,6 +2211,27 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% (0 error).
   - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 21.08 detik).
 
+---
+
+## [Phase 107] - Integrasi Dinamis Login Warga Petani Berbasis NIK & Multi-Role Additive RBAC
+- [x] 107.1 Integrasi & Sinkronisasi Peran Petani di Backend (`farmers/router.py`):
+  - Saat warga didaftarkan oleh Poktan / Petugas Desa menjadi anggota petani (`POST /api/v1/farmers` dengan `resident_id`), sistem secara otomatis mencari/membuat akun `User` dengan `username = resident.nik`.
+  - Mengaitkan `farmer.user_id = user.id` dan menyematkan peran `ROLE_FARMER` (`farmer`) ke dalam `user.roles` berdampingan dengan `ROLE_RESIDENT`.
+  - Pada fungsi `ensure_default_farmers_seeded`, sinkronisasi otomatis warga berprofesi petani/pekebun juga menautkan `user_id` dan menyematkan peran `ROLE_FARMER`.
+- [x] 107.2 Self-Healing Role Sync & Endpoint Deteksi Akun (`auth/router.py`):
+  - `POST /api/v1/auth/login`: Menyinkronkan peran `ROLE_FARMER` secara *self-healing* ketika warga yang terdaftar di tabel `farmers` login menggunakan 16 digit NIK dan PIN, sehingga token JWT memuat hak akses ganda: `roles: ['resident', 'farmer']`.
+  - `GET /api/v1/auth/identify-account`: Endpoint deteksi akun real-time berdasarkan 16 digit NIK atau username, mengembalikan masked NIK, nama lengkap warga, desa, status keanggotaan petani, dan nama kelompok tani tanpa membocorkan PII privat.
+- [x] 107.3 Antarmuka Login Dinamis & Bebas Mock Statis (`LoginSection.tsx` & `services/auth.ts`):
+  - Menghilangkan ketergantungan pencocokan NIK ke mock array statis `DEFAULT_PROJECT_ACCOUNTS` untuk NIK 16 digit warga nyata.
+  - Form input NIK portal satu pintu mendeteksi identitas warga/petani secara real-time via debounced API query (`identifyAccount`), menampilkan badge konfirmasi nama dan peran secara dinamis.
+  - Pengiriman kredensial NIK 16 digit dan PIN langsung ditujukan ke backend `/api/v1/auth/login`.
+- [x] 107.4 Pengujian Otomatis & Verifikasi Build:
+  - Test case `test_identify_account_and_farmer_login_with_nik` di `test_auth.py` lulus 100%.
+  - Seluruh pengujian `test_auth.py` dan `test_farmers_and_farms.py` lulus 100% (26 passed).
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% (0 error).
+  - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 18.81 detik).
+
+
 
 
 
