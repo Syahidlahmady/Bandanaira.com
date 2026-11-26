@@ -60,6 +60,8 @@ export interface HeritageCatalogItem {
 export interface TourGuideItem {
   id: string
   name: string
+  resident_id?: string | null
+  resident_nik?: string | null
   license_number: string
   phone_whatsapp: string
   specialties: string
@@ -107,6 +109,7 @@ export interface AccommodationUpdatePayload {
 }
 
 export interface TourGuideCreatePayload {
+  resident_nik: string
   name: string
   license_number: string
   phone_whatsapp: string
@@ -121,6 +124,7 @@ export interface TourGuideCreatePayload {
 }
 
 export interface TourGuideUpdatePayload {
+  resident_nik?: string
   name?: string
   license_number?: string
   phone_whatsapp?: string

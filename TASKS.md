@@ -90,6 +90,11 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 100: Eliminasi Glitch Visual Kedipan Beranda Saat Login Menuju Dashboard**
 - [x] **Phase 101: Optimasi Kinerja Dashboard Admin, Eliminasi Render Loop & Reduksi Panggilan Endpoint Duplikat**
 - [x] **Phase 102: Implementasi Dedicated Mobile App Shell Landing Page (Capacitor & Mobile DevTools Viewport)**
+- [x] **Phase 106: Tata Kelola Kependudukan Dinamis, Buku Registrasi Kematian Desa, dan Alur Mutasi Antar-Desa 2 Arah**
+- [x] **Phase 107: Integrasi Dinamis Login Warga Petani Berbasis NIK & Multi-Role Additive RBAC**
+- [x] **Phase 108: Navigasi Multi-Role & Switcher Perspektif Antar Peran Aktif Pengguna**
+- [x] **Phase 109: Penajaman Batasan Navigasi & Eliminasi Modul Wisata dari Tampilan Petani**
+- [x] **Phase 110: Restriksi Login NIK 16 Digit & PIN 6 Digit, Penyegaran Aktor Demo Mandat Pengguna, dan Penautan NIK Pemandu Wisata**
 ---
 
 ## Detailed Task Checklist
@@ -2253,6 +2258,33 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 109.3 Pengujian Otomatis & Verifikasi Build:
   - Pemeriksaan tipe TypeScript (`npm run typecheck` / `tsc --noEmit`) lulus 100% (0 error).
   - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 17.36 detik).
+
+---
+
+## [Phase 110] - Restriksi Login NIK 16 Digit & PIN 6 Digit, Penyegaran Aktor Demo Mandat Pengguna, dan Penautan NIK Pemandu Wisata
+- [x] 110.1 Skema & Penautan Pemandu Wisata ke NIK Warga Terdaftar (`tourism` backend & database):
+  - Membuat migrasi Alembic `016_tour_guide_resident_link.py` yang menambahkan kolom `resident_id` (UUID foreign key ke `residents.id`) dan `resident_nik` (`VARCHAR(16)`) pada tabel `tour_guides`.
+  - Memperbarui model SQLAlchemy `TourGuide` dan skema Pydantic `TourGuideCreateInput`, `TourGuideUpdateInput`, dan `TourGuideItemResponse`.
+  - Mengharuskan pendaftaran pemandu wisata (`POST /api/v1/tourism/guides`) menyertakan 16 digit NIK warga aktif yang terdaftar di database kependudukan Banda Neira, menolak NIK yang tidak terdaftar (400) atau berstatus meninggal dunia (400).
+- [x] 110.2 Penyegaran & Pembersihan Seed Data Aktor Sistem (`backend/app/modules/auth/seed.py`):
+  - Tepat **1 Administrator**: `admin` / `Admin123!` (hidden dari daftar demo publik, login khusus non-NIK).
+  - **2 Kepala Desa**: Lonthoir (`8171010101850001` / PIN `123456`) & Dwiwarna (`8171010101850002` / PIN `123456`).
+  - **2 Ketua Poktan**: Lonthoir (`8171010101800001` / PIN `123456`) & Dwiwarna (`8171010101800002` / PIN `123456`).
+  - **2 Petani Rempah**: Lonthoir (`8171010101900001` / PIN `123456`) & Dwiwarna (`8171010101900002` / PIN `123456`).
+  - **2 Warga Sipil**: Lonthoir (`8171010101950001` / PIN `123456`) & Dwiwarna (`8171010101950002` / PIN `123456`).
+  - **2 Universal Pariwisata**: Admin Homestay (`operator_homestay` / `Homestay123!`) & Admin Wisata (`admin_wisata` / `Wisata123!`).
+- [x] 110.3 Restriksi Antarmuka Login & Quick Login Simulator (`LoginSection.tsx` & `QuickLoginModal.tsx`):
+  - Pembatasan ketat input NIK 16 digit angka (`inputMode="numeric"`, `maxLength={16}`, filter regex `\D`) dan PIN 6 digit angka (`maxLength={6}`).
+  - Validasi ketat format NIK (16 angka) dan PIN (6 angka) sebelum submit.
+  - Mode toggle: Mode Warga (Default NIK 16 digit & PIN 6 digit) dan Mode Akses Khusus Petugas/Admin (kredensial teks bebas untuk Admin & Mitra pariwisata universal).
+  - Penyegaran daftar demo di `QuickLoginModal`: 10 aktor sesuai mandat pengguna, tab filter per kategori peran (Kades, Poktan, Petani, Warga, Wisata), dan tombol tersembunyi `🔐 Login Khusus Admin` untuk administrator.
+- [x] 110.4 Form & Tampilan Pemandu Wisata Berbasis NIK (`tourism.ts` & `TourismEcoStayWorkspace.tsx`):
+  - Integrasi input 16 digit NIK warga terdaftar pada modal tambah/edit pemandu wisata.
+  - Tampilan indikator panjang digit dan badge NIK warga pada kartu publik dan tabel CMS admin pemandu wisata.
+- [x] 110.5 Pengujian Otomatis & Verifikasi Build:
+  - Seluruh pengujian backend (`test_tourism.py`, `test_auth.py`, `test_population.py`) lulus 100% (48 passed).
+  - Pemeriksaan tipe TypeScript (`npm run typecheck` / `tsc --noEmit`) lulus 100% (0 error).
+  - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 14.32 detik).
 
 
 

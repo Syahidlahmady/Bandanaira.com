@@ -90,6 +90,14 @@ class TourGuide(Base, TimestampMixin):
     rating: Mapped[float] = mapped_column(Numeric(3, 2), default=4.9, nullable=False)
     trips_completed: Mapped[int] = mapped_column(Integer, default=12, nullable=False)
 
+    resident_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("residents.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    resident_nik: Mapped[Optional[str]] = mapped_column(String(16), nullable=True, index=True)
+
 
 class CommunityContent(Base, TimestampMixin):
     """

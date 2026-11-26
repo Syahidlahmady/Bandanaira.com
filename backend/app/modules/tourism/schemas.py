@@ -94,7 +94,8 @@ class AccommodationUpdateInput(BaseModel):
 
 
 class TourGuideCreateInput(BaseModel):
-    name: str = Field(..., max_length=150, description="Nama pemandu wisata")
+    resident_nik: str = Field(..., min_length=16, max_length=16, pattern=r"^\d{16}$", description="16-digit NIK warga terdaftar di Kepulauan Banda")
+    name: Optional[str] = Field(default=None, max_length=150, description="Nama pemandu wisata (otomatis diambil dari data warga jika kosong)")
     license_number: str = Field(default="HPI-BANDA-LOKAL", max_length=50, description="Nomor lisensi / sertifikat HPI")
     phone_whatsapp: str = Field(..., max_length=20, description="Nomor WhatsApp pemandu")
     specialties: str = Field(..., max_length=255, description="Spesialisasi tur (Sejarah VOC, Snorkeling, Diving, dll)")
@@ -108,6 +109,7 @@ class TourGuideCreateInput(BaseModel):
 
 
 class TourGuideUpdateInput(BaseModel):
+    resident_nik: Optional[str] = Field(None, min_length=16, max_length=16, pattern=r"^\d{16}$")
     name: Optional[str] = None
     license_number: Optional[str] = None
     phone_whatsapp: Optional[str] = None
@@ -123,6 +125,7 @@ class TourGuideUpdateInput(BaseModel):
 
 class TourGuideItemResponse(BaseModel):
     id: str
+    resident_nik: Optional[str] = None
     name: str
     license_number: str
     phone_whatsapp: str

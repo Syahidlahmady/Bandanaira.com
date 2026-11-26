@@ -218,6 +218,8 @@ Documentation of data models, relationships, and constraints for **Banda Digital
   - `created_at`, `updated_at`: TIMESTAMPTZ
 - **`tour_guides`**
   - `id`: UUID (PK)
+  - `resident_id`: UUID (FK -> residents.id, NULLABLE, INDEXED) - Relasi ke data kependudukan warga Banda
+  - `resident_nik`: VARCHAR(16) (INDEXED) - 16-digit NIK warga terdaftar
   - `name`: VARCHAR(150) (NOT NULL)
   - `license_number`: VARCHAR(50) (UNIQUE, INDEXED, NOT NULL) - e.g. `HPI-BANDA-001`
   - `phone_whatsapp`: VARCHAR(20) (NOT NULL)

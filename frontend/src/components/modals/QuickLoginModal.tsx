@@ -34,15 +34,16 @@ export interface DemoActorAccount {
 }
 
 export const DEMO_ACTOR_ACCOUNTS: DemoActorAccount[] = [
+  // 1. Dua Kepala Desa (Lonthoir & Dwiwarna) - Login NIK 16 Digit & PIN 6 Digit
   {
-    role: 'Petugas Kantor Desa (Lonthoir)',
+    role: 'Kepala Desa (Lonthoir)',
     name: 'Budi Santoso',
-    u: 'petugas',
-    p: 'Petugas123!',
+    u: '8171010101850001',
+    p: '123456',
     roleKey: 'village_officer',
     village: 'Lonthoir',
     icon: '🏛️',
-    badge: 'Desa Lonthoir',
+    badge: 'Kades Lonthoir',
     accentColor: '#f59e0b',
     badgeClass: 'badge-amber',
     desc: 'Verifikasi kependudukan, pengesahan plot kebun & yurisdiksi wilayah Desa Lonthoir',
@@ -50,34 +51,118 @@ export const DEMO_ACTOR_ACCOUNTS: DemoActorAccount[] = [
     landingTitle: '👥 Kependudukan & Layanan Desa Lonthoir',
   },
   {
-    role: 'Petugas Kantor Desa (Nusantara)',
-    name: 'La Ode Arifin',
-    u: 'petugas_nusantara',
-    p: 'Petugas123!',
+    role: 'Kepala Desa (Dwiwarna)',
+    name: 'Ahmad Baadilla',
+    u: '8171010101850002',
+    p: '123456',
     roleKey: 'village_officer',
-    village: 'Nusantara',
+    village: 'Dwiwarna',
     icon: '🏛️',
-    badge: 'Desa Nusantara',
+    badge: 'Kades Dwiwarna',
     accentColor: '#0284c7',
     badgeClass: 'badge-blue',
-    desc: 'Verifikasi kependudukan, pengesahan plot kebun & yurisdiksi wilayah Desa Nusantara',
+    desc: 'Verifikasi kependudukan, tata kelola desa & perizinan warga Desa Dwiwarna',
     destinationTab: 'population',
-    landingTitle: '👥 Kependudukan & Layanan Desa Nusantara',
+    landingTitle: '👥 Kependudukan & Layanan Desa Dwiwarna',
+  },
+
+  // 2. Dua Ketua Kelompok Tani (Lonthoir & Dwiwarna) - Login NIK 16 Digit & PIN 6 Digit
+  {
+    role: 'Ketua Poktan (Lonthoir)',
+    name: 'Hasan Baadilla',
+    u: '8171010101800001',
+    p: '123456',
+    roleKey: 'farmer_group_admin',
+    village: 'Lonthoir',
+    icon: '👥',
+    badge: 'Poktan Lonthoir',
+    accentColor: '#c084fc',
+    badgeClass: 'badge-purple',
+    desc: 'Pendaftaran petak kebun anggota & rekapitulasi panen pala Pala Banda Lonthoir',
+    destinationTab: 'farming',
+    landingTitle: '🗺️ Peta Kebun & Poktan Lonthoir',
   },
   {
-    role: 'Pengelola Koperasi Hatta',
-    name: 'Faisal Latarisa',
-    u: 'pengelola_koperasi',
-    p: 'Koperasi123!',
-    roleKey: 'coop_manager',
-    icon: '⚖️',
-    badge: 'Kasir & Bank Sampah',
+    role: 'Ketua Poktan (Dwiwarna)',
+    name: 'Ibrahim Latarisa',
+    u: '8171010101800002',
+    p: '123456',
+    roleKey: 'farmer_group_admin',
+    village: 'Dwiwarna',
+    icon: '👥',
+    badge: 'Poktan Dwiwarna',
+    accentColor: '#a855f7',
+    badgeClass: 'badge-purple',
+    desc: 'Pengelolaan kelompok tani rempah & validasi panen Poktan Harapan Dwiwarna',
+    destinationTab: 'farming',
+    landingTitle: '🗺️ Peta Kebun & Poktan Dwiwarna',
+  },
+
+  // 3. Dua Petani Rempah (Lonthoir & Dwiwarna) - Login NIK 16 Digit & PIN 6 Digit
+  {
+    role: 'Petani Rempah Pala (Lonthoir)',
+    name: 'Ali Wailissa',
+    u: '8171010101900001',
+    p: '123456',
+    roleKey: 'farmer',
+    village: 'Lonthoir',
+    icon: '👨‍🌾',
+    badge: 'Petani Lonthoir',
     accentColor: '#10b981',
     badgeClass: 'badge-emerald',
-    desc: 'Timbangan kasir komoditas pala, bank sampah botol 10L, & koin air minum RO',
-    destinationTab: 'koperasi',
-    landingTitle: '⚖️ Koperasi & Bank Sampah',
+    desc: 'Catat hasil panen kebun, pantau mutu Grade AAA/B & geolokasi petak Desa Lonthoir',
+    destinationTab: 'traceability',
+    landingTitle: '📦 Panen & Mutu Rempah Lonthoir',
   },
+  {
+    role: 'Petani Rempah Pala (Dwiwarna)',
+    name: 'Ruslan Rumra',
+    u: '8171010101900002',
+    p: '123456',
+    roleKey: 'farmer',
+    village: 'Dwiwarna',
+    icon: '👨‍🌾',
+    badge: 'Petani Dwiwarna',
+    accentColor: '#059669',
+    badgeClass: 'badge-emerald',
+    desc: 'Catat hasil panen kebun pala, pantau timbangan koperasi & sertifikat ketertelusuran',
+    destinationTab: 'traceability',
+    landingTitle: '📦 Panen & Mutu Rempah Dwiwarna',
+  },
+
+  // 4. Dua Warga Sipil (Lonthoir & Dwiwarna) - Login NIK 16 Digit & PIN 6 Digit
+  {
+    role: 'Warga Masyarakat (Lonthoir)',
+    name: 'Siti Rahma',
+    u: '8171010101950001',
+    p: '123456',
+    roleKey: 'resident',
+    village: 'Lonthoir',
+    icon: '👤',
+    badge: 'Warga Lonthoir',
+    accentColor: '#38bdf8',
+    badgeClass: 'badge-blue',
+    desc: 'Cek kuota air minum RO, tabungan botol plastik, & permohonan surat SKU Desa Lonthoir',
+    destinationTab: 'koperasi',
+    landingTitle: '⚖️ Koperasi & Layanan Mandiri',
+  },
+  {
+    role: 'Warga Masyarakat (Dwiwarna)',
+    name: 'Halimah Tomagola',
+    u: '8171010101950002',
+    p: '123456',
+    roleKey: 'resident',
+    village: 'Dwiwarna',
+    icon: '👤',
+    badge: 'Warga Dwiwarna',
+    accentColor: '#0ea5e9',
+    badgeClass: 'badge-blue',
+    desc: 'Pantau saldo koin air RO, setoran sampah daur ulang, & layanan administrasi desa',
+    destinationTab: 'koperasi',
+    landingTitle: '⚖️ Koperasi & Layanan Mandiri',
+  },
+
+  // 5. Dua Admin Universal Pariwisata (Non-NIK)
   {
     role: 'Pengelola Eco-Stay & Wisata',
     name: 'Rahmat Delfika',
@@ -105,79 +190,6 @@ export const DEMO_ACTOR_ACCOUNTS: DemoActorAccount[] = [
     desc: 'Katalog cagar budaya, pemutar audio guide VOC, rute cerdas SAW & GIS',
     destinationTab: 'tourism',
     landingTitle: '🏖️ Smart Tourism & Eco-Stay',
-  },
-  {
-    role: 'Surveyor Lapangan & IoT',
-    name: 'Fauzan Arisanto',
-    u: 'surveyor',
-    p: 'Surveyor123!',
-    roleKey: 'field_surveyor',
-    icon: '📋',
-    badge: 'Survei & Telemetri',
-    accentColor: '#8b5cf6',
-    badgeClass: 'badge-purple',
-    desc: 'Formulir survei NoSQL, pipa migrasi ETL PostGIS, & stasiun sensor ESP32',
-    destinationTab: 'survei',
-    landingTitle: '📋 Survei & ETL Hybrid',
-  },
-  {
-    role: 'Ketua Kelompok Tani (Lonthoir)',
-    name: 'Hasan Baadilla',
-    u: 'ketua_kelompok',
-    p: 'Ketua123!',
-    roleKey: 'farmer_group_admin',
-    village: 'Lonthoir',
-    icon: '👥',
-    badge: 'Poktan Lonthoir',
-    accentColor: '#c084fc',
-    badgeClass: 'badge-purple',
-    desc: 'Pendaftaran petak kebun anggota & rekapitulasi panen rempah pala di Desa Lonthoir',
-    destinationTab: 'farming',
-    landingTitle: '🗺️ Peta Kebun & Poktan Lonthoir',
-  },
-  {
-    role: 'Petani Rempah Pala (Lonthoir)',
-    name: 'Ali Wailissa',
-    u: 'petani',
-    p: 'Petani123!',
-    roleKey: 'farmer',
-    village: 'Lonthoir',
-    icon: '👨‍🌾',
-    badge: 'Petani Lonthoir',
-    accentColor: '#10b981',
-    badgeClass: 'badge-emerald',
-    desc: 'Catat hasil panen kebun, pantau mutu Grade AAA/B & geolokasi petak Desa Lonthoir',
-    destinationTab: 'traceability',
-    landingTitle: '📦 Panen & Mutu Rempah Lonthoir',
-  },
-  {
-    role: 'Warga Masyarakat Desa (Lonthoir)',
-    name: 'Siti Rahma',
-    u: 'warga',
-    p: 'Warga123!',
-    roleKey: 'resident',
-    village: 'Lonthoir',
-    icon: '👤',
-    badge: 'Warga Lonthoir',
-    accentColor: '#38bdf8',
-    badgeClass: 'badge-blue',
-    desc: 'Cek kuota air minum RO, tabungan botol plastik, & permohonan surat SKU Desa Lonthoir',
-    destinationTab: 'koperasi',
-    landingTitle: '⚖️ Koperasi & Layanan Mandiri',
-  },
-  {
-    role: 'Administrator Sistem (Lintas Desa)',
-    name: 'Administrator Banda',
-    u: 'admin',
-    p: 'Admin123!',
-    roleKey: 'admin',
-    icon: '🛡️',
-    badge: 'Akses Semua Wilayah',
-    accentColor: '#ec4899',
-    badgeClass: 'badge-red',
-    desc: 'Master suite 11 modul, audit trail OWASP, blockchain EVM & pemantauan seluruh desa',
-    destinationTab: 'population',
-    landingTitle: '👥 Administrasi Master (11 Tab)',
   },
 ]
 
@@ -211,12 +223,16 @@ export const QuickLoginModal: React.FC<QuickLoginModalProps> = ({
   const filteredAccounts = filterRole === 'all'
     ? DEMO_ACTOR_ACCOUNTS
     : filterRole === 'gov'
-    ? DEMO_ACTOR_ACCOUNTS.filter((a) => ['village_officer', 'admin'].includes(a.roleKey))
-    : filterRole === 'economy'
-    ? DEMO_ACTOR_ACCOUNTS.filter((a) => ['coop_manager', 'resident', 'farmer', 'farmer_group_admin'].includes(a.roleKey))
+    ? DEMO_ACTOR_ACCOUNTS.filter((a) => a.roleKey === 'village_officer')
+    : filterRole === 'poktan'
+    ? DEMO_ACTOR_ACCOUNTS.filter((a) => a.roleKey === 'farmer_group_admin')
+    : filterRole === 'farmer'
+    ? DEMO_ACTOR_ACCOUNTS.filter((a) => a.roleKey === 'farmer')
+    : filterRole === 'resident'
+    ? DEMO_ACTOR_ACCOUNTS.filter((a) => a.roleKey === 'resident')
     : filterRole === 'tourism'
     ? DEMO_ACTOR_ACCOUNTS.filter((a) => ['homestay_operator', 'smart_tourism_admin'].includes(a.roleKey))
-    : DEMO_ACTOR_ACCOUNTS.filter((a) => ['field_surveyor'].includes(a.roleKey))
+    : DEMO_ACTOR_ACCOUNTS
 
   return (
     <div
@@ -402,13 +418,14 @@ export const QuickLoginModal: React.FC<QuickLoginModalProps> = ({
 
           {/* Quick Actions (Guest & Category Filters) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', gap: '0.3rem', background: 'rgba(15, 23, 42, 0.8)', padding: '0.25rem', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+            <div style={{ display: 'flex', gap: '0.3rem', background: 'rgba(15, 23, 42, 0.8)', padding: '0.25rem', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.08)', flexWrap: 'wrap' }}>
               {[
                 { id: 'all', label: `Semua (${DEMO_ACTOR_ACCOUNTS.length})` },
-                { id: 'gov', label: '🏛️ Desa' },
-                { id: 'economy', label: '⚖️ Koperasi & Tani' },
-                { id: 'tourism', label: '🏖️ Pengelola Wisata' },
-                { id: 'survey', label: '📋 Survei' },
+                { id: 'gov', label: '🏛️ Kades (2)' },
+                { id: 'poktan', label: '👥 Poktan (2)' },
+                { id: 'farmer', label: '👨‍🌾 Petani (2)' },
+                { id: 'resident', label: '👤 Warga (2)' },
+                { id: 'tourism', label: '🏖️ Wisata (2)' },
               ].map((f) => (
                 <button
                   type="button"
@@ -739,9 +756,40 @@ export const QuickLoginModal: React.FC<QuickLoginModalProps> = ({
               <b>Tips Pengujian:</b> Tombol simulator menginjeksikan JWT Bearer token asli dan mengatur navigasi sesuai peran secara deterministik.
             </span>
           </div>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: '#10b981' }}>
-            Banda Neira BST-NIRANA 2026
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button
+              type="button"
+              onClick={async () => {
+                setSwitchingUser('admin')
+                try {
+                  await onQuickLogin('admin', 'Admin123!')
+                  onClose()
+                } finally {
+                  setSwitchingUser(null)
+                }
+              }}
+              style={{
+                background: 'rgba(236, 72, 153, 0.15)',
+                border: '1px solid rgba(236, 72, 153, 0.35)',
+                color: '#f472b6',
+                borderRadius: '8px',
+                padding: '0.25rem 0.65rem',
+                fontSize: '0.7rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                transition: 'all 0.2s',
+              }}
+              title="Akses Khusus Administrator Sistem (admin / Admin123!)"
+            >
+              <span>🔐 Login Khusus Admin</span>
+            </button>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: '#10b981' }}>
+              Banda Neira BST-NIRANA 2026
+            </span>
+          </div>
         </div>
       </div>
     </div>

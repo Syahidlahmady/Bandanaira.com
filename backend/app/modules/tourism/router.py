@@ -693,6 +693,7 @@ async def list_tour_guides(
     return [
         TourGuideItemResponse(
             id=str(g.id),
+            resident_nik=g.resident_nik,
             name=g.name,
             license_number=g.license_number,
             phone_whatsapp=g.phone_whatsapp,
@@ -723,9 +724,29 @@ async def create_tour_guide(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(GUIDE_CMS_ROLES),
 ):
-    """Mendaftarkan pemandu wisata baru ke dalam direktori terverifikasi (khusus smart tourism admin / admin terautentikasi)."""
+    """Mendaftarkan pemandu wisata baru ke dalam direktori terverifikasi. Pemandu wajib terdaftar dengan NIK warga Banda yang sah."""
+    from backend.app.modules.population.models import Resident
+
+    clean_nik = payload.resident_nik.strip()
+    res_stmt = select(Resident).where(Resident.nik == clean_nik)
+    resident = (await db.execute(res_stmt)).scalar_one_or_none()
+    if not resident:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Pemandu wisata harus merupakan warga terdaftar dengan 16-digit NIK yang sah di Kepulauan Banda.",
+        )
+    if resident.residence_status == "deceased":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Tidak dapat mendaftarkan pemandu wisata dengan status kependudukan meninggal dunia.",
+        )
+
+    guide_name = payload.name.strip() if payload.name and payload.name.strip() else resident.full_name
+
     guide = TourGuide(
-        name=payload.name,
+        resident_id=resident.id,
+        resident_nik=resident.nik,
+        name=guide_name,
         license_number=payload.license_number,
         phone_whatsapp=payload.phone_whatsapp,
         specialties=payload.specialties,
@@ -743,6 +764,7 @@ async def create_tour_guide(
 
     return TourGuideItemResponse(
         id=str(guide.id),
+        resident_nik=guide.resident_nik,
         name=guide.name,
         license_number=guide.license_number,
         phone_whatsapp=guide.phone_whatsapp,
@@ -783,7 +805,26 @@ async def update_tour_guide(
     if not guide:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pemandu wisata tidak ditemukan.")
 
+    if payload.resident_nik is not None:
+        from backend.app.modules.population.models import Resident
+        clean_nik = payload.resident_nik.strip()
+        res_stmt = select(Resident).where(Resident.nik == clean_nik)
+        resident = (await db.execute(res_stmt)).scalar_one_or_none()
+        if not resident:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Pemandu wisata harus merupakan warga terdaftar dengan 16-digit NIK yang sah di Kepulauan Banda.",
+            )
+        if resident.residence_status == "deceased":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Tidak dapat mendaftarkan pemandu wisata dengan status kependudukan meninggal dunia.",
+            )
+        guide.resident_id = resident.id
+        guide.resident_nik = resident.nik
+
     update_data = payload.model_dump(exclude_unset=True)
+    update_data.pop("resident_nik", None)
     for field, value in update_data.items():
         setattr(guide, field, value)
 
@@ -792,6 +833,7 @@ async def update_tour_guide(
 
     return TourGuideItemResponse(
         id=str(guide.id),
+        resident_nik=guide.resident_nik,
         name=guide.name,
         license_number=guide.license_number,
         phone_whatsapp=guide.phone_whatsapp,

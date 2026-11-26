@@ -218,8 +218,22 @@ async def test_cms_tour_guides_crud(client: AsyncClient):
     names = [g["name"] for g in guides]
     assert "Dewi Nusantara" in names
 
-    # 2. Create new tour guide (protected)
+    # 2. Register resident for tour guide and test NIK validation (protected)
+    admin_token = await get_auth_token(client, "admin", "Admin123!")
+    await client.post(
+        "/api/v1/population/residents",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={
+            "nik": "8171010101900555",
+            "full_name": "La Ode Ruslan",
+            "gender": "L",
+            "village": "Banda Neira",
+            "access_pin": "123456",
+        },
+    )
+
     new_guide = {
+        "resident_nik": "8171010101900555",
         "name": "La Ode Ruslan",
         "license_number": "HPI-BANDA-004",
         "phone_whatsapp": "6281233445566",
@@ -231,11 +245,20 @@ async def test_cms_tour_guides_crud(client: AsyncClient):
         "is_verified": False,
         "is_active": True,
     }
+
+    # Attempt with unregistered NIK -> MUST FAIL (400)
+    unregistered_guide = {**new_guide, "resident_nik": "8171010101999999"}
+    res_unreg = await client.post("/api/v1/tourism/guides", json=unregistered_guide, headers=headers)
+    assert res_unreg.status_code == 400
+    assert "warga terdaftar" in res_unreg.json()["detail"].lower()
+
+    # Create valid guide with registered resident NIK -> 201
     res_create = await client.post("/api/v1/tourism/guides", json=new_guide, headers=headers)
     assert res_create.status_code == 201
     created = res_create.json()
     guide_id = created["id"]
     assert created["name"] == "La Ode Ruslan"
+    assert created["resident_nik"] == "8171010101900555"
     assert created["fee_per_day_rp"] == 380000.0
     assert created["is_verified"] is False
 
@@ -314,7 +337,7 @@ async def test_forbidden_role_access_blocked(client: AsyncClient):
     Keamanan RBAC: Memastikan pengguna dengan peran tidak berwenang (misal 'petani' atau 'warga')
     DITOLAK dengan status 403 Forbidden saat mencoba mengelola CMS penginapan atau pemandu.
     """
-    farmer_token = await get_auth_token(client, "petani", "Petani123!")
+    farmer_token = await get_auth_token(client, "8171010101900001", "123456")
     farmer_headers = {"Authorization": f"Bearer {farmer_token}"}
 
     # Petani mencoba melihat reservasi -> 403 Forbidden
@@ -464,7 +487,7 @@ async def test_cms_community_contents_crud_and_rbac(client: AsyncClient):
     res_unauth = await client.post("/api/v1/tourism/community-contents", json=payload)
     assert res_unauth.status_code == 401
 
-    farmer_token = await get_auth_token(client, "petani", "Petani123!")
+    farmer_token = await get_auth_token(client, "8171010101900001", "123456")
     res_forbidden = await client.delete(
         f"/api/v1/tourism/community-contents/{content_id}",
         headers={"Authorization": f"Bearer {farmer_token}"},

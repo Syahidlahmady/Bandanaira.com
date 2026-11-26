@@ -126,6 +126,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
   const [showGuideModal, setShowGuideModal] = useState<boolean>(false)
   const [editingGuideId, setEditingGuideId] = useState<string | null>(null)
   const [guideForm, setGuideForm] = useState<TourGuideCreatePayload>({
+    resident_nik: '',
     name: '',
     license_number: 'HPI-BANDA-LOKAL',
     phone_whatsapp: '6281234567896',
@@ -434,6 +435,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
   const handleOpenAddGuide = () => {
     setEditingGuideId(null)
     setGuideForm({
+      resident_nik: '',
       name: '',
       license_number: 'HPI-BANDA-LOKAL',
       phone_whatsapp: '6281234567896',
@@ -452,6 +454,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
   const handleOpenEditGuide = (guide: TourGuideItem) => {
     setEditingGuideId(guide.id)
     setGuideForm({
+      resident_nik: guide.resident_nik || '',
       name: guide.name,
       license_number: guide.license_number,
       phone_whatsapp: guide.phone_whatsapp,
@@ -470,6 +473,10 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
   const handleSaveTourGuide = async (e: React.FormEvent) => {
     e.preventDefault()
     setCmsNotice(null)
+    if (!/^\d{16}$/.test(guideForm.resident_nik.trim())) {
+      setCmsNotice({ type: 'error', text: 'NIK pemandu wisata wajib terdiri dari tepat 16 digit angka terdaftar.' })
+      return
+    }
     try {
       if (editingGuideId) {
         await tourismService.updateTourGuide(editingGuideId, guideForm)
@@ -1905,12 +1912,19 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                         </span>
                       </div>
 
-                      <div className="text-[11px] text-stone-500 mb-2 flex items-center gap-1.5">
-                        <Award size={12} className="text-sky-600" />
-                        <span>No. Reg:</span>
-                        <code className="text-[#081D35] bg-stone-100 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium">
-                          {guide.license_number}
-                        </code>
+                      <div className="text-[11px] text-stone-500 mb-2 flex items-center gap-1.5 flex-wrap">
+                        <div className="flex items-center gap-1">
+                          <Award size={12} className="text-sky-600" />
+                          <span>No. Reg:</span>
+                          <code className="text-[#081D35] bg-stone-100 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium">
+                            {guide.license_number}
+                          </code>
+                        </div>
+                        {guide.resident_nik && (
+                          <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                            NIK: {guide.resident_nik.slice(0, 6)}••••{guide.resident_nik.slice(-4)}
+                          </span>
+                        )}
                       </div>
 
                       {guide.bio && (
@@ -2426,6 +2440,12 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                         </div>
                         <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.2rem', display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
                           <span>Lisensi: <code style={{ color: '#081D35', background: '#F1F5F9', padding: '0.1rem 0.35rem', borderRadius: '4px' }}>{guide.license_number}</code></span>
+                          {guide.resident_nik && (
+                            <>
+                              <span>•</span>
+                              <span style={{ color: '#047857', fontWeight: 600 }}>NIK: {guide.resident_nik}</span>
+                            </>
+                          )}
                           <span>•</span>
                           <span style={{ color: '#0369A1' }}>WA: {guide.phone_whatsapp}</span>
                           <span>•</span>
@@ -3200,6 +3220,42 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
             </div>
 
             <form onSubmit={handleSaveTourGuide} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#081D35' }}>
+                    16 Digit NIK Warga Terdaftar:
+                  </label>
+                  <span style={{ fontSize: '0.7rem', fontFamily: 'monospace', color: guideForm.resident_nik.length === 16 ? '#059669' : '#DC2626', fontWeight: 700 }}>
+                    {guideForm.resident_nik.length}/16 Digit
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  required
+                  inputMode="numeric"
+                  maxLength={16}
+                  value={guideForm.resident_nik}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '').slice(0, 16)
+                    setGuideForm({ ...guideForm, resident_nik: digits })
+                  }}
+                  placeholder="Contoh: 8171010101900001"
+                  style={{
+                    width: '100%',
+                    background: '#FFFFFF',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '10px',
+                    color: '#081D35',
+                    padding: '0.55rem 0.75rem',
+                    fontSize: '0.85rem',
+                    letterSpacing: '1px',
+                  }}
+                />
+                <p style={{ margin: '0.25rem 0 0', fontSize: '0.7rem', color: '#64748B' }}>
+                  Pemandu wisata wajib berstatus warga resmi terdaftar di database kependudukan Kepulauan Banda.
+                </p>
+              </div>
+
               <div>
                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#081D35', marginBottom: '0.35rem' }}>
                   Nama Lengkap Pemandu:
