@@ -109,6 +109,10 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
     : []
   const isSuperuser = Boolean(currentUser?.is_superuser)
   const isAdmin = isSuperuser || roles.includes('admin')
+  const isHomestayOperator = roles.includes('homestay_operator') || roles.includes('operator_homestay')
+  const isSmartTourismAdmin = roles.includes('smart_tourism_admin') || roles.includes('admin_wisata')
+  const isOfficerOrAdmin = isAdmin || roles.includes('village_officer')
+  const canAccessTourism = isAdmin || isHomestayOperator || isSmartTourismAdmin || isOfficerOrAdmin
 
   const detectInitialRoleKey = (): RoleKey => {
     if (isSuperuser || roles.includes('admin')) return 'admin'
@@ -646,19 +650,21 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
               <p className="text-[11px] text-slate-500 mt-0.5">Studio peta kepulauan</p>
             </button>
 
-            {/* 7. Cagar Budaya & Eco-Stay */}
-            <button
-              type="button"
-              onClick={() => {
-                onNavigate('tourism')
-                setShowModuleLaunchpad(false)
-              }}
-              className="p-3.5 rounded-xl bg-slate-50 hover:bg-amber-50/60 border border-slate-200 hover:border-amber-300 text-left transition cursor-pointer group"
-            >
-              <Home size={18} className="text-[#F4B75E] mb-2 group-hover:scale-110 transition-transform" />
-              <p className="text-xs font-bold text-[#081D35]">Wisata &amp; Eco-Stay</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">177 Situs &amp; akomodasi</p>
-            </button>
+            {/* 7. Cagar Budaya & Eco-Stay (Hanya Operator Homestay, Admin Wisata, atau Petugas/Admin) */}
+            {canAccessTourism && (
+              <button
+                type="button"
+                onClick={() => {
+                  onNavigate('tourism')
+                  setShowModuleLaunchpad(false)
+                }}
+                className="p-3.5 rounded-xl bg-slate-50 hover:bg-amber-50/60 border border-slate-200 hover:border-amber-300 text-left transition cursor-pointer group"
+              >
+                <Home size={18} className="text-[#F4B75E] mb-2 group-hover:scale-110 transition-transform" />
+                <p className="text-xs font-bold text-[#081D35]">Wisata &amp; Eco-Stay</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">177 Situs &amp; akomodasi</p>
+              </button>
+            )}
 
             {/* 8. DSS SAW Smart Planner (Hanya untuk Administrator) */}
             {isAdmin && (

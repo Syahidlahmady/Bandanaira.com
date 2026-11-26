@@ -903,7 +903,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         : 'Cagar Budaya & Wisata',
       shortLabel: isSmartTourismAdmin ? 'Draf Artikel' : 'Wisata',
       icon: isSmartTourismAdmin ? BookOpen : Home,
-      visible: true,
+      visible: isHomestayOperator || isSmartTourismAdmin || isOfficerOrAdmin,
     },
     {
       id: 'gis',
