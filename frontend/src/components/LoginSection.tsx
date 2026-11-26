@@ -470,7 +470,7 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
               : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
           }`}
         >
-          <span>{isSpecialAccess ? '👤 Beralih ke Login NIK Warga' : '🔐 Akses Khusus Admin & Mitra'}</span>
+          <span>{isSpecialAccess ? '👤 Beralih ke Login NIK Warga' : '🏨 Akses Mitra Pariwisata'}</span>
         </button>
       </div>
 
@@ -479,9 +479,9 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
         <header className="flex flex-col items-start gap-1.5 sm:gap-2.5 relative self-stretch w-full">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${isSpecialAccess ? 'bg-rose-500' : 'bg-amber-500'} animate-pulse`} />
-              <p className={`font-semibold ${isSpecialAccess ? 'text-rose-600' : 'text-amber-600'} text-[10px] sm:text-[11px] tracking-[1.5px] uppercase`}>
-                {isSpecialAccess ? 'PORTAL PETUGAS & MITRA UNIVERSAL' : 'PORTAL WARGA & EKOSISTEM BANDA'}
+              <span className={`w-2 h-2 rounded-full ${isSpecialAccess ? 'bg-sky-500' : 'bg-amber-500'} animate-pulse`} />
+              <p className={`font-semibold ${isSpecialAccess ? 'text-sky-600' : 'text-amber-600'} text-[10px] sm:text-[11px] tracking-[1.5px] uppercase`}>
+                {isSpecialAccess ? 'PORTAL MITRA PARIWISATA' : 'PORTAL WARGA & EKOSISTEM BANDA'}
               </p>
             </div>
 
@@ -491,16 +491,16 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
               onClick={handleToggleMode}
               className="lg:hidden text-[11px] font-bold text-amber-700 underline"
             >
-              {isSpecialAccess ? 'Mode Warga' : 'Akses Khusus'}
+              {isSpecialAccess ? 'Mode Warga' : 'Mitra Wisata'}
             </button>
           </div>
 
           <h1 className="font-bold text-[#0f2c59] text-2xl sm:text-3xl lg:text-[34px] tracking-tight leading-tight">
-            {isSpecialAccess ? 'Akses Khusus Petugas' : 'Selamat Datang Kembali'}
+            {isSpecialAccess ? 'Portal Mitra Pariwisata' : 'Selamat Datang Kembali'}
           </h1>
           <p className="font-normal text-[#627085] text-xs sm:text-sm leading-relaxed">
             {isSpecialAccess
-              ? 'Login khusus administrator dan operator mitra pariwisata (non-NIK) dengan hak akses terkelola.'
+              ? 'Login resmi pengelola homestay, akomodasi eco-stay, dan pemandu wisata dengan ID akun terdaftar.'
               : 'Masukkan 16 digit NIK terdaftar serta 6 digit PIN pengaman Anda. Akses peran diverifikasi otomatis.'}
           </p>
         </header>
@@ -522,7 +522,7 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
               htmlFor="nik"
               className="font-semibold text-[#24364f] text-xs sm:text-[13px] leading-snug"
             >
-              {isSpecialAccess ? 'ID Akun / Username Khusus' : 'Nomor Induk Kependudukan (NIK 16 Digit)'}
+              {isSpecialAccess ? 'ID Akun / Username Mitra' : 'Nomor Induk Kependudukan (NIK 16 Digit)'}
             </label>
             <div className="flex h-12 sm:h-[54px] items-center gap-3 px-3.5 sm:px-4 relative self-stretch w-full bg-slate-50 rounded-xl overflow-hidden border border-slate-200 focus-within:border-[#0f2c59] focus-within:ring-1 focus-within:ring-[#0f2c59] focus-within:bg-white transition-colors">
               <FieldIconSvg type="nik" />
@@ -544,7 +544,7 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
                     setIdentifier(event.target.value)
                   }
                 }}
-                placeholder={isSpecialAccess ? 'admin / operator_homestay / admin_wisata' : '8171010101900001'}
+                placeholder={isSpecialAccess ? 'ID Akun / Username Mitra' : '8171010101900001'}
                 aria-describedby="nik-help"
                 required
                 className="flex-1 min-w-0 bg-transparent border-0 outline-none font-normal text-[#0f2c59] text-base sm:text-lg tracking-normal sm:tracking-[1.10px] placeholder:text-[#627085]"
@@ -571,7 +571,7 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
                 className="font-normal text-[#627085] text-[11px] sm:text-xs leading-tight"
               >
                 {isSpecialAccess
-                  ? 'Gunakan kredensial resmi pengelola eco-stay, admin wisata, atau administrator sistem.'
+                  ? 'Gunakan ID akun terdaftar bagi pengelola homestay atau pemandu wisata Banda.'
                   : 'Masukkan 16 digit angka NIK tertera di KTP warga kepulauan Banda.'}
               </p>
             )}
@@ -645,7 +645,7 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
             disabled={loading}
             className="flex h-12 sm:h-[54px] items-center justify-center gap-2.5 px-5 relative self-stretch w-full bg-amber-600 hover:bg-amber-500 active:bg-amber-700 text-white rounded-xl font-bold text-base sm:text-lg shadow-md hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer disabled:opacity-60 mt-1"
           >
-            <span>{loading ? 'Memverifikasi...' : isSpecialAccess ? 'Masuk Sebagai Petugas / Mitra' : 'Masuk ke Portal Warga'}</span>
+            <span>{loading ? 'Memverifikasi...' : isSpecialAccess ? 'Masuk Sebagai Mitra' : 'Masuk ke Portal Warga'}</span>
             <svg
               className="w-4 h-4 sm:w-5 sm:h-5 text-white shrink-0"
               viewBox="0 0 18 18"
@@ -666,7 +666,7 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
 
         <p className="w-full py-2.5 px-3 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] sm:text-xs text-center text-[#627085] leading-relaxed">
           {isSpecialAccess
-            ? 'Akses administrator & operator pariwisata dilindungi audit log OWASP dan pembatasan peran berbasis RBAC.'
+            ? 'Akses mitra pariwisata dilindungi audit log keamanan dan pembatasan peran berbasis RBAC.'
             : 'Akun kependudukan terintegrasi NIK diterbitkan secara resmi melalui Kantor Desa dengan PIN 6 digit.'}
         </p>
 

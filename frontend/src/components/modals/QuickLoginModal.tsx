@@ -756,40 +756,9 @@ export const QuickLoginModal: React.FC<QuickLoginModalProps> = ({
               <b>Tips Pengujian:</b> Tombol simulator menginjeksikan JWT Bearer token asli dan mengatur navigasi sesuai peran secara deterministik.
             </span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <button
-              type="button"
-              onClick={async () => {
-                setSwitchingUser('admin')
-                try {
-                  await onQuickLogin('admin', 'Admin123!')
-                  onClose()
-                } finally {
-                  setSwitchingUser(null)
-                }
-              }}
-              style={{
-                background: 'rgba(236, 72, 153, 0.15)',
-                border: '1px solid rgba(236, 72, 153, 0.35)',
-                color: '#f472b6',
-                borderRadius: '8px',
-                padding: '0.25rem 0.65rem',
-                fontSize: '0.7rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                transition: 'all 0.2s',
-              }}
-              title="Akses Khusus Administrator Sistem (admin / Admin123!)"
-            >
-              <span>🔐 Login Khusus Admin</span>
-            </button>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: '#10b981' }}>
-              Banda Neira BST-NIRANA 2026
-            </span>
-          </div>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: '#10b981' }}>
+            Banda Neira BST-NIRANA 2026
+          </span>
         </div>
       </div>
     </div>
