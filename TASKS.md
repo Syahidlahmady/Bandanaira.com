@@ -2454,7 +2454,12 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Menghadirkan Bottom Navigation Bar mobile ramah jempol (Dasbor, Warga NIK, Koperasi, Peta GIS, Faskes SOS) dengan safe-area padding.
 - [x] 119.5 Sinkronisasi Aset & Pipa Otomasi CI/CD GitHub Actions:
   - Melakukan kompilasi frontend dan sinkronisasi native via `npx cap sync android`.
-  - Membuat workflow `.github/workflows/build-android-apk.yml` untuk build otomatis berkas `app-debug.apk` di GitHub Actions.
+  - Membuat workflow `ci/workflows/build-android-apk.yml` untuk build otomatis berkas `app-debug.apk` di GitHub Actions.
+- [x] 119.6 Kompilasi APK Lokal, Pengujian Emulator & Demonstrasi Live (`ThinkNote_API34`):
+  - Mengompilasi debug APK lokal `./gradlew assembleDebug` dengan JDK 21 dan Android SDK Platform 36/Build-Tools 35.
+  - Memasang APK langsung ke emulator `ThinkNote_API34` via ADB streamed install (`adb install -r app-debug.apk`).
+  - Menjalankan aplikasi secara langsung pada emulator (`adb shell am start -n com.bandanaira.ecosystem/.MainActivity`).
+  - Memverifikasi inisialisasi plugin Capacitor, koneksi bridge jaringan, dan navigasi tab Faskes dengan GPS locking serta dokumentasi tangkapan layar.
 
 
 

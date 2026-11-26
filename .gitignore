@@ -48,6 +48,10 @@ pnpm-debug.log*
 # Database & Persistent Data
 postgres_data/
 
+# Emulator Captures & Temp media
+emulator_*.png
+faskes_screen.png
+
 # IDE / OS
 .idea/
 .vscode/
