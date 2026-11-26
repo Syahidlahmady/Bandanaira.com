@@ -64,10 +64,9 @@ agents/skills/21st-cli-use
 .agents/
 .continue/
 
-# Documents & Office files
+# Internal documentation (Private)
+docs/
 *.docx
-docs/mandat_syahidl_ahmady/07_*
-docs/mandat_syahidl_ahmady/08_*
 *.doc
 *.pptx
 *.xlsx
