@@ -49,6 +49,8 @@ export interface UserEcosystemDashboardProps {
   onPublicVerify: (token: string) => void
   onLogout?: () => void
   isOnline?: boolean
+  activeRoleKey?: RoleKey
+  onRoleChange?: (role: RoleKey) => void
 }
 
 /**
@@ -83,11 +85,13 @@ export const LiveClockBadge: React.FC = React.memo(() => {
   })
 
   return (
-    <div className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200/80 text-xs shadow-2xs">
-      <Clock size={15} className="text-[#F4B75E]" />
-      <span className="font-semibold text-slate-700">{formattedDate}</span>
-      <span className="text-slate-300">•</span>
-      <span className="font-mono font-bold text-[#081D35] tabular-nums">{formattedTime} WIT</span>
+    <div className="flex items-center justify-between sm:justify-start gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] sm:text-xs shadow-2xs w-full sm:w-auto">
+      <div className="flex items-center gap-1.5 min-w-0">
+        <Clock size={14} className="text-[#F4B75E] shrink-0" />
+        <span className="font-semibold text-slate-700 truncate">{formattedDate}</span>
+      </div>
+      <span className="text-slate-300 hidden sm:inline">•</span>
+      <span className="font-mono font-bold text-[#081D35] tabular-nums shrink-0">{formattedTime} WIT</span>
     </div>
   )
 })
@@ -98,6 +102,8 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
   onOpenMarketplace,
   onPublicVerify,
   isOnline = true,
+  activeRoleKey: propActiveRoleKey,
+  onRoleChange,
 }) => {
   const [quickVerifyInput, setQuickVerifyInput] = useState('')
   const [showModuleLaunchpad, setShowModuleLaunchpad] = useState(false)
@@ -119,18 +125,23 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
     if (roles.includes('homestay_operator') || roles.includes('operator_homestay')) return 'homestay_operator'
     if (roles.includes('smart_tourism_admin') || roles.includes('admin_wisata')) return 'smart_tourism_admin'
     if (roles.includes('field_surveyor') || roles.includes('surveyor')) return 'field_surveyor'
+    if (roles.includes('tourist')) return 'tourist'
     return 'resident'
   }
 
   // State peran aktif: Jika Admin, dapat berganti pratinjau seluruh role. Jika Non-Admin, dikunci sesuai perannya!
-  const [selectedRoleKey, setSelectedRoleKey] = useState<RoleKey>(detectInitialRoleKey)
+  const [selectedRoleKey, setSelectedRoleKey] = useState<RoleKey>(propActiveRoleKey || detectInitialRoleKey)
 
   useEffect(() => {
-    setSelectedRoleKey(detectInitialRoleKey())
-  }, [currentUser])
+    if (propActiveRoleKey) {
+      setSelectedRoleKey(propActiveRoleKey)
+    } else {
+      setSelectedRoleKey(detectInitialRoleKey())
+    }
+  }, [propActiveRoleKey, currentUser])
 
   // Peran aktif yang efektif: jika bukan Admin, SELALU gunakan role asli pengguna (tidak bisa bypass ke admin)
-  const activeRoleKey: RoleKey = isAdmin ? selectedRoleKey : detectInitialRoleKey()
+  const activeRoleKey: RoleKey = isAdmin ? (propActiveRoleKey || selectedRoleKey) : detectInitialRoleKey()
   const profile = ROLE_PROFILES[activeRoleKey] || ROLE_PROFILES.resident
 
   const handleVerifySubmit = (e: React.FormEvent) => {
@@ -229,55 +240,56 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
   const userDisplayName = currentUser?.full_name || currentUser?.username || 'Pengguna Ekosistem'
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-[1600px] mx-auto py-1 px-1 sm:px-2 text-[#081D35]">
+    <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-[1600px] mx-auto py-1 px-0 sm:px-2 text-[#081D35]">
       {/* =====================================================================
           1. EXECUTIVE COMMAND HEADER: SELAMAT DATANG & BAROMETER RESMI
       ====================================================================== */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#081D35]/10 text-[#081D35] border border-[#081D35]/20">
-              <Sparkles size={12} className="text-[#F4B75E]" />
-              <span>Pusat Komando Tata Kelola Ekosistem Digital Banda Neira</span>
+      <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 sm:gap-5">
+        <div className="space-y-1.5 sm:space-y-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-[#081D35]/10 text-[#081D35] border border-[#081D35]/20">
+              <Sparkles size={12} className="text-[#F4B75E] shrink-0" />
+              <span className="hidden sm:inline">Pusat Komando Tata Kelola Ekosistem Digital Banda Neira</span>
+              <span className="sm:hidden">Komando Tata Kelola Digital</span>
             </span>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              <span className={`size-2 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+            <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className={`size-1.5 sm:size-2 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
               <span>{isOnline ? '4 Stasiun IoT Aktif' : 'Mode Offline PWA'}</span>
             </span>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-              <Shield size={11} />
+            <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+              <Shield size={11} className="shrink-0" />
               <span>UU PDP No. 27/2022</span>
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-[#081D35] tracking-tight">
+          <h1 className="text-xl sm:text-3xl font-black text-[#081D35] tracking-tight">
             Selamat Datang, {userDisplayName}! 👋
           </h1>
-          <p className="text-sm text-slate-500 max-w-3xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-500 max-w-3xl leading-relaxed">
             Platform terpadu pemantauan 6 dusun kepulauan, rantai pasok rempah pala terverifikasi blockchain EVM, administrasi kependudukan desa, dan sirkularitas air bersih RO.
           </p>
         </div>
 
         {/* Right Info Cluster: Live Clock & Quick Launchers */}
-        <div className="flex flex-col sm:flex-row lg:flex-col items-start lg:items-end gap-3 shrink-0">
+        <div className="flex flex-col sm:flex-row lg:flex-col items-stretch sm:items-start lg:items-end gap-2.5 sm:gap-3 shrink-0 w-full sm:w-auto">
           <LiveClockBadge />
 
-          <div className="flex items-center gap-2">
+          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
             <button
               type="button"
               onClick={() => setShowModuleLaunchpad(!showModuleLaunchpad)}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#081D35] text-[#F4B75E] hover:bg-[#0c2a4d] transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+              className="min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-bold bg-[#081D35] text-[#F4B75E] hover:bg-[#0c2a4d] transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
             >
-              <Compass size={14} />
+              <Compass size={14} className="shrink-0" />
               <span>{showModuleLaunchpad ? 'Tutup Modul' : '🚀 Peluncur Modul'}</span>
             </button>
 
             <button
               type="button"
               onClick={onOpenMarketplace}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+              className="min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
             >
-              <DollarSign size={14} className="text-emerald-600" />
+              <DollarSign size={14} className="text-emerald-600 shrink-0" />
               <span>Pasar Rempah</span>
             </button>
           </div>
@@ -286,141 +298,141 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
 
       {/* =====================================================================
           2. TOP 5 HEADLINE BENTO KPI: BAROMETER EKOSISTEM KEPULAUAN
-          (Sesuai kpi-dashboard-design/SKILL.md: 4-6 headline KPIs eksekutif)
+          (2-Kolom Mobile, 5-Kolom Desktop Responsif)
       ====================================================================== */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
         {/* Card 1: Kependudukan & NIK Sah */}
         <div
           onClick={() => onNavigate('population')}
-          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-blue-500/60 transition-all cursor-pointer group flex flex-col justify-between"
+          className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-blue-500/60 transition-all cursor-pointer group flex flex-col justify-between"
         >
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Kependudukan</span>
-              <div className="p-2 rounded-xl bg-blue-500/10 text-blue-700 group-hover:scale-110 transition-transform">
-                <Users size={18} />
+            <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Kependudukan</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-blue-500/10 text-blue-700 group-hover:scale-110 transition-transform shrink-0">
+                <Users className="size-4 sm:size-4.5" />
               </div>
             </div>
-            <div className="text-2xl font-black text-[#081D35] mb-1">
-              1.842 <span className="text-xs font-bold text-slate-500">Jiwa</span>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-0.5 sm:mb-1 truncate">
+              1.842 <span className="text-[11px] sm:text-xs font-bold text-slate-500">Jiwa</span>
             </div>
-            <div className="text-xs text-slate-500">
-              Terverifikasi 6 Dusun Desa
+            <div className="text-[11px] sm:text-xs text-slate-500 truncate">
+              Terverifikasi 6 Dusun
             </div>
           </div>
-          <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[10px]">
-            <span className="font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
-              AES-256 + Blind Index
+          <div className="mt-2.5 sm:mt-3 pt-2 sm:pt-2.5 border-t border-slate-100 flex items-center justify-between text-[9px] sm:text-[10px]">
+            <span className="font-bold text-blue-700 bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded-md truncate max-w-[120px]">
+              AES-256
             </span>
-            <ArrowRight size={12} className="text-slate-400 group-hover:text-blue-600 transition" />
+            <ArrowRight size={12} className="text-slate-400 group-hover:text-blue-600 transition shrink-0" />
           </div>
         </div>
 
         {/* Card 2: Lahan Perkebunan Rempah */}
         <div
           onClick={() => onNavigate('farming')}
-          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-emerald-500/60 transition-all cursor-pointer group flex flex-col justify-between"
+          className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-emerald-500/60 transition-all cursor-pointer group flex flex-col justify-between"
         >
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Perkebunan Rempah</span>
-              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-700 group-hover:scale-110 transition-transform">
-                <Sprout size={18} />
+            <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Lahan Pala</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-700 group-hover:scale-110 transition-transform shrink-0">
+                <Sprout className="size-4 sm:size-4.5" />
               </div>
             </div>
-            <div className="text-2xl font-black text-[#081D35] mb-1">
-              42 <span className="text-xs font-bold text-slate-500">Plot</span>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-0.5 sm:mb-1 truncate">
+              42 <span className="text-[11px] sm:text-xs font-bold text-slate-500">Plot</span>
             </div>
-            <div className="text-xs text-slate-500">
-              48.5 Hektar Lahan Adat Poktan
+            <div className="text-[11px] sm:text-xs text-slate-500 truncate">
+              48.5 Ha Adat
             </div>
           </div>
-          <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[10px]">
-            <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-              Kadastral PostGIS
+          <div className="mt-2.5 sm:mt-3 pt-2 sm:pt-2.5 border-t border-slate-100 flex items-center justify-between text-[9px] sm:text-[10px]">
+            <span className="font-bold text-emerald-700 bg-emerald-50 px-1.5 sm:px-2 py-0.5 rounded-md truncate max-w-[120px]">
+              PostGIS
             </span>
-            <ArrowRight size={12} className="text-slate-400 group-hover:text-emerald-600 transition" />
+            <ArrowRight size={12} className="text-slate-400 group-hover:text-emerald-600 transition shrink-0" />
           </div>
         </div>
 
         {/* Card 3: Produksi Panen & Rantai Pasok EVM */}
         <div
           onClick={() => onNavigate('traceability')}
-          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-purple-500/60 transition-all cursor-pointer group flex flex-col justify-between"
+          className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-blue-500/60 transition-all cursor-pointer group flex flex-col justify-between"
         >
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Panen &amp; Pasok</span>
-              <div className="p-2 rounded-xl bg-purple-500/10 text-purple-700 group-hover:scale-110 transition-transform">
-                <Layers size={18} />
+            <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Panen &amp; Pasok</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-blue-500/10 text-blue-700 group-hover:scale-110 transition-transform shrink-0">
+                <Layers className="size-4 sm:size-4.5" />
               </div>
             </div>
-            <div className="text-2xl font-black text-[#081D35] mb-1">
-              15.4 <span className="text-xs font-bold text-slate-500">Ton</span>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-0.5 sm:mb-1 truncate">
+              15.4 <span className="text-[11px] sm:text-xs font-bold text-slate-500">Ton</span>
             </div>
-            <div className="text-xs text-slate-500">
-              Pala &amp; Fuli Grade A Super
+            <div className="text-[11px] sm:text-xs text-slate-500 truncate">
+              Grade A Super
             </div>
           </div>
-          <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[10px]">
-            <span className="font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md">
-              14 Batch On-Chain
+          <div className="mt-2.5 sm:mt-3 pt-2 sm:pt-2.5 border-t border-slate-100 flex items-center justify-between text-[9px] sm:text-[10px]">
+            <span className="font-bold text-blue-700 bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded-md truncate max-w-[120px]">
+              EVM On-Chain
             </span>
-            <ArrowRight size={12} className="text-slate-400 group-hover:text-purple-600 transition" />
+            <ArrowRight size={12} className="text-slate-400 group-hover:text-blue-600 transition shrink-0" />
           </div>
         </div>
 
         {/* Card 4: Koperasi Kasir & Air RO */}
         <div
           onClick={() => onNavigate('koperasi')}
-          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-amber-500/60 transition-all cursor-pointer group flex flex-col justify-between"
+          className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-amber-500/60 transition-all cursor-pointer group flex flex-col justify-between"
         >
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Koperasi Hatta</span>
-              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-700 group-hover:scale-110 transition-transform">
-                <Scale size={18} />
+            <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Koperasi Hatta</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-amber-500/10 text-amber-700 group-hover:scale-110 transition-transform shrink-0">
+                <Scale className="size-4 sm:size-4.5" />
               </div>
             </div>
-            <div className="text-2xl font-black text-[#081D35] mb-1">
-              Rp 48.6 <span className="text-xs font-bold text-slate-500">Jt</span>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-0.5 sm:mb-1 truncate">
+              Rp 48.6 <span className="text-[11px] sm:text-xs font-bold text-slate-500">Jt</span>
             </div>
-            <div className="text-xs text-slate-500">
-              1.250 L Air Minum Bersih RO
+            <div className="text-[11px] sm:text-xs text-slate-500 truncate">
+              1.250 L Air RO
             </div>
           </div>
-          <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[10px]">
-            <span className="font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md">
-              Sirkular Bank Sampah
+          <div className="mt-2.5 sm:mt-3 pt-2 sm:pt-2.5 border-t border-slate-100 flex items-center justify-between text-[9px] sm:text-[10px]">
+            <span className="font-bold text-amber-800 bg-amber-50 px-1.5 sm:px-2 py-0.5 rounded-md truncate max-w-[120px]">
+              Sirkular Bank
             </span>
-            <ArrowRight size={12} className="text-slate-400 group-hover:text-amber-600 transition" />
+            <ArrowRight size={12} className="text-slate-400 group-hover:text-amber-600 transition shrink-0" />
           </div>
         </div>
 
-        {/* Card 5: Kesiapan IoT 4 Stasiun & Surat */}
+        {/* Card 5: Kesiapan IoT 4 Stasiun (Rentang 2 Kolom di Mobile) */}
         <div
           onClick={() => onNavigate('iot')}
-          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-sky-500/60 transition-all cursor-pointer group flex flex-col justify-between"
+          className="col-span-2 lg:col-span-1 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-sky-500/60 transition-all cursor-pointer group flex flex-col justify-between"
         >
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">IoT &amp; Resiliensi</span>
-              <div className="p-2 rounded-xl bg-sky-500/10 text-sky-700 group-hover:scale-110 transition-transform">
-                <Radio size={18} />
+            <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">IoT &amp; Resiliensi</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-sky-500/10 text-sky-700 group-hover:scale-110 transition-transform shrink-0">
+                <Radio className="size-4 sm:size-4.5" />
               </div>
             </div>
-            <div className="text-2xl font-black text-[#081D35] mb-1">
-              4 / 4 <span className="text-xs font-bold text-slate-500">Stasiun</span>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-0.5 sm:mb-1 truncate">
+              4 / 4 <span className="text-[11px] sm:text-xs font-bold text-slate-500">Stasiun</span>
             </div>
-            <div className="text-xs text-slate-500">
-              38 PPM Kemurnian (Standar WHO)
+            <div className="text-[11px] sm:text-xs text-slate-500 truncate">
+              38 PPM Standar WHO
             </div>
           </div>
-          <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[10px]">
-            <span className="font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md">
+          <div className="mt-2.5 sm:mt-3 pt-2 sm:pt-2.5 border-t border-slate-100 flex items-center justify-between text-[9px] sm:text-[10px]">
+            <span className="font-bold text-sky-700 bg-sky-50 px-1.5 sm:px-2 py-0.5 rounded-md truncate max-w-[120px]">
               100% SLA Pelayanan
             </span>
-            <ArrowRight size={12} className="text-slate-400 group-hover:text-sky-600 transition" />
+            <ArrowRight size={12} className="text-slate-400 group-hover:text-sky-600 transition shrink-0" />
           </div>
         </div>
       </div>
@@ -428,34 +440,34 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
       {/* =====================================================================
           3. ZERO-TRUST PUBLIC VERIFICATION & QUICK COMMAND BAR
       ====================================================================== */}
-      <div className="bg-gradient-to-r from-[#081D35] to-[#0f2c59] text-white rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="bg-gradient-to-r from-[#081D35] to-[#0c2a4d] text-white rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
-            <ShieldCheck size={18} className="text-[#F4B75E]" />
+            <ShieldCheck size={18} className="text-[#F4B75E] shrink-0" />
             <h3 className="text-sm font-bold text-white tracking-wide">
               Verifikasi Integritas Data &amp; Sertifikat Terbuka
             </h3>
           </div>
-          <p className="text-xs text-slate-300">
+          <p className="text-[11px] sm:text-xs text-slate-300 leading-relaxed">
             Periksa keabsahan surat resmi desa, sertifikat mutu batch pala, atau blind index NIK secara instan.
           </p>
         </div>
 
-        <form onSubmit={handleVerifySubmit} className="flex items-center gap-2 w-full md:w-auto">
+        <form onSubmit={handleVerifySubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
           <div className="relative flex-1 md:w-80">
             <input
               type="text"
-              placeholder="Masukkan NIK, Kode Batch, atau Hash EVM..."
+              placeholder="NIK, Kode Batch, atau Hash EVM..."
               value={quickVerifyInput}
               onChange={(e) => setQuickVerifyInput(e.target.value)}
-              className="w-full bg-white/10 border border-white/20 rounded-xl pl-8 pr-3 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#F4B75E] transition"
+              className="w-full bg-white/10 border border-white/20 rounded-xl pl-9 pr-3 py-2.5 sm:py-2 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-[#F4B75E] transition min-h-[44px] sm:min-h-0"
             />
-            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 shrink-0" />
           </div>
 
           <button
             type="submit"
-            className="px-4 py-2 rounded-xl text-xs font-bold bg-[#F4B75E] text-[#081D35] hover:bg-[#e5a84f] transition shadow-xs cursor-pointer shrink-0"
+            className="min-h-[44px] sm:min-h-0 px-4 py-2.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white transition shadow-xs cursor-pointer shrink-0 flex items-center justify-center"
           >
             Verifikasi
           </button>
@@ -466,18 +478,18 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
           4. PEMILIH PERSPEKTIF ROLE (KHUSUS ADMINISTRATOR SISTEM)
       ====================================================================== */}
       {isAdmin && (
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-2">
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3.5 sm:p-4 border border-slate-200/80 shadow-xs space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
-              <Eye size={14} className="text-[#0284C7]" />
-              <span>Kontrol Perspektif Peran Pengguna (Role Simulation Switcher):</span>
+              <Eye size={14} className="text-[#0284C7] shrink-0" />
+              <span>Kontrol Perspektif Peran Pengguna:</span>
             </span>
-            <span className="text-[11px] font-semibold text-slate-400 hidden sm:inline">
-              Simulasi perspektif 10 aktor ekosistem Banda
+            <span className="text-[10px] font-semibold text-slate-400 hidden sm:inline">
+              Simulasi 10 peran ekosistem
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar touch-pan-x -mx-1 px-1">
             {(Object.keys(ROLE_PROFILES) as RoleKey[]).map((rKey) => {
               const p = ROLE_PROFILES[rKey]
               const isSelected = activeRoleKey === rKey
@@ -485,8 +497,11 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
                 <button
                   key={rKey}
                   type="button"
-                  onClick={() => setSelectedRoleKey(rKey)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                  onClick={() => {
+                    setSelectedRoleKey(rKey)
+                    if (onRoleChange) onRoleChange(rKey)
+                  }}
+                  className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap flex items-center gap-1.5 shrink-0 ${
                     isSelected
                       ? 'bg-[#081D35] text-[#F4B75E] shadow-xs'
                       : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/60'
@@ -512,7 +527,7 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
           5. DRAWER / BENTO FAST-LAUNCHPAD RUANG KERJA (11 MODUL OPERASIONAL)
       ====================================================================== */}
       {showModuleLaunchpad && (
-        <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-5 animate-fade-in">
+        <div className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-4 sm:space-y-5 animate-fade-in">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div>
               <h3 className="text-sm font-bold text-[#081D35] flex items-center gap-2">
@@ -526,13 +541,13 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
             <button
               type="button"
               onClick={() => setShowModuleLaunchpad(false)}
-              className="text-xs font-bold text-slate-400 hover:text-slate-700 transition cursor-pointer"
+              className="text-xs font-bold text-slate-400 hover:text-slate-700 transition cursor-pointer p-1"
             >
               Tutup ✕
             </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
             {/* 1. Kependudukan */}
             <button
               type="button"
@@ -639,9 +654,9 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
                   onNavigate('smart_planner')
                   setShowModuleLaunchpad(false)
                 }}
-                className="p-3.5 rounded-xl bg-slate-50 hover:bg-indigo-50/60 border border-slate-200 hover:border-indigo-300 text-left transition cursor-pointer group"
+                className="p-3.5 rounded-xl bg-slate-50 hover:bg-blue-50/60 border border-slate-200 hover:border-blue-300 text-left transition cursor-pointer group"
               >
-                <Activity size={18} className="text-indigo-600 mb-2 group-hover:scale-110 transition-transform" />
+                <Activity size={18} className="text-blue-600 mb-2 group-hover:scale-110 transition-transform" />
                 <p className="text-xs font-bold text-[#081D35]">Smart Planner SAW</p>
                 <p className="text-[11px] text-slate-500 mt-0.5">Kalkulator DSS cerdas</p>
               </button>
@@ -668,9 +683,9 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
                 onNavigate('audit')
                 setShowModuleLaunchpad(false)
               }}
-              className="p-3.5 rounded-xl bg-slate-50 hover:bg-purple-50/60 border border-slate-200 hover:border-purple-300 text-left transition cursor-pointer group"
+              className="p-3.5 rounded-xl bg-slate-50 hover:bg-sky-50/60 border border-slate-200 hover:border-sky-300 text-left transition cursor-pointer group"
             >
-              <ShieldCheck size={18} className="text-purple-600 mb-2 group-hover:scale-110 transition-transform" />
+              <ShieldCheck size={18} className="text-sky-600 mb-2 group-hover:scale-110 transition-transform" />
               <p className="text-xs font-bold text-[#081D35]">Jejak Audit EVM</p>
               <p className="text-[11px] text-slate-500 mt-0.5">Validasi SHA-256 mutasi</p>
             </button>
@@ -733,8 +748,8 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
           (Gunung Api Banda, Benteng Belgica, Pohon Pala & Perahu Kora-Kora)
       ====================================================================== */}
       {activeRoleKey !== 'smart_tourism_admin' && (
-        <footer className="relative w-full mt-2 rounded-2xl overflow-hidden border border-slate-200/80 bg-gradient-to-t from-[#081D35] via-[#0F2C59] to-[#1E3A5F] text-white">
-          <div className="relative h-28 sm:h-36 w-full flex items-end justify-between px-6 pt-4 pointer-events-none select-none overflow-hidden">
+        <footer className="relative w-full mt-2 rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200/80 bg-gradient-to-t from-[#081D35] via-[#0c2a4d] to-[#1E3A5F] text-white">
+          <div className="relative h-24 sm:h-36 w-full flex items-end justify-between px-4 sm:px-6 pt-3 sm:pt-4 pointer-events-none select-none overflow-hidden">
             {/* Siluet Lanskap Alam & Cagar Budaya */}
             <svg
               viewBox="0 0 1200 160"
@@ -776,17 +791,17 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
             </svg>
 
             {/* Teks Identitas Lanskap Banda Neira */}
-            <div className="relative z-10 pb-3 flex flex-col sm:flex-row sm:items-center justify-between w-full text-xs">
-              <div className="flex items-center gap-2">
-                <span className="font-serif font-black tracking-wider text-base text-[#F4B75E]">
+            <div className="relative z-10 pb-2.5 sm:pb-3 flex flex-col sm:flex-row sm:items-center justify-between w-full text-xs gap-1 sm:gap-0">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="font-serif font-black tracking-wider text-sm sm:text-base text-[#F4B75E]">
                   Kepulauan Banda Neira
                 </span>
                 <span className="text-slate-300 hidden md:inline">
                   • Titik Nol Jalur Rempah Dunia &amp; Cagar Budaya Maritim
                 </span>
               </div>
-              <div className="text-[11px] text-slate-400 mt-1 sm:mt-0 font-medium">
-                Benteng Belgica • Gunung Api Banda • Perahu Tradisional Kora-Kora
+              <div className="text-[10px] sm:text-[11px] text-slate-400 font-medium">
+                Benteng Belgica • Gunung Api Banda • Perahu Kora-Kora
               </div>
             </div>
           </div>

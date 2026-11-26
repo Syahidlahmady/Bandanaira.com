@@ -90,6 +90,13 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 100: Eliminasi Glitch Visual Kedipan Beranda Saat Login Menuju Dashboard**
 - [x] **Phase 101: Optimasi Kinerja Dashboard Admin, Eliminasi Render Loop & Reduksi Panggilan Endpoint Duplikat**
 - [x] **Phase 102: Implementasi Dedicated Mobile App Shell Landing Page (Capacitor & Mobile DevTools Viewport)**
+- [x] **Phase 110: UI/UX Button Color Consistency & Slop Removal Overhaul Across Entire Application**
+- [x] **Phase 111: Workspace Pages Layout Harmonization to Match Dashboard Mobile-First Design**
+- [x] **Phase 112: Blockchain Batch Verification Modals Mobile-First Overhaul**
+- [x] **Phase 113: Role-Scoped Notification System & Active Role Synchronization Overhaul**
+- [x] **Phase 114: Multi-Layered Security Architecture & Defense-in-Depth Blueprint (rancangan_kemanan_berlapis.md)**
+- [x] **Phase 115: Local System-Level Security Hardening (Docker Port Binding, OWASP Headers, & Brute-Force Lockout)**
+- [x] **Phase 116: Security Testing Agent Setup & Target Configuration (targets.json)**
 ---
 
 ## Detailed Task Checklist
@@ -2185,6 +2192,176 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 105.4 Pengujian & Verifikasi Build:
   - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% (0 error).
   - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 24.50 detik).
+
+---
+
+## [Phase 106] - Mobile-First Dashboard Redesign & Multi-Role Layout Harmonization
+- [x] 106.1 Ekstraksi Komponen Terpadu Mobile-First `BaseRoleDashboardView.tsx`:
+  - Mengeliminasi lebih dari 5.600 baris kode duplikasi layout di 9 tampilan dasbor role (`AdminDashboardView`, `ResidentDashboardView`, `CoopManagerDashboardView`, `FarmerDashboardView`, `FarmerGroupDashboardView`, `FieldSurveyorDashboardView`, `HomestayOperatorDashboardView`, `TouristDashboardView`, `VillageOfficerDashboardView`).
+  - Menerapkan arsitektur layout berbasis mobile-first sesuai acuan `.agents/skills/mobile-design/SKILL.md` dan `.agents/skills/mobile-responsiveness/SKILL.md`.
+- [x] 106.2 Rekonstruksi Grid & Tata Letak Responsif:
+  - **Kartu KPI Ringkasan**: Mengganti stacking 1-kolom memanjang di layar ponsel menjadi 2-kolom seimbang (`grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4`) dengan avatar kompak (`size-9 sm:size-12`) dan tipografi adaptif (`text-base sm:text-2xl font-black`), mencegah kartu memenuhi tinggi layar ponsel secara berlebihan.
+  - **Top 5 Bento Headline KPIs**: Menerapkan 2-kolom mobile grid dengan kartu ke-5 merentang penuh (`col-span-2 lg:col-span-1`), dilengkapi padding hemat ruang (`p-3 sm:p-4`) dan badge kompak.
+  - **Donut Chart Komposisi**: Mengubah orientasi menjadi `flex-col sm:flex-row` di ponsel agar lingkaran donut terpusat di atas dan legenda sektor tertata rapi dalam 2-kolom di bawah tanpa overlap atau pemotongan teks.
+  - **Line Chart Analitik**: Mengoptimalkan margin Recharts (`margin={{ top: 12, right: 12, left: -24, bottom: 0 }}`) dan tinggi responsif (`h-48 sm:h-64`) sehingga label sumbu Y tetap terbaca di lebar 360px–420px.
+- [x] 106.3 Optimalisasi Touch Target & Tombol Aksi Jempol (Thumb-Friendly):
+  - Memastikan seluruh kontrol interaktif utama memenuhi standar ergonomi jempol minimal 44×44px (`min-h-[44px]`).
+  - Mengubah tombol header komando menjadi grid 2-kolom proporsional di mobile (`grid grid-cols-2 sm:flex gap-2 w-full sm:w-auto`).
+  - Memperbarui 4 tombol format "Unduh Data Terbuka" (CSV, XLSX, JSON, API) dengan `min-h-[48px]`.
+  - Mengadaptasi formulir verifikasi hash blockchain dan input verifikasi cepat dengan `min-h-[44px]`.
+- [x] 106.4 Penataan Header, Topbar, dan Spacing Dashboard:
+  - Mengurangi padding kontainer dari pemborosan 16px menjadi `p-2 sm:p-6` agar area kartu analitik mendapatkan lebar maksimal di ponsel.
+  - Menyelaraskan floating header pencarian dan kluster tombol kanan (telemetri, status online, tema, menu cepat, lonceng) agar tidak berjejal atau overflow horizontal.
+  - Mengoptimalkan badge jam real-time `LiveClockBadge` dengan perataan fleksibel (`justify-between sm:justify-start`).
+- [x] 106.5 Pengujian & Verifikasi:
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% (0 error).
+  - Build produksi Vite (`npm run build`) sukses 100% (2.487 modul ter-bundle).
+  - Pengujian unit backend (`pytest tests/test_health.py`) lulus 100% (3 passed).
+
+## [Phase 107] - UX Button Color Compliance & Complete Elimination of Purple/Indigo Palette
+- [x] 107.1 Penghapusan Warna Ungu pada Tombol & Kontrol Interaktif:
+  - Mengganti seluruh tombol, tab filter, dan kontrol aksi interaktif yang sebelumnya menggunakan varian ungu/violet/indigo (`purple-600`, `purple-700`, `indigo-600`, dll) dengan warna standar sistem desain Banda Neira:
+    - **Primary Action Buttons**: Deep Navy (`#081D35` hover `#0F2C59` dengan teks Nutmeg Gold `#F4B75E`) untuk tombol aksi utama dan formulir pencatatan.
+    - **Secondary & Informational Buttons**: Ocean Blue (`#0284C7` / `blue-600` / `sky-600`) untuk tombol verifikasi, unduh data, API, dan salin hash payload.
+    - **Success & Sertifikasi**: Emerald Green (`#059669` / `emerald-600`) untuk sertifikat publik QR dan status validasi.
+- [x] 107.2 Harmonisasi Workspace & Komponen:
+  - `HarvestGradingWorkspace.tsx`:
+    - Mengganti tombol header **"Buat Batch QR"** secara spesifik menjadi **Ocean Blue** (`bg-blue-600 hover:bg-blue-700 text-white`) dengan ikon `<QrCode size={16} className="text-white" />`.
+    - Mengganti tombol submit formulir **"Terbitkan Batch & Buat Label QR"** menjadi `bg-blue-600 hover:bg-blue-700 text-white`.
+    - Mengganti tombol submit tahapan mutu **"+ Catat Tahapan & Hash"** menjadi `bg-blue-600 hover:bg-blue-700 text-white`.
+    - Mengganti tombol cetak stiker & salin hash (`text-blue-600`), serta kartu batch & border ke Ocean Blue.
+  - `KoperasiKasirWorkspace.tsx`: Tombol tab filter aktif "Buku Besar" dan "Riwayat Transaksi" diganti dari `bg-purple-600` menjadi `bg-[#081D35] text-[#F4B75E]`; kartu ringkasan transaksi kasir diselaraskan ke Sapphire Blue.
+  - `AuditTrailWorkspace.tsx`: Tombol inspeksi JSON mutasi dan tombol salin JSON diganti dari indigo menjadi Ocean Blue (`hover:bg-blue-50 text-blue-600 hover:text-blue-800`).
+  - `BaseRoleDashboardView.tsx`: Tombol ekspor API diselaraskan ke Sky Blue (`border-sky-200 hover:border-sky-600 text-sky-600`).
+  - `futuristic-nav.tsx`: Efek active indicator glow diperbarui dari `to-purple-500` menjadi `to-[#F4B75E]` (Warm Nutmeg Gold).
+  - `DashboardLayout.tsx`: Ikon notifikasi dan badge kategori blockchain diselaraskan ke Ocean Blue.
+  - `QuickLoginModal.tsx`: Badge simulator surveyor dan poktan diselaraskan ke Blue dan Emerald.
+  - Seluruh 10 Dasbor Role (`FarmerGroup`, `Homestay`, `VillageOfficer`, `Admin`, `SmartTourism`, `Surveyor`, `Resident`, `CoopManager`, `Farmer`, `Tourist`): Hex color `#7C3AED` dan `#6366F1` serta `bg-purple-100` diselaraskan menjadi Ocean Blue `#0284C7` dan `bg-sky-100`.
+- [x] 107.3 Pengujian & Verifikasi:
+  - 0 kemunculan tombol dan komponen interaktif ungu di seluruh `frontend/src/` (terverifikasi melalui ripgrep/grep).
+  - `tsc --noEmit`: 0 TypeScript error.
+  - `npm run build`: 100% lolos (2.487 modul ter-bundle, 0 error).
+  - `docker compose exec -T backend pytest tests/test_health.py`: 3/3 passed.
+
+## [Phase 111] - Workspace Pages Layout Harmonization to Match Dashboard Mobile-First Design
+- [x] 111.1 Rekonstruksi Grid & Tata Letak Mobile-First pada Seluruh Workspace:
+  - Mengadaptasi tata letak responsif dan elegan dari halaman dasbor (`UserEcosystemDashboard` & `BaseRoleDashboardView`) ke seluruh 9 workspace operasional:
+    - `ResidentsWorkspace.tsx` (Data Kependudukan & Profesi)
+    - `LettersWorkspace.tsx` (Pelayanan Administrasi & Arsip Surat)
+    - `HarvestGradingWorkspace.tsx` (Manajemen Panen & Mutu Rempah)
+    - `FarmsGisWorkspace.tsx` (Peta Lahan Kebun & Kelompok Tani)
+    - `KoperasiKasirWorkspace.tsx` (Koperasi Hatta & Bank Sampah)
+    - `IslandTelemetryWorkspace.tsx` (Telemetri IoT & Resiliensi Pulau)
+    - `AuditTrailWorkspace.tsx` (Rekapitulasi Desa & Jejak Audit)
+    - `MarketplaceAdminWorkspace.tsx` (Tata Kelola Marketplace Rempah)
+    - `SurveyEtlWorkspace.tsx` (Survei Lapangan & Pipa ETL)
+    - `HelpDeskWorkspace.tsx` (Pusat Bantuan & Panduan Sistem)
+    - `CitizenPortalWorkspace.tsx` (Portal Mandiri Warga)
+    - `TourismEcoStayWorkspace.tsx` (Wisata & Penginapan Eco-Stay)
+- [x] 111.2 Penyelarasan Bento KPI Cards Cluster:
+  - Mengubah pola usang `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5` yang menyebabkan penumpukan vertikal memanjang di ponsel menjadi format **2-Kolom Mobile Grid** (`grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4`).
+  - Menjadikan kartu ke-5 merentang 2 kolom seimbang di layar ponsel (`col-span-2 lg:col-span-1`) sehingga menghasilkan ritme visual yang harmonis.
+  - Mengurangi padding kartu di mobile menjadi `p-3 sm:p-5`, avatar size `w-8 h-8 sm:w-9 sm:h-9`, tipografi adaptif `text-lg sm:text-2xl font-black`, label `text-[10px] sm:text-xs font-bold`, dan tag indikator `text-[9px] sm:text-[11px]`.
+- [x] 111.3 Thumb-Friendly Touch Targets & Header Actions:
+  - Mengubah deretan tombol header di mobile menjadi `grid grid-cols-2 sm:flex gap-2 w-full sm:w-auto` dengan target sentuh minimal 44×44px (`min-h-[44px]`).
+  - Mengoptimalkan kontainer grafik analitis (`grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-6 items-stretch`) dengan sudut kartu `rounded-xl sm:rounded-2xl` dan padding adaptif.
+- [x] 111.4 Pengujian & Verifikasi:
+  - `tsc --noEmit`: 0 TypeScript error.
+  - `vite build` (host & container `banda_frontend`): Berhasil 100% tanpa error (2.487 modul ter-bundle dalam 10.33s).
+  - Restart container `banda_frontend` berhasil dan berjalan normal.
+  - Backend unit tests (`pytest tests/test_health.py`): 3 passed dalam 0.20s.
+
+## [Phase 112] - Blockchain Batch Verification Modals Mobile-First Overhaul
+- [x] 112.1 Penyelarasan Mobile Mode Jendela Verifikasi On-Chain (`BlockchainModal.tsx`):
+  - Memperbarui kontainer modal dengan padding adaptif seluler (`p-2.5 sm:p-5`), radius sudut `rounded-2xl sm:rounded-3xl`, dan batas tinggi layar `max-h-[92vh] sm:max-h-[88vh]`.
+  - Tombol tutup modal memenuhi standar target sentuh ergonomis $\ge 44\times 44\text{px}$ (`w-11 h-11 min-w-[44px] min-h-[44px]`) dengan mikro-interaksi `active:scale-95`.
+  - Kartu perbandingan SHA-256 lokal vs on-chain dilengkapi tombol salin ramah jempol (`min-h-[36px]`) dengan feedback visual instan ("Tersalin" & centang hijau).
+  - Teks hash kriptografis 64-karakter dilindungi dengan `break-all`, `select-all`, dan font monospaced adaptif (`text-[11px] sm:text-xs`) untuk mencegah horizontal text clipping.
+  - Penambahan tombol salin cepat untuk alamat Smart Contract (SpiceRegistry) dan Transaction Receipt Hash (TxID).
+  - Tombol footer penutup modal berukuran penuh di seluler (`w-full sm:w-auto min-h-[44px]`).
+- [x] 112.2 Penyelarasan Mobile Mode Modal Verifikasi Publik & Indikasi Geografis (`PublicVerifyModal.tsx`):
+  - Header modal responsif dengan status konsorsium EVM Maluku dan standar Zero-PII UU PDP No. 27/2022.
+  - Bilah pencarian batch & pemindai kamera QR seluler dengan tombol `min-h-[44px]`, serta chip preset pengujian interaktif yang dapat digeser mulus secara horizontal (`overflow-x-auto scrollbar-none`).
+  - 4 Barometer Bento KPI header dioptimalkan ke format grid 2-kolom seluler (`grid-cols-2 md:grid-cols-4 gap-2 sm:gap-2.5`).
+  - Bilah navigasi 3 tab (Sertifikat GI, Audit Trail, Konsensus EVM) dilengkapi scroll horizontal responsif dan label adaptif agar tidak patah pada layar sempit 360px–412px.
+  - Tab Sertifikat GI: Kartu piagam adat responsif, sub-grid 2 kolom spesifikasi rempah, preview QR code proporsional (`w-32 h-32 sm:w-36 sm:h-36`) dengan tombol unduh PNG (`min-h-[38px]`), serta action buttons (salin kode batch dan cetak sertifikat resmi A4) berukuran penuh di seluler (`w-full sm:w-auto min-h-[44px]`).
+  - Tab Audit Trail: Stepper jejak kronologis rantai pasok dengan garis gradien vertikal adaptif, penanda waktu WIT, lokasi, dan kartu hash per peristiwa dengan tombol salin ramah jempol.
+  - Tab Konsensus EVM: Kartu status integritas 100% verified, komparasi hash deterministik, serta parameter teknis smart contract, chain ID 1337, nomor blok, dan konsensus validator.
+- [x] 112.3 Penyelarasan Trigger Tombol Operasi Verifikasi di Workspace (`HarvestGradingWorkspace.tsx`):
+  - Mengubah tombol operasional blockchain batch di kartu panen menjadi fleksibel dan ramah sentuhan seluler (`grid grid-cols-2 gap-1.5 w-full sm:w-auto min-h-[40px]`).
+  - Tombol "Sertifikat Publik QR" merentang penuh di ponsel (`w-full min-h-[40px]`) untuk akses cepat verifikasi fisik kemasan rempah.
+- [x] 112.4 Pengujian & Verifikasi:
+  - `tsc --noEmit`: 0 TypeScript error.
+  - `vite build` host & container `banda_frontend`: 100% sukses (2.487 modul ter-bundle dalam 11.93s).
+  - Backend automated unit tests (`pytest tests/test_health.py`): 3/3 passed dalam 0.21s.
+
+## [Phase 113] - Role-Scoped Notification System & Active Role Synchronization Overhaul
+- [x] 113.1 Layanan Notifikasi Berbasis Peran Terpadu (`frontend/src/services/roleNotifications.ts`):
+  - Membuat model data `RoleNotificationItem`, `RoleNotificationFilterTab`, dan `RoleNotificationProfile` untuk seluruh 10 peran ekosistem Banda Neira (`admin`, `village_officer`, `farmer`, `farmer_group_admin`, `coop_manager`, `homestay_operator`, `smart_tourism_admin`, `field_surveyor`, `resident`, `tourist`).
+  - Mengimplementasikan generator notifikasi dinamis `generateRoleNotifications(roleKey, context)` yang terhubung langsung dengan status operasional riil (jumlah permohonan surat tertunda, kebun menanti sertifikasi, sinkronisasi offline PWA, status konektivitas, dan nama user).
+  - Menghapus percampuran notifikasi siaran generik (broadcast notification) sehingga setiap peran hanya menerima notifikasi domain yang relevan dengan tugas dan tanggung jawabnya.
+- [x] 113.2 Sinkronisasi State Perspektif Peran Aktif (`App.tsx`, `DashboardLayout.tsx`, `UserEcosystemDashboard.tsx`):
+  - Mengangkat state `activeRoleKey` ke tingkat akar aplikasi (`App.tsx`) dengan pendeteksian cerdas role login awal dari user JWT (`detectInitialRoleKey`).
+  - Menghubungkan kontrol pengganti perspektif peran di dashboard ekosistem (`UserEcosystemDashboard.tsx`) dengan header topbar (`DashboardLayout.tsx`), sehingga saat Admin atau pengguna beralih peran, lonceng notifikasi, badge pill, counter unread, dan tab filter seketika menyesuaikan dengan peran yang dipilih secara real-time.
+  - Menambahkan Quick Role Simulator Selector langsung di dropdown notifikasi (`Simulasi Peran: [▾]`) untuk mempermudah pengujian multi-peran oleh Administrator.
+- [x] 113.3 Desain Antarmuka Popover Notifikasi Mobile-First & Anti-Slop (`DashboardLayout.tsx`):
+  - Menerapkan penempatan popover mobile-safe (`fixed inset-x-2.5 top-16 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full`) dengan batas lebar `sm:w-96`, memastikan tidak terpotong oleh viewport ponsel.
+  - Mengganti filter tab generik kaku dengan chip filter domain per peran yang dapat digeser mulus di seluler (`overflow-x-auto scrollbar-none`) lengkap dengan counter badges.
+  - Memastikan kontras token warna WCAG 2.2 AA (Deep Navy `#081D35`, Ocean Blue `text-blue-600`, Emerald Green, Amber, dan Rose) serta target sentuh ramah jempol minimal $44\times 44\text{px}$.
+  - Mengarahkan tombol aksi notifikasi (`Buka Layanan →`) langsung ke navigasi workspace yang sesuai dengan peran aktif.
+- [x] 113.4 Pengujian & Verifikasi:
+  - `tsc --noEmit`: 0 TypeScript error.
+  - `npm run build` (host Vite production build): 2.488 modul ter-bundle sempurna tanpa error (12.25s).
+  - `docker exec banda_frontend npm run build`: 100% sukses tanpa error (10.92s).
+  - Backend automated unit tests (`pytest tests/test_health.py`): 3/3 passed dalam 0.27s.
+- [x] 113.5 Dokumentasi Komprehensif Arsitektur Mode Mobile (`Mobile_mode.md`):
+  - Membuat berkas dokumentasi terpadu `Mobile_mode.md` yang merangkum seluruh filosofi desain, standar ergonomi sentuh jempol $\ge 44\times 44\text{px}$, eliminasi warna ungu slop, tata letak bento grid 2-kolom seluler, harmonisasi 11 workspace, optimasi modal verifikasi blockchain, notifikasi berbasis peran, navigasi bawah mengambang, panduan cheatsheet kode Tailwind, serta matriks pengujian lintas viewport.
+
+## [Phase 114] - Multi-Layered Security Architecture & Defense-in-Depth Blueprint
+- [x] 114.1 Sesi Perancangan Berbasis Riset & Brainstorming (`brainstorming/SKILL.md`):
+  - Menjalankan analisis menyeluruh terhadap arsitektur dasar sistem (FastAPI, PostgreSQL/PostGIS, MongoDB, React PWA, modul `crypto_nik.py`, dan blockchain EVM `SpiceRegistry.sol`).
+  - Mengunci pemahaman (*Understanding Lock*) dan keputusan strategis (D1 s.d D6) untuk 5 pilar keamanan: Perimeter Jaringan, Gerbang API, Identitas & Sesi (IAM), Proteksi Data PII (UU PDP No. 27/2022), serta Jejak Audit & Deteksi Anomali.
+- [x] 114.2 Penyusunan Berkas Spesifikasi Desain Terpadu (`rancangan_kemanan_berlapis.md`):
+  - Membuat dokumen arsitektur komprehensif `rancangan_kemanan_berlapis.md` (22 KB) dengan diagram alur lalu lintas Mermaid, detail konfigurasi Nginx hardened, isolasi port internal Docker, skema mitigasi DDoS Cloudflare, dan proteksi host UFW/Fail2ban.
+  - Merancang arsitektur identitas bertingkat (*Tiered Security*): Wajib 2FA TOTP (Google Authenticator) + *Account Lockout* untuk Administrator dan Staf Desa, PIN 6-digit untuk Warga/Petani, serta migrasi token JWT ke `HttpOnly + Secure + SameSite=Strict Cookie` untuk mematikan risiko pencurian sesi via XSS.
+  - Memperluas skema enkripsi PII data at rest (AES-256-GCM + Blind Index HMAC-SHA256) untuk nomor KK, telepon, dan alamat, serta mekanisme backup otomatis harian terenkripsi GPG.
+  - Merancang skema audit log kriptografis berantai (*hash-chained logs* SHA-256) anti-tamper, deteksi anomali ekspor data massal, dan bot notifikasi siaga Telegram/WhatsApp.
+  - Menyusun *Progressive Implementation Roadmap* 4-fase dan matriks kepatuhan OWASP Top 10 serta UU PDP No. 27/2022.
+
+## [Phase 115] - Local System-Level Security Hardening (Docker Port Binding, OWASP Headers, & Brute-Force Lockout)
+- [x] 115.1 Isolasi Jaringan Port Basis Data Lokal (`docker-compose.yml`):
+  - Mengubah binding port PostgreSQL (`127.0.0.1:${POSTGRES_PORT:-5435}:5432`) dan MongoDB (`127.0.0.1:${MONGO_PORT:-27018}:27017`) agar secara eksklusif hanya dapat diakses melalui *localhost* host developer, menutup total paparan port ke jaringan luar/LAN (`0.0.0.0`).
+- [x] 115.2 Middleware OWASP Top 10 Security Headers (`backend/app/core/security_headers.py` & `main.py`):
+  - Mengimplementasikan `SecurityHeadersMiddleware` untuk menyisipkan header keamanan standar HTTP pada setiap respons:
+    - `X-Content-Type-Options: nosniff` (mencegah eksploitasi MIME-type sniffing).
+    - `X-Frame-Options: DENY` (mencegah serangan Clickjacking).
+    - `X-XSS-Protection: 1; mode=block` (perlindungan XSS reflected).
+    - `Referrer-Policy: strict-origin-when-cross-origin` (mencegah kebocoran URL path sensitif).
+    - `Permissions-Policy` (membatasi akses kamera, mikrofon, dan sensor perangkat).
+- [x] 115.3 Proteksi Serangan Brute-Force & Kebijakan Account Lockout (`backend/app/core/account_lockout.py` & `router.py`):
+  - Membuat sistem pelacak percobaan login gagal (*Failed Login Attempt Tracker*) dengan manajemen thread-safe dan pembersihan memori otomatis.
+  - Mengintegrasikan logika penguncian akun otomatis pada rute `/api/v1/auth/login`: jika pengguna gagal login 5 kali berturut-turut, akun dikunci sementara selama 15 menit dengan status HTTP 429 Too Many Requests.
+  - Memberikan umpan balik sisa percobaan gagal yang informatif dan mereset hitungan secara otomatis saat login berhasil.
+- [x] 115.4 Pengujian Otomatis Keamanan Core (`backend/tests/test_layered_security_core.py`):
+  - Menulis dan memverifikasi unit test untuk siklus lengkap *account lockout*, ambang batas 5x kegagalan, pembukaan kunci, dan injeksi header keamanan HTTP (2/2 passed).
+  - Memverifikasi build frontend produksi (`npm run build`) sukses 100% tanpa regresi (2.488 modul ter-bundle dalam 8.73s).
+
+## [Phase 116] - Security Testing Agent Setup & Target Configuration (targets.json)
+- [x] 116.1 Analisis & Integrasi Skill `testing-agent` (`.agents/skills/testing-agent/`):
+  - Mempelajari instruksi `SKILL.md`, `GOAL.md`, serta dokumentasi `references/setup.md` dan skema validasi `scripts/testing_support.py`.
+- [x] 116.2 Konfigurasi Target Uji Komprehensif (`targets.json`):
+  - Mengonfigurasi target `banda-api` (FastAPI backend pada `http://127.0.0.1:8005`, prefix `/api/v1` dan `/`, identity check `"Banda Digital Ecosystem API"`).
+  - Mengonfigurasi target `banda-web` (React Vite frontend pada `http://localhost:5175`, identity check `"Banda"`).
+  - Mengonfigurasi target `banda-source` (Source code audit pada `/home/hid/Projects/BTS-NEIRA/penduduk` dengan build variant debug).
+  - Mendeklarasikan referensi kredensial `admin-user` (`TEST_ADMIN_PASSWORD`) dan `citizen-user` (`TEST_CITIZEN_PIN`).
+  - Menetapkan otorisasi pemilik sistem (*Confirmed Owner Statement*) dan batasan operasional (300 budget requests, rate 1 req/s, timeouts 15s).
+- [x] 116.3 Validasi Struktur & Inisialisasi Plan Pengujian:
+  - Menjalankan `python3 scripts/testing_support.py validate-config --config targets.json` $\rightarrow$ Status `"valid": true`, `"ready_for_preflight": true`, tanpa pemblokir (*0 blockers*).
+  - Menginisialisasi sesi pengujian terisolasi (`python3 scripts/testing_support.py init`) menghasilkan matriks kerja 10 workstreams (`coverage.csv`, `scope.json`, `state.json`).
+
+
+
+
 
 
 

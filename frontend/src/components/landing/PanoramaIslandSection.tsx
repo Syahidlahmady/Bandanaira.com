@@ -45,7 +45,7 @@ export const PanoramaIslandSection: React.FC<PanoramaIslandSectionProps> = ({
         </div>
         <h2
           id="island-introduction-title"
-          className="relative self-stretch font-medium text-[#0f2c59] text-[28px] sm:text-[31px] tracking-[-1.00px] leading-[38.8px]"
+          className="relative self-stretch font-medium text-[#081D35] text-[28px] sm:text-[31px] tracking-[-1.00px] leading-[38.8px]"
         >
           Bukan sekadar destinasi. Sebuah kehidupan yang terhubung.
         </h2>
@@ -77,7 +77,7 @@ export const PanoramaIslandSection: React.FC<PanoramaIslandSectionProps> = ({
                 </svg>
               )}
             </div>
-            <h3 className="relative self-stretch font-semibold text-[#0f2c59] text-[15px] tracking-[0] leading-[normal]">
+            <h3 className="relative self-stretch font-semibold text-[#081D35] text-[15px] tracking-[0] leading-[normal]">
               {item.title}
             </h3>
             <p className="relative self-stretch font-normal text-[#63717d] text-[13px] tracking-[0] leading-[21.4px]">

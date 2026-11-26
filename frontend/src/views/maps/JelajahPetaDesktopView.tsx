@@ -51,7 +51,7 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
   ]
 
   return (
-    <div className="relative w-full min-h-[760px] bg-[#A9E2E4] rounded-2xl overflow-hidden border border-[#96d4d6] shadow-xl text-[#0F2C59] select-none font-sans">
+    <div className="relative w-full min-h-[760px] bg-[#A9E2E4] rounded-2xl overflow-hidden border border-[#96d4d6] shadow-xl text-[#081D35] select-none font-sans">
       {/* Background Decorative Sea Atmosphere */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#A9E2E4] via-[#b3e7e9] to-[#99dcdc] pointer-events-none" />
 
@@ -63,7 +63,7 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-600 text-white font-bold text-xs shadow-sm">
               BN
             </div>
-            <span className="font-bold text-[#0F2C59] text-sm tracking-tight hidden sm:inline">
+            <span className="font-bold text-[#081D35] text-sm tracking-tight hidden sm:inline">
               BST-NIRANA | Jelajah Peta
             </span>
           </div>
@@ -87,7 +87,7 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari benteng VOC, spot diving, homestay..."
-              className="w-full bg-transparent outline-none text-[#0F2C59] placeholder-[#647888] text-xs"
+              className="w-full bg-transparent outline-none text-[#081D35] placeholder-[#647888] text-xs"
             />
             <span className="px-1.5 py-0.5 rounded border border-[#DFE8EA] bg-white text-[10px] font-mono text-[#647888] hidden sm:inline">
               ⌘ K
@@ -114,9 +114,9 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
               })
               setShowDetailCard(true)
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#DFE8EA] bg-white hover:bg-[#F8FAFC] text-xs font-semibold text-[#0F2C59] transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#DFE8EA] bg-white hover:bg-[#F8FAFC] text-xs font-semibold text-[#081D35] transition-colors"
           >
-            <svg className="w-3.5 h-3.5 text-[#0F2C59]" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <svg className="w-3.5 h-3.5 text-[#081D35]" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.8">
               <circle cx="9" cy="9" r="7" />
               <circle cx="9" cy="9" r="2" />
             </svg>
@@ -127,7 +127,7 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
             <button
               type="button"
               onClick={() => onNavigateTab('gis')}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#0F2C59] hover:bg-[#1a4175] text-white text-xs font-semibold transition-colors shadow-sm"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#081D35] hover:bg-[#0c2a4d] text-white text-xs font-semibold transition-colors shadow-sm cursor-pointer"
             >
               <span>Mode 7-Layer GIS</span>
               <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
@@ -159,8 +159,8 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
               onClick={() => setSelectedIsland(isl)}
               className={`px-3 py-1 rounded-full text-xs font-semibold transition-all shadow-sm ${
                 selectedIsland === isl
-                  ? 'bg-[#0F2C59] text-white'
-                  : 'bg-white/90 text-[#0F2C59] hover:bg-white'
+                  ? 'bg-[#081D35] text-white'
+                  : 'bg-white/90 text-[#081D35] hover:bg-white'
               }`}
             >
               {selectedIsland === isl && '✓ '}
@@ -169,7 +169,7 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
           ))}
         </div>
 
-        <div className="flex items-center gap-1.5 text-[11px] font-medium text-[#0F2C59] bg-white/70 px-2.5 py-1 rounded-full border border-white/60">
+        <div className="flex items-center gap-1.5 text-[11px] font-medium text-[#081D35] bg-white/70 px-2.5 py-1 rounded-full border border-white/60">
           <span>📍</span>
           <span>Banda, Maluku · Indonesia</span>
         </div>
@@ -179,7 +179,7 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
       <div className="relative w-full h-[660px] overflow-hidden">
         {/* Geographic Coordinates Overlay */}
         <div className="absolute left-6 top-4 z-10 pointer-events-none">
-          <p className="text-[11px] font-bold text-[#0F2C59] tracking-wider uppercase">
+          <p className="text-[11px] font-bold text-[#081D35] tracking-wider uppercase">
             KEPULAUAN BANDA / MALUKU
           </p>
           <p className="text-[10px] text-[#408C9C] font-mono mt-0.5">
@@ -260,7 +260,7 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
               {/* Volcano Crater Rings */}
               <circle cx="395" cy="245" r="28" stroke="#ffffff" strokeWidth="2" strokeDasharray="4 2" />
               <circle cx="395" cy="245" r="12" fill="#d97706" opacity="0.3" stroke="#b45309" strokeWidth="1.5" />
-              <text x="355" y="295" fill="#0F2C59" fontSize="11" fontWeight="700" letterSpacing="1">
+              <text x="355" y="295" fill="#081D35" fontSize="11" fontWeight="700" letterSpacing="1">
                 BANDA API
               </text>
             </g>
@@ -298,7 +298,7 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
                 stroke="#77C9C5"
                 strokeWidth="2"
               />
-              <text x="515" y="270" fill="#0F2C59" fontSize="11" fontWeight="700" letterSpacing="1">
+              <text x="515" y="270" fill="#081D35" fontSize="11" fontWeight="700" letterSpacing="1">
                 BANDA NEIRA
               </text>
             </g>
@@ -336,7 +336,7 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
                 stroke="#77C9C5"
                 strokeWidth="2"
               />
-              <text x="590" y="395" fill="#0F2C59" fontSize="12" fontWeight="700" letterSpacing="1">
+              <text x="590" y="395" fill="#081D35" fontSize="12" fontWeight="700" letterSpacing="1">
                 BANDA BESAR (LONTHOIR)
               </text>
             </g>
@@ -364,7 +364,7 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
             >
               <ellipse cx="980" cy="420" rx="42" ry="55" fill="#C4EFEB" opacity="0.7" />
               <ellipse cx="980" cy="420" rx="36" ry="48" fill="#DCE5C5" stroke="#77C9C5" strokeWidth="2" />
-              <text x="945" y="490" fill="#0F2C59" fontSize="10" fontWeight="700">
+              <text x="945" y="490" fill="#081D35" fontSize="10" fontWeight="700">
                 PULAU HATTA
               </text>
             </g>
@@ -392,7 +392,7 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
             >
               <ellipse cx="180" cy="340" rx="35" ry="45" fill="#C4EFEB" opacity="0.7" />
               <ellipse cx="180" cy="340" rx="30" ry="38" fill="#DCE5C5" stroke="#77C9C5" strokeWidth="2" />
-              <text x="155" y="400" fill="#0F2C59" fontSize="10" fontWeight="700">
+              <text x="155" y="400" fill="#081D35" fontSize="10" fontWeight="700">
                 PULAU AI
               </text>
             </g>
@@ -417,7 +417,7 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
             >
               <ellipse cx="90" cy="390" rx="30" ry="35" fill="#C4EFEB" opacity="0.7" />
               <ellipse cx="90" cy="390" rx="24" ry="28" fill="#DCE5C5" stroke="#77C9C5" strokeWidth="2" />
-              <text x="65" y="440" fill="#0F2C59" fontSize="10" fontWeight="700">
+              <text x="65" y="440" fill="#081D35" fontSize="10" fontWeight="700">
                 PULAU RUN
               </text>
             </g>
@@ -442,9 +442,9 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
                   setShowDetailCard(true)
                 }}
               >
-                <circle cx="545" cy="225" r="14" fill="#0F2C59" stroke="#ffffff" strokeWidth="2" />
+                <circle cx="545" cy="225" r="14" fill="#081D35" stroke="#ffffff" strokeWidth="2" />
                 <circle cx="545" cy="225" r="5" fill="#f4b75e" />
-                <rect x="565" y="215" width="105" height="22" rx="4" fill="#0F2C59" />
+                <rect x="565" y="215" width="105" height="22" rx="4" fill="#081D35" />
                 <text x="572" y="230" fill="#ffffff" fontSize="10" fontWeight="600">
                   Benteng Belgica
                 </text>
@@ -546,7 +546,7 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
                 alt={activePlace.name}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0F2C59]/90 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#081D35]/90 via-transparent to-transparent" />
               
               <div className="absolute top-3 right-3 flex items-center gap-2">
                 <button
@@ -559,7 +559,7 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
               </div>
 
               <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs">
-                <span className="px-2.5 py-1 rounded-md bg-[#0F2C59]/80 backdrop-blur text-[10px] font-bold text-amber-300">
+                <span className="px-2.5 py-1 rounded-md bg-[#081D35]/80 backdrop-blur text-[10px] font-bold text-amber-300">
                   {activePlace.badge}
                 </span>
                 <span className="text-[11px] font-medium bg-emerald-600/90 px-2 py-0.5 rounded">
@@ -573,7 +573,7 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
                 <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">
                   {activePlace.category}
                 </span>
-                <h3 className="text-lg font-bold text-[#0F2C59] leading-tight">
+                <h3 className="text-lg font-bold text-[#081D35] leading-tight">
                   {activePlace.name}
                 </h3>
                 <p className="text-xs text-[#647888] font-medium mt-0.5">
@@ -588,11 +588,11 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
               <div className="p-2.5 rounded-xl bg-[#F8FAFC] border border-[#DFE8EA] flex flex-col gap-1 text-[11px] text-[#647888]">
                 <div className="flex justify-between">
                   <span>Koordinat Spasial:</span>
-                  <span className="font-mono text-[#0F2C59] font-semibold">{activePlace.coords}</span>
+                  <span className="font-mono text-[#081D35] font-semibold">{activePlace.coords}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Waktu Operasional:</span>
-                  <span className="text-[#0F2C59] font-medium">{activePlace.hours}</span>
+                  <span className="text-[#081D35] font-medium">{activePlace.hours}</span>
                 </div>
               </div>
 
@@ -612,7 +612,7 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
                   <button
                     type="button"
                     onClick={() => onNavigateTab('gis')}
-                    className="flex-1 py-2 px-3 rounded-lg bg-[#0F2C59] hover:bg-[#1a4175] text-white text-xs font-semibold text-center transition-colors"
+                    className="flex-1 py-2 px-3 rounded-lg bg-[#081D35] hover:bg-[#0c2a4d] text-white text-xs font-semibold text-center transition-colors cursor-pointer"
                   >
                     Buka Rute di GIS &rarr;
                   </button>
@@ -635,15 +635,15 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
         {/* BOTTOM RIGHT: FLOATING MAP LAYERS CONTROLLER (Figma lines 1150-1360) */}
         <aside className="absolute right-5 bottom-4 z-20 w-[270px] sm:w-[290px] bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-[#DFE8EA] p-4 flex flex-col gap-2.5">
           <div className="flex items-center justify-between pb-1.5 border-b border-[#DFE8EA]">
-            <span className="text-xs font-bold text-[#0F2C59] uppercase tracking-wide">
+            <span className="text-xs font-bold text-[#081D35] uppercase tracking-wide">
               Lapisan Peta (Layers)
             </span>
             <span className="text-[10px] text-[#647888]">4 Aktif</span>
           </div>
 
-          <label className="flex items-center justify-between gap-2 text-xs text-[#0F2C59] cursor-pointer hover:bg-slate-50 p-1 rounded-lg">
+          <label className="flex items-center justify-between gap-2 text-xs text-[#081D35] cursor-pointer hover:bg-slate-50 p-1 rounded-lg">
             <div className="flex items-center gap-2">
-              <span className="w-5 h-5 rounded-md bg-[#0F2C59] text-white flex items-center justify-center text-[10px]">
+              <span className="w-5 h-5 rounded-md bg-[#081D35] text-white flex items-center justify-center text-[10px]">
                 ≈
               </span>
               <span className="font-semibold text-[11px]">Wisata Bahari &amp; Diving</span>
@@ -652,11 +652,11 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
               type="checkbox"
               checked={layerWisata}
               onChange={(e) => setLayerWisata(e.target.checked)}
-              className="accent-[#0F2C59]"
+              className="accent-[#081D35]"
             />
           </label>
 
-          <label className="flex items-center justify-between gap-2 text-xs text-[#0F2C59] cursor-pointer hover:bg-slate-50 p-1 rounded-lg">
+          <label className="flex items-center justify-between gap-2 text-xs text-[#081D35] cursor-pointer hover:bg-slate-50 p-1 rounded-lg">
             <div className="flex items-center gap-2">
               <span className="w-5 h-5 rounded-md bg-[#5964BF] text-white flex items-center justify-center text-[10px]">
                 🏠
@@ -671,7 +671,7 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
             />
           </label>
 
-          <label className="flex items-center justify-between gap-2 text-xs text-[#0F2C59] cursor-pointer hover:bg-slate-50 p-1 rounded-lg">
+          <label className="flex items-center justify-between gap-2 text-xs text-[#081D35] cursor-pointer hover:bg-slate-50 p-1 rounded-lg">
             <div className="flex items-center gap-2">
               <span className="w-5 h-5 rounded-md bg-[#059669] text-white flex items-center justify-center text-[10px]">
                 🌿
@@ -686,7 +686,7 @@ export const JelajahPetaDesktopView: React.FC<JelajahPetaDesktopViewProps> = ({
             />
           </label>
 
-          <label className="flex items-center justify-between gap-2 text-xs text-[#0F2C59] cursor-pointer hover:bg-slate-50 p-1 rounded-lg">
+          <label className="flex items-center justify-between gap-2 text-xs text-[#081D35] cursor-pointer hover:bg-slate-50 p-1 rounded-lg">
             <div className="flex items-center gap-2">
               <span className="w-5 h-5 rounded-md bg-[#DF7865] text-white flex items-center justify-center text-[10px]">
                 ⚓

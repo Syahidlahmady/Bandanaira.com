@@ -262,7 +262,7 @@ export const VerifiedMarketplaceModal: React.FC<VerifiedMarketplaceModalProps> =
       case 'fish':
         return <Fish size={28} className="text-sky-500" />
       case 'droplet':
-        return <Droplets size={28} className="text-indigo-400" />
+        return <Droplets size={28} className="text-cyan-500" />
       case 'coffee':
         return <Coffee size={28} className="text-amber-600" />
       case 'sun':
@@ -975,7 +975,7 @@ export const VerifiedMarketplaceModal: React.FC<VerifiedMarketplaceModalProps> =
                                   onVerifyProduct(p.verificationToken || p.batchCode)
                                   onClose()
                                 }}
-                                className="w-full py-2 px-2 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100 bg-slate-100 dark:bg-[#0F2C59] hover:bg-slate-200 dark:hover:bg-[#1E3A5F] border border-slate-200 dark:border-[#1E3A5F] transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs group/verify"
+                                className="w-full py-2 px-2 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100 bg-slate-100 dark:bg-[#1E3A5F] hover:bg-slate-200 dark:hover:bg-[#254875] border border-slate-200 dark:border-[#1E3A5F] transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs group/verify"
                                 title="Periksa Keabsahan Kriptografi On-Chain"
                               >
                                 <ShieldCheck size={13} className="text-[#F4B75E] group-hover/verify:scale-110 transition-transform" />
@@ -1034,7 +1034,7 @@ export const VerifiedMarketplaceModal: React.FC<VerifiedMarketplaceModalProps> =
           <button
             type="button"
             onClick={onClose}
-            className="w-full sm:w-auto px-4 py-1.5 rounded-xl bg-[#081D35] hover:bg-[#0F2C59] text-white font-bold transition text-xs text-center cursor-pointer shadow-2xs"
+            className="w-full sm:w-auto px-4 py-1.5 rounded-xl bg-[#081D35] hover:bg-[#0c2a4d] text-white font-bold transition text-xs text-center cursor-pointer shadow-2xs"
           >
             Tutup Katalog
           </button>

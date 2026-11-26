@@ -319,7 +319,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
               <button
                 type="button"
                 onClick={() => onSelectTab('register')}
-                className="inline-flex items-center gap-2 rounded-xl border border-amber-500/70 bg-amber-600 px-3.5 py-2 text-xs font-bold text-white shadow-[0_4px_14px_rgba(217,119,6,0.35)] transition-all hover:bg-amber-500"
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition-all cursor-pointer"
                 title="Buka halaman Pendaftaran Akun Baru (Warga, Mitra Usaha, Wisatawan)"
               >
                 <span>Daftar Akun</span>
@@ -419,7 +419,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           <div className="flex flex-wrap items-center gap-2.5">
             {currentUser ? (
               <>
-                <div className="flex items-center gap-2 rounded-full border border-[#f4b75e]/35 bg-[#0f2c59]/80 px-3 py-1">
+                <div className="flex items-center gap-2 rounded-full border border-[#f4b75e]/35 bg-[#081D35]/80 px-3 py-1">
                   <UserCheck size={13} className="text-[#f4b75e]" />
                   <span className="font-semibold text-white">
                     {currentUser.full_name || currentUser.username}

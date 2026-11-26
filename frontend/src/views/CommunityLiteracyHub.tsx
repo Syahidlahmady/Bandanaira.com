@@ -277,7 +277,7 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
           <button
             type="button"
             onClick={onOpenQuickLogin}
-            className="rounded-lg bg-[#f4b75e] px-5 py-2 text-xs font-bold text-[#081d35] hover:bg-amber-400"
+            className="rounded-xl bg-[#081D35] hover:bg-[#0c2a4d] px-5 py-2 text-xs font-bold text-white transition-colors duration-200 cursor-pointer shadow-xs"
           >
             Masuk Akun Pengelola
           </button>
@@ -313,7 +313,7 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
               </div>
 
               {/* Sub-Navigation Switcher */}
-              <div className="flex flex-wrap gap-1.5 rounded-lg bg-[#0f2c59] p-1 border border-white/10 self-start lg:self-end">
+              <div className="flex flex-wrap gap-1.5 rounded-lg bg-[#081D35] p-1 border border-white/10 self-start lg:self-end">
                 <button
                   type="button"
                   onClick={() => setHubSubTab('bank_konten')}
@@ -461,7 +461,7 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
                         <button
                           type="button"
                           onClick={() => setSelectedContentModal(item)}
-                          className="shrink-0 inline-flex items-center gap-1.5 rounded-md bg-[#081d35] px-3 py-1.5 text-xs font-bold text-[#f4b75e] hover:bg-[#0f2c59]"
+                          className="shrink-0 inline-flex items-center gap-1.5 rounded-md bg-[#081d35] px-3 py-1.5 text-xs font-bold text-[#f4b75e] hover:bg-[#0c2a4d]"
                         >
                           <Eye size={13} /> Baca
                         </button>
@@ -547,7 +547,7 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
                         <div
                           className={`rounded-md p-3 text-xs ${
                             isReady
-                              ? 'bg-[#0f2c59] text-slate-200'
+                              ? 'bg-[#081D35] text-slate-200'
                               : 'bg-white border border-slate-200 text-[#081d35]'
                           }`}
                         >
@@ -597,7 +597,7 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
                   {governance.quality_checklist_standards.map((qc) => (
-                    <div key={qc.code} className="rounded-lg bg-[#0f2c59] p-4 border border-white/10">
+                    <div key={qc.code} className="rounded-lg bg-[#081D35] p-4 border border-white/10">
                       <div className="text-xs font-bold text-[#f4b75e] mb-1">
                         [{qc.code}] {qc.label}
                       </div>
@@ -680,9 +680,9 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
             <button
               type="button"
               onClick={handleOpenAddContent}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#f4b75e] px-4 py-2.5 text-xs font-bold text-[#081d35] hover:bg-amber-400 self-start sm:self-auto shrink-0"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#081D35] hover:bg-[#0c2a4d] px-4 py-2.5 text-xs font-bold text-white self-start sm:self-auto shrink-0 transition-colors duration-200 cursor-pointer shadow-xs"
             >
-              <Plus size={15} /> Unggah Karya Baru
+              <Plus size={15} className="text-[#F4B75E]" /> Unggah Karya Baru
             </button>
           </div>
 
@@ -730,7 +730,7 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
                   <button
                     type="button"
                     onClick={() => handleOpenEditContent(item)}
-                    className="inline-flex items-center gap-1 rounded-md bg-[#081d35] px-3 py-1.5 text-xs font-bold text-[#f4b75e] hover:bg-[#0f2c59]"
+                    className="inline-flex items-center gap-1 rounded-md bg-[#081d35] px-3 py-1.5 text-xs font-bold text-[#f4b75e] hover:bg-[#0c2a4d]"
                   >
                     <Edit2 size={13} /> Edit &amp; 6-QC
                   </button>
@@ -1107,7 +1107,7 @@ export const CommunityLiteracyHub: React.FC<CommunityLiteracyHubProps> = ({
                   </button>
                   <button
                     type="submit"
-                    className="rounded-md bg-[#f4b75e] px-4 py-2 font-bold text-[#081d35] hover:bg-amber-400"
+                    className="rounded-xl bg-[#081D35] hover:bg-[#0c2a4d] px-4 py-2 text-xs font-bold text-white transition-colors duration-200 cursor-pointer shadow-xs"
                   >
                     Simpan ke CMS
                   </button>

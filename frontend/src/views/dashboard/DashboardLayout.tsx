@@ -39,6 +39,12 @@ import {
   AlertCircle,
 } from 'lucide-react'
 import { setPreferredTourismSubTab } from '../../services/tourism'
+import {
+  RoleNotificationItem,
+  ROLE_NOTIFICATION_PROFILES,
+  generateRoleNotifications,
+} from '../../services/roleNotifications'
+import { RoleKey } from './roles/types'
 
 export type DashboardNavTab =
   | 'landing'
@@ -56,6 +62,7 @@ export type DashboardNavTab =
   | 'survei'
   | 'marketplace'
   | 'help'
+  | 'sejarah'
 
 export interface DashboardLayoutProps {
   currentUser: any
@@ -83,6 +90,8 @@ export interface DashboardLayoutProps {
   } | null
   loadingHealth?: boolean
   healthError?: string | null
+  activeRoleKey?: RoleKey
+  onRoleChange?: (role: RoleKey) => void
   children: React.ReactNode
 }
 
@@ -104,6 +113,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   systemHealth = null,
   loadingHealth = false,
   healthError = null,
+  activeRoleKey,
+  onRoleChange,
   children,
 }) => {
   // Simpan state collapsed di localStorage agar konsisten saat refresh
@@ -118,7 +129,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false)
   const [showQuickMenuDropdown, setShowQuickMenuDropdown] = useState(false)
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false)
-  const [notificationFilter, setNotificationFilter] = useState<'all' | 'unread' | 'letters' | 'system'>('all')
   const [showTelemetryPopover, setShowTelemetryPopover] = useState(false)
   const settingsDropdownRef = useRef<HTMLDivElement>(null)
   const quickMenuDropdownRef = useRef<HTMLDivElement>(null)
@@ -232,16 +242,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const isCoopManager = roles.includes('coop_manager') || roles.includes('pengelola_koperasi')
   const isSmartTourismAdmin = roles.includes('smart_tourism_admin') || roles.includes('admin_wisata')
   const isSurveyor = roles.includes('field_surveyor') || roles.includes('surveyor')
-  const isResident =
-    roles.includes('resident') ||
-    (!isAdmin &&
-      !roles.includes('village_officer') &&
-      !isFarmer &&
-      !isFarmerGroupAdmin &&
-      !isHomestayOperator &&
-      !isCoopManager &&
-      !isSmartTourismAdmin &&
-      !isSurveyor)
 
   // State accordion dropdown untuk 5 Pilar Super Admin
   const [openAdminGroups, setOpenAdminGroups] = useState<Record<string, boolean>>({
@@ -282,480 +282,53 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const userDisplayEmail =
     currentUser?.email || (currentUser?.username ? `${currentUser.username}@bandanaira.com` : 'admin@bandanaira.com')
 
-  // Notifikasi Ekosistem Banda Neira Berbasis Peran
-  interface EcosystemNotificationItem {
-    id: string
-    title: string
-    description: string
-    timestamp: string
-    category: 'letter' | 'farm' | 'iot' | 'coop' | 'blockchain' | 'tourism' | 'system'
-    read: boolean
-    priority: 'high' | 'normal' | 'info'
-    targetTab?: DashboardNavTab
-    actionLabel?: string
-  }
-
-  const initialNotifications: EcosystemNotificationItem[] = useMemo(() => {
-    const items: EcosystemNotificationItem[] = []
-
-    if (isAdmin) {
-      // 1. Administrator Sistem (Akses Lengkap Seluruh Pilar)
-      if (adminPendingLettersCount > 0) {
-        items.push({
-          id: 'notif-admin-letters',
-          title: `Permohonan Surat Masuk (${adminPendingLettersCount} Menunggu)`,
-          description: `${adminPendingLettersCount} berkas permohonan surat warga memerlukan verifikasi dan tanda tangan Kepala Desa.`,
-          timestamp: '10 menit yang lalu',
-          category: 'letter',
-          read: false,
-          priority: 'high',
-          targetTab: 'letters',
-          actionLabel: 'Tinjau Berkas',
-        })
-      } else {
-        items.push({
-          id: 'notif-admin-letters-ok',
-          title: 'Pelayanan Surat Desa Tertib',
-          description: 'Seluruh permohonan administrasi warga telah diverifikasi dan diterbitkan sah.',
-          timestamp: '1 jam yang lalu',
-          category: 'letter',
-          read: true,
-          priority: 'info',
-          targetTab: 'letters',
-          actionLabel: 'Buka Surat',
-        })
-      }
-
-      if (pendingFarmsCount > 0) {
-        items.push({
-          id: 'notif-admin-farms',
-          title: `Verifikasi Lahan Pala (${pendingFarmsCount} Plot Baru)`,
-          description: `${pendingFarmsCount} plot perkebunan pala diajukan oleh Poktan untuk sinkronisasi kadastral PostGIS.`,
-          timestamp: '25 menit yang lalu',
-          category: 'farm',
-          read: false,
-          priority: 'high',
-          targetTab: 'farming',
-          actionLabel: 'Validasi Lahan',
-        })
-      }
-
-      items.push({
-        id: 'notif-admin-tourism',
-        title: 'Pengawasan Wisata & Tamu Desa',
-        description: 'Pemantauan akomodasi eco-stay, direktori pemandu berlisensi, dan registrasi tamu kepulauan.',
-        timestamp: '35 menit yang lalu',
-        category: 'tourism',
-        read: false,
-        priority: 'normal',
-        targetTab: 'tourism',
-        actionLabel: 'Master Wisata',
-      })
-
-      items.push({
-        id: 'notif-admin-iot',
-        title: 'Telemetri IoT 4 Stasiun Normal',
-        description: 'Stasiun Neira, Lonthoir, Ay, dan Rhun melaporkan kemurnian air RO 38 PPM & daya PLTS 100%.',
-        timestamp: '40 menit yang lalu',
-        category: 'iot',
-        read: true,
-        priority: 'normal',
-        targetTab: 'iot',
-        actionLabel: 'Pantau IoT',
-      })
-
-      items.push({
-        id: 'notif-admin-coop',
-        title: 'Sirkularitas Koperasi Hatta',
-        description: 'Penyetoran sampah plastik warga terkonversi menjadi kuota air minum RO bersih di dispenser pintar desa.',
-        timestamp: '3 jam yang lalu',
-        category: 'coop',
-        read: true,
-        priority: 'normal',
-        targetTab: 'koperasi',
-        actionLabel: 'Buka Kasir',
-      })
-
-      items.push({
-        id: 'notif-admin-trace',
-        title: 'Rantai Pasok Pala Terjangkar EVM',
-        description: 'Batch BND-2026-03 tervalidasi hash SHA-256 kanonikal tanpa data pribadi pada ledger konsorsium.',
-        timestamp: '5 jam yang lalu',
-        category: 'blockchain',
-        read: true,
-        priority: 'info',
-        targetTab: 'traceability',
-        actionLabel: 'Cek Pasok',
-      })
-    } else if (roles.includes('village_officer')) {
-      // 2. Petugas Kantor Desa / Kepala Desa
-      if (adminPendingLettersCount > 0) {
-        items.push({
-          id: 'notif-officer-letters',
-          title: `Permohonan Surat Masuk (${adminPendingLettersCount} Menunggu)`,
-          description: `${adminPendingLettersCount} berkas permohonan surat warga memerlukan verifikasi dan tanda tangan aparatur desa.`,
-          timestamp: '10 menit yang lalu',
-          category: 'letter',
-          read: false,
-          priority: 'high',
-          targetTab: 'letters',
-          actionLabel: 'Tinjau Berkas',
-        })
-      } else {
-        items.push({
-          id: 'notif-officer-letters-ok',
-          title: 'Pelayanan Surat Desa Tertib',
-          description: 'Seluruh permohonan administrasi warga telah diverifikasi dan diterbitkan sah.',
-          timestamp: '1 jam yang lalu',
-          category: 'letter',
-          read: true,
-          priority: 'info',
-          targetTab: 'letters',
-          actionLabel: 'Buka Surat',
-        })
-      }
-
-      if (pendingFarmsCount > 0) {
-        items.push({
-          id: 'notif-officer-farms',
-          title: `Pengajuan Plot Kebun Pala (${pendingFarmsCount} Menunggu)`,
-          description: `${pendingFarmsCount} plot perkebunan rempah diajukan kelompok tani untuk persetujuan desa.`,
-          timestamp: '30 menit yang lalu',
-          category: 'farm',
-          read: false,
-          priority: 'high',
-          targetTab: 'farming',
-          actionLabel: 'Validasi Lahan',
-        })
-      }
-
-      items.push({
-        id: 'notif-officer-pop',
-        title: 'Master Data Kependudukan Terenkripsi',
-        description: 'Data penduduk desa tersimpan aman dengan enkripsi AES-256 dan kepatuhan UU PDP No. 27/2022.',
-        timestamp: '2 jam yang lalu',
-        category: 'letter',
-        read: true,
-        priority: 'info',
-        targetTab: 'population',
-        actionLabel: 'Buka Data',
-      })
-
-      items.push({
-        id: 'notif-officer-tourism',
-        title: 'Pengawasan Tamu Menginap (1x24 Jam)',
-        description: 'Buku reservasi tamu wisatawan di wilayah desa terpantau untuk ketertiban lingkungan.',
-        timestamp: '4 jam yang lalu',
-        category: 'tourism',
-        read: true,
-        priority: 'normal',
-        targetTab: 'tourism',
-        actionLabel: 'Daftar Tamu',
-      })
-    } else if (isHomestayOperator) {
-      // 3. Mitra Usaha & Operator Homestay / Eco-Stay
-      items.push({
-        id: 'notif-homestay-booking',
-        title: 'Pemesanan Kamar Eco-Stay Siap',
-        description: 'Sistem pemesanan langsung WhatsApp aktif untuk konfirmasi ketersediaan kamar tamu wisatawan.',
-        timestamp: '15 menit yang lalu',
-        category: 'tourism',
-        read: false,
-        priority: 'high',
-        targetTab: 'tourism',
-        actionLabel: 'Kelola Kamar',
-      })
-
-      items.push({
-        id: 'notif-homestay-amenities',
-        title: 'Standar Fasilitas Air RO & Listrik Surya',
-        description: 'Status keberlanjutan eco-stay Anda terverifikasi dengan pasokan air minum RO dan cadangan solar panel.',
-        timestamp: '1 jam yang lalu',
-        category: 'tourism',
-        read: true,
-        priority: 'normal',
-        targetTab: 'tourism',
-        actionLabel: 'Info Fasilitas',
-      })
-
-      items.push({
-        id: 'notif-homestay-market',
-        title: 'Katalog Oleh-Oleh Khas untuk Tamu',
-        description: 'Rekomendasikan produk rempah pala dan cenderamata khas Banda Neira kepada wisatawan yang menginap.',
-        timestamp: '3 jam yang lalu',
-        category: 'tourism',
-        read: true,
-        priority: 'info',
-        targetTab: 'marketplace',
-        actionLabel: 'Buka Katalog',
-      })
-    } else if (isSmartTourismAdmin) {
-      // 4. Pokdarwis & Pengelola Artikel Sejarah (smart_tourism_admin)
-      items.push({
-        id: 'notif-smart-articles',
-        title: 'CMS Artikel Sejarah & Cagar Budaya',
-        description: 'Kelola draf narasi sejarah 177 situs cagar budaya untuk dipublikasikan di halaman /sejarah.',
-        timestamp: '20 menit yang lalu',
-        category: 'tourism',
-        read: false,
-        priority: 'high',
-        targetTab: 'tourism',
-        actionLabel: 'Buka CMS',
-      })
-
-      items.push({
-        id: 'notif-smart-guides',
-        title: 'Direktori Pemandu Wisata Berlisensi',
-        description: 'Daftar pemandu wisata resmi HPI aktif dan siap mendampingi kunjungan wisatawan di Kepulauan Banda.',
-        timestamp: '2 jam yang lalu',
-        category: 'tourism',
-        read: true,
-        priority: 'normal',
-        targetTab: 'tourism',
-        actionLabel: 'Data Pemandu',
-      })
-
-      items.push({
-        id: 'notif-smart-audio',
-        title: 'Audio Guide Cagar Budaya Siap',
-        description: 'Audio guide narasi sejarah Benteng Belgica, Nassau, dan Rumah Hatta dapat diakses pengunjung via scan QR.',
-        timestamp: '4 jam yang lalu',
-        category: 'tourism',
-        read: true,
-        priority: 'info',
-        targetTab: 'tourism',
-        actionLabel: 'Katalog Cagar',
-      })
-    } else if (isFarmer) {
-      // 5. Petani Rempah Pala
-      items.push({
-        id: 'notif-farmer-harvest',
-        title: 'Pencatatan Panen Pala & Fuli',
-        description: 'Catat hasil panen pala biji dan fuli merah untuk verifikasi mutu panen dan penerbitan kode batch.',
-        timestamp: '15 menit yang lalu',
-        category: 'farm',
-        read: false,
-        priority: 'high',
-        targetTab: 'traceability',
-        actionLabel: 'Catat Panen',
-      })
-
-      items.push({
-        id: 'notif-farmer-farm',
-        title: 'Batas Lahan Perkebunan Terdaftar',
-        description: 'Plot kebun Anda terhubung ke kelompok tani dan tervalidasi kadastral pada peta GIS.',
-        timestamp: '1 jam yang lalu',
-        category: 'farm',
-        read: true,
-        priority: 'normal',
-        targetTab: 'farming',
-        actionLabel: 'Peta Kebun',
-      })
-
-      items.push({
-        id: 'notif-farmer-letter',
-        title: 'Layanan Surat Keterangan Usaha Tani',
-        description: 'Ajukan surat pengantar atau keterangan usaha tani ke kantor desa secara mandiri.',
-        timestamp: '3 jam yang lalu',
-        category: 'letter',
-        read: true,
-        priority: 'info',
-        targetTab: 'letters',
-        actionLabel: 'Ajukan Surat',
-      })
-    } else if (isFarmerGroupAdmin) {
-      // 6. Ketua Kelompok Tani (Poktan)
-      items.push({
-        id: 'notif-poktan-farm',
-        title: pendingFarmsCount > 0 ? `Plot Kebun Menunggu Verifikasi (${pendingFarmsCount})` : 'Plot Kebun Anggota Terverifikasi',
-        description: pendingFarmsCount > 0
-          ? `${pendingFarmsCount} plot perkebunan diajukan ke kantor desa untuk sinkronisasi kadastral.`
-          : 'Seluruh plot kebun pala anggota kelompok tani terverifikasi pada peta spasial PostGIS.',
-        timestamp: '20 menit yang lalu',
-        category: 'farm',
-        read: pendingFarmsCount > 0 ? false : true,
-        priority: pendingFarmsCount > 0 ? 'high' : 'normal',
-        targetTab: 'farming',
-        actionLabel: 'Kelola Lahan',
-      })
-
-      items.push({
-        id: 'notif-poktan-batch',
-        title: 'Grading Mutu & Batch Kelompok Tani',
-        description: 'Kombinasikan catatan panen petani anggota menjadi batch rempah terverifikasi blockchain.',
-        timestamp: '1 jam yang lalu',
-        category: 'blockchain',
-        read: true,
-        priority: 'normal',
-        targetTab: 'traceability',
-        actionLabel: 'Batch Rempah',
-      })
-
-      items.push({
-        id: 'notif-poktan-letter',
-        title: 'Administrasi Surat Rekomendasi Poktan',
-        description: 'Permohonan surat keterangan kelompok tani dapat diproses bersama aparatur desa.',
-        timestamp: '4 jam yang lalu',
-        category: 'letter',
-        read: true,
-        priority: 'info',
-        targetTab: 'letters',
-        actionLabel: 'Buka Surat',
-      })
-    } else if (isCoopManager) {
-      // 7. Pengelola Koperasi Hatta & Air RO
-      items.push({
-        id: 'notif-coop-pos',
-        title: 'Kasir Timbangan & Bank Sampah',
-        description: 'Layanan penimbangan setoran komoditas pala/ikan dan penukaran sampah botol plastik aktif.',
-        timestamp: '10 menit yang lalu',
-        category: 'coop',
-        read: false,
-        priority: 'high',
-        targetTab: 'koperasi',
-        actionLabel: 'Buka Kasir',
-      })
-
-      items.push({
-        id: 'notif-coop-warehouse',
-        title: 'Penerimaan Rempah Gudang Koperasi',
-        description: 'Batch rempah pala terverifikasi hash blockchain siap diproses dan dikemas.',
-        timestamp: '1 jam yang lalu',
-        category: 'blockchain',
-        read: true,
-        priority: 'normal',
-        targetTab: 'traceability',
-        actionLabel: 'Cek Gudang',
-      })
-
-      items.push({
-        id: 'notif-coop-market',
-        title: 'Manajemen Inventaris Marketplace',
-        description: 'Pantau stok produk rempah kemasan dan pesanan produk oleh-oleh di etalase pasar.',
-        timestamp: '3 jam yang lalu',
-        category: 'coop',
-        read: true,
-        priority: 'info',
-        targetTab: 'marketplace',
-        actionLabel: 'Inventaris',
-      })
-    } else if (isSurveyor) {
-      // 8. Surveyor Lapangan & IoT
-      items.push({
-        id: 'notif-surveyor-iot',
-        title: 'Telemetri Sensor IoT 4 Stasiun',
-        description: 'Stasiun Neira, Lonthoir, Ay, dan Rhun melaporkan sensor TDS dan daya PLTS aktif terkalibrasi.',
-        timestamp: '15 menit yang lalu',
-        category: 'iot',
-        read: false,
-        priority: 'high',
-        targetTab: 'iot',
-        actionLabel: 'Pantau IoT',
-      })
-
-      items.push({
-        id: 'notif-surveyor-survey',
-        title: 'Formulir Survei Lapangan Dinamis',
-        description: 'Formulir akuisisi data NoSQL siap digunakan untuk pendataan kondisi infrastruktur air dan wilayah.',
-        timestamp: '1 jam yang lalu',
-        category: 'system',
-        read: true,
-        priority: 'normal',
-        targetTab: 'survei',
-        actionLabel: 'Form Survei',
-      })
-
-      items.push({
-        id: 'notif-surveyor-gis',
-        title: 'Peta Spasial GIS 7-Layer',
-        description: 'Titik koordinat fasilitas umum dan zonasi pulau siap disinkronkan ke layer PostGIS.',
-        timestamp: '3 jam yang lalu',
-        category: 'farm',
-        read: true,
-        priority: 'info',
-        targetTab: 'gis',
-        actionLabel: 'Peta Spasial',
-      })
-    } else {
-      // 9. Warga Masyarakat Desa (Resident / Default)
-      items.push({
-        id: 'notif-resident-letter',
-        title: 'Permohonan Surat Keterangan Desa',
-        description: 'Ajukan permohonan surat keterangan usaha, domisili, atau pengantar desa langsung dari ponsel.',
-        timestamp: '15 menit yang lalu',
-        category: 'letter',
-        read: false,
-        priority: 'high',
-        targetTab: 'letters',
-        actionLabel: 'Ajukan Surat',
-      })
-
-      items.push({
-        id: 'notif-resident-coop',
-        title: 'Tabungan Koperasi & Kuota Air RO',
-        description: 'Cek saldo tabungan hasil setor rempah dan kuota air minum RO bersih di dispenser pintar desa.',
-        timestamp: '1 jam yang lalu',
-        category: 'coop',
-        read: true,
-        priority: 'normal',
-        targetTab: 'koperasi',
-        actionLabel: 'Cek Tabungan',
-      })
-
-      items.push({
-        id: 'notif-resident-pdp',
-        title: 'Perlindungan Data Pribadi NIK',
-        description: 'Identitas kependudukan Anda terenkripsi aman sesuai standar UU PDP No. 27/2022.',
-        timestamp: '3 jam yang lalu',
-        category: 'system',
-        read: true,
-        priority: 'info',
-        targetTab: 'letters',
-        actionLabel: 'Info Data',
-      })
-    }
-
-    if (!isOnline) {
-      items.unshift({
-        id: 'notif-offline',
-        title: 'Mode Operasi Offline Aktif',
-        description: 'Koneksi jaringan kepulauan terputus. Sistem beralih ke cache lokal PWA dan mutasi antrean tersimpan aman.',
-        timestamp: 'Baru saja',
-        category: 'system',
-        read: false,
-        priority: 'high',
-        actionLabel: 'Info Jaringan',
-      })
-    } else if (pendingSyncCount > 0) {
-      items.unshift({
-        id: 'notif-sync',
-        title: `Sinkronisasi Data Lokal (${pendingSyncCount} Item)`,
-        description: `${pendingSyncCount} transaksi offline siap disinkronkan ke server komando pusat.`,
-        timestamp: 'Baru saja',
-        category: 'system',
-        read: false,
-        priority: 'high',
-        actionLabel: 'Sinkronkan',
-      })
-    }
-
-    return items
+  // Penentuan Peran Aktif yang Efektif untuk Notifikasi
+  const currentRoleKey: RoleKey = useMemo(() => {
+    if (activeRoleKey) return activeRoleKey
+    if (isAdmin) return 'admin'
+    if (roles.includes('village_officer')) return 'village_officer'
+    if (isFarmerGroupAdmin) return 'farmer_group_admin'
+    if (isFarmer) return 'farmer'
+    if (isCoopManager) return 'coop_manager'
+    if (isHomestayOperator) return 'homestay_operator'
+    if (isSmartTourismAdmin) return 'smart_tourism_admin'
+    if (isSurveyor) return 'field_surveyor'
+    if (roles.includes('tourist')) return 'tourist'
+    return 'resident'
   }, [
+    activeRoleKey,
+    isAdmin,
+    roles,
+    isFarmerGroupAdmin,
+    isFarmer,
+    isCoopManager,
+    isHomestayOperator,
+    isSmartTourismAdmin,
+    isSurveyor,
+  ])
+
+  const roleNotificationProfile =
+    ROLE_NOTIFICATION_PROFILES[currentRoleKey] || ROLE_NOTIFICATION_PROFILES.resident
+
+  const initialNotifications: RoleNotificationItem[] = useMemo(() => {
+    return generateRoleNotifications(currentRoleKey, {
+      adminPendingLettersCount,
+      pendingFarmsCount,
+      pendingSyncCount,
+      isOnline,
+      userName: currentUser?.full_name || currentUser?.username,
+    })
+  }, [
+    currentRoleKey,
     adminPendingLettersCount,
     pendingFarmsCount,
     pendingSyncCount,
     isOnline,
-    isAdmin,
-    isHomestayOperator,
-    isSmartTourismAdmin,
-    isFarmer,
-    isFarmerGroupAdmin,
-    isCoopManager,
-    isSurveyor,
-    isResident,
+    currentUser?.full_name,
+    currentUser?.username,
   ])
 
-  const [notifications, setNotifications] = useState<EcosystemNotificationItem[]>(initialNotifications)
+  const [notifications, setNotifications] = useState<RoleNotificationItem[]>(initialNotifications)
 
   useEffect(() => {
     setNotifications((prev) => {
@@ -785,14 +358,21 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     setNotifications([])
   }
 
-  const filteredNotifications = notifications.filter((item) => {
-    if (notificationFilter === 'unread') return !item.read
-    if (notificationFilter === 'letters') return item.category === 'letter' || item.category === 'farm' || item.category === 'tourism'
-    if (notificationFilter === 'system') return item.category === 'iot' || item.category === 'system' || item.category === 'blockchain' || item.category === 'coop'
-    return true
-  })
+  const [notificationFilter, setNotificationFilter] = useState<string>('all')
 
-  const getCategoryIcon = (category: EcosystemNotificationItem['category']) => {
+  useEffect(() => {
+    setNotificationFilter('all')
+  }, [currentRoleKey])
+
+  const activeFilterDef =
+    roleNotificationProfile.filterTabs.find((t) => t.key === notificationFilter) ||
+    roleNotificationProfile.filterTabs[0]
+
+  const filteredNotifications = notifications.filter((item) =>
+    activeFilterDef ? activeFilterDef.matcher(item) : true
+  )
+
+  const getCategoryIcon = (category: RoleNotificationItem['category']) => {
     switch (category) {
       case 'letter':
         return <Mail size={14} className="text-blue-600" />
@@ -805,14 +385,14 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       case 'coop':
         return <Scale size={14} className="text-amber-700" />
       case 'blockchain':
-        return <ShieldCheck size={14} className="text-purple-600" />
+        return <ShieldCheck size={14} className="text-blue-600" />
       case 'system':
       default:
         return <AlertCircle size={14} className="text-rose-600" />
     }
   }
 
-  const getCategoryBadgeStyle = (category: EcosystemNotificationItem['category']) => {
+  const getCategoryBadgeStyle = (category: RoleNotificationItem['category']) => {
     switch (category) {
       case 'letter':
         return 'bg-blue-50 border-blue-200'
@@ -825,7 +405,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       case 'coop':
         return 'bg-amber-50 border-amber-200'
       case 'blockchain':
-        return 'bg-purple-50 border-purple-200'
+        return 'bg-blue-50 border-blue-200'
       case 'system':
       default:
         return 'bg-rose-50 border-rose-200'
@@ -1454,7 +1034,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#081D35] text-white flex items-center justify-between px-4 z-40 border-b border-[#1E3A5F] shadow-lg">
         {/* Sisi Kiri: Logo Asli & Identitas Ekosistem Banda Digital */}
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="size-9 rounded-full bg-[#0F2C59] border border-[#F4B75E]/40 flex items-center justify-center p-1 overflow-hidden shrink-0 shadow-inner">
+          <div className="size-9 rounded-full bg-[#1E3A5F] border border-[#F4B75E]/40 flex items-center justify-center p-1 overflow-hidden shrink-0 shadow-inner">
             <img src={logoImg} alt="Logo Banda Digital" className="size-full object-contain" />
           </div>
           <div className="flex flex-col min-w-0 truncate">
@@ -1495,7 +1075,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-3 min-w-0">
                 {/* Circular Emblem dengan Logo Asli Banda Digital */}
-                <div className="size-11 rounded-full bg-[#0F2C59] border border-[#F4B75E]/30 flex items-center justify-center p-1.5 overflow-hidden shrink-0 shadow-inner">
+                <div className="size-11 rounded-full bg-[#1E3A5F] border border-[#F4B75E]/30 flex items-center justify-center p-1.5 overflow-hidden shrink-0 shadow-inner">
                   <img src={logoImg} alt="Logo Banda Digital" className="size-full object-contain" />
                 </div>
                 <div className="flex flex-col truncate">
@@ -1534,7 +1114,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <button
               type="button"
               onClick={() => setCollapsed(false)}
-              className="mx-auto size-11 rounded-full bg-[#0F2C59] border border-[#F4B75E]/30 flex items-center justify-center p-1.5 overflow-hidden hover:border-[#F4B75E] transition shadow-inner group relative"
+              className="mx-auto size-11 rounded-full bg-[#1E3A5F] border border-[#F4B75E]/30 flex items-center justify-center p-1.5 overflow-hidden hover:border-[#F4B75E] transition shadow-inner group relative"
               title="Perluas Sidebar"
             >
               <img
@@ -1544,7 +1124,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               />
 
               {/* Tooltip Collapsed */}
-              <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0F2C59] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+              <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1E3A5F] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                 bandanaira.com (Klik untuk lebarkan)
               </div>
             </button>
@@ -1571,7 +1151,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     : 'gap-3.5 px-3 py-2.5 text-left'
                 } ${
                   activeTab === 'dashboard'
-                    ? 'bg-[#0F2C59] text-white font-bold shadow-xs'
+                    ? 'bg-[#1E3A5F] text-white font-bold shadow-xs'
                     : 'text-slate-300 hover:text-white hover:bg-white/5'
                 }`}
               >
@@ -1588,7 +1168,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   <span className="truncate flex-1 text-[13px] tracking-tight">Dashboard Komando</span>
                 )}
                 {collapsed && (
-                  <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0F2C59] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                  <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1E3A5F] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                     Dashboard Komando
                   </div>
                 )}
@@ -1659,7 +1239,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                         </>
                       )}
                       {collapsed && (
-                        <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0F2C59] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                        <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1E3A5F] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                           {group.title}
                         </div>
                       )}
@@ -1686,7 +1266,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                               }}
                               className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs transition text-left relative ${
                                 isSubActive
-                                  ? 'bg-[#0F2C59] text-[#F4B75E] font-bold shadow-xs'
+                                  ? 'bg-[#1E3A5F] text-[#F4B75E] font-bold shadow-xs'
                                   : 'text-slate-400 hover:text-white hover:bg-white/5'
                               }`}
                             >
@@ -1736,7 +1316,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                       : 'gap-3.5 px-3 py-2.5 text-left'
                   } ${
                     isActive
-                      ? 'bg-[#0F2C59] text-white font-bold shadow-xs'
+                      ? 'bg-[#1E3A5F] text-white font-bold shadow-xs'
                       : 'text-slate-300 hover:text-white hover:bg-white/5'
                   }`}
                 >
@@ -1767,7 +1347,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
                   {/* Tooltip Floating Sesuai Gambar Referensi (Saat Collapsed) */}
                   {collapsed && (
-                    <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0F2C59] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                    <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1E3A5F] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                       {item.label}
                     </div>
                   )}
@@ -1794,7 +1374,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     : 'gap-3.5 px-3 py-2.5 text-left'
                 } ${
                   activeTab === 'help'
-                    ? 'bg-[#0F2C59] text-white font-bold shadow-xs'
+                    ? 'bg-[#1E3A5F] text-white font-bold shadow-xs'
                     : 'text-slate-300 hover:text-white hover:bg-white/5'
                 }`}
               >
@@ -1817,7 +1397,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 )}
 
                 {collapsed && (
-                  <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0F2C59] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                  <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1E3A5F] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                     Pusat Bantuan &amp; Panduan
                   </div>
                 )}
@@ -1829,7 +1409,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         {/* --- 2.5 USER PROFILE CARD DI BAGIAN BAWAH PERSIS SESUAI GAMBAR --- */}
         <div className="p-3 shrink-0 relative" ref={settingsDropdownRef}>
           {!collapsed ? (
-            <div className="flex items-center justify-between p-2 rounded-2xl bg-[#0F2C59]/60 hover:bg-[#0F2C59] transition border border-[#1E3A5F]">
+            <div className="flex items-center justify-between p-2 rounded-2xl bg-[#1E3A5F]/60 hover:bg-[#0c2a4d] transition border border-[#1E3A5F]">
               <div className="flex items-center gap-3 min-w-0">
                 {/* Foto / Avatar Pengguna Berbentuk Lingkaran dengan aksen emas */}
                 <div className="relative size-10 rounded-full bg-[#081D35] border border-[#F4B75E]/40 overflow-hidden shrink-0 flex items-center justify-center">
@@ -1888,7 +1468,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 </span>
 
                 {/* Tooltip Collapsed */}
-                <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0F2C59] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1E3A5F] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                   {userDisplayName} • Pengaturan
                 </div>
               </button>
@@ -1897,7 +1477,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
           {/* DROPDOWN POPUP DARI SETTINGS GEAR / AVATAR */}
           {showSettingsDropdown && (
-            <div className="absolute bottom-full left-3 right-3 mb-2 bg-[#0F2C59] border border-[#1E3A5F] rounded-2xl shadow-2xl p-2 z-50 space-y-1 animate-in fade-in slide-in-from-bottom-2 duration-150">
+            <div className="absolute bottom-full left-3 right-3 mb-2 bg-[#1E3A5F] border border-[#1E3A5F] rounded-2xl shadow-2xl p-2 z-50 space-y-1 animate-in fade-in slide-in-from-bottom-2 duration-150">
               <div className="px-3 py-2 border-b border-[#1E3A5F]">
                 <p className="text-xs font-bold text-white truncate">{userDisplayName}</p>
                 <p className="text-[11px] text-[#F4B75E] font-medium truncate">{getRoleDisplayName()}</p>
@@ -1982,14 +1562,14 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         } pt-16 lg:pt-0`}
       >
         {/* Floating Topbar / Header Minimalis Satu Baris Bergaya Vuexy / Sneat UI */}
-        <header className="sticky top-3 z-30 mx-4 sm:mx-6 lg:mx-8 mt-3 mb-2 h-14 bg-white rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between px-4 sm:px-5">
+        <header className="sticky top-2 sm:top-3 z-30 mx-2 sm:mx-6 lg:mx-8 mt-2 sm:mt-3 mb-2 h-12 sm:h-14 bg-white rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between px-3 sm:px-5">
           {/* Sisi Kiri: Search Bar Global Melebar Tanpa Border Kotak Dalam */}
-          <div className="relative flex items-center flex-1 max-w-xl gap-2.5 mr-4" ref={searchContainerRef}>
-            <Search size={18} className="text-slate-400 shrink-0" />
+          <div className="relative flex items-center flex-1 max-w-xl gap-2 mr-2 sm:mr-4" ref={searchContainerRef}>
+            <Search size={16} className="text-slate-400 shrink-0 sm:w-[18px] sm:h-[18px]" />
             <input
               ref={searchInputRef}
               type="text"
-              placeholder="Cari data, batch, berkas... (Ctrl+/)"
+              placeholder="Cari data, batch, berkas..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value)
@@ -2044,14 +1624,14 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                           onMouseEnter={() => setSelectedResultIndex(idx)}
                           className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition cursor-pointer ${
                             isSelected
-                              ? 'bg-[#0F2C59]/10 text-[#081D35] font-semibold'
+                              ? 'bg-[#1E3A5F]/10 text-[#081D35] font-semibold'
                               : 'text-slate-700 hover:bg-slate-50'
                           }`}
                         >
                           <div
                             className={`size-9 rounded-xl flex items-center justify-center shrink-0 ${
                               isSelected
-                                ? 'bg-[#0F2C59] text-[#F4B75E] shadow-xs'
+                                ? 'bg-[#1E3A5F] text-[#F4B75E] shadow-xs'
                                 : 'bg-slate-100 text-slate-500'
                             }`}
                           >
@@ -2273,7 +1853,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               onClick={() => setIsDarkMode(!isDarkMode)}
               className={`p-2 rounded-xl transition cursor-pointer relative group flex items-center justify-center ${
                 isDarkMode
-                  ? 'bg-[#0F2C59] text-[#F4B75E] hover:bg-[#1E3A5F] shadow-xs border border-[#1E3A5F]'
+                  ? 'bg-[#1E3A5F] text-[#F4B75E] hover:bg-[#1E3A5F] shadow-xs border border-[#1E3A5F]'
                   : 'text-slate-500 hover:text-[#081D35] hover:bg-slate-100'
               }`}
               title={isDarkMode ? 'Mode Gelap Aktif (Klik untuk beralih ke Mode Terang)' : 'Mode Terang Aktif (Klik untuk beralih ke Mode Gelap)'}
@@ -2314,7 +1894,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                       }}
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-[#081D35] hover:bg-slate-50 transition text-left"
                     >
-                      <Home size={16} className="text-[#0F2C59]" />
+                      <Home size={16} className="text-[#081D35]" />
                       <div>
                         <p className="leading-tight">Beranda Desa</p>
                         <p className="text-[10px] text-slate-400 font-normal">Portal satu pintu Banda Neira</p>
@@ -2374,86 +1954,124 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 )}
               </button>
 
-              {/* Dropdown Popover Pusat Notifikasi */}
+              {/* Dropdown Popover Pusat Notifikasi Sesuai Peran */}
               {showNotificationDropdown && (
-                <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-2xl border border-slate-200/90 shadow-2xl z-50 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
+                <div className="fixed inset-x-2.5 top-16 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 w-auto sm:w-[26rem] max-h-[85vh] sm:max-h-[34rem] flex flex-col bg-white rounded-2xl border border-slate-200/90 shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
                   {/* Header */}
-                  <div className="p-4 bg-gradient-to-r from-[#081D35] to-[#0f2c59] text-white flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="p-1.5 rounded-lg bg-white/10 text-[#F4B75E]">
-                        <Bell size={16} />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold leading-tight flex items-center gap-1.5">
-                          <span>Pemberitahuan Ekosistem</span>
-                          {unreadNotificationsCount > 0 && (
-                            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-rose-500 text-white">
-                              {unreadNotificationsCount} Baru
+                  <div className="p-4 bg-gradient-to-r from-[#081D35] via-[#0c2a4d] to-[#081D35] text-white flex flex-col gap-2.5 shrink-0">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-lg bg-white/10 text-[#F4B75E]">
+                          <Bell size={16} />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h4 className="text-xs font-bold leading-tight">
+                              Pemberitahuan Ekosistem
+                            </h4>
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-black tracking-wide uppercase bg-white/15 text-[#F4B75E] border border-white/20">
+                              {roleNotificationProfile.roleShortBadge}
                             </span>
-                          )}
-                        </h4>
-                        <p className="text-[10px] text-slate-300">
-                          Aktivitas layanan desa, IoT &amp; perkebunan
-                        </p>
+                            {unreadNotificationsCount > 0 && (
+                              <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-rose-500 text-white">
+                                {unreadNotificationsCount} Baru
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center gap-1">
-                      {unreadNotificationsCount > 0 && (
+                      <div className="flex items-center gap-1">
+                        {unreadNotificationsCount > 0 && (
+                          <button
+                            type="button"
+                            onClick={markAllNotificationsAsRead}
+                            className="px-2 py-1 rounded-lg text-slate-300 hover:text-[#F4B75E] hover:bg-white/10 transition cursor-pointer text-[10px] flex items-center gap-1 active:scale-95"
+                            title="Tandai semua sudah dibaca"
+                          >
+                            <CheckCheck size={13} />
+                            <span className="hidden sm:inline">Tandai Dibaca</span>
+                          </button>
+                        )}
                         <button
                           type="button"
-                          onClick={markAllNotificationsAsRead}
-                          className="px-2 py-1 rounded-lg text-slate-300 hover:text-[#F4B75E] hover:bg-white/10 transition cursor-pointer text-[11px] flex items-center gap-1"
-                          title="Tandai semua sudah dibaca"
+                          onClick={() => setShowNotificationDropdown(false)}
+                          className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition cursor-pointer active:scale-95"
+                          aria-label="Tutup notifikasi"
                         >
-                          <CheckCheck size={13} />
-                          <span className="hidden sm:inline text-[10px]">Tandai Dibaca</span>
+                          <X size={16} />
                         </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => setShowNotificationDropdown(false)}
-                        className="p-1 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition cursor-pointer"
-                      >
-                        <X size={15} />
-                      </button>
+                      </div>
                     </div>
+
+                    <p className="text-[10px] sm:text-[11px] text-slate-300 leading-snug">
+                      {roleNotificationProfile.roleSubtitle}
+                    </p>
+
+                    {/* Quick Perspective Selector for Admin */}
+                    {isAdmin && onRoleChange && (
+                      <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[11px]">
+                        <span className="text-slate-300 font-medium flex items-center gap-1 text-[10px]">
+                          <UserCheck size={12} className="text-[#F4B75E]" />
+                          <span>Simulasi Peran:</span>
+                        </span>
+                        <select
+                          value={currentRoleKey}
+                          onChange={(e) => onRoleChange(e.target.value as RoleKey)}
+                          className="bg-[#040D1A] text-[#F4B75E] font-bold text-[11px] rounded-lg px-2 py-1 border border-white/20 focus:outline-none focus:ring-1 focus:ring-[#F4B75E] cursor-pointer"
+                        >
+                          {(Object.keys(ROLE_NOTIFICATION_PROFILES) as RoleKey[]).map((rKey) => (
+                            <option key={rKey} value={rKey} className="bg-[#081D35] text-white">
+                              {ROLE_NOTIFICATION_PROFILES[rKey].roleShortBadge}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Filter Chips */}
-                  <div className="px-3 py-2 bg-slate-50 border-b border-slate-100 flex items-center gap-1 overflow-x-auto text-[11px]">
-                    {[
-                      { key: 'all', label: `Semua (${notifications.length})` },
-                      { key: 'unread', label: `Belum Dibaca (${unreadNotificationsCount})` },
-                      { key: 'letters', label: 'Layanan Desa' },
-                      { key: 'system', label: 'IoT & Sistem' },
-                    ].map((tab) => {
+                  {/* Filter Chips Sesuai Peran Aktif */}
+                  <div className="px-3 py-2 bg-slate-50 border-b border-slate-100 flex items-center gap-1.5 overflow-x-auto scrollbar-none no-scrollbar text-[11px] shrink-0">
+                    {roleNotificationProfile.filterTabs.map((tab) => {
                       const active = notificationFilter === tab.key
+                      const count = tab.key === 'all'
+                        ? notifications.length
+                        : tab.key === 'unread'
+                        ? unreadNotificationsCount
+                        : notifications.filter(tab.matcher).length
+
                       return (
                         <button
                           key={tab.key}
                           type="button"
-                          onClick={() => setNotificationFilter(tab.key as any)}
-                          className={`px-2.5 py-1 rounded-lg font-semibold transition shrink-0 cursor-pointer ${
+                          onClick={() => setNotificationFilter(tab.key)}
+                          className={`min-h-[32px] px-2.5 py-1 rounded-lg font-semibold transition shrink-0 cursor-pointer flex items-center gap-1 whitespace-nowrap active:scale-95 ${
                             active
                               ? 'bg-[#081D35] text-[#F4B75E] shadow-xs'
                               : 'text-slate-600 hover:bg-slate-200/70'
                           }`}
                         >
-                          {tab.label}
+                          <span>{tab.label}</span>
+                          <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ${
+                            active ? 'bg-white/20 text-[#F4B75E]' : 'bg-slate-200 text-slate-500'
+                          }`}>
+                            {count}
+                          </span>
                         </button>
                       )
                     })}
                   </div>
 
                   {/* List of Notification Items */}
-                  <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+                  <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 overscroll-contain">
                     {filteredNotifications.length === 0 ? (
                       <div className="py-10 px-4 text-center text-slate-400">
                         <CheckCheck size={32} className="mx-auto mb-2 text-emerald-500 opacity-80" />
-                        <p className="text-xs font-bold text-slate-700">Tidak ada notifikasi aktif</p>
+                        <p className="text-xs font-bold text-slate-700">
+                          Tidak ada notifikasi aktif untuk peran {roleNotificationProfile.roleShortBadge}
+                        </p>
                         <p className="text-[11px] text-slate-400 mt-0.5">
-                          Semua antrean layanan dan pemantauan sistem telah terselesaikan.
+                          Semua antrean layanan dan tugas telah terselesaikan.
                         </p>
                       </div>
                     ) : (
@@ -2479,16 +2097,21 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                           {/* Content */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-1 mb-0.5">
-                              <h5 className={`text-xs font-bold leading-snug line-clamp-1 ${item.read ? 'text-slate-700' : 'text-[#081D35]'}`}>
-                                {item.title}
-                              </h5>
+                              <div className="flex items-center gap-1.5 min-w-0 pr-1">
+                                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 shrink-0">
+                                  {item.categoryLabel}
+                                </span>
+                                <h5 className={`text-xs font-bold leading-snug line-clamp-1 ${item.read ? 'text-slate-700' : 'text-[#081D35]'}`}>
+                                  {item.title}
+                                </h5>
+                              </div>
                               <button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   dismissNotification(item.id)
                                 }}
-                                className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-slate-600 p-0.5 transition cursor-pointer"
+                                className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-slate-600 p-0.5 transition cursor-pointer shrink-0"
                                 title="Hapus pemberitahuan"
                               >
                                 <X size={12} />
@@ -2510,7 +2133,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                   <button
                                     type="button"
                                     onClick={() => markNotificationAsRead(item.id)}
-                                    className="text-slate-400 hover:text-blue-600 font-bold transition px-1 py-0.5 rounded cursor-pointer"
+                                    className="text-slate-400 hover:text-blue-600 font-bold transition px-1.5 py-0.5 rounded cursor-pointer min-h-[28px] flex items-center"
                                     title="Tandai sudah dibaca"
                                   >
                                     Dibaca
@@ -2524,7 +2147,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                                       markNotificationAsRead(item.id)
                                       setShowNotificationDropdown(false)
                                     }}
-                                    className="px-2 py-0.8 rounded-md bg-[#081D35] hover:bg-[#0c2a4d] text-[#F4B75E] font-bold flex items-center gap-1 shadow-2xs transition cursor-pointer"
+                                    className="min-h-[28px] px-2.5 py-1 rounded-md bg-[#081D35] hover:bg-[#0c2a4d] active:scale-95 text-[#F4B75E] font-bold flex items-center gap-1 shadow-2xs transition cursor-pointer"
                                   >
                                     <span>{item.actionLabel || 'Buka'}</span>
                                     <ArrowRight size={10} />
@@ -2539,16 +2162,16 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   </div>
 
                   {/* Footer */}
-                  <div className="p-2.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium px-4">
+                  <div className="p-2.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium px-4 shrink-0">
                     <span className="flex items-center gap-1.5">
                       <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span>Real-time Kepulauan</span>
+                      <span>Notifikasi Peran: {roleNotificationProfile.roleShortBadge}</span>
                     </span>
                     {notifications.length > 0 && (
                       <button
                         type="button"
                         onClick={clearAllNotifications}
-                        className="text-slate-400 hover:text-rose-600 transition flex items-center gap-1 cursor-pointer"
+                        className="text-slate-400 hover:text-rose-600 transition flex items-center gap-1 cursor-pointer active:scale-95 min-h-[28px] px-1"
                       >
                         <Trash2 size={11} />
                         <span>Bersihkan</span>
@@ -2562,7 +2185,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         </header>
 
         {/* Konten Ruang Kerja Dinamis (dengan safe bottom padding pb-24 untuk mobile bottom bar) */}
-        <div className="flex-1 p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8">
+        <div className="flex-1 p-2 sm:p-6 lg:p-8 pb-24 lg:pb-8 max-w-full overflow-x-hidden">
           {children}
         </div>
       </main>

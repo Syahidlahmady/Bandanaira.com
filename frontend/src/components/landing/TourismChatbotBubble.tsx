@@ -249,7 +249,7 @@ export const TourismChatbotBubbleComponent: React.FC<TourismChatbotBubbleProps> 
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="group relative flex items-center gap-3 bg-[#0f2c59] hover:bg-[#183d75] text-white p-3.5 sm:px-5 sm:py-3.5 rounded-full shadow-[0_10px_30px_rgba(15,44,89,0.35)] border border-white/20 transition-all duration-300 hover:scale-105 focus:outline-none"
+          className="group relative flex items-center gap-3 bg-[#081D35] hover:bg-[#183d75] text-white p-3.5 sm:px-5 sm:py-3.5 rounded-full shadow-[0_10px_30px_rgba(15,44,89,0.35)] border border-white/20 transition-all duration-300 hover:scale-105 focus:outline-none"
           aria-label={t.chatbot.triggerLabel}
         >
           {/* Compass / Chat Icon */}
@@ -273,14 +273,14 @@ export const TourismChatbotBubbleComponent: React.FC<TourismChatbotBubbleProps> 
           className="w-[calc(100vw-2rem)] sm:w-[400px] h-[520px] max-h-[72vh] sm:max-h-[82vh] bg-white rounded-3xl shadow-[0_20px_60px_rgba(15,44,89,0.25)] border border-slate-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-300 select-none"
         >
           {/* Chat Window Header */}
-          <div className="bg-[#0f2c59] text-white px-5 py-4 flex items-center justify-between shadow-sm">
+          <div className="bg-[#081D35] text-white px-5 py-4 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-3">
               <div className="relative w-9 h-9 rounded-full bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10" />
                   <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
                 </svg>
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-[#0f2c59]" />
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-[#081D35]" />
               </div>
 
               <div>
@@ -316,7 +316,7 @@ export const TourismChatbotBubbleComponent: React.FC<TourismChatbotBubbleProps> 
                 <div
                   className={`max-w-[85%] rounded-2xl p-3.5 text-xs sm:text-[13px] leading-relaxed ${
                     msg.sender === 'user'
-                      ? 'bg-[#0f2c59] text-white rounded-tr-sm shadow-sm'
+                      ? 'bg-[#081D35] text-white rounded-tr-sm shadow-sm'
                       : 'bg-white text-slate-800 border border-slate-200/80 rounded-tl-sm shadow-sm'
                   }`}
                 >
@@ -424,12 +424,12 @@ export const TourismChatbotBubbleComponent: React.FC<TourismChatbotBubbleProps> 
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder={t.chatbot.inputPlaceholder}
-              className="flex-1 bg-slate-100 border border-slate-200 rounded-full px-4 py-2 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#0f2c59]"
+              className="flex-1 bg-slate-100 border border-slate-200 rounded-full px-4 py-2 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#081D35]"
             />
             <button
               type="submit"
               disabled={!inputText.trim()}
-              className="w-8 h-8 rounded-full bg-[#0f2c59] hover:bg-[#183d75] disabled:opacity-40 text-white flex items-center justify-center transition-colors flex-shrink-0"
+              className="w-8 h-8 rounded-full bg-[#081D35] hover:bg-[#0c2a4d] disabled:opacity-40 text-white flex items-center justify-center transition-colors flex-shrink-0 cursor-pointer"
               aria-label={t.chatbot.sendBtn}
             >
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

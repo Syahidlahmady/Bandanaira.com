@@ -470,23 +470,27 @@ export const SurveyEtlWorkspace: React.FC<SurveyEtlWorkspaceProps> = ({ onNaviga
       )}
 
       {/* 2. Top Bento KPI: 5 Barometer Survei Lapangan & ETL */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
         {/* Card 1: Total Dokumen Survei */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-emerald-500/60 transition-all">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Dokumen Survei</span>
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-700">
-              <Database size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-emerald-500/60 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Dokumen Survei</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-700 shrink-0">
+                <Database size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              {activeStats.total_surveys} <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Temuan</span>
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {activeStats.total_surveys} Temuan
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            Staging Dokumen NoSQL / MongoDB
-          </div>
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-            <CheckCircle2 size={11} /> 5 Pulau Terdata
+          <div>
+            <div className="text-[10px] text-slate-500 mb-1.5 truncate">
+              Staging NoSQL / MongoDB
+            </div>
+            <div className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md truncate max-w-full">
+              <CheckCircle2 size={11} className="shrink-0" /> <span className="truncate">5 Pulau Terdata</span>
+            </div>
           </div>
         </div>
 
@@ -496,25 +500,29 @@ export const SurveyEtlWorkspace: React.FC<SurveyEtlWorkspaceProps> = ({ onNaviga
             setActiveTab('etl')
             setStatusFilter('PENDING')
           }}
-          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-amber-500/60 transition-all cursor-pointer group"
+          className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-amber-500/60 transition-all cursor-pointer group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Pending Migrasi ETL</span>
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-700 group-hover:scale-110 transition-transform">
-              <Clock size={18} />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Pending Migrasi ETL</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-amber-500/10 text-amber-700 group-hover:scale-110 transition-transform shrink-0">
+                <Clock size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#D97706] mb-1">
+              {activeStats.pending_etl} <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Antrean</span>
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {activeStats.pending_etl} Antrean
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            Menunggu Verifikasi Aparat Desa
-          </div>
-          <div className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md ${
-            activeStats.pending_etl > 0 ? 'text-amber-800 bg-amber-100' : 'text-emerald-700 bg-emerald-50'
-          }`}>
-            <AlertTriangle size={11} />
-            {activeStats.pending_etl > 0 ? `${activeStats.pending_etl} Perlu Migrasi` : 'Semua Termigrasi'}
+          <div>
+            <div className="text-[10px] text-slate-500 mb-1.5 truncate">
+              Perlu Verifikasi Desa
+            </div>
+            <div className={`inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-md truncate max-w-full ${
+              activeStats.pending_etl > 0 ? 'text-amber-800 bg-amber-100' : 'text-emerald-700 bg-emerald-50'
+            }`}>
+              <AlertTriangle size={11} className="shrink-0" />
+              <span className="truncate">{activeStats.pending_etl > 0 ? `${activeStats.pending_etl} Perlu Migrasi` : 'Semua Termigrasi'}</span>
+            </div>
           </div>
         </div>
 
@@ -524,71 +532,83 @@ export const SurveyEtlWorkspace: React.FC<SurveyEtlWorkspaceProps> = ({ onNaviga
             setActiveTab('etl')
             setStatusFilter('MIGRATED_TO_POSTGRES')
           }}
-          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-sky-500/60 transition-all cursor-pointer group"
+          className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-sky-500/60 transition-all cursor-pointer group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">PostGIS 7-Layer</span>
-            <div className="p-2 rounded-xl bg-sky-500/10 text-sky-700 group-hover:scale-110 transition-transform">
-              <Layers size={18} />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">PostGIS 7-Layer</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-sky-500/10 text-sky-700 group-hover:scale-110 transition-transform shrink-0">
+                <Layers size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              {activeStats.migrated_to_postgres} <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Fitur</span>
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {activeStats.migrated_to_postgres} Fitur
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            Aktif di Peta Geodesik Desa
-          </div>
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md">
-            <CheckCircle2 size={11} /> RFC 7946 Geospasial
+          <div>
+            <div className="text-[10px] text-slate-500 mb-1.5 truncate">
+              Aktif di Peta Geodesik
+            </div>
+            <div className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md truncate max-w-full">
+              <CheckCircle2 size={11} className="shrink-0" /> <span className="truncate">RFC 7946 Geospasial</span>
+            </div>
           </div>
         </div>
 
         {/* Card 4: Rasio Transformasi ETL */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-purple-500/60 transition-all">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Rasio Pipa ETL</span>
-            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-700">
-              <TrendingUp size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-sky-500/60 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Rasio Pipa ETL</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-sky-500/10 text-sky-700 shrink-0">
+                <TrendingUp size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              {transformationRate}%
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {transformationRate}%
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            Efisiensi Migrasi Staging ➔ GIS
-          </div>
-          <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-            <div
-              className="bg-purple-600 h-1.5 rounded-full transition-all duration-500"
-              style={{ width: `${transformationRate}%` }}
-            />
+          <div>
+            <div className="text-[10px] text-slate-500 mb-1.5 truncate">
+              Efisiensi Staging ➔ GIS
+            </div>
+            <div className="w-full bg-slate-100 rounded-full h-1 sm:h-1.5 overflow-hidden">
+              <div
+                className="bg-sky-600 h-1 sm:h-1.5 rounded-full transition-all duration-500"
+                style={{ width: `${transformationRate}%` }}
+              />
+            </div>
           </div>
         </div>
 
-        {/* Card 5: Wilayah Gugus Pulau */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-amber-500/60 transition-all">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Cakupan Wilayah</span>
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-700">
-              <MapPin size={18} />
+        {/* Card 5: Wilayah Gugus Pulau (Rentang 2 Kolom di Mobile) */}
+        <div className="col-span-2 lg:col-span-1 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-amber-500/60 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Cakupan Wilayah</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-amber-500/10 text-amber-700 shrink-0">
+                <MapPin size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              6 Pulau
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            6 Pulau
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            Kepulauan Banda Lengkap
-          </div>
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md">
-            <Sparkles size={11} /> Presisi Geodesik WGS 84
+          <div>
+            <div className="text-[10px] text-slate-500 mb-1.5 truncate">
+              Kepulauan Banda Lengkap
+            </div>
+            <div className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md truncate max-w-full">
+              <Sparkles size={11} className="shrink-0" /> <span className="truncate">Presisi WGS 84</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* 3. Dual Recharts Visualizations Cluster */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-6">
         {/* Visualisasi 1: Bar Chart Sebaran Domain Survei (col-span-7) */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+        <div className="lg:col-span-7 bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 p-3.5 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-base font-bold text-[#081D35] flex items-center gap-2">
@@ -619,7 +639,7 @@ export const SurveyEtlWorkspace: React.FC<SurveyEtlWorkspaceProps> = ({ onNaviga
         </div>
 
         {/* Visualisasi 2: Donut Chart Komposisi Tingkat Urgensi (col-span-5) */}
-        <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-base font-bold text-[#081D35] flex items-center gap-2">
@@ -1101,7 +1121,7 @@ export const SurveyEtlWorkspace: React.FC<SurveyEtlWorkspaceProps> = ({ onNaviga
                                 ? 'bg-amber-50 text-amber-700 border border-amber-200'
                                 : s.problem_domain === 'EKONOMI'
                                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                : 'bg-purple-50 text-purple-700 border border-purple-200'
+                                : 'bg-sky-50 text-sky-700 border border-sky-200'
                             }`}
                           >
                             {s.problem_domain}

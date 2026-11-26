@@ -160,7 +160,7 @@ export const BandanairaBeranda: React.FC<BandanairaBerandaProps> = ({
   }, [])
 
   return (
-    <div className="flex min-h-[100dvh] w-full flex-col items-start bg-[#f7f5f0] text-[#0f2c59] selection:bg-[#f4b75e] selection:text-[#081d35] overflow-x-clip pb-16 lg:pb-0">
+    <div className="flex min-h-[100dvh] w-full flex-col items-start bg-[#f7f5f0] text-[#081D35] selection:bg-[#f4b75e] selection:text-[#081d35] overflow-x-clip pb-16 lg:pb-0">
       {/* 1. Hero & Navbar Section */}
       <HeroSection
         onNavigate={onNavigate}

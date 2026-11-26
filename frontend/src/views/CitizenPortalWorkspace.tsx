@@ -28,18 +28,18 @@ export const CitizenPortalWorkspace: React.FC<CitizenPortalWorkspaceProps> = ({
   letterSuccessNotice,
 }) => {
   return (
-    <section className="p-6 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs animate-fade-in text-[#081D35] mb-8">
+    <section className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-white border border-[#E2E8F0] shadow-xs animate-fade-in text-[#081D35] mb-8">
       {/* Header Bar Sesuai Gaya Redesain */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E2E8F0] mb-6">
-        <div className="flex items-center gap-4">
-          <div className="size-13 rounded-full bg-[#2563EB] text-white flex items-center justify-center shrink-0 shadow-sm">
-            <UserCheck size={24} />
+        <div className="flex items-center gap-3.5">
+          <div className="size-11 sm:size-13 rounded-full bg-[#2563EB] text-white flex items-center justify-center shrink-0 shadow-sm">
+            <UserCheck size={22} />
           </div>
           <div>
-            <span className="text-[11px] font-bold text-[#2563EB] uppercase tracking-wider block">
+            <span className="text-[10px] sm:text-[11px] font-bold text-[#2563EB] uppercase tracking-wider block">
               PORTAL MANDIRI WARGA
             </span>
-            <h2 className="text-xl sm:text-2xl font-black font-serif text-[#081D35] tracking-tight mt-0.5">
+            <h2 className="text-lg sm:text-2xl font-black font-serif text-[#081D35] tracking-tight mt-0.5">
               Pelayanan Administrasi Warga Mandiri
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -49,24 +49,24 @@ export const CitizenPortalWorkspace: React.FC<CitizenPortalWorkspaceProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
         {/* Profile Card */}
-        <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between">
+        <div className="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2 mb-3">
               <div className="size-8 rounded-full bg-[#081D35] text-[#F4B75E] flex items-center justify-center font-bold text-xs">
                 {(currentUser?.full_name || 'W').slice(0, 2).toUpperCase()}
               </div>
-              <h3 className="text-sm font-bold text-[#081D35]">
+              <h3 className="text-xs sm:text-sm font-bold text-[#081D35]">
                 Profil Kependudukan Terverifikasi
               </h3>
             </div>
-            <div className="space-y-2.5 text-xs text-slate-600">
+            <div className="space-y-2 text-xs text-slate-600">
               <div>
                 <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
                   Nama Lengkap
                 </span>
-                <b className="text-sm text-[#081D35]">{currentUser?.full_name || 'Ahmad Baadilla'}</b>
+                <b className="text-xs sm:text-sm text-[#081D35]">{currentUser?.full_name || 'Ahmad Baadilla'}</b>
               </div>
               <div>
                 <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
@@ -89,13 +89,13 @@ export const CitizenPortalWorkspace: React.FC<CitizenPortalWorkspaceProps> = ({
         </div>
 
         {/* Action Card */}
-        <div className="p-5 rounded-2xl bg-blue-50/50 border border-blue-200/80 flex flex-col justify-between">
+        <div className="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-blue-50/50 border border-blue-200/80 flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <div className="size-8 rounded-full bg-[#2563EB] text-white flex items-center justify-center">
                 <FileText size={16} />
               </div>
-              <h3 className="text-sm font-bold text-[#081D35]">
+              <h3 className="text-xs sm:text-sm font-bold text-[#081D35]">
                 Pengajuan Surat Mandiri
               </h3>
             </div>
@@ -111,7 +111,7 @@ export const CitizenPortalWorkspace: React.FC<CitizenPortalWorkspaceProps> = ({
           <button
             type="button"
             onClick={() => setShowLetterForm(!showLetterForm)}
-            className="mt-4 w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-[#2563EB] hover:bg-blue-700 text-white transition flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
+            className="mt-4 w-full py-2.5 px-4 min-h-[44px] rounded-xl text-xs font-bold bg-[#2563EB] hover:bg-blue-700 text-white transition flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
           >
             {showLetterForm ? '✕ Tutup Formulir' : '➕ Ajukan Permohonan Surat Baru'}
           </button>
@@ -159,14 +159,14 @@ export const CitizenPortalWorkspace: React.FC<CitizenPortalWorkspaceProps> = ({
             <div className="flex gap-2 pt-2">
               <button
                 type="submit"
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-[#2563EB] hover:bg-blue-700 text-white transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-[#081D35] hover:bg-[#0c2a4d] text-white transition-all duration-200 flex items-center gap-1.5 shadow-2xs cursor-pointer"
               >
-                <Send size={14} /> Kirim Permohonan ke Kantor Desa
+                <Send size={14} className="text-[#F4B75E]" /> Kirim Permohonan ke Kantor Desa
               </button>
               <button
                 type="button"
                 onClick={() => setShowLetterForm(false)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-200 hover:bg-slate-300 text-slate-700 transition cursor-pointer"
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
               >
                 Batal
               </button>

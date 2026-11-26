@@ -542,7 +542,7 @@ export const FarmMap: React.FC<FarmMapProps> = ({
             justify-content: center;
             font-size: 10px;
             font-weight: 800;
-            color: #0f2c59;
+            color: #081D35;
             box-shadow: 0 2px 6px rgba(0,0,0,0.32);
             cursor: grab;
             user-select: none;
@@ -632,7 +632,7 @@ export const FarmMap: React.FC<FarmMapProps> = ({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#0f2c59', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', marginRight: '0.2rem' }}>
+          <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#081D35', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', marginRight: '0.2rem' }}>
             <Compass size={13} /> Lompat ke Pulau:
           </span>
           {ISLAND_JUMP_PRESETS.map((isl) => (
@@ -645,7 +645,7 @@ export const FarmMap: React.FC<FarmMapProps> = ({
                 borderRadius: '999px',
                 border: '1px solid #cbd5e1',
                 background: '#ffffff',
-                color: '#0f2c59',
+                color: '#081D35',
                 fontSize: '0.72rem',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -697,7 +697,7 @@ export const FarmMap: React.FC<FarmMapProps> = ({
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '0.18rem' }}>
-            <Layers size={13} color="#0f2c59" style={{ marginLeft: '0.35rem' }} />
+            <Layers size={13} color="#081D35" style={{ marginLeft: '0.35rem' }} />
             {(Object.keys(BASEMAP_OPTIONS) as FarmBasemapId[]).map((bId) => (
               <button
                 key={bId}
@@ -710,7 +710,7 @@ export const FarmMap: React.FC<FarmMapProps> = ({
                   fontSize: '0.72rem',
                   fontWeight: 700,
                   cursor: 'pointer',
-                  background: activeBasemap === bId ? '#0f2c59' : 'transparent',
+                  background: activeBasemap === bId ? '#081D35' : 'transparent',
                   color: activeBasemap === bId ? '#f4b75e' : '#475569',
                 }}
               >
@@ -720,7 +720,7 @@ export const FarmMap: React.FC<FarmMapProps> = ({
           </div>
 
           {activeBasemap === 'satellite' && (
-            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.72rem', fontWeight: 600, color: '#0f2c59', cursor: 'pointer', padding: '0.25rem 0.45rem', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px' }}>
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.72rem', fontWeight: 600, color: '#081D35', cursor: 'pointer', padding: '0.25rem 0.45rem', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px' }}>
               <input
                 type="checkbox"
                 checked={showLabels}
@@ -738,7 +738,7 @@ export const FarmMap: React.FC<FarmMapProps> = ({
               borderRadius: '8px',
               border: '1px solid #cbd5e1',
               background: '#ffffff',
-              color: '#0f2c59',
+              color: '#081D35',
               fontSize: '0.72rem',
               fontWeight: 700,
               cursor: 'pointer',
@@ -901,7 +901,7 @@ export const FarmMap: React.FC<FarmMapProps> = ({
                 </>
               )}
             </span>
-            <span style={{ fontFamily: 'monospace', color: '#0f2c59', fontWeight: 700, background: '#ffffff', padding: '0.15rem 0.45rem', borderRadius: '6px', border: '1px solid #fde68a' }}>
+            <span style={{ fontFamily: 'monospace', color: '#081D35', fontWeight: 700, background: '#ffffff', padding: '0.15rem 0.45rem', borderRadius: '6px', border: '1px solid #fde68a' }}>
               Titik Tengah: {draftLat.toFixed(5)}, {draftLng.toFixed(5)}
             </span>
           </div>
@@ -939,7 +939,7 @@ export const FarmMap: React.FC<FarmMapProps> = ({
             maxWidth: '220px',
           }}
         >
-          <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#0f2c59', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}>
+          <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#081D35', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}>
             Legenda Kebun
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -948,14 +948,14 @@ export const FarmMap: React.FC<FarmMapProps> = ({
                 <path d="M14 0C6.268 0 0 6.268 0 14C0 23.8 12.2 34.6 13.3 35.6C13.7 35.9 14.3 35.9 14.7 35.6C15.8 34.6 28 23.8 28 14C28 6.268 21.732 0 14 0Z" fill="#1e3a8a" stroke="#ffffff" strokeWidth="2" />
                 <circle cx="14" cy="13.5" r="5" fill="#ffffff" />
               </svg>
-              <span style={{ color: '#0f2c59', fontWeight: 600 }}>Kebun Pala (P)</span>
+              <span style={{ color: '#081D35', fontWeight: 600 }}>Kebun Pala (P)</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <svg width="12" height="15" viewBox="0 0 28 36" fill="none">
                 <path d="M14 0C6.268 0 0 6.268 0 14C0 23.8 12.2 34.6 13.3 35.6C13.7 35.9 14.3 35.9 14.7 35.6C15.8 34.6 28 23.8 28 14C28 6.268 21.732 0 14 0Z" fill="#059669" stroke="#ffffff" strokeWidth="2" />
                 <circle cx="14" cy="13.5" r="5" fill="#ffffff" />
               </svg>
-              <span style={{ color: '#0f2c59', fontWeight: 600 }}>Kebun Cengkih (C)</span>
+              <span style={{ color: '#081D35', fontWeight: 600 }}>Kebun Cengkih (C)</span>
             </div>
             {editable && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>

@@ -426,7 +426,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         : 'bg-white/5 border-white/10 text-white/90 hover:bg-white/10'
                     }`}
                   >
-                    <BookOpen size={16} className="shrink-0 text-indigo-400" />
+                    <BookOpen size={16} className="shrink-0 text-sky-400" />
                     <span className="text-xs truncate">Sejarah & Warga</span>
                   </a>
                 </div>

@@ -658,12 +658,12 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
           </div>
 
           {/* Quick Actions on the Right */}
-          <div className="flex flex-col sm:flex-row lg:flex-col gap-2.5 shrink-0 self-start lg:self-center">
+          <div className="grid grid-cols-2 sm:flex lg:flex-col gap-2 w-full sm:w-auto shrink-0 self-start lg:self-center">
             {canAccessCMS && (
               <button
                 type="button"
                 onClick={handleOpenAddAccommodation}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-[#081D35] text-[#F4B75E] hover:bg-slate-800 transition-all shadow-xs cursor-pointer"
+                className="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-2 px-3.5 py-2.5 min-h-[44px] rounded-xl text-xs font-bold bg-[#081D35] text-[#F4B75E] hover:bg-slate-800 transition-all shadow-xs cursor-pointer"
               >
                 <Plus size={15} />
                 <span>Tambah Penginapan</span>
@@ -673,26 +673,26 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
             <button
               type="button"
               onClick={() => onNavigate?.('gis')}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-white text-[#081D35] border border-stone-300 hover:bg-stone-50 transition-all shadow-3xs cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 min-h-[44px] rounded-xl text-xs font-bold bg-white text-[#081D35] border border-stone-300 hover:bg-stone-50 transition-all shadow-3xs cursor-pointer"
             >
               <Compass size={14} className="text-amber-600" />
-              <span>Buka Peta Spasial (GIS)</span>
+              <span>Peta Spasial (GIS)</span>
             </button>
 
             <button
               type="button"
               onClick={() => onNavigate?.('smart_planner')}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 transition-all shadow-3xs cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 min-h-[44px] rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 transition-all shadow-3xs cursor-pointer"
             >
               <Sparkles size={14} className="text-amber-600" />
-              <span>Perencana Wisata (DSS)</span>
+              <span>Perencana (DSS)</span>
             </button>
 
             {!currentUser && (
               <button
                 type="button"
                 onClick={() => onOpenQuickLogin?.()}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:text-[#081D35] hover:bg-white/80 transition cursor-pointer"
+                className="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-2 px-3.5 py-2 min-h-[44px] rounded-xl text-xs font-semibold text-stone-600 hover:text-[#081D35] hover:bg-white/80 transition cursor-pointer"
                 title="Masuk sebagai pengelola penginapan, pemandu, atau admin"
               >
                 <Lock size={12} className="text-stone-400" />
@@ -963,7 +963,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                     setDestCategoryFilter('')
                     setDestSearchQuery('')
                   }}
-                  className="mt-4 px-4 py-2 rounded-lg bg-[#081D35] text-[#F4B75E] text-xs font-bold transition hover:bg-[#0c2340] cursor-pointer"
+                  className="mt-4 px-4 py-2 rounded-lg bg-[#081D35] text-[#F4B75E] text-xs font-bold transition hover:bg-[#0c2a4d] cursor-pointer"
                 >
                   Reset Filter
                 </button>
@@ -1246,7 +1246,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                   setFilterRoOnly(false)
                   setFilterSolarOnly(false)
                 }}
-                className="mt-4 px-4 py-2 rounded-lg bg-[#081D35] text-[#F4B75E] text-xs font-bold transition hover:bg-[#0c2340] cursor-pointer"
+                className="mt-4 px-4 py-2 rounded-lg bg-[#081D35] text-[#F4B75E] text-xs font-bold transition hover:bg-[#0c2a4d] cursor-pointer"
               >
                 Reset Filter
               </button>
@@ -1346,7 +1346,7 @@ export const TourismEcoStayWorkspace: React.FC<TourismEcoStayWorkspaceProps> = (
                         <button
                           type="button"
                           onClick={() => handleOpenBookingModal(acc)}
-                          className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl bg-[#081D35] hover:bg-[#0c2340] text-[#F4B75E] text-xs font-bold transition shadow-xs cursor-pointer"
+                          className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl bg-[#081D35] hover:bg-[#0c2a4d] text-[#F4B75E] text-xs font-bold transition shadow-xs cursor-pointer"
                         >
                           <span>Pesan</span>
                         </button>

@@ -313,7 +313,7 @@ export const MarketplaceAdminWorkspace: React.FC<MarketplaceAdminWorkspaceProps>
       case 'fish':
         return <Fish size={16} className="text-sky-600" />
       case 'droplet':
-        return <Droplets size={16} className="text-indigo-600" />
+        return <Droplets size={16} className="text-cyan-600" />
       case 'coffee':
         return <Coffee size={16} className="text-amber-700" />
       case 'sun':
@@ -416,100 +416,120 @@ export const MarketplaceAdminWorkspace: React.FC<MarketplaceAdminWorkspaceProps>
       {/* =========================================================================
           2. TOP BENTO KPI: 5 BAROMETER TATA KELOLA PERDAGANGAN REMPAH
       ========================================================================== */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
         
         {/* KPI 1: TOTAL OMZET */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-emerald-500/60 transition-all group">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Omzet Komoditas</span>
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-700 group-hover:scale-110 transition-transform">
-              <DollarSign size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-emerald-500/60 transition-all group flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Omzet Komoditas</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-700 group-hover:scale-110 transition-transform shrink-0">
+                <DollarSign size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              Rp {stats.totalRevenueRp.toLocaleString('id-ID')}
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            Rp {stats.totalRevenueRp.toLocaleString('id-ID')}
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            Target Kuartal: Rp 200Jt (92.3%)
-          </div>
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-            <TrendingUp size={11} /> +14.2% MoM
+          <div>
+            <div className="text-[10px] text-slate-500 mb-1.5 truncate">
+              Target Kuartal: 92.3%
+            </div>
+            <div className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md truncate max-w-full">
+              <TrendingUp size={11} className="shrink-0" /> <span className="truncate">+14.2% MoM</span>
+            </div>
           </div>
         </div>
 
         {/* KPI 2: KATALOG KOMODITAS */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-amber-500/60 transition-all group">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Katalog Aktif</span>
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-700 group-hover:scale-110 transition-transform">
-              <Package size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-amber-500/60 transition-all group flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Katalog Aktif</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-amber-500/10 text-amber-700 group-hover:scale-110 transition-transform shrink-0">
+                <Package size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              {stats.activeProductsCount} <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Produk</span>
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {stats.activeProductsCount} Komoditas
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            8 Ekspor &bull; 10 Domestik
-          </div>
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md">
-            <CheckCircle2 size={11} /> 100% On-Chain Terdaftar
+          <div>
+            <div className="text-[10px] text-slate-500 mb-1.5 truncate">
+              8 Ekspor &bull; 10 Domestik
+            </div>
+            <div className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md truncate max-w-full">
+              <CheckCircle2 size={11} className="shrink-0" /> <span className="truncate">100% On-Chain</span>
+            </div>
           </div>
         </div>
 
         {/* KPI 3: PESANAN & INQUIRY */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-sky-500/60 transition-all group">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Inquiry Pesanan</span>
-            <div className="p-2 rounded-xl bg-sky-500/10 text-sky-700 group-hover:scale-110 transition-transform">
-              <Clock size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-sky-500/60 transition-all group flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Inquiry Pesanan</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-sky-500/10 text-sky-700 group-hover:scale-110 transition-transform shrink-0">
+                <Clock size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              {stats.totalOrdersCount} <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Order</span>
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {stats.totalOrdersCount} Transaksi
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            {stats.fulfilledRatioPct}% Terpenuhi Logistik
-          </div>
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md">
-            <Sparkles size={11} /> 2 Butuh Konfirmasi
+          <div>
+            <div className="text-[10px] text-slate-500 mb-1.5 truncate">
+              {stats.fulfilledRatioPct}% Terpenuhi
+            </div>
+            <div className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md truncate max-w-full">
+              <Sparkles size={11} className="shrink-0" /> <span className="truncate">2 Butuh Konfirmasi</span>
+            </div>
           </div>
         </div>
 
         {/* KPI 4: SMART CONTRACT INTEGRITY */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-indigo-500/60 transition-all group">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Integritas On-Chain</span>
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-700 group-hover:scale-110 transition-transform">
-              <ShieldCheck size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-blue-500/60 transition-all group flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Integritas On-Chain</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-blue-500/10 text-blue-700 group-hover:scale-110 transition-transform shrink-0">
+                <ShieldCheck size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              100% Sah EVM
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            100% Sah EVM
-          </div>
-          <div className="text-xs text-slate-500 mb-2 truncate">
-            SpiceRegistry Konsorsium
-          </div>
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">
-            <ShieldCheck size={11} /> Zero Hash Tampering
+          <div>
+            <div className="text-[10px] text-slate-500 mb-1.5 truncate">
+              SpiceRegistry Konsorsium
+            </div>
+            <div className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md truncate max-w-full">
+              <ShieldCheck size={11} className="shrink-0" /> <span className="truncate">Zero Hash Tampering</span>
+            </div>
           </div>
         </div>
 
-        {/* KPI 5: MITRA PRODUSEN DESA */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-purple-500/60 transition-all group">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Mitra Produsen</span>
-            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-700 group-hover:scale-110 transition-transform">
-              <Users size={18} />
+        {/* KPI 5: MITRA PRODUSEN DESA (Rentang 2 Kolom di Mobile) */}
+        <div className="col-span-2 lg:col-span-1 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-sky-500/60 transition-all group flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Mitra Produsen</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-sky-500/10 text-sky-700 group-hover:scale-110 transition-transform shrink-0">
+                <Users size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              {stats.activeFarmersCount} <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Poktan &amp; KUB</span>
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {stats.activeFarmersCount} Poktan &amp; KUB
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            6 Desa Pesisir Binaan
-          </div>
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md">
-            <TrendingUp size={11} /> 78.5% Royalti Petani
+          <div>
+            <div className="text-[10px] text-slate-500 mb-1.5 truncate">
+              6 Desa Pesisir Binaan
+            </div>
+            <div className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md truncate max-w-full">
+              <TrendingUp size={11} className="shrink-0" /> <span className="truncate">78.5% Royalti</span>
+            </div>
           </div>
         </div>
       </div>

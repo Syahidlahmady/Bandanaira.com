@@ -25,6 +25,7 @@ import {
   BlockchainVerification,
 } from './services/traceability.ts'
 import { getSampleBatchVerification } from './data/sampleBatchVerifications.ts'
+import { RoleKey } from './views/dashboard/roles/types.ts'
 const LoginSection = React.lazy(() => import('./components/LoginSection.tsx').then(m => ({ default: m.LoginSection })))
 const BlockchainModal = React.lazy(() => import('./components/modals/BlockchainModal.tsx').then(m => ({ default: m.BlockchainModal })))
 const OfflineQueueModal = React.lazy(() => import('./components/modals/OfflineQueueModal.tsx').then(m => ({ default: m.OfflineQueueModal })))
@@ -369,6 +370,27 @@ export const App: React.FC = () => {
     }
     return null
   })
+
+  const detectInitialRoleKey = (user: User | null): RoleKey => {
+    if (!user) return 'resident'
+    const rNames = (user.roles || []).map((r: any) => (typeof r === 'string' ? r : r.name))
+    if (user.is_superuser || rNames.includes('admin')) return 'admin'
+    if (rNames.includes('village_officer')) return 'village_officer'
+    if (rNames.includes('farmer_group_admin') || rNames.includes('ketua_kelompok')) return 'farmer_group_admin'
+    if (rNames.includes('farmer') || rNames.includes('petani')) return 'farmer'
+    if (rNames.includes('coop_manager') || rNames.includes('pengelola_koperasi')) return 'coop_manager'
+    if (rNames.includes('homestay_operator') || rNames.includes('operator_homestay')) return 'homestay_operator'
+    if (rNames.includes('smart_tourism_admin') || rNames.includes('admin_wisata')) return 'smart_tourism_admin'
+    if (rNames.includes('field_surveyor') || rNames.includes('surveyor')) return 'field_surveyor'
+    if (rNames.includes('tourist')) return 'tourist'
+    return 'resident'
+  }
+
+  const [activeRoleKey, setActiveRoleKey] = useState<RoleKey>(() => detectInitialRoleKey(currentUser))
+
+  useEffect(() => {
+    setActiveRoleKey(detectInitialRoleKey(currentUser))
+  }, [currentUser])
   const [username, setUsername] = useState<string>('admin')
   const [password, setPassword] = useState<string>('Admin123!')
   const [authLoading, setAuthLoading] = useState<boolean>(false)
@@ -1684,12 +1706,12 @@ export const App: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setActiveTab('landing')}
-                      className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white hover:bg-[#F4B75E]/20 text-[#0c2340] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer shadow-xs active:scale-[0.98]"
+                      className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white hover:bg-[#F4B75E]/20 text-[#081D35] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer shadow-xs active:scale-[0.98]"
                     >
                       <ArrowLeft size={14} />
                       <span>Kembali ke Beranda</span>
                     </button>
-                    <span className="font-serif font-bold text-sm tracking-tight text-[#0c2340]">
+                    <span className="font-serif font-bold text-sm tracking-tight text-[#081D35]">
                       bandanaira<span className="text-[#F4B75E]">.com</span>
                     </span>
                     <span className="hidden sm:inline text-stone-300">|</span>
@@ -1702,7 +1724,7 @@ export const App: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setActiveTab('gis')}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-stone-50 text-[#0c2340] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer shadow-xs"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-stone-50 text-[#081D35] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer shadow-xs"
                     >
                       <Compass size={13} />
                       <span className="hidden sm:inline">Peta</span>
@@ -1710,7 +1732,7 @@ export const App: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setActiveTab('smart_planner')}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-stone-50 text-[#0c2340] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer shadow-xs"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-stone-50 text-[#081D35] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer shadow-xs"
                     >
                       <Sparkles size={13} className="text-amber-500" />
                       <span className="hidden sm:inline">Perencana Wisata</span>
@@ -1718,7 +1740,7 @@ export const App: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setShowQuickLoginModal(true)}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#081D35] hover:bg-[#0c2340] text-[#F4B75E] text-xs font-semibold transition cursor-pointer shadow-xs"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#081D35] hover:bg-[#0c2a4d] text-white text-xs font-semibold transition cursor-pointer shadow-xs"
                     >
                       <span>Masuk Akun</span>
                     </button>
@@ -1776,6 +1798,8 @@ export const App: React.FC = () => {
           systemHealth={health}
           loadingHealth={loadingHealth}
           healthError={healthError}
+          activeRoleKey={activeRoleKey}
+          onRoleChange={setActiveRoleKey}
         >
           <ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Ruang Kerja">
           <React.Suspense fallback={<div className="p-8 text-center text-slate-500 font-medium">Memuat antarmuka...</div>}>
@@ -1788,6 +1812,8 @@ export const App: React.FC = () => {
               onPublicVerify={(token) => handlePublicVerify(token)}
               onLogout={handleLogout}
               isOnline={isOnline}
+              activeRoleKey={activeRoleKey}
+              onRoleChange={setActiveRoleKey}
             />
           )}
 

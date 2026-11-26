@@ -21,6 +21,11 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
+    # Brute-force & Account Lockout Policy
+    MAX_LOGIN_ATTEMPTS: int = 5
+    LOCKOUT_DURATION_MINUTES: int = 15
+    SECURITY_HEADERS_ENABLED: bool = True
+
     # Cryptography & NIK Protection (AES-256-GCM + Blind Index HMAC-SHA256)
     AES_SECRET_KEY: str = "banda_neira_aes_256_gcm_master_key_32bytes_sec!"
     HMAC_BLIND_INDEX_PEPPER: str = "banda_neira_hmac_blind_index_pepper_salt_2026_xyz"

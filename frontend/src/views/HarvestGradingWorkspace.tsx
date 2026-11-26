@@ -254,7 +254,7 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
       ]
     }
     const total = harvests.length || 1
-    const colors = ['#10B981', '#E11D48', '#F59E0B', '#2563EB', '#7C3AED']
+    const colors = ['#10B981', '#E11D48', '#F59E0B', '#2563EB', '#0284C7']
     return Object.entries(counts).map(([name, value], idx) => ({
       name,
       value,
@@ -327,28 +327,28 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
           </div>
 
           {/* Action Header Buttons */}
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <div className="grid grid-cols-2 sm:flex items-center gap-2 w-full sm:w-auto shrink-0">
             <button
               onClick={() => setActiveFormTab((prev) => (prev === 'harvest' ? null : 'harvest'))}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#081D35] hover:bg-[#0F2C59] text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition-all hover:shadow hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 min-h-[44px] bg-[#081D35] hover:bg-[#0c2a4d] text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition-all cursor-pointer"
             >
               <PlusCircle size={16} className="text-[#F4B75E]" />
-              <span>{activeFormTab === 'harvest' ? 'Tutup Form Panen' : 'Catat Panen Baru'}</span>
+              <span>{activeFormTab === 'harvest' ? 'Tutup Form' : 'Catat Panen'}</span>
             </button>
 
             {(isOfficerOrAdmin || isFarmerGroupAdmin) && (
               <button
                 onClick={() => setActiveFormTab((prev) => (prev === 'batch' ? null : 'batch'))}
-                className="inline-flex items-center gap-2 px-3.5 py-2.5 bg-purple-700 hover:bg-purple-800 text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition-all"
+                className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 min-h-[44px] bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition-all cursor-pointer"
               >
-                <Box size={16} className="text-purple-200" />
-                <span>{activeFormTab === 'batch' ? 'Tutup Form Batch' : 'Buat Batch QR'}</span>
+                <QrCode size={16} className="text-white" />
+                <span>{activeFormTab === 'batch' ? 'Tutup Form' : 'Buat Batch QR'}</span>
               </button>
             )}
 
             <button
               onClick={handleExportHarvestCSV}
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200/90 shadow-2xs transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-3 py-2.5 min-h-[44px] bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200/90 shadow-2xs transition-colors cursor-pointer"
               title="Unduh seluruh rekapitulasi data panen ke file CSV"
             >
               <FileSpreadsheet size={16} className="text-emerald-600" />
@@ -360,7 +360,7 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
 
             <button
               onClick={fetchTraceabilityData}
-              className="inline-flex items-center justify-center w-10 h-10 bg-white hover:bg-slate-50 text-slate-600 rounded-xl border border-slate-200/90 shadow-2xs transition-colors"
+              className="inline-flex items-center justify-center min-h-[44px] px-3.5 bg-white hover:bg-slate-50 text-slate-600 rounded-xl border border-slate-200/90 shadow-2xs transition-colors cursor-pointer"
               title="Segarkan data panen & batch dari server"
             >
               <RefreshCw size={16} />
@@ -392,75 +392,83 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
       {/* =========================================================================
           2. EXECUTIVE KPI CARDS CLUSTER (5 BENTO METRIC CARDS)
       ========================================================================== */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
         {/* KPI 1: Total Tonase Panen */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Hasil Panen</span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <Sprout size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Total Panen</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <Sprout size={16} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-2xl font-black text-[#081D35]">{totalHarvestKg.toLocaleString('id-ID')}</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500">kg ({((totalHarvestKg / 1000).toFixed(1))} T)</span>
             </div>
           </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl font-black text-[#081D35]">{totalHarvestKg.toLocaleString('id-ID')}</span>
-            <span className="text-xs font-semibold text-slate-500">kg ({((totalHarvestKg / 1000).toFixed(2))} Ton)</span>
-          </div>
-          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span>{harvests.length} Catatan Petik Terdata</span>
+          <div className="mt-2.5 sm:mt-3 flex items-center gap-1.5 text-[9px] sm:text-[11px] font-semibold text-emerald-700 truncate">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+            <span className="truncate">{harvests.length} Catatan Petik</span>
           </div>
         </div>
 
         {/* KPI 2: Batch Kemasan Berlabel QR */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Batch Kemasan QR</span>
-            <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
-              <QrCode size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Batch Label QR</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <QrCode size={16} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-2xl font-black text-blue-700">{batches.length}</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Batch</span>
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-purple-700">{batches.length}</span>
-            <span className="text-xs font-semibold text-slate-500">Batch Resmi</span>
-          </div>
-          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-slate-600">
-            <span className="text-purple-700 font-bold">100%</span>
-            <span>memiliki token verifikasi publik</span>
+          <div className="mt-2.5 sm:mt-3 flex items-center gap-1.5 text-[9px] sm:text-[11px] font-semibold text-slate-600 truncate">
+            <span className="text-blue-700 font-bold">100%</span>
+            <span className="truncate">token verifikasi publik</span>
           </div>
         </div>
 
         {/* KPI 3: Integritas Blockchain EVM */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Jangkar EVM On-Chain</span>
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-              <Link2 size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Jangkar EVM</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <Link2 size={16} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-2xl font-black text-blue-700">{confirmedBatchesCount}</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Terkonfirmasi</span>
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-blue-700">{confirmedBatchesCount}</span>
-            <span className="text-xs font-semibold text-slate-500">Terkonfirmasi</span>
-          </div>
-          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-blue-900">
+          <div className="mt-2.5 sm:mt-3 flex items-center justify-between text-[9px] sm:text-[11px] font-semibold text-blue-900">
             <span>{onChainRate}% Terjangkar</span>
-            <span className="text-[10px] text-slate-500 font-mono">Sepolia/Arbitrum</span>
+            <span className="text-[9px] text-slate-400 font-mono">Sepolia</span>
           </div>
         </div>
 
         {/* KPI 4: Mutu Grade A Super & Fuli */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Kualitas Grade A</span>
-            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <Sparkles size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Kualitas Grade A</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                <Sparkles size={16} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-2xl font-black text-amber-600">{gradeAPercent}%</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Mutu Unggul</span>
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-amber-600">{gradeAPercent}%</span>
-            <span className="text-xs font-semibold text-slate-500">Mutu Unggul</span>
-          </div>
-          <div className="mt-3">
-            <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden flex">
+          <div className="mt-2 sm:mt-3">
+            <div className="w-full bg-slate-100 rounded-full h-1.5 sm:h-2 overflow-hidden flex">
               <div
                 className="bg-amber-500 h-full transition-all duration-500"
                 style={{ width: `${gradeAPercent}%` }}
@@ -470,27 +478,29 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                 style={{ width: `${100 - gradeAPercent}%` }}
               />
             </div>
-            <span className="text-[10px] text-slate-500 font-semibold block mt-1">
-              Standar Ekspor &amp; Rempah Organik
+            <span className="text-[8px] sm:text-[10px] text-slate-500 font-semibold block mt-1 truncate">
+              Standar Ekspor Organik
             </span>
           </div>
         </div>
 
-        {/* KPI 5: Cakupan Kebun Rempah */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Kebun Rempah Terdata</span>
-            <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center">
-              <Layers size={18} />
+        {/* KPI 5: Cakupan Kebun Rempah (Rentang 2 Kolom di Mobile) */}
+        <div className="col-span-2 lg:col-span-1 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Kebun Rempah</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center shrink-0">
+                <Layers size={16} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-2xl font-black text-[#081D35]">{uniqueFarmsCount}</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Lahan Aktif</span>
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-[#081D35]">{uniqueFarmsCount}</span>
-            <span className="text-xs font-semibold text-slate-500">Lahan Aktif</span>
-          </div>
-          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-slate-600">
-            <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
-            <span>Lonthoir, Selamon &amp; Hatta</span>
+          <div className="mt-2.5 sm:mt-3 flex items-center gap-1.5 text-[9px] sm:text-[11px] font-semibold text-slate-600 truncate">
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-500 shrink-0" />
+            <span className="truncate">Lonthoir, Selamon &amp; Hatta</span>
           </div>
         </div>
       </div>
@@ -498,9 +508,9 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
       {/* =========================================================================
           3. DUAL ANALYTICAL CHARTS CLUSTER (RECHARTS BAR & DONUT)
       ========================================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-6 items-stretch">
         {/* Kolom Kiri (7 Kolom): Bar Chart Distribusi Volume Komoditas */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-7 bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
@@ -563,7 +573,7 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
         </div>
 
         {/* Kolom Kanan (5 Kolom): Donut Chart Komposisi Mutu & Kualitas */}
-        <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
@@ -627,8 +637,8 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
             </div>
           </div>
 
-          <div className="p-3 bg-purple-50 rounded-xl border border-purple-200/60 flex items-center gap-2 text-xs text-purple-900">
-            <Link2 size={16} className="text-purple-700 shrink-0" />
+          <div className="p-3 bg-sky-50 rounded-xl border border-sky-200/60 flex items-center gap-2 text-xs text-sky-900">
+            <Link2 size={16} className="text-sky-700 shrink-0" />
             <span>Tiap batch mengikat identitas petani &amp; poligon kebun ke ledger smart contract EVM.</span>
           </div>
         </div>
@@ -783,10 +793,10 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
       )}
 
       {activeFormTab === 'batch' && (isOfficerOrAdmin || isFarmerGroupAdmin) && (
-        <div className="bg-white rounded-2xl border-2 border-purple-400 shadow-md p-6 animate-fade-in relative">
+        <div className="bg-white rounded-2xl border-2 border-blue-400 shadow-md p-6 animate-fade-in relative">
           <div className="flex items-center justify-between pb-4 mb-5 border-b border-slate-100">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold">
                 <Box size={20} />
               </div>
               <div>
@@ -821,7 +831,7 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                     })
                   }}
                   required
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:border-purple-500 outline-none"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:border-blue-500 outline-none"
                 >
                   <option value="">-- Pilih Panen Terdaftar --</option>
                   {harvests.map((h) => (
@@ -840,7 +850,7 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                   value={batchForm.batch_code}
                   onChange={(e) => setBatchForm({ ...batchForm, batch_code: e.target.value })}
                   required
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono text-slate-800 focus:bg-white focus:border-purple-500 outline-none"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono text-slate-800 focus:bg-white focus:border-blue-500 outline-none"
                   placeholder="Contoh: BND-PL-2026-B1"
                 />
               </div>
@@ -855,14 +865,14 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                   value={batchForm.allocated_qty || ''}
                   onChange={(e) => setBatchForm({ ...batchForm, allocated_qty: Number(e.target.value) })}
                   required
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:border-purple-500 outline-none"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:bg-white focus:border-blue-500 outline-none"
                   placeholder="50"
                 />
               </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
-              <span className="text-[11px] text-purple-700 font-semibold">
+              <span className="text-[11px] text-blue-700 font-semibold">
                 Setiap batch yang diterbitkan otomatis memperoleh kode QR resolusi tinggi &amp; token audit publik.
               </span>
               <div className="flex items-center gap-2">
@@ -875,7 +885,7 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold rounded-xl shadow-xs"
+                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
                 >
                   Terbitkan Batch &amp; Buat Label QR
                 </button>
@@ -1001,9 +1011,9 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                           <button
                             type="button"
                             onClick={() => setPreviewQrBatch(matchedBatch)}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-800 text-xs font-bold rounded-xl border border-slate-200 shadow-2xs transition-colors"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-blue-50 text-slate-800 hover:text-blue-700 text-xs font-bold rounded-xl border border-slate-200 hover:border-blue-300 shadow-2xs transition-colors cursor-pointer"
                           >
-                            <QrCode size={13} className="text-purple-600" />
+                            <QrCode size={13} className="text-blue-600" />
                             <span>{matchedBatch.batch_code}</span>
                           </button>
                         ) : (
@@ -1036,7 +1046,7 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
 
         {batches.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-200/80 p-8 text-center text-slate-500 shadow-xs">
-            <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mx-auto mb-3">
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3">
               <Box size={22} />
             </div>
             <p className="font-bold text-slate-800 text-sm">Belum ada batch kemasan berlabel QR</p>
@@ -1056,14 +1066,14 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                 <div
                   key={b.id}
                   className={`bg-white rounded-2xl border p-5 shadow-xs transition-all ${
-                    isSelected ? 'border-purple-400 ring-2 ring-purple-100 shadow-sm' : 'border-slate-200/80 hover:border-slate-300'
+                    isSelected ? 'border-blue-400 ring-2 ring-blue-100 shadow-sm' : 'border-slate-200/80 hover:border-slate-300'
                   }`}
                 >
                   {/* Top Bar Card */}
                   <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-4 border-b border-slate-100">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] font-bold tracking-wider uppercase text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                        <span className="text-[10px] font-bold tracking-wider uppercase text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
                           Batch Kemasan Resmi
                         </span>
                         <span
@@ -1116,7 +1126,7 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                           </span>
                           <button
                             onClick={() => setPreviewQrBatch(b)}
-                            className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 hover:text-purple-800"
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 hover:text-blue-900 cursor-pointer transition-colors"
                           >
                             <QrCode size={13} />
                             <span>Cetak Stiker</span>
@@ -1125,31 +1135,31 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                       </div>
 
                       {/* Blockchain Operations Buttons */}
-                      <div className="flex flex-col gap-1.5">
-                        <div className="flex items-center gap-1.5">
+                      <div className="flex flex-col sm:flex-row md:flex-col gap-1.5 w-full sm:w-auto">
+                        <div className="grid grid-cols-2 gap-1.5 w-full sm:w-auto">
                           {(isOfficerOrAdmin || isFarmerGroupAdmin) && (
                             <button
                               onClick={() => handleAnchorBlockchain(b.id)}
                               disabled={blockchainLoading === b.id}
-                              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                              className="px-3 py-2 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer min-h-[40px]"
                             >
-                              <Link2 size={13} />
-                              <span>{blockchainLoading === b.id ? 'Menjangkar...' : 'Jangkar EVM'}</span>
+                              <Link2 size={13} className="shrink-0" />
+                              <span className="truncate">{blockchainLoading === b.id ? 'Menjangkar...' : 'Jangkar EVM'}</span>
                             </button>
                           )}
                           <button
                             onClick={() => handleVerifyBlockchain(b.id)}
-                            className="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl border border-slate-200 transition-colors"
+                            className="px-3 py-2 bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-700 hover:border-blue-300 text-xs font-bold rounded-xl border border-slate-200 transition-colors cursor-pointer flex items-center justify-center min-h-[40px] active:scale-98"
                           >
                             Verifikasi On-Chain
                           </button>
                         </div>
                         <button
                           onClick={() => handlePublicVerify(b.public_verification_token)}
-                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors text-center flex items-center justify-center gap-1"
+                          className="px-3 py-2 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white text-xs font-bold rounded-xl shadow-xs transition-colors text-center flex items-center justify-center gap-1.5 cursor-pointer min-h-[40px] w-full"
                         >
                           <span>Sertifikat Publik QR</span>
-                          <ExternalLink size={12} />
+                          <ExternalLink size={12} className="shrink-0" />
                         </button>
                       </div>
                     </div>
@@ -1159,7 +1169,7 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                   <div className="mt-4 pt-3">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
-                        <Layers size={14} className="text-purple-600" />
+                        <Layers size={14} className="text-[#0284C7]" />
                         <span>Rantai Jejak Audit Peristiwa Mutu ({b.events.length} Tahapan)</span>
                       </span>
                       <span className="text-[11px] text-slate-400 italic">
@@ -1175,7 +1185,7 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                         >
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                              <span className="w-2 h-2 rounded-full bg-purple-600" />
+                              <span className="w-2 h-2 rounded-full bg-[#0284C7]" />
                               <strong className="text-[#081D35] uppercase font-bold tracking-wide">
                                 {ev.event_type}
                               </strong>
@@ -1190,11 +1200,11 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                           </div>
 
                           <div className="flex items-center gap-2 pl-4 md:pl-0 shrink-0">
-                            <div className="font-mono text-[10px] text-purple-800 bg-purple-100/70 px-2 py-1 rounded border border-purple-200 flex items-center gap-1">
+                            <div className="font-mono text-[10px] text-blue-800 bg-blue-100/70 px-2 py-1 rounded border border-blue-200 flex items-center gap-1">
                               <span>SHA-256: {ev.event_hash.substring(0, 16)}...</span>
                               <button
                                 onClick={() => handleCopyText(ev.event_hash, 'hash')}
-                                className="text-purple-600 hover:text-purple-900"
+                                className="text-blue-600 hover:text-blue-800 cursor-pointer transition-colors p-0.5 rounded hover:bg-blue-200/50"
                                 title="Salin hash lengkap"
                               >
                                 {copiedHash === ev.event_hash ? <Check size={11} className="text-emerald-600" /> : <Copy size={11} />}
@@ -1247,7 +1257,7 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
 
                       <button
                         type="submit"
-                        className="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold rounded-xl shadow-xs transition-colors shrink-0"
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors shrink-0 cursor-pointer"
                       >
                         + Catat Tahapan &amp; Hash
                       </button>
@@ -1326,7 +1336,7 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                   </span>
                   <button
                     onClick={() => handleCopyText(previewQrBatch.public_verification_token, 'token')}
-                    className="text-slate-600 hover:text-slate-900 font-sans text-[11px] font-bold shrink-0 flex items-center gap-1"
+                    className="text-blue-700 hover:text-blue-900 font-sans text-[11px] font-bold shrink-0 flex items-center gap-1 cursor-pointer transition-colors"
                   >
                     {copiedToken === previewQrBatch.public_verification_token ? (
                       <Check size={12} className="text-emerald-600" />
@@ -1344,13 +1354,13 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                   <a
                     href={getBatchQrSrc(previewQrBatch)}
                     download={`QR-${previewQrBatch.batch_code}.png`}
-                    className="py-2.5 px-3 bg-[#081D35] hover:bg-[#0F2C59] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                    className="py-2.5 px-3 bg-[#081D35] hover:bg-[#0c2a4d] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Download size={14} /> Unduh PNG
                   </a>
                   <button
                     onClick={() => window.print()}
-                    className="py-2.5 px-3 bg-white hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold border border-slate-200 flex items-center justify-center gap-1.5 transition-colors"
+                    className="py-2.5 px-3 bg-white hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold border border-slate-200 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Printer size={14} /> Cetak Stiker
                   </button>
@@ -1362,7 +1372,7 @@ export const HarvestGradingWorkspace: React.FC<HarvestGradingWorkspaceProps> = (
                     setPreviewQrBatch(null)
                     handlePublicVerify(token)
                   }}
-                  className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                  className="w-full py-2.5 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <ExternalLink size={14} /> Buka Halaman Verifikasi Publik
                 </button>

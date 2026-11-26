@@ -204,7 +204,7 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
 
             <h2
               id="island-stays-heading"
-              className="font-sans font-bold text-2xl sm:text-4xl lg:text-[42px] leading-tight tracking-tight text-[#0f2c59]"
+              className="font-sans font-bold text-2xl sm:text-4xl lg:text-[42px] leading-tight tracking-tight text-[#081D35]"
             >
               {t.ecoStay.headingPrefix}{' '}
               <span className="font-script text-amber-600 font-normal text-3xl sm:text-5xl lg:text-[50px] inline-block tracking-normal ml-1">
@@ -227,7 +227,7 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
                 aria-label={t.ecoStay.prev}
                 className={`w-11 h-11 rounded-full border flex items-center justify-center transition-all duration-200 ${
                   canScrollLeft
-                    ? 'border-slate-300 text-slate-800 hover:border-[#0f2c59] hover:bg-[#0f2c59] hover:text-white cursor-pointer shadow-xs active:scale-90'
+                    ? 'border-slate-300 text-slate-800 hover:border-[#081D35] hover:bg-[#081D35] hover:text-white cursor-pointer shadow-xs active:scale-90'
                     : 'border-slate-200 text-slate-300 cursor-not-allowed opacity-40'
                 }`}
               >
@@ -241,7 +241,7 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
                 aria-label={t.ecoStay.next}
                 className={`w-11 h-11 rounded-full border flex items-center justify-center transition-all duration-200 ${
                   canScrollRight
-                    ? 'border-slate-300 text-slate-800 hover:border-[#0f2c59] hover:bg-[#0f2c59] hover:text-white cursor-pointer shadow-xs active:scale-90'
+                    ? 'border-slate-300 text-slate-800 hover:border-[#081D35] hover:bg-[#081D35] hover:text-white cursor-pointer shadow-xs active:scale-90'
                     : 'border-slate-200 text-slate-300 cursor-not-allowed opacity-40'
                 }`}
               >
@@ -254,7 +254,7 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
               id="btn-ecostay-selengkapnya"
               data-scroll-anchor="btn-ecostay-selengkapnya"
               onClick={openAccommodations}
-              className="inline-flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2.5 rounded-full border border-[#0f2c59] text-[#0f2c59] hover:bg-[#0f2c59] hover:text-white text-xs font-semibold tracking-wide transition-all duration-200 group cursor-pointer active:scale-95 shadow-xs"
+              className="inline-flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2.5 rounded-full border border-[#081D35] text-[#081D35] hover:bg-[#081D35] hover:text-white text-xs font-semibold tracking-wide transition-all duration-200 group cursor-pointer active:scale-95 shadow-xs"
             >
               <span>{t.ecoStay.viewMore}</span>
               <ArrowUpRightIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -274,7 +274,7 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
               }}
               className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer active:scale-95 shrink-0 ${
                 selectedFilter === opt.key
-                  ? 'bg-[#0f2c59] text-white shadow-sm font-bold'
+                  ? 'bg-[#081D35] text-white shadow-sm font-bold'
                   : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300'
               }`}
             >
@@ -396,7 +396,7 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
           })}
 
           {/* Kartu Akhir Carousel: Buka Direktori Lengkap */}
-          <div className="group relative shrink-0 w-[80vw] max-w-[330px] sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] min-w-[250px] snap-center sm:snap-start flex flex-col justify-between rounded-2xl sm:rounded-[2rem] bg-gradient-to-br from-[#0f2c59] to-[#081d35] p-5 sm:p-7 text-white aspect-[3/4] shadow-md border border-white/10 hover:border-amber-400/40 transition-all select-none">
+          <div className="group relative shrink-0 w-[80vw] max-w-[330px] sm:w-[calc((100%-1.5rem)/2)] lg:w-[calc((100%-3rem)/3)] min-w-[250px] snap-center sm:snap-start flex flex-col justify-between rounded-2xl sm:rounded-[2rem] bg-gradient-to-br from-[#081D35] to-[#081d35] p-5 sm:p-7 text-white aspect-[3/4] shadow-md border border-white/10 hover:border-amber-400/40 transition-all select-none">
             <div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-500/20 text-amber-300 flex items-center justify-center mb-4 sm:mb-6">
                 <ArrowUpRightIcon className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -417,7 +417,7 @@ export const EcoStayCatalogSection: React.FC<EcoStayCatalogSectionProps> = ({
               id="btn-ecostay-carousel-selengkapnya"
               data-scroll-anchor="btn-ecostay-carousel-selengkapnya"
               onClick={openAccommodations}
-              className="inline-flex items-center justify-center gap-2 w-full py-3 px-5 rounded-full bg-amber-600 hover:bg-amber-500 active:scale-95 text-white font-sans text-xs font-semibold tracking-wide transition-all shadow-md group cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 w-full py-3 px-5 rounded-full bg-[#081D35] hover:bg-[#0c2a4d] active:scale-95 text-white font-sans text-xs font-semibold tracking-wide transition-all shadow-md group cursor-pointer border border-[#F4B75E]/30"
             >
               <span>Buka Direktori Penginapan</span>
               <ArrowUpRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

@@ -42,7 +42,7 @@ export const LumaBar: React.FC<LumaBarProps> = ({
         {/* Active Indicator Glow */}
         <motion.div
           layoutId="active-indicator"
-          className="absolute w-16 h-16 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full blur-2xl -z-10"
+          className="absolute w-16 h-16 bg-gradient-to-r from-blue-400 to-[#F4B75E] rounded-full blur-2xl -z-10"
           animate={{
             left: `calc(${active * (100 / navItems.length)}% + ${100 / navItems.length / 2}%)`,
             translateX: "-50%",

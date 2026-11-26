@@ -355,121 +355,141 @@ export const IslandTelemetryWorkspace: React.FC = () => {
       </div>
 
       {/* 2. Top Bento KPI: 5 Barometer Resiliensi Pulau */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
         {/* KPI 1: Status Kesiapan Pulau */}
         <div
-          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-emerald-500/50 transition-all"
+          className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-emerald-500/50 transition-all flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Kesiapan Resiliensi</span>
-            <div
-              className="p-2 rounded-xl"
-              style={{ backgroundColor: getReadinessTheme(activeSummary.island_readiness_status).bg }}
-            >
-              <ShieldCheck size={18} style={{ color: getReadinessTheme(activeSummary.island_readiness_status).color }} />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Kesiapan Resiliensi</span>
+              <div
+                className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl shrink-0"
+                style={{ backgroundColor: getReadinessTheme(activeSummary.island_readiness_status).bg }}
+              >
+                <ShieldCheck size={16} style={{ color: getReadinessTheme(activeSummary.island_readiness_status).color }} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              {getReadinessTheme(activeSummary.island_readiness_status).label}
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {getReadinessTheme(activeSummary.island_readiness_status).label}
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            {activeSummary.active_alerts_count > 0
-              ? `${activeSummary.active_alerts_count} Peringatan Terdeteksi`
-              : '4 Stasiun Beroperasi Optimal'}
-          </div>
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-            <CheckCircle2 size={11} /> Mandat FTI Berjalan 100%
+          <div>
+            <div className="text-[10px] text-slate-500 mb-1.5 truncate">
+              {activeSummary.active_alerts_count > 0
+                ? `${activeSummary.active_alerts_count} Peringatan`
+                : '4 Stasiun Optimal'}
+            </div>
+            <div className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md truncate max-w-full">
+              <CheckCircle2 size={11} className="shrink-0" /> <span className="truncate">100% Mandat FTI</span>
+            </div>
           </div>
         </div>
 
         {/* KPI 2: Total Air Minum Terdistribusi */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-sky-500/50 transition-all">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Air Minum Konsumsi</span>
-            <div className="p-2 rounded-xl bg-sky-500/10 text-sky-700">
-              <Droplets size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-sky-500/50 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Air Minum RO</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-sky-500/10 text-sky-700 shrink-0">
+                <Droplets size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              {activeSummary.total_clean_water_dispensed_today_ltr.toLocaleString('id-ID')}{' '}
+              <span className="text-[10px] sm:text-sm font-semibold text-sky-600">Liter</span>
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {activeSummary.total_clean_water_dispensed_today_ltr.toLocaleString('id-ID')}{' '}
-            <span className="text-sm font-semibold text-sky-600">Liter</span>
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            Produksi Hari Ini dari 4 Stasiun
-          </div>
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md">
-            <Sparkles size={11} /> Zero Single-Use Plastic
+          <div>
+            <div className="text-[10px] text-slate-500 mb-1.5 truncate">
+              Produksi 4 Stasiun
+            </div>
+            <div className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md truncate max-w-full">
+              <Sparkles size={11} className="shrink-0" /> <span className="truncate">Zero Single-Use Plastic</span>
+            </div>
           </div>
         </div>
 
         {/* KPI 3: Rata-Rata Kemurnian TDS */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-emerald-500/50 transition-all">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Kemurnian Air TDS</span>
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-700">
-              <Sliders size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-emerald-500/50 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Kemurnian Air TDS</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-700 shrink-0">
+                <Sliders size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              {activeSummary.avg_island_water_tds_ppm.toFixed(1)}{' '}
+              <span className="text-[10px] sm:text-sm font-semibold text-emerald-600">PPM</span>
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {activeSummary.avg_island_water_tds_ppm.toFixed(1)}{' '}
-            <span className="text-sm font-semibold text-emerald-600">PPM</span>
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            Standar WHO &lt; 100 PPM (Sangat Murni)
-          </div>
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-            <CheckCircle2 size={11} /> Membran RO Terkalibrasi
+          <div>
+            <div className="text-[10px] text-slate-500 mb-1.5 truncate">
+              WHO &lt; 100 PPM (Murni)
+            </div>
+            <div className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md truncate max-w-full">
+              <CheckCircle2 size={11} className="shrink-0" /> <span className="truncate">Membran RO Normal</span>
+            </div>
           </div>
         </div>
 
         {/* KPI 4: Bauran Energi Bersih PLTS */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-amber-500/50 transition-all">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Bauran Energi Surya</span>
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-700">
-              <Sun size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-amber-500/50 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Energi Surya</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-amber-500/10 text-amber-700 shrink-0">
+                <Sun size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              {activeSummary.solar_energy_ratio_pct.toFixed(0)}%{' '}
+              <span className="text-[10px] sm:text-sm font-semibold text-amber-600">PLTS</span>
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {activeSummary.solar_energy_ratio_pct.toFixed(0)}%{' '}
-            <span className="text-sm font-semibold text-amber-600">PLTS</span>
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            Cadangan Tandon Rata-Rata: {activeSummary.avg_tank_reserve_pct.toFixed(0)}%
-          </div>
-          <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-            <div
-              className="bg-amber-500 h-1.5 rounded-full transition-all duration-500"
-              style={{ width: `${Math.min(100, Math.max(0, activeSummary.solar_energy_ratio_pct))}%` }}
-            />
+          <div>
+            <div className="text-[10px] text-slate-500 mb-1.5 truncate">
+              Tandon: {activeSummary.avg_tank_reserve_pct.toFixed(0)}%
+            </div>
+            <div className="w-full bg-slate-100 rounded-full h-1 sm:h-1.5 overflow-hidden">
+              <div
+                className="bg-amber-500 h-1 sm:h-1.5 rounded-full transition-all duration-500"
+                style={{ width: `${Math.min(100, Math.max(0, activeSummary.solar_energy_ratio_pct))}%` }}
+              />
+            </div>
           </div>
         </div>
 
-        {/* KPI 5: Penghematan BBM Diesel Solar */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-purple-500/50 transition-all">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Hemat Solar PLTD</span>
-            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-700">
-              <Fuel size={18} />
+        {/* KPI 5: Penghematan BBM Diesel Solar (Rentang 2 Kolom di Mobile) */}
+        <div className="col-span-2 lg:col-span-1 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-emerald-500/50 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Hemat Solar PLTD</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-700 shrink-0">
+                <Fuel size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              {activeSummary.estimated_diesel_fuel_saved_liters.toFixed(1)}{' '}
+              <span className="text-[10px] sm:text-sm font-semibold text-emerald-600">Liter</span>
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {activeSummary.estimated_diesel_fuel_saved_liters.toFixed(1)}{' '}
-            <span className="text-sm font-semibold text-purple-600">Liter</span>
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            Reduksi Emisi Gas Buang PLTD
-          </div>
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md">
-            <TrendingUp size={11} /> ~385 kg CO₂e Tereduksi
+          <div>
+            <div className="text-[10px] text-slate-500 mb-1.5 truncate">
+              Reduksi Emisi Gas Buang PLTD
+            </div>
+            <div className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md truncate max-w-full">
+              <TrendingUp size={11} className="shrink-0" /> <span className="truncate">~385 kg CO₂e Reduksi</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* 3. Dual Recharts Visualizations Cluster */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-6">
         {/* Visualisasi 1: Area Chart Dinamika Fluktuasi Kualitas Air & Daya (col-span-7) */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+        <div className="lg:col-span-7 bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 p-3.5 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-base font-bold text-[#081D35] flex items-center gap-2">
@@ -526,7 +546,7 @@ export const IslandTelemetryWorkspace: React.FC = () => {
         </div>
 
         {/* Visualisasi 2: Bar Chart Kapasitas Tandon & Baterai per Stasiun (col-span-5) */}
-        <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-base font-bold text-[#081D35] flex items-center gap-2">

@@ -176,7 +176,7 @@ const TrustBadgeIconSvg = ({
   if (type === 'encryption') {
     return (
       <svg
-        className="w-4 sm:w-5 h-4 sm:h-5 text-[#0f2c59] shrink-0"
+        className="w-4 sm:w-5 h-4 sm:h-5 text-[#081D35] shrink-0"
         viewBox="0 0 20 20"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -201,7 +201,7 @@ const TrustBadgeIconSvg = ({
   if (type === 'blockchain') {
     return (
       <svg
-        className="w-4 sm:w-5 h-4 sm:h-5 text-[#0f2c59] shrink-0"
+        className="w-4 sm:w-5 h-4 sm:h-5 text-[#081D35] shrink-0"
         viewBox="0 0 20 20"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -225,7 +225,7 @@ const TrustBadgeIconSvg = ({
   }
   return (
     <svg
-      className="w-4 sm:w-5 h-4 sm:h-5 text-[#0f2c59] shrink-0"
+      className="w-4 sm:w-5 h-4 sm:h-5 text-[#081D35] shrink-0"
       viewBox="0 0 20 20"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -257,7 +257,7 @@ export const BandaServicesIntroSection: React.FC<{
   return (
     <section
       aria-label="Layanan Kepulauan Banda"
-      className="hidden lg:flex flex-col w-full lg:w-[46%] xl:w-[680px] min-h-screen items-start justify-between pt-10 lg:pt-12 pb-8 lg:pb-[42px] px-8 sm:px-12 lg:px-14 relative self-stretch bg-[#0f2c59] overflow-hidden shrink-0"
+      className="hidden lg:flex flex-col w-full lg:w-[46%] xl:w-[680px] min-h-screen items-start justify-between pt-10 lg:pt-12 pb-8 lg:pb-[42px] px-8 sm:px-12 lg:px-14 relative self-stretch bg-[#081D35] overflow-hidden shrink-0"
     >
       <img
         className="absolute w-full h-full top-0 left-0 object-cover"
@@ -358,7 +358,7 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
         <button
           type="button"
           onClick={onBackToHome}
-          className="inline-flex h-10 items-center gap-1.5 font-medium text-[#0f2c59] text-[13px] hover:opacity-80 transition-opacity cursor-pointer"
+          className="inline-flex h-10 items-center gap-1.5 font-medium text-[#081D35] text-[13px] hover:opacity-80 transition-opacity cursor-pointer"
           aria-label="Kembali ke Beranda"
         >
           <ArrowLeft size={16} />
@@ -375,7 +375,7 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
               PORTAL WARGA &amp; EKOSISTEM BANDA
             </p>
           </div>
-          <h1 className="font-bold text-[#0f2c59] text-2xl sm:text-3xl lg:text-[34px] tracking-tight leading-tight">
+          <h1 className="font-bold text-[#081D35] text-2xl sm:text-3xl lg:text-[34px] tracking-tight leading-tight">
             Selamat Datang Kembali
           </h1>
           <p className="font-normal text-[#627085] text-xs sm:text-sm leading-relaxed">
@@ -402,7 +402,7 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
             >
               16 Digit Nomor Induk Kependudukan (NIK) / ID Akun
             </label>
-            <div className="flex h-12 sm:h-[54px] items-center gap-3 px-3.5 sm:px-4 relative self-stretch w-full bg-slate-50 rounded-xl overflow-hidden border border-slate-200 focus-within:border-[#0f2c59] focus-within:ring-1 focus-within:ring-[#0f2c59] focus-within:bg-white transition-colors">
+            <div className="flex h-12 sm:h-[54px] items-center gap-3 px-3.5 sm:px-4 relative self-stretch w-full bg-slate-50 rounded-xl overflow-hidden border border-slate-200 focus-within:border-[#081D35] focus-within:ring-1 focus-within:ring-[#081D35] focus-within:bg-white transition-colors">
               <FieldIconSvg type="nik" />
               <input
                 id="nik"
@@ -415,7 +415,7 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
                 placeholder="XXXX-XXXX-XXXX-XXXX"
                 aria-describedby="nik-help"
                 required
-                className="flex-1 min-w-0 bg-transparent border-0 outline-none font-normal text-[#0f2c59] text-base sm:text-lg tracking-normal sm:tracking-[1.10px] placeholder:text-[#627085]"
+                className="flex-1 min-w-0 bg-transparent border-0 outline-none font-normal text-[#081D35] text-base sm:text-lg tracking-normal sm:tracking-[1.10px] placeholder:text-[#627085]"
               />
             </div>
             {detectedAccount ? (
@@ -454,12 +454,12 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
                     'Untuk bantuan reset PIN akun warga desa, silakan hubungi operator kantor desa Banda Neira.'
                   )
                 }
-                className="font-medium text-[#0f2c59] hover:text-amber-600 text-xs transition-colors cursor-pointer"
+                className="font-medium text-[#081D35] hover:text-amber-600 text-xs transition-colors cursor-pointer"
               >
                 Lupa PIN?
               </button>
             </div>
-            <div className="flex h-12 sm:h-[54px] items-center gap-3 px-3.5 sm:px-4 relative self-stretch w-full bg-slate-50 rounded-xl overflow-hidden border border-slate-200 focus-within:border-[#0f2c59] focus-within:ring-1 focus-within:ring-[#0f2c59] focus-within:bg-white transition-colors">
+            <div className="flex h-12 sm:h-[54px] items-center gap-3 px-3.5 sm:px-4 relative self-stretch w-full bg-slate-50 rounded-xl overflow-hidden border border-slate-200 focus-within:border-[#081D35] focus-within:ring-1 focus-within:ring-[#081D35] focus-within:bg-white transition-colors">
               <FieldIconSvg type="pin" />
               <input
                 id="pin"
@@ -472,7 +472,7 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
                 onChange={(event) => setPin(event.target.value)}
                 placeholder="• • • •"
                 required
-                className="flex-1 min-w-0 bg-transparent border-0 outline-none font-normal text-[#0f2c59] text-base sm:text-lg tracking-wider placeholder:text-[#627085]"
+                className="flex-1 min-w-0 bg-transparent border-0 outline-none font-normal text-[#081D35] text-base sm:text-lg tracking-wider placeholder:text-[#627085]"
               />
               <button
                 type="button"
@@ -490,11 +490,11 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
           <button
             type="submit"
             disabled={loading}
-            className="flex h-12 sm:h-[54px] items-center justify-center gap-2.5 px-5 relative self-stretch w-full bg-amber-600 hover:bg-amber-500 active:bg-amber-700 text-white rounded-xl font-bold text-base sm:text-lg shadow-md hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer disabled:opacity-60 mt-1"
+            className="flex h-12 sm:h-[54px] items-center justify-center gap-2.5 px-5 relative self-stretch w-full bg-[#081D35] hover:bg-[#0c2a4d] active:bg-[#061628] text-white rounded-xl font-bold text-base sm:text-lg shadow-md hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer disabled:opacity-60 mt-1 border border-[#F4B75E]/30"
           >
             <span>{loading ? 'Memverifikasi...' : 'Masuk ke Portal Warga'}</span>
             <svg
-              className="w-4 h-4 sm:w-5 sm:h-5 text-white shrink-0"
+              className="w-4 h-4 sm:w-5 sm:h-5 text-[#F4B75E] shrink-0"
               viewBox="0 0 18 18"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -543,7 +543,7 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
             <button
               key={item}
               type="button"
-              className="font-normal text-[#627085] hover:text-[#0f2c59] text-[11px] sm:text-xs transition-colors bg-transparent border-0 p-0 cursor-pointer"
+              className="font-normal text-[#627085] hover:text-[#081D35] text-[11px] sm:text-xs transition-colors bg-transparent border-0 p-0 cursor-pointer"
             >
               {item}
             </button>

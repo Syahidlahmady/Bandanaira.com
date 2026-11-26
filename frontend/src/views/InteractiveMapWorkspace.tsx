@@ -2543,7 +2543,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                 <Edit2 size={16} />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#0f2c59' }}>
+                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#081D35' }}>
                   {adminTab === 'polygon'
                     ? `Batas Wilayah Desa: ${editingVillageName || 'Wilayah Baru'}`
                     : editingFeatureId
@@ -2745,7 +2745,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                             {item.island}
                           </span>
                         </div>
-                        <h4 style={{ margin: '0 0 0.25rem', fontSize: '0.85rem', fontWeight: 700, color: '#0f2c59' }}>
+                        <h4 style={{ margin: '0 0 0.25rem', fontSize: '0.85rem', fontWeight: 700, color: '#081D35' }}>
                           {item.name}
                         </h4>
                         <div style={{ fontSize: '0.75rem', color: '#64748b', fontFamily: 'monospace' }}>
@@ -3274,7 +3274,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.4rem' }}>
                     <Sparkles size={14} color="#059669" />
-                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0f2c59' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#081D35' }}>
                       Metadata Dimensi 4A Kepariwisataan (Attraction, Accessibility, Amenities, Ancillary)
                     </span>
                   </div>
@@ -3550,7 +3550,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', flex: 1 }}>
-                  <label style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0f2c59', whiteSpace: 'nowrap' }}>
+                  <label style={{ fontSize: '0.78rem', fontWeight: 700, color: '#081D35', whiteSpace: 'nowrap' }}>
                     Pilih Desa / Wilayah yang Diedit:
                   </label>
                   <select
@@ -3563,7 +3563,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                       background: '#ffffff',
                       border: '1.5px solid #0f766e',
                       borderRadius: '8px',
-                      color: '#0f2c59',
+                      color: '#081D35',
                       outline: 'none',
                       cursor: 'pointer',
                       minWidth: '200px',
@@ -3681,7 +3681,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                 {/* 1. Mode Kerja di Peta */}
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.4rem' }}>
-                    <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#0f2c59', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#081D35', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
                       <Crosshair size={14} />
                       Mode Kerja di Peta:
                     </span>
@@ -3745,7 +3745,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                 <div style={{ background: '#ffffff', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.5rem' }}>
                     <div>
-                      <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#0f2c59' }}>
+                      <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#081D35' }}>
                         Bagian Wilayah Daratan:
                       </div>
                       <div style={{ fontSize: '0.7rem', color: '#64748b' }}>
@@ -4240,7 +4240,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               <button
                 type="button"
                 onClick={onBackToLanding}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/95 hover:bg-white text-[#0c2340] text-xs font-semibold shadow-md backdrop-blur-md border border-slate-200/90 transition-all cursor-pointer hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 shrink-0"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/95 hover:bg-white text-[#081D35] text-xs font-semibold shadow-md backdrop-blur-md border border-slate-200/90 transition-all cursor-pointer hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 shrink-0"
                 title="Kembali ke Beranda Utama"
               >
                 <ChevronLeft size={15} />
@@ -4528,18 +4528,18 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', borderTop: '1px solid #f1f5f9', paddingTop: '0.65rem', fontSize: '0.73rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: '#64748b' }}>{t.gisMap.villageCard.island}:</span>
-                  <span style={{ fontWeight: 700, color: '#0f2c59' }}>{selectedVillage.island}</span>
+                  <span style={{ fontWeight: 700, color: '#081D35' }}>{selectedVillage.island}</span>
                 </div>
                 {selectedVillage.population && (
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span style={{ color: '#64748b' }}>{t.gisMap.villageCard.population}:</span>
-                    <span style={{ fontWeight: 700, color: '#0f2c59' }}>{selectedVillage.population}</span>
+                    <span style={{ fontWeight: 700, color: '#081D35' }}>{selectedVillage.population}</span>
                   </div>
                 )}
                 {selectedVillage.area_km2 && (
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span style={{ color: '#64748b' }}>{t.gisMap.villageCard.area}:</span>
-                    <span style={{ fontWeight: 700, color: '#0f2c59' }}>{selectedVillage.area_km2} km²</span>
+                    <span style={{ fontWeight: 700, color: '#081D35' }}>{selectedVillage.area_km2} km²</span>
                   </div>
                 )}
                 {selectedVillage.density && (
@@ -4598,21 +4598,21 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     >
                       <div style={{ background: '#ffffff', padding: '0.3rem 0.2rem', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
                         <div style={{ fontSize: '0.6rem', color: '#64748b' }}>{t.gisMap.villageCard.male}</div>
-                        <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0f2c59' }}>{selectedVillage.demographics.male}</div>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#081D35' }}>{selectedVillage.demographics.male}</div>
                       </div>
                       <div style={{ background: '#ffffff', padding: '0.3rem 0.2rem', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
                         <div style={{ fontSize: '0.6rem', color: '#64748b' }}>{t.gisMap.villageCard.female}</div>
-                        <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0f2c59' }}>{selectedVillage.demographics.female}</div>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#081D35' }}>{selectedVillage.demographics.female}</div>
                       </div>
                       <div style={{ background: '#ffffff', padding: '0.3rem 0.2rem', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
                         <div style={{ fontSize: '0.6rem', color: '#64748b' }}>{t.gisMap.villageCard.households}</div>
-                        <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0f2c59' }}>{selectedVillage.demographics.households} {isEnglish ? 'HH' : 'KK'}</div>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#081D35' }}>{selectedVillage.demographics.households} {isEnglish ? 'HH' : 'KK'}</div>
                       </div>
                     </div>
 
                     {selectedVillage.demographics.top_occupations && (
                       <div style={{ fontSize: '0.66rem', color: '#475569', lineHeight: 1.4, borderTop: '1px dashed #cbd5e1', paddingTop: '0.3rem' }}>
-                        <span style={{ fontWeight: 600, color: '#0f2c59' }}>{t.gisMap.villageCard.mainOccupation}: </span>
+                        <span style={{ fontWeight: 600, color: '#081D35' }}>{t.gisMap.villageCard.mainOccupation}: </span>
                         {selectedVillage.demographics.top_occupations}
                       </div>
                     )}
@@ -4714,7 +4714,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px', gap: '8px' }}>
-                <span style={{ fontWeight: 800, color: '#0f2c59', fontSize: '0.66rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <span style={{ fontWeight: 800, color: '#081D35', fontSize: '0.66rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   {t.gisMap.densityLegendTitle}
                 </span>
                 <button
@@ -4881,7 +4881,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Layers size={15} color="#0284c7" />
-                    <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#0f2c59' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#081D35' }}>
                       {t.gisMap.mapStyles}
                     </span>
                   </div>
@@ -5092,7 +5092,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                             borderRadius: '2px',
                           }}
                         />
-                        <span style={{ fontSize: '0.73rem', fontWeight: 600, color: '#0f2c59' }}>
+                        <span style={{ fontSize: '0.73rem', fontWeight: 600, color: '#081D35' }}>
                           {t.gisMap.villageTerritories}
                         </span>
                       </div>
@@ -5139,7 +5139,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                             borderRadius: '2px',
                           }}
                         />
-                        <span style={{ fontSize: '0.73rem', fontWeight: 600, color: '#0f2c59' }}>
+                        <span style={{ fontSize: '0.73rem', fontWeight: 600, color: '#081D35' }}>
                           {t.gisMap.densityHeatmap}
                         </span>
                       </div>
@@ -5171,7 +5171,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <div style={{ width: '12px', height: '2.5px', borderTop: '2px dashed #0284c7' }} />
-                        <span style={{ fontSize: '0.73rem', fontWeight: 600, color: '#0f2c59' }}>
+                        <span style={{ fontSize: '0.73rem', fontWeight: 600, color: '#081D35' }}>
                           {t.gisMap.maritimeRoutes}
                         </span>
                       </div>
@@ -5251,14 +5251,14 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
               title="Klik untuk menyembunyikan / menampilkan legenda"
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                <Layers size={13} color="#0f2c59" />
+                <Layers size={13} color="#081D35" />
                 <span
                   style={{
                     fontSize: '0.72rem',
                     fontWeight: 800,
                     letterSpacing: '0.08em',
                     textTransform: 'uppercase',
-                    color: '#0f2c59',
+                    color: '#081D35',
                   }}
                 >
                   {t.gisMap.mapLegend}
@@ -5345,7 +5345,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           style={{
                             fontSize: '0.72rem',
                             fontWeight: isActive ? 600 : 500,
-                            color: isActive ? '#0f2c59' : '#94a3b8',
+                            color: isActive ? '#081D35' : '#94a3b8',
                             lineHeight: 1.2,
                           }}
                         >
@@ -5581,7 +5581,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                       display: 'flex',
                       alignItems: 'center',
                       gap: '0.45rem',
-                      color: '#0f2c59',
+                      color: '#081D35',
                       fontWeight: 700,
                       fontSize: '0.78rem',
                       transition: 'all 0.15s ease',
@@ -5797,7 +5797,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           margin: '0 0 0.35rem',
                           fontSize: '1.25rem',
                           fontWeight: 800,
-                          color: '#0f2c59',
+                          color: '#081D35',
                           lineHeight: 1.3,
                           letterSpacing: '-0.02em',
                         }}
@@ -5871,7 +5871,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           gap: '0.35rem',
                           padding: '0.45rem 0.75rem',
                           background: '#f8fafc',
-                          color: '#0f2c59',
+                          color: '#081D35',
                           border: '1px solid #cbd5e1',
                           borderRadius: '20px',
                           fontSize: '0.72rem',
@@ -5895,7 +5895,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           gap: '0.35rem',
                           padding: '0.45rem 0.75rem',
                           background: copiedCoord ? '#ecfdf5' : '#f8fafc',
-                          color: copiedCoord ? '#059669' : '#0f2c59',
+                          color: copiedCoord ? '#059669' : '#081D35',
                           border: `1px solid ${copiedCoord ? '#a7f3d0' : '#cbd5e1'}`,
                           borderRadius: '20px',
                           fontSize: '0.72rem',
@@ -5994,7 +5994,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                         </div>
                         <div style={{ fontSize: '0.78rem', color: '#1e293b', flex: 1 }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#0f2c59' }}>
+                            <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#081D35' }}>
                               {featureLat.toFixed(5)}, {featureLng.toFixed(5)}
                             </span>
                             <span style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 600 }}>
@@ -6039,19 +6039,19 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           {selectedFeature.properties.properties_meta?.travel_time && (
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.73rem' }}>
                               <span style={{ color: '#64748b' }}>{t.gisMap.travelTime}:</span>
-                              <span style={{ fontWeight: 700, color: '#0f2c59' }}>{selectedFeature.properties.properties_meta.travel_time}</span>
+                              <span style={{ fontWeight: 700, color: '#081D35' }}>{selectedFeature.properties.properties_meta.travel_time}</span>
                             </div>
                           )}
                           {selectedFeature.properties.properties_meta?.transport_mode && (
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.73rem' }}>
                               <span style={{ color: '#64748b' }}>{t.gisMap.transportMode}:</span>
-                              <span style={{ fontWeight: 600, color: '#0f2c59' }}>{selectedFeature.properties.properties_meta.transport_mode}</span>
+                              <span style={{ fontWeight: 600, color: '#081D35' }}>{selectedFeature.properties.properties_meta.transport_mode}</span>
                             </div>
                           )}
                           {(selectedFeature.properties.properties_meta?.origin || selectedFeature.properties.properties_meta?.destination) && (
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', borderTop: '1px dashed #cbd5e1', paddingTop: '0.3rem' }}>
                               <span style={{ color: '#64748b' }}>{t.gisMap.routePath}:</span>
-                              <span style={{ fontWeight: 600, color: '#0f2c59' }}>
+                              <span style={{ fontWeight: 600, color: '#081D35' }}>
                                 {selectedFeature.properties.properties_meta?.origin || (isEnglish ? 'Start' : 'Awal')} &rarr; {selectedFeature.properties.properties_meta?.destination || (isEnglish ? 'Destination' : 'Tujuan')}
                               </span>
                             </div>
@@ -6197,7 +6197,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                                       }}
                                     >
                                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0f2c59' }}>
+                                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#081D35' }}>
                                           {u.business || u.name}
                                         </span>
                                         <span
@@ -6230,7 +6230,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                     {/* 5. Description Narrative */}
                     {selectedFeature.properties.description && (
                       <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '0.75rem' }}>
-                        <h4 style={{ margin: '0 0 0.35rem', fontSize: '0.75rem', fontWeight: 800, color: '#0f2c59', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        <h4 style={{ margin: '0 0 0.35rem', fontSize: '0.75rem', fontWeight: 800, color: '#081D35', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                           {t.gisMap.aboutThisDestination}
                         </h4>
                         <p style={{ margin: 0, fontSize: '0.78rem', color: '#475569', lineHeight: 1.6 }}>
@@ -6267,7 +6267,7 @@ export const InteractiveMapWorkspace: React.FC<InteractiveMapWorkspaceProps> = (
                           background: '#ffffff',
                           border: '1px solid #cbd5e1',
                           borderRadius: '8px',
-                          color: '#0f2c59',
+                          color: '#081D35',
                           fontWeight: 700,
                           cursor: 'pointer',
                           transition: 'all 0.15s ease',

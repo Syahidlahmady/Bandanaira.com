@@ -448,15 +448,15 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
           </div>
 
           {/* Action Header Buttons */}
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <div className="grid grid-cols-2 sm:flex items-center gap-2 w-full sm:w-auto shrink-0">
             <button
               type="button"
               onClick={handleExportCSV}
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200/90 shadow-2xs transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 min-h-[44px] bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200/90 shadow-2xs transition-colors cursor-pointer"
               title="Unduh rekapitulasi surat ke berkas CSV"
             >
               <Download size={15} className="text-emerald-600" />
-              <span>Ekspor Rekapitulasi</span>
+              <span>Ekspor Rekap</span>
               <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                 {effectiveRequests.length}
               </span>
@@ -465,7 +465,7 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
             <button
               type="button"
               onClick={() => setShowNewLetterModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#081D35] hover:bg-[#0c2a4d] text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition-all hover:shadow hover:-translate-y-0.5 cursor-pointer"
+              className="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] bg-[#081D35] hover:bg-[#0c2a4d] text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition-all cursor-pointer"
             >
               <Plus size={16} className="text-[#F4B75E]" />
               <span>Terbitkan Surat Baru</span>
@@ -477,7 +477,7 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
       {/* =========================================================================
           2. TOP BENTO KPI: 5 BAROMETER TATA KELOLA ADMINISTRASI & ARSIP DESA
       ========================================================================== */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
         
         {/* KPI 1: TOTAL PERMOHONAN */}
         <div
@@ -485,22 +485,24 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
             setActiveTab('requests')
             setRequestFilterStatus('')
           }}
-          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-blue-500/60 transition-all cursor-pointer group"
+          className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-blue-500/60 transition-all cursor-pointer group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Total Berkas Surat</span>
-            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-700 group-hover:scale-110 transition-transform">
-              <Mail size={18} />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Total Berkas</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-blue-500/10 text-blue-700 group-hover:scale-110 transition-transform shrink-0">
+                <Mail size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              {kpiStats.total} <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Berkas</span>
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {kpiStats.total} Berkas
-          </div>
-          <div className="space-y-1">
-            <div className="text-xs text-slate-500">
+          <div className="space-y-1 mt-2">
+            <div className="text-[10px] text-slate-500">
               Target Kuartal: 150 Berkas
             </div>
-            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+            <div className="w-full bg-slate-100 h-1 sm:h-1.5 rounded-full overflow-hidden">
               <div className="bg-blue-600 h-full rounded-full" style={{ width: `${Math.min(100, (kpiStats.total / 150) * 100)}%` }} />
             </div>
           </div>
@@ -512,25 +514,26 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
             setActiveTab('requests')
             setRequestFilterStatus('submitted')
           }}
-          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-amber-500/60 transition-all cursor-pointer group"
+          className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-amber-500/60 transition-all cursor-pointer group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Antrean Verifikasi</span>
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-700 group-hover:scale-110 transition-transform">
-              <Clock size={18} />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Antrean Validasi</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-amber-500/10 text-amber-700 group-hover:scale-110 transition-transform shrink-0">
+                <Clock size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#D97706] mb-1">
+              {kpiStats.pending} <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Antrean</span>
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {kpiStats.pending} Antrean
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            Perlu Tindakan Aparat Desa
-          </div>
-          <div className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border ${
-            kpiStats.pending > 0 ? 'text-amber-800 bg-amber-50 border-amber-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200'
-          }`}>
-            <AlertCircle size={11} />
-            {kpiStats.pending > 0 ? `${kpiStats.pending} Butuh Persetujuan` : 'Antrean Bersih'}
+          <div className="mt-2">
+            <div className={`inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+              kpiStats.pending > 0 ? 'text-amber-800 bg-amber-50 border-amber-200' : 'text-emerald-700 bg-emerald-50 border-emerald-200'
+            }`}>
+              <AlertCircle size={11} />
+              {kpiStats.pending > 0 ? `${kpiStats.pending} Butuh Aksi` : 'Antrean Bersih'}
+            </div>
           </div>
         </div>
 
@@ -540,63 +543,66 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
             setActiveTab('requests')
             setRequestFilterStatus('approved')
           }}
-          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-emerald-500/60 transition-all cursor-pointer group"
+          className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-emerald-500/60 transition-all cursor-pointer group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Disetujui &amp; Terbit</span>
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-700 group-hover:scale-110 transition-transform">
-              <CheckCircle2 size={18} />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Disetujui Sah</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-700 group-hover:scale-110 transition-transform shrink-0">
+                <CheckCircle2 size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-emerald-600 mb-1">
+              {kpiStats.approved} <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Surat</span>
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {kpiStats.approved} Surat Sah
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            Siap Cetak &amp; Diserahkan Warga
-          </div>
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-            <ShieldCheck size={11} /> Sah Kepala Desa
+          <div className="mt-2">
+            <div className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+              <ShieldCheck size={11} /> Sah Kepala Desa
+            </div>
           </div>
         </div>
 
         {/* KPI 4: TINGKAT KELULUSAN SLA */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-purple-500/60 transition-all group">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Tingkat SLA Layanan</span>
-            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-700 group-hover:scale-110 transition-transform">
-              <TrendingUp size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-sky-500/60 transition-all group flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Tingkat SLA</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-sky-500/10 text-sky-700 group-hover:scale-110 transition-transform shrink-0">
+                <TrendingUp size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              {kpiStats.approvalRate}%
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {kpiStats.approvalRate}%
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            Rata-rata Waktu Proses &lt; 2 Jam
-          </div>
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
-            <Sparkles size={11} /> Layanan Cepat Desa
+          <div className="mt-2">
+            <div className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md border border-sky-200">
+              <Sparkles size={11} /> &lt; 2 Jam Proses
+            </div>
           </div>
         </div>
 
-        {/* KPI 5: REPOSITORI ARSIP RESMI */}
+        {/* KPI 5: REPOSITORI ARSIP RESMI (Rentang 2 Kolom di Mobile) */}
         <div
           onClick={() => setActiveTab('archive')}
-          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-amber-500/60 transition-all cursor-pointer group"
+          className="col-span-2 lg:col-span-1 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-amber-500/60 transition-all cursor-pointer group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Arsip Resmi Desa</span>
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-700 group-hover:scale-110 transition-transform">
-              <BookOpen size={18} />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Arsip Resmi Desa</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-amber-500/10 text-amber-700 group-hover:scale-110 transition-transform shrink-0">
+                <BookOpen size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              {OFFICIAL_ARCHIVE_DOCS.length} <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Regulasi &amp; GI</span>
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {OFFICIAL_ARCHIVE_DOCS.length} Regulasi &amp; GI
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            Perdes, SK &amp; Sertifikat Mutu
-          </div>
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-            <Award size={11} /> 100% On-Chain Terdaftar
+          <div className="mt-2">
+            <div className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+              <Award size={11} /> 100% On-Chain
+            </div>
           </div>
         </div>
       </div>
@@ -943,7 +949,7 @@ export const LettersWorkspace: React.FC<LettersWorkspaceProps> = ({
                         : doc.category === 'PERDES'
                         ? 'bg-blue-50 text-blue-700 border-blue-200'
                         : doc.category === 'SK_DESA'
-                        ? 'bg-purple-50 text-purple-700 border-purple-200'
+                        ? 'bg-sky-50 text-sky-700 border-sky-200'
                         : 'bg-amber-50 text-amber-800 border-amber-200'
                     }`}>
                       {doc.category}

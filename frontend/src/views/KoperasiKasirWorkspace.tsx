@@ -359,7 +359,7 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
                   onClick={() => setActiveTab('sampah')}
                   className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                     activeTab === 'sampah'
-                      ? 'bg-cyan-600 text-white shadow-xs'
+                      ? 'bg-blue-600 text-white shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -383,7 +383,7 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
                   onClick={() => setActiveTab('ledger')}
                   className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                     activeTab === 'ledger'
-                      ? 'bg-purple-600 text-white shadow-xs'
+                      ? 'bg-[#081D35] text-[#F4B75E] shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -410,7 +410,7 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
                   onClick={() => setActiveTab('riwayat_warga')}
                   className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                     activeTab === 'riwayat_warga'
-                      ? 'bg-purple-600 text-white shadow-xs'
+                      ? 'bg-[#081D35] text-[#F4B75E] shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -422,7 +422,7 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
                   onClick={() => setActiveTab('panduan_warga')}
                   className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
                     activeTab === 'panduan_warga'
-                      ? 'bg-cyan-600 text-white shadow-xs'
+                      ? 'bg-blue-600 text-white shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -438,99 +438,109 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
       {/* =========================================================================
           2. EXECUTIVE BENTO KPI METRIC CARDS (5 CARDS)
       ========================================================================== */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
         {/* KPI 1: Akun Warga Aktif */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Akun Warga Aktif</span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <Building2 size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Akun Warga Aktif</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <Building2 size={16} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-2xl font-black text-[#081D35]">{recap?.total_active_accounts ?? '—'}</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Anggota</span>
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-[#081D35]">{recap?.total_active_accounts ?? '—'}</span>
-            <span className="text-xs font-semibold text-slate-500">Anggota</span>
-          </div>
-          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span>Terhubung NIK Desa Banda</span>
+          <div className="mt-2.5 sm:mt-3 flex items-center gap-1.5 text-[9px] sm:text-[11px] font-semibold text-emerald-700 truncate">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+            <span className="truncate">Terhubung NIK Desa</span>
           </div>
         </div>
 
         {/* KPI 2: Cadangan Kuota Air Bersih */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Cadangan Air Minum</span>
-            <div className="w-9 h-9 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center">
-              <Droplets size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Cadangan Air Minum</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center shrink-0">
+                <Droplets size={16} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-2xl font-black text-cyan-700">
+                {recap?.total_clean_water_quota_ltr.toLocaleString('id-ID') ?? '—'}
+              </span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Liter RO</span>
             </div>
           </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl font-black text-cyan-700">
-              {recap?.total_clean_water_quota_ltr.toLocaleString('id-ID') ?? '—'}
-            </span>
-            <span className="text-xs font-semibold text-slate-500">Liter RO</span>
-          </div>
-          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-cyan-700">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
-            <span>4 Stasiun Dispenser Pulau</span>
+          <div className="mt-2.5 sm:mt-3 flex items-center gap-1.5 text-[9px] sm:text-[11px] font-semibold text-cyan-700 truncate">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 shrink-0" />
+            <span className="truncate">4 Stasiun Dispenser</span>
           </div>
         </div>
 
         {/* KPI 3: Sampah Plastik Didaur Ulang */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Sampah Terdaur Ulang</span>
-            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <Recycle size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Sampah Didaur Ulang</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                <Recycle size={16} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-2xl font-black text-amber-600">
+                {recap?.total_plastic_recycled_kg ? recap.total_plastic_recycled_kg.toFixed(1) : '—'}
+              </span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500">kg Plastik</span>
             </div>
           </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl font-black text-amber-600">
-              {recap?.total_plastic_recycled_kg ? recap.total_plastic_recycled_kg.toFixed(1) : '—'}
-            </span>
-            <span className="text-xs font-semibold text-slate-500">kg Plastik</span>
-          </div>
-          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-amber-700">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-            <span>1 kg = 10 Liter Air Bersih</span>
+          <div className="mt-2.5 sm:mt-3 flex items-center gap-1.5 text-[9px] sm:text-[11px] font-semibold text-amber-700 truncate">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+            <span className="truncate">1 kg = 10 L Air Bersih</span>
           </div>
         </div>
 
         {/* KPI 4: Total Transaksi Kasir */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Volume Transaksi</span>
-            <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
-              <Activity size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Volume Transaksi</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <Activity size={16} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-2xl font-black text-blue-700">{recap?.total_transactions_count ?? '—'}</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Struk Sah</span>
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-purple-700">{recap?.total_transactions_count ?? '—'}</span>
-            <span className="text-xs font-semibold text-slate-500">Struk Sah</span>
-          </div>
-          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-purple-700">
-            <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-            <span>Audit SHA-256 Otomatis</span>
+          <div className="mt-2.5 sm:mt-3 flex items-center gap-1.5 text-[9px] sm:text-[11px] font-semibold text-blue-700 truncate">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+            <span className="truncate">Audit SHA-256 Otomatis</span>
           </div>
         </div>
 
-        {/* KPI 5: Saldo Perputaran Simpanan */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Perputaran Simpanan</span>
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-              <TrendingUp size={18} />
+        {/* KPI 5: Saldo Perputaran Simpanan (Rentang 2 Kolom di Mobile) */}
+        <div className="col-span-2 lg:col-span-1 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Perputaran Simpanan</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <TrendingUp size={16} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-base sm:text-2xl font-extrabold text-[#081D35]">
+                Rp {(recap?.total_coop_balance_rp || 48500000).toLocaleString('id-ID')}
+              </span>
             </div>
           </div>
-          <div className="flex items-baseline gap-1">
-            <span className="text-base font-extrabold text-[#081D35]">
-              Rp {(recap?.total_coop_balance_rp || 48500000).toLocaleString('id-ID')}
-            </span>
-          </div>
-          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-blue-700">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-            <span>Likuiditas Koperasi Hatta</span>
+          <div className="mt-2.5 sm:mt-3 flex items-center gap-1.5 text-[9px] sm:text-[11px] font-semibold text-blue-700 truncate">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+            <span className="truncate">Likuiditas Koperasi Hatta</span>
           </div>
         </div>
       </div>
@@ -538,9 +548,9 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
       {/* =========================================================================
           3. DUAL ANALYTICAL CHARTS CLUSTER (RECHARTS BAR & DONUT)
       ========================================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-6 items-stretch">
         {/* Kolom Kiri (7 Kolom): Bar Chart Perputaran Hasil Bumi & Bank Sampah */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-7 bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
@@ -602,7 +612,7 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
         </div>
 
         {/* Kolom Kanan (5 Kolom): Donut Chart Distribusi Alokasi Penukaran */}
-        <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="w-2.5 h-2.5 rounded-full bg-cyan-500" />
@@ -938,7 +948,7 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
                         onClick={() => setCommodityDest('WATER_QUOTA')}
                         className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1 ${
                           commodityDest === 'WATER_QUOTA'
-                            ? 'bg-cyan-600 text-white border-cyan-600 shadow-xs'
+                            ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
                             : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                         }`}
                       >
@@ -1026,14 +1036,14 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
                           onClick={() => setWasteType(item.code)}
                           className={`p-3 rounded-xl text-left transition-all border flex items-center gap-2.5 ${
                             isSelected
-                              ? 'bg-cyan-50/80 border-cyan-500 ring-2 ring-cyan-100 shadow-2xs'
+                              ? 'bg-sky-50/80 border-sky-500 ring-2 ring-sky-100 shadow-2xs'
                               : 'bg-slate-50/60 border-slate-200 hover:bg-slate-100'
                           }`}
                         >
                           <span className="text-xl">{item.icon}</span>
                           <div className="min-w-0">
                             <div className="text-xs font-bold text-slate-800 truncate">{item.name}</div>
-                            <div className="text-[11px] font-extrabold text-cyan-700 mt-0.5">
+                            <div className="text-[11px] font-extrabold text-sky-700 mt-0.5">
                               1 kg = {item.waterPerKg} L Air RO
                             </div>
                           </div>
@@ -1067,7 +1077,7 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
                         onClick={() => setWasteDest('WATER_QUOTA')}
                         className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1 ${
                           wasteDest === 'WATER_QUOTA'
-                            ? 'bg-cyan-600 text-white border-cyan-600 shadow-xs'
+                            ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
                             : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                         }`}
                       >
@@ -1121,7 +1131,7 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
                 <button
                   type="submit"
                   disabled={submittingWaste || !citizenProfile}
-                  className="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-xs transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
                   {submittingWaste ? (
                     <>
@@ -1262,7 +1272,7 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
               <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 flex-wrap gap-2">
                 <div>
                   <h3 className="text-sm font-extrabold text-[#081D35] flex items-center gap-2">
-                    <CreditCard size={16} className="text-purple-600" />
+                    <CreditCard size={16} className="text-blue-600" />
                     <span>Buku Besar Transaksi Kasir &amp; Bank Sampah</span>
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">
@@ -1325,7 +1335,7 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
                               <span className="text-slate-400">0</span>
                             )}
                           </td>
-                          <td className="py-2.5 px-3 font-mono text-[10px] text-purple-700">
+                          <td className="py-2.5 px-3 font-mono text-[10px] text-blue-700">
                             {trx.receipt_hash.slice(0, 10)}...{trx.receipt_hash.slice(-6)}
                           </td>
                         </tr>
@@ -1412,7 +1422,7 @@ export const KoperasiKasirWorkspace: React.FC<KoperasiKasirWorkspaceProps> = ({ 
               <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
                 <div>
                   <h3 className="text-sm font-extrabold text-[#081D35] flex items-center gap-2">
-                    <CreditCard size={16} className="text-purple-600" />
+                    <CreditCard size={16} className="text-blue-600" />
                     <span>Riwayat Transaksi &amp; Kuota Saya</span>
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">

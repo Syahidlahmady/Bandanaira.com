@@ -37,9 +37,9 @@ export const AccessRestrictedNotice: React.FC<AccessRestrictedNoticeProps> = ({
         <button
           type="button"
           onClick={onBackToDashboard}
-          className="px-5 py-2.5 bg-[#081d35] text-amber-300 font-semibold rounded-xl hover:bg-[#0f2c59] transition-all text-xs flex items-center gap-2 shadow-xs"
+          className="px-5 py-2.5 bg-[#081D35] text-white font-bold rounded-xl hover:bg-[#0c2a4d] transition-all text-xs flex items-center gap-2 shadow-xs cursor-pointer"
         >
-          <ArrowLeft size={14} />
+          <ArrowLeft size={14} className="text-[#F4B75E]" />
           <span>Kembali ke Ringkasan Dasbor</span>
         </button>
 

@@ -62,9 +62,9 @@ export class ErrorBoundary extends Component<Props, State> {
               <button
                 type="button"
                 onClick={this.handleReset}
-                className="px-4 py-2 bg-[#081d35] text-amber-300 rounded-xl text-xs font-semibold hover:bg-[#0f2c59] transition-all flex items-center gap-1.5"
+                className="px-4 py-2 bg-[#081D35] text-white rounded-xl text-xs font-bold hover:bg-[#0c2a4d] transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
               >
-                <RefreshCw size={14} />
+                <RefreshCw size={14} className="text-[#F4B75E]" />
                 <span>Muat Ulang</span>
               </button>
               <button

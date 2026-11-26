@@ -4,6 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from jose import JWTError
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from backend.app.core.account_lockout import (
+    check_account_lockout,
+    record_login_failure,
+    reset_login_failures,
+)
 from backend.app.core.config import settings
 from backend.app.core.permissions import ROLE_ADMIN, get_current_active_user, require_roles
 from backend.app.core.security import (
@@ -32,6 +37,17 @@ router = APIRouter(prefix="/auth", tags=["Authentication & RBAC"])
 
 @router.post("/login", response_model=TokenResponse)
 async def login(credentials: LoginRequest, db: AsyncSession = Depends(get_db)):
+    identifier = credentials.username_or_email.strip().lower()
+
+    # 1. Proteksi Brute-Force: Cek apakah akun sedang dalam periode penguncian (Lockout)
+    is_locked, remaining_seconds = check_account_lockout(identifier)
+    if is_locked:
+        remaining_minutes = max(1, (remaining_seconds + 59) // 60)
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Akun terkunci sementara karena {settings.MAX_LOGIN_ATTEMPTS} kali kegagalan login. Silakan coba lagi dalam {remaining_minutes} menit.",
+        )
+
     stmt = (
         select(User)
         .where(
@@ -49,9 +65,18 @@ async def login(credentials: LoginRequest, db: AsyncSession = Depends(get_db)):
         user = (await db.execute(stmt)).scalar_one_or_none()
 
     if not user or not verify_password(credentials.password, user.password_hash):
+        # 2. Catat kegagalan login dan picu lockout jika melampaui batas ambang
+        attempts, is_now_locked, lockout_secs = record_login_failure(identifier)
+        if is_now_locked:
+            lockout_min = max(1, (lockout_secs + 59) // 60)
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"Terlalu banyak percobaan gagal. Akun dikunci sementara selama {lockout_min} menit.",
+            )
+        remaining_attempts = max(0, settings.MAX_LOGIN_ATTEMPTS - attempts)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail=f"Incorrect username or password. Sisa percobaan: {remaining_attempts} kali.",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -60,6 +85,9 @@ async def login(credentials: LoginRequest, db: AsyncSession = Depends(get_db)):
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User account is deactivated",
         )
+
+    # 3. Reset riwayat kegagalan jika login berhasil
+    reset_login_failures(identifier)
 
     role_names = [role.name for role in user.roles]
     access_token = create_access_token(

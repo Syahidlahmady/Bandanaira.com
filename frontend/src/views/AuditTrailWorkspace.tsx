@@ -288,7 +288,7 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
     }
     if (entity.includes('batch')) {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200">
           <Layers size={11} /> Rantai Pasok Batch
         </span>
       )
@@ -302,7 +302,7 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
     }
     if (entity.includes('blockchain')) {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
           <ShieldCheck size={11} /> Blockchain EVM
         </span>
       )
@@ -346,7 +346,7 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
     }
     if (act.includes('ANCHOR') || act.includes('HASH')) {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 font-mono">
           {action}
         </span>
       )
@@ -364,8 +364,8 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-700 border border-indigo-300/40">
-              <ShieldCheck size={13} className="text-indigo-600" /> Tata Kelola Keamanan &amp; Akuntabilitas Sistem
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/10 text-blue-700 border border-blue-300/40">
+              <ShieldCheck size={13} className="text-blue-600" /> Tata Kelola Keamanan &amp; Akuntabilitas Sistem
             </span>
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
               <CheckCircle2 size={12} /> Kepatuhan UU PDP No. 27/2022
@@ -418,133 +418,153 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
       </div>
 
       {/* 2. Top Bento KPI: 5 Barometer Integritas Ekosistem */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
         {/* Card 1: Total Peristiwa Audit Log */}
         <div
           onClick={() => {
             setSelectedEntity('')
             setSelectedActionFilter('')
           }}
-          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-indigo-500/60 transition-all cursor-pointer group"
+          className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-blue-500/60 transition-all cursor-pointer group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Total Mutasi Sistem</span>
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-700 group-hover:scale-110 transition-transform">
-              <ShieldCheck size={18} />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Total Mutasi Sistem</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-blue-500/10 text-blue-700 group-hover:scale-110 transition-transform shrink-0">
+                <ShieldCheck size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              {summary?.total_audit_events ?? totalLogs} <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Log</span>
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {summary?.total_audit_events ?? totalLogs} Log
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            Riwayat Aktivitas Operator Desa
-          </div>
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">
-            <Sparkles size={11} /> 100% Tervalidasi SHA-256
+          <div>
+            <div className="text-[10px] text-slate-500 mb-1.5 truncate">
+              Riwayat Operator Desa
+            </div>
+            <div className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md truncate max-w-full">
+              <Sparkles size={11} className="shrink-0" /> <span className="truncate">100% SHA-256 Sah</span>
+            </div>
           </div>
         </div>
 
         {/* Card 2: Skor Kepatuhan OWASP & UU PDP */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-emerald-500/60 transition-all group">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Kepatuhan OWASP</span>
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-700 group-hover:scale-110 transition-transform">
-              <Lock size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-emerald-500/60 transition-all group flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Kepatuhan OWASP</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-700 group-hover:scale-110 transition-transform shrink-0">
+                <Lock size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              {securityReport?.owasp_compliance_score ?? 98.5}%
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {securityReport?.owasp_compliance_score ?? 98.5}%
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            Standar Pengerasan NFR-02
-          </div>
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-            <CheckCircle2 size={11} /> AES-256 &amp; HMAC Kebal
+          <div>
+            <div className="text-[10px] text-slate-500 mb-1.5 truncate">
+              Standar NFR-02
+            </div>
+            <div className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md truncate max-w-full">
+              <CheckCircle2 size={11} className="shrink-0" /> <span className="truncate">AES-256 &amp; HMAC</span>
+            </div>
           </div>
         </div>
 
         {/* Card 3: Rantai Pasok Blockchain */}
         <div
           onClick={() => setSelectedEntity('product_batches')}
-          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-purple-500/60 transition-all cursor-pointer group"
+          className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-sky-500/60 transition-all cursor-pointer group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Rantai Pasok EVM</span>
-            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-700 group-hover:scale-110 transition-transform">
-              <Layers size={18} />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Rantai Pasok EVM</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-sky-500/10 text-sky-700 group-hover:scale-110 transition-transform shrink-0">
+                <Layers size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              {summary?.traceability.blockchain_anchored_batches ?? 14} <span className="text-[10px] sm:text-sm font-semibold text-slate-500">/ {summary?.traceability.total_batches ?? 18}</span>
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {summary?.traceability.blockchain_anchored_batches ?? 14} <span className="text-sm font-semibold text-slate-500">/ {summary?.traceability.total_batches ?? 18} Batch</span>
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            {summary?.traceability.total_trace_events ?? 48} Log Jejak Mutu Terikat
-          </div>
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md">
-            <ArrowUpRight size={11} /> Off-Chain Zero-PII Hash
+          <div>
+            <div className="text-[10px] text-slate-500 mb-1.5 truncate">
+              {summary?.traceability.total_trace_events ?? 48} Log Jejak Mutu
+            </div>
+            <div className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md truncate max-w-full">
+              <ArrowUpRight size={11} className="shrink-0" /> <span className="truncate">Off-Chain Hash</span>
+            </div>
           </div>
         </div>
 
         {/* Card 4: Kependudukan Terverifikasi */}
         <div
           onClick={() => setSelectedEntity('residents')}
-          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-blue-500/60 transition-all cursor-pointer group"
+          className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-blue-500/60 transition-all cursor-pointer group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Kependudukan Desa</span>
-            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-700 group-hover:scale-110 transition-transform">
-              <Users size={18} />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Kependudukan</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-blue-500/10 text-blue-700 group-hover:scale-110 transition-transform shrink-0">
+                <Users size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              {summary?.population.verified_residents ?? 28} <span className="text-[10px] sm:text-sm font-semibold text-slate-500">/ {summary?.population.total_residents ?? 34}</span>
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {summary?.population.verified_residents ?? 28} <span className="text-sm font-semibold text-slate-500">/ {summary?.population.total_residents ?? 34}</span>
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            {summary?.population.pending_residents ?? 6} Menunggu Verifikasi
-          </div>
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
-            <KeyRound size={11} /> Blind Index O(1) B-Tree
+          <div>
+            <div className="text-[10px] text-slate-500 mb-1.5 truncate">
+              {summary?.population.pending_residents ?? 6} Menunggu Verifikasi
+            </div>
+            <div className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md truncate max-w-full">
+              <KeyRound size={11} className="shrink-0" /> <span className="truncate">Blind Index O(1)</span>
+            </div>
           </div>
         </div>
 
-        {/* Card 5: Pelayanan Surat Warga */}
+        {/* Card 5: Pelayanan Surat Warga (Rentang 2 Kolom di Mobile) */}
         <div
           onClick={() => setSelectedEntity('administrative_requests')}
-          className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-amber-500/60 transition-all cursor-pointer group"
+          className="col-span-2 lg:col-span-1 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-200/80 shadow-xs hover:border-amber-500/60 transition-all cursor-pointer group flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold tracking-wider uppercase text-slate-500">Pelayanan Surat</span>
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-700 group-hover:scale-110 transition-transform">
-              <FileText size={18} />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-slate-500 truncate">Pelayanan Surat</span>
+              <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-amber-500/10 text-amber-700 group-hover:scale-110 transition-transform shrink-0">
+                <FileText size={16} />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl font-black text-[#081D35] mb-1">
+              {summary?.letters.approved_requests ?? 38} <span className="text-[10px] sm:text-sm font-semibold text-slate-500">/ {summary?.letters.total_requests ?? 45}</span>
             </div>
           </div>
-          <div className="text-2xl font-black text-[#081D35] mb-1">
-            {summary?.letters.approved_requests ?? 38} <span className="text-sm font-semibold text-slate-500">/ {summary?.letters.total_requests ?? 45}</span>
-          </div>
-          <div className="text-xs text-slate-500 mb-2">
-            SKU &amp; Domisili Terbit Sah
-          </div>
-          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md">
-            <Check size={11} /> Dokumen Berstempel Sah
+          <div>
+            <div className="text-[10px] text-slate-500 mb-1.5 truncate">
+              SKU &amp; Domisili Terbit Sah
+            </div>
+            <div className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md truncate max-w-full">
+              <Check size={11} className="shrink-0" /> <span className="truncate">Berstempel Sah</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* 3. Visual Analytics Cluster: Bar Chart & Donut Chart */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5 sm:gap-6">
         {/* Left: Bar Chart Aktivitas Audit per Entitas */}
         <div className="lg:col-span-2 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-bold text-[#081D35] flex items-center gap-2">
-                <ShieldCheck size={16} className="text-indigo-600" />
+                <ShieldCheck size={16} className="text-blue-600" />
                 <span>Volume Aktivitas Audit per Entitas Ekosistem</span>
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
                 Perbandingan total mutasi sistem (rekaman data) vs data yang telah terverifikasi/sah
               </p>
             </div>
-            <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200">
               6 Pilar Utama
             </span>
           </div>
@@ -704,10 +724,10 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
           <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-200/80 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <div className="p-1.5 rounded-lg bg-indigo-100 text-indigo-700">
+                <div className="p-1.5 rounded-lg bg-blue-100 text-blue-700">
                   <CheckCircle2 size={14} />
                 </div>
-                <span className="text-xs font-bold text-indigo-800 uppercase tracking-wider">Zero-PII On-Chain</span>
+                <span className="text-xs font-bold text-blue-800 uppercase tracking-wider">Zero-PII On-Chain</span>
               </div>
               <div className="text-sm font-black text-[#081D35] mb-1">100% PII Off-Chain</div>
               <p className="text-xs text-slate-500 leading-relaxed">
@@ -716,7 +736,7 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
             </div>
             <div className="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
               <span className="text-slate-500">Ledger EVM:</span>
-              <span className="font-bold text-indigo-700">Merkle Root Only</span>
+              <span className="font-bold text-blue-700">Merkle Root Only</span>
             </div>
           </div>
         </div>
@@ -763,7 +783,7 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
             <button
               type="submit"
               disabled={testingCrypto}
-              className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-1.5 shadow-sm disabled:opacity-50 cursor-pointer"
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all duration-200 flex items-center gap-1.5 shadow-sm disabled:opacity-50 cursor-pointer"
             >
               {testingCrypto ? (
                 <>
@@ -856,7 +876,7 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h3 className="text-base font-bold text-[#081D35] flex items-center gap-2">
-              <FileText size={18} className="text-indigo-600" />
+              <FileText size={18} className="text-blue-600" />
               <span>Buku Besar Log Audit Terpusat (Audit Trail Ledger)</span>
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -869,7 +889,7 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
             <select
               value={selectedEntity}
               onChange={(e) => setSelectedEntity(e.target.value)}
-              className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500 shadow-xs"
+              className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:border-blue-500 shadow-xs"
             >
               <option value="">Semua Entitas</option>
               <option value="residents">Penduduk (residents)</option>
@@ -886,7 +906,7 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
                 placeholder="Cari aksi (CREATE, VERIFY)..."
                 value={searchAction}
                 onChange={(e) => setSearchAction(e.target.value)}
-                className="bg-white border border-slate-200 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 shadow-xs w-48"
+                className="bg-white border border-slate-200 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-blue-500 shadow-xs w-48"
               />
               <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
             </div>
@@ -947,7 +967,7 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
               {loadingLogs ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-slate-500">
-                    <RefreshCw size={20} className="animate-spin mx-auto mb-2 text-indigo-600" />
+                    <RefreshCw size={20} className="animate-spin mx-auto mb-2 text-blue-600" />
                     <span>Memuat log audit ekosistem...</span>
                   </td>
                 </tr>
@@ -1012,7 +1032,7 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
                         <button
                           type="button"
                           onClick={() => setSelectedDetailLog(log)}
-                          className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-600 transition font-bold text-xs inline-flex items-center gap-1 cursor-pointer"
+                          className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-600 transition font-bold text-xs inline-flex items-center gap-1 cursor-pointer"
                           title="Inspeksi JSON payload mutasi"
                         >
                           <Eye size={12} />
@@ -1040,7 +1060,7 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
           >
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="text-base font-bold text-[#081D35] flex items-center gap-2">
-                <Eye size={18} className="text-indigo-600" />
+                <Eye size={18} className="text-blue-600" />
                 <span>Detail Payload Audit Event</span>
               </h3>
               <button
@@ -1086,7 +1106,7 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
                       'payload_json'
                     )
                   }
-                  className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
+                  className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer"
                 >
                   {copiedField === 'payload_json' ? <Check size={12} /> : <Copy size={12} />}
                   <span>Salin JSON</span>
@@ -1127,9 +1147,9 @@ export const AuditTrailWorkspace: React.FC<AuditTrailWorkspaceProps> = ({ isOnli
                 <button
                   type="button"
                   onClick={triggerBrowserPrint}
-                  className="px-3.5 py-1.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-xl bg-[#081D35] hover:bg-[#0c2a4d] text-white text-xs font-bold flex items-center gap-1.5 transition-colors duration-200 cursor-pointer shadow-xs"
                 >
-                  <Printer size={13} />
+                  <Printer size={13} className="text-[#F4B75E]" />
                   <span>Cetak / Simpan PDF</span>
                 </button>
                 <button

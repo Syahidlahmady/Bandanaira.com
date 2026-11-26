@@ -339,10 +339,10 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
           </div>
 
           {/* Action Header Buttons */}
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <div className="grid grid-cols-2 sm:flex items-center gap-2 w-full sm:w-auto shrink-0">
             <button
               onClick={() => setShowForm((prev) => !prev)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#081D35] hover:bg-[#0F2C59] text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition-all hover:shadow hover:-translate-y-0.5 active:translate-y-0"
+              className="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-2 px-3.5 py-2.5 min-h-[44px] bg-[#081D35] hover:bg-[#0c2a4d] text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition-all cursor-pointer"
             >
               {showForm ? (
                 <>
@@ -357,7 +357,7 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
 
             <button
               onClick={handleExportCSV}
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200/90 shadow-2xs transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-3 py-2.5 min-h-[44px] bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200/90 shadow-2xs transition-colors cursor-pointer"
               title="Unduh data dalam format CSV resmi"
             >
               <FileSpreadsheet size={16} className="text-emerald-600" />
@@ -370,7 +370,7 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
             <button
               onClick={() => fetchPopulationData(searchQuery, selectedOccupationFilter)}
               disabled={loadingPop}
-              className="inline-flex items-center justify-center w-10 h-10 bg-white hover:bg-slate-50 text-slate-600 rounded-xl border border-slate-200/90 shadow-2xs transition-colors disabled:opacity-50"
+              className="inline-flex items-center justify-center min-h-[44px] px-3.5 bg-white hover:bg-slate-50 text-slate-600 rounded-xl border border-slate-200/90 shadow-2xs transition-colors disabled:opacity-50 cursor-pointer"
               title="Muat ulang data dari server"
             >
               <RefreshCw size={16} className={loadingPop ? 'animate-spin text-blue-600' : ''} />
@@ -402,85 +402,93 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
       {/* =========================================================================
           2. EXECUTIVE KPI CARDS CLUSTER (5 METRIC BENTO CARDS)
       ========================================================================== */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
         {/* KPI 1: Total Penduduk */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Penduduk</span>
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-              <Users size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Total Penduduk</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <Users size={16} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-2xl font-black text-[#081D35]">{totalCount.toLocaleString('id-ID')}</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Jiwa</span>
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-[#081D35]">{totalCount.toLocaleString('id-ID')}</span>
-            <span className="text-xs font-semibold text-slate-500">Jiwa</span>
-          </div>
-          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span>100% Terdaftar di Database Desa</span>
+          <div className="mt-2.5 sm:mt-3 flex items-center gap-1.5 text-[9px] sm:text-[11px] font-semibold text-emerald-700 truncate">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+            <span className="truncate">100% Terdaftar di Desa</span>
           </div>
         </div>
 
         {/* KPI 2: Terverifikasi Sah */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Terverifikasi Sah</span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <ShieldCheck size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Terverifikasi Sah</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <ShieldCheck size={16} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-2xl font-black text-emerald-600">{totalVerifiedCount.toLocaleString('id-ID')}</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Warga</span>
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-emerald-600">{totalVerifiedCount.toLocaleString('id-ID')}</span>
-            <span className="text-xs font-semibold text-slate-500">Warga</span>
-          </div>
-          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-slate-600">
+          <div className="mt-2.5 sm:mt-3 flex items-center gap-1.5 text-[9px] sm:text-[11px] font-semibold text-slate-600 truncate">
             <span className="text-emerald-700 font-bold">{verifiedPercentage}%</span>
-            <span>cakupan identitas sah</span>
+            <span className="truncate">identitas sah</span>
           </div>
         </div>
 
         {/* KPI 3: Menunggu Verifikasi */}
         <div
           onClick={() => setStatusFilter((prev) => (prev === 'pending' ? 'all' : 'pending'))}
-          className={`bg-white rounded-2xl p-5 border shadow-xs transition-all cursor-pointer ${
+          className={`bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border shadow-xs transition-all cursor-pointer flex flex-col justify-between ${
             statusFilter === 'pending'
               ? 'border-amber-400 ring-2 ring-amber-100 bg-amber-50/20'
               : 'border-slate-200/80 hover:border-amber-300'
           }`}
         >
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Antrean Verifikasi</span>
-            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <Clock size={18} />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Antrean Validasi</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                <Clock size={16} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-2xl font-black text-[#D97706]">{totalPendingCount.toLocaleString('id-ID')}</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Berkas</span>
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-amber-600">{totalPendingCount.toLocaleString('id-ID')}</span>
-            <span className="text-xs font-semibold text-slate-500">Berkas</span>
-          </div>
-          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-amber-800">
-            <span>Perlu Validasi NIK</span>
-            <span className="underline text-[10px]">Klik saring</span>
+          <div className="mt-2.5 sm:mt-3 flex items-center gap-1.5 text-[9px] sm:text-[11px] font-semibold text-amber-700 truncate">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+            <span className="truncate">{totalPendingCount > 0 ? 'Perlu Tindakan' : 'Antrean Bersih'}</span>
           </div>
         </div>
 
         {/* KPI 4: Komposisi Gender */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Rasio Gender</span>
-            <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
-              <UserCheck size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Rasio Gender</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <UserCheck size={16} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1 text-xs sm:text-base font-bold">
+              <span className="text-blue-900">{genderL} L</span>
+              <span className="text-slate-400">•</span>
+              <span className="text-rose-700">{genderP} P</span>
             </div>
           </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-base font-bold text-indigo-900">{genderL} L</span>
-            <span className="text-slate-400 text-xs">•</span>
-            <span className="text-base font-bold text-rose-700">{genderP} P</span>
-          </div>
-          <div className="mt-3">
-            <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden flex">
+          <div className="mt-2 sm:mt-3">
+            <div className="w-full bg-slate-100 rounded-full h-1.5 sm:h-2 overflow-hidden flex">
               <div
-                className="bg-indigo-600 h-full transition-all duration-500"
+                className="bg-blue-600 h-full transition-all duration-500"
                 style={{ width: `${genderLPercent}%` }}
                 title={`Laki-laki: ${genderLPercent}%`}
               />
@@ -490,30 +498,32 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
                 title={`Perempuan: ${genderPPercent}%`}
               />
             </div>
-            <div className="flex justify-between text-[10px] text-slate-500 font-semibold mt-1">
+            <div className="flex justify-between text-[8px] sm:text-[10px] text-slate-500 font-semibold mt-1">
               <span>{genderLPercent}% Pria</span>
               <span>{genderPPercent}% Wanita</span>
             </div>
           </div>
         </div>
 
-        {/* KPI 5: Dusun & Profesi */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Klaster Profesi</span>
-            <div className="w-9 h-9 rounded-xl bg-amber-50 text-[#D97706] flex items-center justify-center">
-              <Sparkles size={18} />
+        {/* KPI 5: Dusun & Profesi (Rentang 2 Kolom di Mobile) */}
+        <div className="col-span-2 lg:col-span-1 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Klaster Profesi</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-amber-50 text-[#D97706] flex items-center justify-center shrink-0">
+                <Sparkles size={16} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-2xl font-black text-[#081D35]">
+                {Object.keys(popStats?.top_occupations || {}).length || 6}
+              </span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Kategori</span>
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-[#081D35]">
-              {Object.keys(popStats?.top_occupations || {}).length || 6}
-            </span>
-            <span className="text-xs font-semibold text-slate-500">Kategori</span>
-          </div>
-          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-slate-600 truncate">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-            <span>Didominasi Petani & Nelayan</span>
+          <div className="mt-2.5 sm:mt-3 flex items-center gap-1.5 text-[9px] sm:text-[11px] font-semibold text-slate-600 truncate">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+            <span className="truncate">Petani, Nelayan, Homestay</span>
           </div>
         </div>
       </div>
@@ -521,9 +531,9 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
       {/* =========================================================================
           3. DUAL ANALYTICAL CHARTS CLUSTER (RECHARTS BAR & DONUT)
       ========================================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-6 items-stretch">
         {/* Kolom Kiri (7 Kolom): Bar Chart Sebaran Mata Pencaharian */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-7 bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
@@ -615,7 +625,7 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
         </div>
 
         {/* Kolom Kanan (5 Kolom): Donut Chart Status Validasi Identitas */}
-        <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
@@ -1351,7 +1361,7 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
             {/* Modal Body: Identitas Card */}
             <div className="p-6 space-y-4">
               <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
-                <div className="w-16 h-16 rounded-2xl bg-[#0F2C59] text-white font-black text-2xl flex items-center justify-center shrink-0 border-2 border-[#F4B75E]">
+                <div className="w-16 h-16 rounded-2xl bg-[#081D35] text-white font-black text-2xl flex items-center justify-center shrink-0 border-2 border-[#F4B75E]">
                   {selectedResident.full_name?.charAt(0) || 'W'}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -1439,7 +1449,7 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
                 )}
                 <button
                   onClick={() => setSelectedResident(null)}
-                  className="px-4 py-2 bg-[#081D35] hover:bg-[#0F2C59] text-white text-xs font-bold rounded-xl transition-colors"
+                  className="px-4 py-2 bg-[#081D35] hover:bg-[#0c2a4d] text-white text-xs font-bold rounded-xl transition-colors"
                 >
                   Tutup
                 </button>
@@ -1573,7 +1583,7 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
                     setLoadingResetPin(false)
                   }
                 }}
-                className="px-5 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                className="px-5 py-2 bg-[#081D35] hover:bg-[#0c2a4d] disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
               >
                 {loadingResetPin ? (
                   <>
@@ -1750,7 +1760,7 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
                 <button
                   type="button"
                   onClick={() => setActiveReceipt(null)}
-                  className="px-5 py-2 bg-[#081D35] hover:bg-[#0F2C59] text-white text-xs font-bold rounded-xl transition-colors cursor-pointer shadow-xs"
+                  className="px-5 py-2 bg-[#081D35] hover:bg-[#0c2a4d] text-white text-xs font-bold rounded-xl transition-colors cursor-pointer shadow-xs"
                 >
                   Selesai
                 </button>

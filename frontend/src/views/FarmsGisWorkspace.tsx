@@ -668,22 +668,22 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
           </div>
 
           {/* Action Header Buttons */}
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <div className="grid grid-cols-2 sm:flex items-center gap-2 w-full sm:w-auto shrink-0">
             {canMapFarms && (
               <button
                 type="button"
                 onClick={() => setShowFormDrawer((prev) => !prev)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#081D35] hover:bg-[#0F2C59] text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition-all hover:shadow hover:-translate-y-0.5"
+                className="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] bg-[#081D35] hover:bg-[#0c2a4d] text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition-all cursor-pointer"
               >
                 <PlusCircle size={16} className="text-[#F4B75E]" />
-                <span>{showFormDrawer ? 'Tutup Form Pemetaan' : 'Petakan Kebun Baru'}</span>
+                <span>{showFormDrawer ? 'Tutup Form' : 'Petakan Kebun'}</span>
               </button>
             )}
 
             <button
               type="button"
               onClick={handleExportFarmsCSV}
-              className="inline-flex items-center gap-2 px-3.5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200/90 shadow-2xs transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-3 py-2.5 min-h-[44px] bg-white hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200/90 shadow-2xs transition-colors cursor-pointer"
               title="Unduh seluruh data plot kebun ke file CSV"
             >
               <FileSpreadsheet size={16} className="text-emerald-600" />
@@ -696,7 +696,7 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
             <button
               type="button"
               onClick={fetchFarmingData}
-              className="inline-flex items-center justify-center w-10 h-10 bg-white hover:bg-slate-50 text-slate-600 rounded-xl border border-slate-200/90 shadow-2xs transition-colors"
+              className="inline-flex items-center justify-center min-h-[44px] px-3.5 bg-white hover:bg-slate-50 text-slate-600 rounded-xl border border-slate-200/90 shadow-2xs transition-colors cursor-pointer"
               title="Segarkan data spasial & batas kebun"
             >
               <RefreshCw size={16} />
@@ -724,7 +724,7 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
           <button
             type="button"
             onClick={() => setFarmStatusFilter('pending')}
-            className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors"
+            className="px-3.5 py-1.5 min-h-[40px] bg-[#081D35] hover:bg-[#0c2a4d] text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
           >
             Saring Antrean ({pendingFarmsCount})
           </button>
@@ -754,101 +754,111 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
       {/* =========================================================================
           2. EXECUTIVE KPI CARDS CLUSTER (5 BENTO METRIC CARDS)
       ========================================================================== */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
         {/* KPI 1: Total Luas Lahan */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Luas Lahan</span>
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-              <Layers size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Total Luas Lahan</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <Layers size={16} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-2xl font-black text-[#081D35]">{totalAreaHa}</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Ha ({totalAreaSqm.toLocaleString('id-ID')} m²)</span>
             </div>
           </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl font-black text-[#081D35]">{totalAreaHa}</span>
-            <span className="text-xs font-semibold text-slate-500">Ha ({totalAreaSqm.toLocaleString('id-ID')} m²)</span>
-          </div>
-          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-blue-700">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-            <span>Kalkulasi Geodesik PostGIS</span>
+          <div className="mt-2.5 sm:mt-3 flex items-center gap-1.5 text-[9px] sm:text-[11px] font-semibold text-blue-700 truncate">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+            <span className="truncate">Kalkulasi Geodesik PostGIS</span>
           </div>
         </div>
 
         {/* KPI 2: Plot Kebun Terdata */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Plot Terdaftar</span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <MapPin size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Plot Terdaftar</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <MapPin size={16} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-2xl font-black text-emerald-600">{totalFarmsCount}</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Plot</span>
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-emerald-600">{totalFarmsCount}</span>
-            <span className="text-xs font-semibold text-slate-500">Lahan Plot</span>
-          </div>
-          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-slate-600">
+          <div className="mt-2.5 sm:mt-3 flex items-center gap-1.5 text-[9px] sm:text-[11px] font-semibold text-slate-600 truncate">
             <span className="text-emerald-700 font-bold">{verifiedRate}%</span>
-            <span>telah disahkan desa ({verifiedFarmsCount})</span>
+            <span className="truncate">sah desa ({verifiedFarmsCount})</span>
           </div>
         </div>
 
         {/* KPI 3: Petani Rempah */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Petani Penggarap</span>
-            <div className="w-9 h-9 rounded-xl bg-amber-50 text-[#D97706] flex items-center justify-center">
-              <Users size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Petani Penggarap</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-amber-50 text-[#D97706] flex items-center justify-center shrink-0">
+                <Users size={16} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-2xl font-black text-[#081D35]">{accessibleFarmers.length}</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Jiwa</span>
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-[#081D35]">{accessibleFarmers.length}</span>
-            <span className="text-xs font-semibold text-slate-500">Jiwa</span>
-          </div>
-          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-amber-700 truncate">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-            <span>Terhubung NIK Dukcapil</span>
+          <div className="mt-2.5 sm:mt-3 flex items-center gap-1.5 text-[9px] sm:text-[11px] font-semibold text-amber-700 truncate">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+            <span className="truncate">Terhubung NIK Dukcapil</span>
           </div>
         </div>
 
         {/* KPI 4: Kelompok Tani (Poktan) */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Kelompok Tani</span>
-            <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center">
-              <Sprout size={18} />
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Kelompok Tani</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center shrink-0">
+                <Sprout size={16} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-2xl font-black text-teal-800">{accessibleFarmerGroups.length}</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Poktan</span>
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-teal-800">{accessibleFarmerGroups.length}</span>
-            <span className="text-xs font-semibold text-slate-500">Poktan</span>
-          </div>
-          <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-teal-700 truncate">
-            <span className="w-1.5 h-1.5 rounded-full bg-teal-500" />
-            <span>Kolektif Rempah Desa</span>
+          <div className="mt-2.5 sm:mt-3 flex items-center gap-1.5 text-[9px] sm:text-[11px] font-semibold text-teal-700 truncate">
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-500 shrink-0" />
+            <span className="truncate">Kolektif Rempah Desa</span>
           </div>
         </div>
 
-        {/* KPI 5: Antrean Verifikasi Lahan */}
+        {/* KPI 5: Antrean Verifikasi Lahan (Rentang 2 Kolom di Mobile) */}
         <div
           onClick={() => setFarmStatusFilter(farmStatusFilter === 'pending' ? '' : 'pending')}
-          className={`bg-white rounded-2xl p-5 border shadow-xs transition-all cursor-pointer ${
+          className={`col-span-2 lg:col-span-1 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border shadow-xs transition-all cursor-pointer flex flex-col justify-between ${
             farmStatusFilter === 'pending'
               ? 'border-amber-400 ring-2 ring-amber-100 bg-amber-50/20'
               : 'border-slate-200/80 hover:border-amber-300'
           }`}
         >
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Antrean Verifikasi</span>
-            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <Compass size={18} />
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider truncate">Antrean Validasi</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                <Compass size={16} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-2xl font-black text-amber-600">{pendingFarmsCount}</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-500">Pengajuan</span>
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-amber-600">{pendingFarmsCount}</span>
-            <span className="text-xs font-semibold text-slate-500">Pengajuan</span>
-          </div>
-          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-amber-800">
+          <div className="mt-2.5 sm:mt-3 flex items-center justify-between text-[9px] sm:text-[11px] font-semibold text-amber-800">
             <span>Perlu Tinjauan Desa</span>
-            <span className="underline text-[10px]">Klik filter</span>
+            <span className="underline text-[9px] sm:text-[10px]">Klik filter</span>
           </div>
         </div>
       </div>
@@ -856,9 +866,9 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
       {/* =========================================================================
           3. DUAL ANALYTICAL CHARTS CLUSTER (RECHARTS BAR & DONUT)
       ========================================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-6 items-stretch">
         {/* Kolom Kiri (7 Kolom): Bar Chart Luas per Komoditas */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-7 bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
@@ -918,7 +928,7 @@ export const FarmsGisWorkspace: React.FC<FarmsGisWorkspaceProps> = ({
         </div>
 
         {/* Kolom Kanan (5 Kolom): Donut Chart Status Verifikasi Lahan */}
-        <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />

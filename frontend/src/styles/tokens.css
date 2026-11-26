@@ -23,10 +23,10 @@
 
   /* Secondary: Banda Deep Ocean Navy */
   --secondary: #081D35;
-  --secondary-hover: #0F2C59;
+  --secondary-hover: #0c2a4d;
   --secondary-light: rgba(8, 29, 53, 0.08);
   --secondary-border: rgba(8, 29, 53, 0.2);
-  --secondary-gradient: linear-gradient(135deg, #081D35 0%, #0F2C59 100%);
+  --secondary-gradient: linear-gradient(135deg, #081D35 0%, #0c2a4d 100%);
 
   /* Signature Banda Spice Gold (#F4B75E & #D97706) */
   --accent-gold: #F4B75E;
@@ -76,7 +76,7 @@
 .dark, html.dark {
   --bg-color: #040D1A;
   --bg-surface: #081D35;
-  --bg-surface-elevated: #0F2C59;
+  --bg-surface-elevated: #0a223f;
   --surface-color: #081D35;
 
   --card-bg: #081D35;

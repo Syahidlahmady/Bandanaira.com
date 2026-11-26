@@ -100,8 +100,8 @@ export const HELP_CATEGORIES: CategoryCardMeta[] = [
     title: 'Community',
     subtopics: ['Share', 'Discussion', 'Network'],
     icon: Users,
-    iconBg: 'bg-indigo-50 hover:bg-indigo-100/80',
-    iconColor: 'text-indigo-600',
+    iconBg: 'bg-blue-50 hover:bg-blue-100/80',
+    iconColor: 'text-blue-600',
     description: 'Forum musyawarah warga, profil dusun, dan keterlibatan komunitas kepulauan.',
   },
   {
@@ -109,8 +109,8 @@ export const HELP_CATEGORIES: CategoryCardMeta[] = [
     title: 'Orders',
     subtopics: ['Tracking', 'Delivery', 'Management'],
     icon: FileText,
-    iconBg: 'bg-blue-50 hover:bg-blue-100/80',
-    iconColor: 'text-blue-600',
+    iconBg: 'bg-sky-50 hover:bg-sky-100/80',
+    iconColor: 'text-sky-600',
     description: 'Pelayanan berkas kependudukan, tracking permohonan surat resmi, dan legalitas desa.',
   },
   {
@@ -118,8 +118,8 @@ export const HELP_CATEGORIES: CategoryCardMeta[] = [
     title: 'Return and Refund',
     subtopics: ['Methods', 'Process'],
     icon: Package,
-    iconBg: 'bg-violet-50 hover:bg-violet-100/80',
-    iconColor: 'text-violet-600',
+    iconBg: 'bg-emerald-50 hover:bg-emerald-100/80',
+    iconColor: 'text-emerald-600',
     description: 'Sortasi mutu panen pala, verifikasi lot blockchain, dan retur komoditas pergudangan.',
   },
   {
@@ -632,7 +632,7 @@ export const HelpDeskWorkspace: React.FC<HelpDeskWorkspaceProps> = ({
           BAR ADMIN CONTROLLER (KHUSUS ADMINISTRATOR SISTEM / APARATUR DESA)
       ==================================================================== */}
       {isAdmin && (
-        <div className="rounded-2xl bg-gradient-to-r from-[#081D35] via-[#0F2C59] to-[#1E3A5F] p-4 text-white shadow-sm border border-slate-700/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="rounded-2xl bg-gradient-to-r from-[#081D35] via-[#0c2a4d] to-[#1E3A5F] p-4 text-white shadow-sm border border-slate-700/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-[#F4B75E] border border-[#F4B75E]/30 flex items-center justify-center shrink-0">
               <ShieldCheck size={18} />
@@ -695,7 +695,7 @@ export const HelpDeskWorkspace: React.FC<HelpDeskWorkspaceProps> = ({
           <section className="relative overflow-hidden rounded-3xl bg-[#081D35] text-white px-6 py-10 sm:px-12 sm:py-14 shadow-md border border-slate-800">
             {/* Background Texture Accents */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-500/10 via-[#F4B75E]/5 to-transparent rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-indigo-500/10 to-transparent rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-sky-500/10 to-transparent rounded-full blur-2xl pointer-events-none" />
 
             <div className="relative z-10 max-w-4xl space-y-5">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
@@ -771,8 +771,8 @@ export const HelpDeskWorkspace: React.FC<HelpDeskWorkspaceProps> = ({
               )}
             </div>
 
-            {/* 8 Kategori dalam Grid 2x4 (Desktop: 4 kolom x 2 baris) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            {/* 8 Kategori dalam Grid 2x4 (Mobile: 2 kolom, Desktop: 4 kolom) */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
               {HELP_CATEGORIES.map((cat) => {
                 const Icon = cat.icon
                 const isSelected = selectedCategory === cat.id
@@ -787,15 +787,15 @@ export const HelpDeskWorkspace: React.FC<HelpDeskWorkspaceProps> = ({
                         handleCategoryCardClick(cat.id)
                       }
                     }}
-                    className={`group relative flex flex-col justify-between p-5 rounded-2xl bg-white border transition-all duration-200 cursor-pointer min-h-[148px] select-none ${
+                    className={`group relative flex flex-col justify-between p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-white border transition-all duration-200 cursor-pointer min-h-[130px] sm:min-h-[148px] select-none ${
                       isSelected
                         ? 'border-[#081D35] ring-2 ring-[#081D35]/15 shadow-md -translate-y-0.5'
-                        : 'border-slate-200/90 hover:border-slate-300 hover:shadow-sm hover:-translate-y-0.5'
+                        : 'border-slate-200/90 hover:border-slate-300 hover:shadow-xs hover:-translate-y-0.5'
                     }`}
                   >
                     {/* Bagian Atas: Judul Kategori & Sub-topics Horizontal */}
                     <div>
-                      <h3 className="text-base font-black text-[#081D35] group-hover:text-[#0F2C59] tracking-tight">
+                      <h3 className="text-base font-black text-[#081D35] group-hover:text-[#0c2a4d] tracking-tight">
                         {cat.title}
                       </h3>
 
@@ -1110,7 +1110,7 @@ export const HelpDeskWorkspace: React.FC<HelpDeskWorkspaceProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsSupportModalOpen(true)}
-                  className="w-full py-2.5 px-4 rounded-xl bg-[#081D35] hover:bg-[#0F2C59] text-[#F4B75E] text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer shadow-xs"
+                  className="w-full py-2.5 px-4 rounded-xl bg-[#081D35] hover:bg-[#0c2a4d] text-[#F4B75E] text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer shadow-xs"
                 >
                   <Send size={14} />
                   <span>Kirim Tiket / Buka Layanan Chat</span>
@@ -1343,7 +1343,7 @@ export const HelpDeskWorkspace: React.FC<HelpDeskWorkspaceProps> = ({
                   </span>
                   <button
                     type="submit"
-                    className="px-5 py-2.5 rounded-xl bg-[#081D35] hover:bg-[#0F2C59] text-[#F4B75E] font-bold text-xs flex items-center gap-2 transition cursor-pointer shadow-xs"
+                    className="px-5 py-2.5 rounded-xl bg-[#081D35] hover:bg-[#0c2a4d] text-[#F4B75E] font-bold text-xs flex items-center gap-2 transition cursor-pointer shadow-xs"
                   >
                     <Check size={14} />
                     <span>{editingFaqId ? 'Simpan Pembaruan FAQ' : 'Terbitkan Artikel Bantuan'}</span>
@@ -1436,7 +1436,7 @@ export const HelpDeskWorkspace: React.FC<HelpDeskWorkspaceProps> = ({
 
                   <button
                     type="submit"
-                    className="px-4 py-2 rounded-xl bg-[#081D35] hover:bg-[#0F2C59] text-white font-bold text-xs transition cursor-pointer shadow-xs"
+                    className="px-4 py-2 rounded-xl bg-[#081D35] hover:bg-[#0c2a4d] text-white font-bold text-xs transition cursor-pointer shadow-xs"
                   >
                     Simpan Kontak
                   </button>
@@ -1692,7 +1692,7 @@ export const HelpDeskWorkspace: React.FC<HelpDeskWorkspaceProps> = ({
                 <button
                   type="submit"
                   disabled={isSubmittingTicket}
-                  className="w-full py-2.5 rounded-xl bg-[#081D35] hover:bg-[#0F2C59] text-[#F4B75E] font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer disabled:opacity-50"
+                  className="w-full py-2.5 rounded-xl bg-[#081D35] hover:bg-[#0c2a4d] text-[#F4B75E] font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer disabled:opacity-50"
                 >
                   {isSubmittingTicket ? (
                     <>

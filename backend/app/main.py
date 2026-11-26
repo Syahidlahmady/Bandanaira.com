@@ -4,6 +4,7 @@ from fastapi import Depends, FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from backend.app.core.config import settings
+from backend.app.core.security_headers import SecurityHeadersMiddleware
 from backend.app.database.session import check_db_health, get_db
 from backend.app.modules.auth.router import router as auth_router
 from backend.app.modules.farmers.router import router as farmers_router
@@ -85,6 +86,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# OWASP Top 10 Security Headers Middleware
+app.add_middleware(SecurityHeadersMiddleware)
 
 
 @app.get("/", tags=["Root"])

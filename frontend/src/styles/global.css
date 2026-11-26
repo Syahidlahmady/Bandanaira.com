@@ -172,17 +172,19 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #d97706 0%, #f4b75e 100%);
-  color: #081d35;
-  font-weight: 800;
-  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.25);
-  border: none;
+  background: #081D35;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(8, 29, 53, 0.2);
+  border: 1px solid #081D35;
+  cursor: pointer;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #f4b75e 0%, #fbbf24 100%);
-  box-shadow: 0 6px 20px rgba(244, 183, 94, 0.4);
-  color: #081d35;
+  background: #0c2a4d;
+  border-color: #0c2a4d;
+  box-shadow: 0 6px 20px rgba(8, 29, 53, 0.3);
+  color: #ffffff;
   transform: translateY(-1px);
 }
 
@@ -191,6 +193,7 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
   color: #081d35;
   border: 1px solid #cbd5e1;
   box-shadow: var(--shadow-xs);
+  cursor: pointer;
 }
 
 .btn-secondary:hover:not(:disabled) {
@@ -206,6 +209,7 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
   font-weight: 800;
   box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
   border: none;
+  cursor: pointer;
 }
 
 .btn-success:hover:not(:disabled) {
@@ -214,15 +218,16 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
 }
 
 .btn-outline-primary {
-  background: rgba(244, 183, 94, 0.12);
-  color: #b45309;
-  border: 1px solid #f4b75e;
+  background: #ffffff;
+  color: #081D35;
+  border: 1px solid #081D35;
+  cursor: pointer;
 }
 
 .btn-outline-primary:hover:not(:disabled) {
-  background: rgba(244, 183, 94, 0.22);
-  border-color: #d97706;
-  color: #92400e;
+  background: #f8fafc;
+  border-color: #0c2a4d;
+  color: #0c2a4d;
 }
 
 .btn-warning {
@@ -595,7 +600,7 @@ html.dark .stat-card {
 }
 
 html.dark .data-table th {
-  background-color: #0F2C59;
+  background-color: #1E3A5F;
   border-color: #1E3A5F;
   color: #F4B75E;
 }
@@ -606,14 +611,14 @@ html.dark .data-table td {
 }
 
 html.dark .data-table tbody tr:hover {
-  background-color: rgba(15, 44, 89, 0.5);
+  background-color: rgba(30, 58, 95, 0.5);
 }
 
 html.dark .form-control,
 html.dark .form-input,
 html.dark .form-select,
 html.dark .form-textarea {
-  background-color: #0F2C59;
+  background-color: #1E3A5F;
   border-color: #1E3A5F;
   color: #F8FAFC;
 }
@@ -653,7 +658,7 @@ html.dark .bg-slate-50\/80,
 html.dark .bg-slate-50\/70,
 html.dark .bg-slate-50\/60,
 html.dark .bg-slate-100 {
-  background-color: #0F2C59 !important;
+  background-color: #1E3A5F !important;
 }
 
 html.dark .border-slate-100,

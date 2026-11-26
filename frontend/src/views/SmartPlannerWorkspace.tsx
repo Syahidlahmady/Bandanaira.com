@@ -317,13 +317,13 @@ export const SmartPlannerWorkspace: React.FC<SmartPlannerWorkspaceProps> = ({
               <button
                 type="button"
                 onClick={onBackToLanding}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-[#F4B75E]/20 text-[#0c2340] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer shadow-2xs active:scale-[0.98]"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-slate-50 text-[#081D35] border border-slate-200 text-xs font-semibold transition cursor-pointer shadow-2xs active:scale-[0.98]"
               >
                 <ArrowLeft size={14} />
                 <span>Kembali ke Beranda</span>
               </button>
             )}
-            <span className="font-serif font-bold text-sm tracking-tight text-[#0c2340]">
+            <span className="font-serif font-bold text-sm tracking-tight text-[#081D35]">
               bandanaira<span className="text-[#F4B75E]">.com</span>
             </span>
             <span className="hidden sm:inline text-stone-300">|</span>
@@ -336,7 +336,7 @@ export const SmartPlannerWorkspace: React.FC<SmartPlannerWorkspaceProps> = ({
             <button
               type="button"
               onClick={() => onNavigate && onNavigate('gis')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-stone-50 text-[#0c2340] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer shadow-2xs"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-stone-50 text-[#081D35] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer shadow-2xs"
             >
               <Compass size={13} />
               <span className="hidden sm:inline">Peta Spasial GIS</span>
@@ -364,7 +364,7 @@ export const SmartPlannerWorkspace: React.FC<SmartPlannerWorkspaceProps> = ({
               key={idx}
               type="button"
               onClick={() => handleSendMessage(opt.query)}
-              className="px-3 py-1 rounded-full bg-white hover:bg-[#F4B75E]/20 text-[#0c2340] border border-[#D5CEBF] text-xs font-medium transition cursor-pointer whitespace-nowrap shadow-2xs active:scale-[0.98]"
+              className="px-3 py-1 rounded-full bg-white hover:bg-slate-50 text-[#081D35] border border-slate-200 text-xs font-medium transition cursor-pointer whitespace-nowrap shadow-2xs active:scale-[0.98]"
             >
               {opt.label}
             </button>
@@ -381,7 +381,7 @@ export const SmartPlannerWorkspace: React.FC<SmartPlannerWorkspaceProps> = ({
               className={`flex gap-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               {msg.sender === 'bot' && (
-                <div className="w-8 h-8 rounded-full bg-[#0c2340] text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-xs">
+                <div className="w-8 h-8 rounded-full bg-[#081D35] text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-xs">
                   <Bot size={15} />
                 </div>
               )}
@@ -391,8 +391,8 @@ export const SmartPlannerWorkspace: React.FC<SmartPlannerWorkspaceProps> = ({
                 <div
                   className={`px-4 py-3 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-xs ${
                     msg.sender === 'user'
-                      ? 'bg-[#0c2340] text-white rounded-tr-none'
-                      : 'bg-white text-[#0c2340] border border-[#E8E2D5] rounded-tl-none'
+                      ? 'bg-[#081D35] text-white rounded-tr-none'
+                      : 'bg-white text-[#081D35] border border-[#E8E2D5] rounded-tl-none'
                   }`}
                 >
                   <p className="whitespace-pre-line">{msg.text}</p>
@@ -432,7 +432,7 @@ export const SmartPlannerWorkspace: React.FC<SmartPlannerWorkspaceProps> = ({
                                 {item.island}
                               </span>
                             </div>
-                            <h4 className="font-serif text-sm sm:text-base font-semibold text-[#0c2340] leading-snug truncate">
+                            <h4 className="font-serif text-sm sm:text-base font-semibold text-[#081D35] leading-snug truncate">
                               {item.name}
                             </h4>
                             <p className="text-xs text-stone-600 line-clamp-1 leading-relaxed">
@@ -465,9 +465,9 @@ export const SmartPlannerWorkspace: React.FC<SmartPlannerWorkspaceProps> = ({
                           <button
                             type="button"
                             onClick={() => handleOpenGis(item)}
-                            className="px-3 py-1.5 rounded-lg bg-white hover:bg-stone-50 text-[#0c2340] border border-[#D5CEBF] text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-2xs"
+                            className="px-3 py-1.5 rounded-lg bg-white hover:bg-stone-50 text-[#081D35] border border-[#D5CEBF] text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-2xs"
                           >
-                            <Compass size={13} className="text-[#0c2340]" />
+                            <Compass size={13} className="text-[#081D35]" />
                             <span>Lihat di Peta</span>
                           </button>
 
@@ -486,7 +486,7 @@ export const SmartPlannerWorkspace: React.FC<SmartPlannerWorkspaceProps> = ({
                             <button
                               type="button"
                               onClick={() => handleReadArticle(item.relatedArticleSlug)}
-                              className="px-3 py-1.5 rounded-lg bg-[#0c2340] hover:bg-[#183e75] text-white text-xs font-semibold flex items-center gap-1 transition cursor-pointer shadow-2xs"
+                              className="px-3 py-1.5 rounded-lg bg-[#081D35] hover:bg-[#0c2a4d] text-white text-xs font-semibold flex items-center gap-1 transition cursor-pointer shadow-2xs"
                             >
                               <BookOpen size={12} />
                               <span>Baca Kisah</span>
@@ -536,7 +536,7 @@ export const SmartPlannerWorkspace: React.FC<SmartPlannerWorkspaceProps> = ({
           <button
             type="submit"
             disabled={!inputText.trim() || isTyping}
-            className="px-4 py-2.5 rounded-xl bg-[#0c2340] hover:bg-[#183e75] text-white disabled:opacity-40 disabled:cursor-not-allowed font-semibold text-xs sm:text-sm flex items-center gap-1.5 transition cursor-pointer shadow-xs active:scale-[0.98]"
+            className="px-4 py-2.5 rounded-xl bg-[#081D35] hover:bg-[#0c2a4d] text-white disabled:opacity-40 disabled:cursor-not-allowed font-semibold text-xs sm:text-sm flex items-center gap-1.5 transition cursor-pointer shadow-xs active:scale-[0.98]"
           >
             <span>Kirim</span>
             <Send size={14} />

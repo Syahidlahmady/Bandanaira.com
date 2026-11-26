@@ -40,14 +40,14 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
 
         {/* The Signature Split Divider Header: ──── Visit Banda Neira ──── */}
         <div className="flex items-center justify-center w-full max-w-4xl mx-auto gap-3 sm:gap-8 mb-8 sm:mb-14 px-2">
-          <div className="flex-1 h-[1.5px] bg-[#0c2340]/80 min-w-[20px]" />
+          <div className="flex-1 h-[1.5px] bg-[#081D35]/80 min-w-[20px]" />
           <h2
             id="peta-heading"
-            className="font-serif text-2xl sm:text-5xl lg:text-[52px] text-[#0c2340] font-normal tracking-tight whitespace-normal sm:whitespace-nowrap text-center"
+            className="font-serif text-2xl sm:text-5xl lg:text-[52px] text-[#081D35] font-normal tracking-tight whitespace-normal sm:whitespace-nowrap text-center"
           >
             {t.mapSection.heading}
           </h2>
-          <div className="flex-1 h-[1.5px] bg-[#0c2340]/80 min-w-[20px]" />
+          <div className="flex-1 h-[1.5px] bg-[#081D35]/80 min-w-[20px]" />
         </div>
 
         {/* Airy Atmospheric Canvas for SVG Map (Like indonesia.travel) */}
@@ -95,7 +95,7 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
                     ? '#b0d3f6'
                     : '#cfe3f7'
 
-                  const strokeColor = isSelected ? '#0c2340' : '#96b8de'
+                  const strokeColor = isSelected ? '#081D35' : '#96b8de'
                   const strokeW = isSelected ? '4.5' : '1.8'
 
                   return (
@@ -192,7 +192,7 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
         <div className="w-full max-w-4xl mt-6 sm:mt-10 bg-white/80 backdrop-blur-md rounded-2xl border border-[#cfe2f4] p-4 sm:p-7 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex-1 pr-0 sm:pr-4">
             <div className="flex items-center gap-2 mb-1">
-              <span className="font-serif text-lg sm:text-2xl text-[#0c2340] font-medium">
+              <span className="font-serif text-lg sm:text-2xl text-[#081D35] font-medium">
                 {selectedVillage.name}
               </span>
               <span className="text-[10px] sm:text-[11px] font-sans font-semibold px-2 py-0.5 rounded-full bg-[#e3effa] text-[#2c4e6e]">
@@ -210,7 +210,7 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
               id="btn-peta-fullscreen"
               data-scroll-anchor="btn-peta-fullscreen"
               onClick={() => onNavigate('gis')}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-3 min-h-[44px] rounded-full bg-[#0c2340] hover:bg-[#183e75] active:scale-[0.98] text-white text-xs sm:text-sm font-medium transition-all shadow-xs cursor-pointer whitespace-nowrap"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-3 min-h-[44px] rounded-full bg-[#081D35] hover:bg-[#0c2a4d] active:scale-[0.98] text-white text-xs sm:text-sm font-medium transition-all shadow-xs cursor-pointer whitespace-nowrap"
             >
               <span>{t.mapSection.openFullMap}</span>
               <ArrowUpRightIcon className="w-3.5 sm:w-4 h-3.5 sm:h-4 shrink-0" />
@@ -229,7 +229,7 @@ export const PetaInteractiveSection: React.FC<PetaInteractiveSectionProps> = ({
                 onClick={() => handleSelectVillage(v)}
                 className={`shrink-0 snap-start px-3.5 py-2 min-h-[36px] rounded-full text-xs font-sans whitespace-nowrap transition-all active:scale-95 cursor-pointer ${
                   isSelected
-                    ? 'bg-[#0c2340] text-white shadow-xs font-medium ring-2 ring-[#0c2340]/20'
+                    ? 'bg-[#081D35] text-white shadow-xs font-medium ring-2 ring-[#081D35]/20'
                     : 'bg-white/70 hover:bg-white text-[#2c4e6e] border border-[#cfe2f4]/80'
                 }`}
               >

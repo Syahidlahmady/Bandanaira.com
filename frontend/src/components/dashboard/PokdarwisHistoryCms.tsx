@@ -473,14 +473,14 @@ export const PokdarwisHistoryCms: React.FC<PokdarwisHistoryCmsProps> = ({
       <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#0c2340] text-white tracking-wider uppercase">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#081D35] text-white tracking-wider uppercase">
               Panel Pokdarwis
             </span>
             <span className="text-xs text-slate-500 font-medium">
               Manajemen Konten Sejarah &amp; SEO
             </span>
           </div>
-          <h2 className="font-serif text-2xl text-[#0c2340] font-normal">
+          <h2 className="font-serif text-2xl text-[#081D35] font-normal">
             Arsip Artikel Sejarah Banda Neira
           </h2>
           <p className="text-xs text-slate-500 max-w-xl font-sans mt-0.5">
@@ -491,7 +491,7 @@ export const PokdarwisHistoryCms: React.FC<PokdarwisHistoryCmsProps> = ({
         <button
           type="button"
           onClick={handleOpenCreateModal}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#0c2340] hover:bg-[#183e75] text-white text-xs font-semibold transition cursor-pointer shadow-sm shrink-0 self-start md:self-auto"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#081D35] hover:bg-[#0c2a4d] text-white text-xs font-semibold transition cursor-pointer shadow-sm shrink-0 self-start md:self-auto"
         >
           <Plus size={15} />
           <span>Tulis Artikel Baru</span>
@@ -530,7 +530,7 @@ export const PokdarwisHistoryCms: React.FC<PokdarwisHistoryCmsProps> = ({
             placeholder="Cari judul, pulau, atau penulis..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0c2340]"
+            className="w-full pl-9 pr-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#081D35]"
           />
         </div>
 
@@ -672,7 +672,7 @@ export const PokdarwisHistoryCms: React.FC<PokdarwisHistoryCmsProps> = ({
             {/* Modal Header */}
             <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
               <div>
-                <h3 className="font-serif text-lg text-[#0c2340] font-normal">
+                <h3 className="font-serif text-lg text-[#081D35] font-normal">
                   {editingArticleId ? 'Sunting Naskah Artikel Sejarah' : 'Tulis Artikel Sejarah Baru'}
                 </h3>
                 <p className="text-[11px] text-slate-500">
@@ -701,7 +701,7 @@ export const PokdarwisHistoryCms: React.FC<PokdarwisHistoryCmsProps> = ({
                   placeholder="Contoh: Menelusuri Benteng Belgica: Mahkota Pertahanan Tabaleku"
                   value={formData.title}
                   onChange={(e) => handleTitleChange(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-[#0c2340]"
+                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-[#081D35]"
                 />
               </div>
 
@@ -720,7 +720,7 @@ export const PokdarwisHistoryCms: React.FC<PokdarwisHistoryCmsProps> = ({
                     placeholder="menelusuri-benteng-belgica"
                     value={formData.slug}
                     onChange={(e) => setFormData({ ...formData, slug: e.target.value.toLowerCase() })}
-                    className="flex-1 px-3 py-2 rounded-r-xl bg-white border border-slate-200 text-xs text-slate-900 font-mono focus:outline-none focus:border-[#0c2340]"
+                    className="flex-1 px-3 py-2 rounded-r-xl bg-white border border-slate-200 text-xs text-slate-900 font-mono focus:outline-none focus:border-[#081D35]"
                   />
                 </div>
               </div>
@@ -734,7 +734,7 @@ export const PokdarwisHistoryCms: React.FC<PokdarwisHistoryCmsProps> = ({
                   <select
                     value={formData.priority_category}
                     onChange={(e) => setFormData({ ...formData, priority_category: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-[#0c2340]"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-[#081D35]"
                   >
                     {CATEGORY_OPTIONS.map((c) => (
                       <option key={c.value} value={c.value}>
@@ -751,7 +751,7 @@ export const PokdarwisHistoryCms: React.FC<PokdarwisHistoryCmsProps> = ({
                   <select
                     value={formData.island_name}
                     onChange={(e) => setFormData({ ...formData, island_name: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-[#0c2340]"
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-[#081D35]"
                   >
                     {ISLAND_OPTIONS.map((isl) => (
                       <option key={isl} value={isl}>
@@ -773,7 +773,7 @@ export const PokdarwisHistoryCms: React.FC<PokdarwisHistoryCmsProps> = ({
                   placeholder="Ringkasan singkat 1-2 kalimat pemikat pembaca..."
                   value={formData.summary}
                   onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-[#0c2340]"
+                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-[#081D35]"
                 />
               </div>
 
@@ -788,7 +788,7 @@ export const PokdarwisHistoryCms: React.FC<PokdarwisHistoryCmsProps> = ({
                   placeholder="Tuliskan cerita sejarah lengkap di sini. Pisahkan antar-paragraf dengan baris kosong..."
                   value={formData.body_narrative}
                   onChange={(e) => setFormData({ ...formData, body_narrative: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-[#0c2340] font-sans leading-relaxed"
+                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-[#081D35] font-sans leading-relaxed"
                 />
               </div>
 
@@ -800,7 +800,7 @@ export const PokdarwisHistoryCms: React.FC<PokdarwisHistoryCmsProps> = ({
                 <select
                   value={formData.media_url}
                   onChange={(e) => setFormData({ ...formData, media_url: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-[#0c2340] mb-2"
+                  className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-[#081D35] mb-2"
                 >
                   {LOCAL_LANDMARK_COVERS.map((cov) => (
                     <option key={cov.value} value={cov.value}>
@@ -848,7 +848,7 @@ export const PokdarwisHistoryCms: React.FC<PokdarwisHistoryCmsProps> = ({
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-[#0c2340] hover:bg-[#183e75] text-white text-xs font-semibold transition cursor-pointer shadow-xs disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-[#081D35] hover:bg-[#0c2a4d] text-white text-xs font-semibold transition cursor-pointer shadow-xs disabled:opacity-50"
                 >
                   <Save size={13} />
                   <span>{submitting ? 'Menyimpan...' : 'Simpan Naskah'}</span>

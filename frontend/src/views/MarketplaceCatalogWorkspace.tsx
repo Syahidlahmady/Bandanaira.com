@@ -260,7 +260,7 @@ export const MarketplaceCatalogWorkspace: React.FC<MarketplaceCatalogWorkspacePr
       case 'fish':
         return <Fish size={28} className="text-sky-500" />
       case 'droplet':
-        return <Droplets size={28} className="text-indigo-400" />
+        return <Droplets size={28} className="text-cyan-500" />
       case 'coffee':
         return <Coffee size={28} className="text-amber-600" />
       case 'sun':
@@ -413,7 +413,7 @@ export const MarketplaceCatalogWorkspace: React.FC<MarketplaceCatalogWorkspacePr
             return (
               <span
                 key={s}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-800 border border-indigo-200/80 shadow-2xs"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-sky-50 text-sky-800 border border-sky-200/80 shadow-2xs"
               >
                 <span className="truncate max-w-[120px]">{label}</span>
                 <button
@@ -752,7 +752,7 @@ export const MarketplaceCatalogWorkspace: React.FC<MarketplaceCatalogWorkspacePr
               <button
                 type="button"
                 onClick={onOpenLogin}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#081D35] hover:bg-[#0F2C59] text-white shadow-2xs transition cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#081D35] hover:bg-[#0c2a4d] text-white shadow-2xs transition cursor-pointer"
               >
                 <span>Masuk Portal Desa</span>
               </button>
@@ -997,7 +997,7 @@ export const MarketplaceCatalogWorkspace: React.FC<MarketplaceCatalogWorkspacePr
                               <button
                                 type="button"
                                 onClick={() => onPublicVerify(p.verificationToken || p.batchCode)}
-                                className="w-full py-2 px-2 rounded-xl text-xs font-bold text-white bg-[#081D35] hover:bg-[#0F2C59] border border-[#081D35] transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs group/verify"
+                                className="w-full py-2 px-2 rounded-xl text-xs font-bold text-white bg-[#081D35] hover:bg-[#0c2a4d] border border-[#081D35] transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs group/verify"
                                 title="Periksa Keabsahan Kriptografi On-Chain"
                               >
                                 <ShieldCheck size={13} className="text-[#F4B75E] group-hover/verify:scale-110 transition-transform" />

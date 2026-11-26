@@ -332,7 +332,7 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
             <button
               type="button"
               onClick={handleBackToList}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white hover:bg-[#F4B75E]/20 text-[#0c2340] border border-[#D5CEBF] text-xs font-semibold transition-all cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-50 text-[#081D35] border border-slate-200 text-xs font-semibold transition-all cursor-pointer shadow-xs"
             >
               <ArrowLeft size={14} />
               <span>Kembali ke Arsip Sejarah</span>
@@ -369,7 +369,7 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
             <button
               type="button"
               onClick={onNavigateHome}
-              className="hover:text-[#0c2340] transition cursor-pointer"
+              className="hover:text-[#081D35] transition cursor-pointer"
             >
               Beranda
             </button>
@@ -377,7 +377,7 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
             <button
               type="button"
               onClick={handleBackToList}
-              className="hover:text-[#0c2340] transition cursor-pointer"
+              className="hover:text-[#081D35] transition cursor-pointer"
             >
               Sejarah
             </button>
@@ -389,7 +389,7 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
 
           {/* Badges & Meta */}
           <div className="flex flex-wrap items-center gap-2 mb-4">
-            <span className="px-3 py-0.5 rounded-full text-[11px] font-semibold bg-[#0c2340] text-white uppercase tracking-wider">
+            <span className="px-3 py-0.5 rounded-full text-[11px] font-semibold bg-[#081D35] text-white uppercase tracking-wider">
               {activeArticle.island_name}
             </span>
             <span className="px-3 py-0.5 rounded-full text-[11px] font-semibold bg-[#eaf4fb] text-[#2c4e6e] border border-[#cfe2f4]">
@@ -402,13 +402,13 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
           </div>
 
           {/* Article Main Headline */}
-          <h1 className="font-serif text-3xl sm:text-4xl lg:text-[44px] text-[#0c2340] font-normal leading-[1.22] tracking-tight mb-5">
+          <h1 className="font-serif text-3xl sm:text-4xl lg:text-[44px] text-[#081D35] font-normal leading-[1.22] tracking-tight mb-5">
             {activeArticle.title}
           </h1>
 
           {/* Author & Curator Strip */}
           <div className="flex items-center gap-3.5 py-4 border-y border-[#E8E2D5] mb-8 text-xs text-slate-600">
-            <div className="w-9 h-9 rounded-full bg-[#0c2340] text-white flex items-center justify-center font-serif font-bold text-sm">
+            <div className="w-9 h-9 rounded-full bg-[#081D35] text-white flex items-center justify-center font-serif font-bold text-sm">
               {activeArticle.author_name.charAt(0)}
             </div>
             <div>
@@ -419,7 +419,7 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
               <button
                 type="button"
                 onClick={onNavigateToGis}
-                className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0c2340]/5 hover:bg-[#0c2340]/10 text-[#0c2340] text-xs font-semibold transition cursor-pointer border border-[#cfe2f4]"
+                className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#081D35]/5 hover:bg-[#081D35]/10 text-[#081D35] text-xs font-semibold transition cursor-pointer border border-[#cfe2f4]"
               >
                 <MapPin size={13} />
                 <span>Lihat di Peta GIS</span>
@@ -443,7 +443,7 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
           )}
 
           {/* Intro Pull-Quote / Summary Excerpt */}
-          <div className="p-5 sm:p-6 rounded-2xl bg-[#f4f8fb] border-l-4 border-[#0c2340] mb-8 shadow-xs">
+          <div className="p-5 sm:p-6 rounded-2xl bg-[#f4f8fb] border-l-4 border-[#081D35] mb-8 shadow-xs">
             <p className="font-serif italic text-base sm:text-lg text-[#1e3a5f] leading-relaxed">
               &ldquo;{activeArticle.summary}&rdquo;
             </p>
@@ -465,7 +465,7 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
             <button
               type="button"
               onClick={handleBackToList}
-              className="inline-flex items-center gap-1.5 font-semibold text-[#0c2340] hover:underline cursor-pointer self-start sm:self-auto"
+              className="inline-flex items-center gap-1.5 font-semibold text-[#081D35] hover:underline cursor-pointer self-start sm:self-auto"
             >
               <span>Jelajahi Cerita Sejarah Lainnya</span>
               <ArrowRight size={13} />
@@ -475,7 +475,7 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
           {/* Related Articles Grid */}
           {relatedArticles.length > 0 && (
             <div className="mt-16 pt-12 border-t-2 border-[#E8E2D5]">
-              <h2 className="font-serif text-2xl text-[#0c2340] font-normal mb-6">
+              <h2 className="font-serif text-2xl text-[#081D35] font-normal mb-6">
                 Arsip Sejarah Terkait Lainnya
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
@@ -497,10 +497,10 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
                       <span className="text-[10px] font-bold text-[#4a6b82] uppercase tracking-wider mb-1 block">
                         {rel.island_name}
                       </span>
-                      <h3 className="font-serif text-sm font-medium text-[#0c2340] leading-snug group-hover:text-[#183e75] transition line-clamp-2 mb-2">
+                      <h3 className="font-serif text-sm font-medium text-[#081D35] leading-snug group-hover:text-[#0c2a4d] transition line-clamp-2 mb-2">
                         {rel.title}
                       </h3>
-                      <span className="text-xs text-[#0c2340] font-semibold inline-flex items-center gap-1 mt-auto">
+                      <span className="text-xs text-[#081D35] font-semibold inline-flex items-center gap-1 mt-auto">
                         <span>Baca Cerita</span>
                         <ArrowRight size={12} />
                       </span>
@@ -528,13 +528,13 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
               <button
                 type="button"
                 onClick={onNavigateHome}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white hover:bg-[#F4B75E]/20 text-[#0c2340] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer shadow-xs"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white hover:bg-slate-50 text-[#081D35] border border-slate-200 text-xs font-semibold transition cursor-pointer shadow-xs"
               >
                 <ArrowLeft size={14} />
                 <span>Beranda Utama</span>
               </button>
             )}
-            <span className="font-serif font-bold text-sm tracking-tight text-[#0c2340]">
+            <span className="font-serif font-bold text-sm tracking-tight text-[#081D35]">
               bandanaira<span className="text-[#F4B75E]">.com</span>
             </span>
           </div>
@@ -544,7 +544,7 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
               <button
                 type="button"
                 onClick={onNavigateToGis}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-slate-100 text-[#0c2340] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-slate-100 text-[#081D35] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer"
               >
                 <Compass size={13} />
                 <span>Peta Spasial GIS</span>
@@ -554,7 +554,7 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
               <button
                 type="button"
                 onClick={onNavigateToDashboard}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-slate-100 text-[#0c2340] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-slate-100 text-[#081D35] border border-[#D5CEBF] text-xs font-semibold transition cursor-pointer"
               >
                 <span>Dasbor</span>
               </button>
@@ -563,7 +563,7 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
               <button
                 type="button"
                 onClick={onNavigateToTourism}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0c2340] text-white hover:bg-[#183e75] text-xs font-semibold transition cursor-pointer shadow-xs"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#081D35] text-white hover:bg-[#0c2a4d] text-xs font-semibold transition cursor-pointer shadow-xs"
               >
                 <BookOpen size={13} />
                 <span>Kelola CMS Pokdarwis</span>
@@ -573,7 +573,7 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
               <button
                 type="button"
                 onClick={onOpenQuickLogin}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0c2340] text-white hover:bg-[#183e75] text-xs font-semibold transition cursor-pointer shadow-xs"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#081D35] text-white hover:bg-[#0c2a4d] text-xs font-semibold transition cursor-pointer shadow-xs"
               >
                 <span>Masuk Portal</span>
               </button>
@@ -592,11 +592,11 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
 
           {/* Split Line Heading */}
           <div className="flex items-center justify-center w-full max-w-3xl mx-auto gap-4 sm:gap-8 mb-5">
-            <div className="flex-1 h-[1.5px] bg-[#0c2340]/70 min-w-[20px]" />
-            <h1 className="font-serif text-3xl sm:text-5xl lg:text-[48px] text-[#0c2340] font-normal tracking-tight whitespace-nowrap">
+            <div className="flex-1 h-[1.5px] bg-[#081D35]/70 min-w-[20px]" />
+            <h1 className="font-serif text-3xl sm:text-5xl lg:text-[48px] text-[#081D35] font-normal tracking-tight whitespace-nowrap">
               Arsip Sejarah Kepulauan
             </h1>
-            <div className="flex-1 h-[1.5px] bg-[#0c2340]/70 min-w-[20px]" />
+            <div className="flex-1 h-[1.5px] bg-[#081D35]/70 min-w-[20px]" />
           </div>
 
           <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-2xl font-sans mb-8">
@@ -611,7 +611,7 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
               placeholder="Cari naskah sejarah, benteng, tokoh, atau peristiwa..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 rounded-full bg-white border border-[#D5CEBF] focus:outline-none focus:border-[#0c2340] focus:ring-2 focus:ring-[#0c2340]/10 text-xs sm:text-sm text-slate-800 placeholder-slate-400 shadow-xs transition"
+              className="w-full pl-11 pr-4 py-3 rounded-full bg-white border border-[#D5CEBF] focus:outline-none focus:border-[#081D35] focus:ring-2 focus:ring-[#081D35]/10 text-xs sm:text-sm text-slate-800 placeholder-slate-400 shadow-xs transition"
             />
           </div>
         </div>
@@ -629,7 +629,7 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-sans transition cursor-pointer ${
                   selectedCategory === cat.id
-                    ? 'bg-[#0c2340] text-white font-medium shadow-xs'
+                    ? 'bg-[#081D35] text-white font-medium shadow-xs'
                     : 'bg-white hover:bg-slate-100 text-[#2c4e6e] border border-[#D5CEBF]'
                 }`}
               >
@@ -648,7 +648,7 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
                 onClick={() => setSelectedIsland(isl)}
                 className={`px-2.5 py-1 rounded-lg text-[11px] transition cursor-pointer ${
                   selectedIsland === isl
-                    ? 'bg-[#0c2340]/10 text-[#0c2340] font-bold border border-[#0c2340]/30'
+                    ? 'bg-[#081D35]/10 text-[#081D35] font-bold border border-[#081D35]/30'
                     : 'bg-transparent text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -672,7 +672,7 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
         {filteredArticles.length === 0 ? (
           <div className="py-16 text-center bg-white rounded-2xl border border-[#E8E2D5] p-8">
             <BookOpen size={36} className="mx-auto text-slate-300 mb-3" />
-            <h3 className="font-serif text-lg text-[#0c2340] font-medium mb-1">
+            <h3 className="font-serif text-lg text-[#081D35] font-medium mb-1">
               Tidak ada artikel yang cocok
             </h3>
             <p className="text-xs text-slate-500 max-w-md mx-auto mb-4">
@@ -685,7 +685,7 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
                 setSelectedCategory('')
                 setSelectedIsland('Semua Pulau')
               }}
-              className="px-4 py-2 rounded-full bg-[#0c2340] text-white text-xs font-medium cursor-pointer"
+              className="px-4 py-2 rounded-full bg-[#081D35] text-white text-xs font-medium cursor-pointer"
             >
               Reset Filter
             </button>
@@ -713,7 +713,7 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
                       loading="lazy"
                     />
                     <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#0c2340]/90 text-white backdrop-blur-xs uppercase tracking-wider">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#081D35]/90 text-white backdrop-blur-xs uppercase tracking-wider">
                         {article.island_name}
                       </span>
                     </div>
@@ -732,7 +732,7 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
                         </span>
                       </div>
 
-                      <h2 className="font-serif text-xl text-[#0c2340] font-medium leading-snug group-hover:text-[#183e75] transition line-clamp-2 mb-3">
+                      <h2 className="font-serif text-xl text-[#081D35] font-medium leading-snug group-hover:text-[#0c2a4d] transition line-clamp-2 mb-3">
                         {article.title}
                       </h2>
 
@@ -747,7 +747,7 @@ export const HistoryArticlesWorkspace: React.FC<HistoryArticlesWorkspaceProps> =
                         {article.author_name}
                       </span>
 
-                      <span className="text-xs font-semibold text-[#0c2340] group-hover:text-[#183e75] inline-flex items-center gap-1 transition">
+                      <span className="text-xs font-semibold text-[#081D35] group-hover:text-[#0c2a4d] inline-flex items-center gap-1 transition">
                         <span>Baca Cerita</span>
                         <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
                       </span>
