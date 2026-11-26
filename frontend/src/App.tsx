@@ -49,7 +49,6 @@ const MarketplaceAdminWorkspace = React.lazy(() => import('./views/MarketplaceAd
 const MarketplaceCatalogWorkspace = React.lazy(() => import('./views/MarketplaceCatalogWorkspace.tsx').then(m => ({ default: m.MarketplaceCatalogWorkspace })))
 const HelpDeskWorkspace = React.lazy(() => import('./views/HelpDeskWorkspace.tsx').then(m => ({ default: m.HelpDeskWorkspace })))
 const FindHealthFacilitiesView = React.lazy(() => import('./views/FindHealthFacilitiesView.tsx').then(m => ({ default: m.FindHealthFacilitiesView })))
-import { MobileBottomNav } from './components/mobile/MobileBottomNav.tsx'
 import { LandingPortalWorkspace } from './views/LandingPortalWorkspace.tsx'
 const UserEcosystemDashboard = React.lazy(() => import('./views/dashboard/UserEcosystemDashboard.tsx').then(m => ({ default: m.UserEcosystemDashboard })))
 import { DashboardLayout } from './views/dashboard/DashboardLayout.tsx'
@@ -2099,12 +2098,6 @@ export const App: React.FC = () => {
           </ErrorBoundary>
         </DashboardLayout>
       )}
-
-      {/* 4. Ergonomic Mobile Bottom Navigation Bar (Visible on mobile viewports md:hidden) */}
-      <MobileBottomNav
-        activeTab={activeTab}
-        onTabChange={(tab) => setActiveTab(tab)}
-      />
 
       {/* MODALS */}
       <React.Suspense fallback={null}>

@@ -434,6 +434,14 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       visible: true,
     },
     {
+      id: 'faskes',
+      label: 'Faskes & Darurat Banda',
+      shortLabel: 'Faskes',
+      icon: HeartPulse,
+      badge: 'SOS',
+      visible: true,
+    },
+    {
       id: 'letters',
       label: isOfficerOrAdmin ? 'Pelayanan Surat' : 'Permohonan Surat',
       shortLabel: 'Surat',
@@ -529,14 +537,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       icon: ShoppingBag,
       visible: true,
     },
-    {
-      id: 'faskes',
-      label: 'Faskes & Darurat Banda',
-      shortLabel: 'Faskes',
-      icon: HeartPulse,
-      badge: 'SOS',
-      visible: true,
-    },
   ]
 
   const visibleItems = sidebarNavItems.filter((item) => item.visible)
@@ -552,7 +552,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       visible: true,
     }
 
-    const otherVisible = visibleItems.filter((i) => i.id !== 'dashboard')
+    const otherVisible = visibleItems.filter((i) => i.id !== 'dashboard' && i.id !== 'faskes')
     const primary3 = otherVisible.slice(0, 3)
 
     return [dashboardItem, ...primary3]
@@ -578,9 +578,16 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const adminSidebarGroups: AdminSidebarGroup[] = [
     {
       id: 'group-gov',
-      title: 'Tata Kelola Kependudukan',
+      title: 'Tata Kelola & Layanan Darurat',
       icon: Users,
       items: [
+        {
+          id: 'faskes',
+          label: 'Faskes & Darurat Banda',
+          shortLabel: 'Faskes',
+          icon: HeartPulse,
+          badge: 'SOS',
+        },
         {
           id: 'population',
           label: 'Verifikasi NIK & Penduduk',
@@ -1181,6 +1188,47 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 {collapsed && (
                   <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1E3A5F] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                     Dashboard Komando
+                  </div>
+                )}
+              </button>
+
+              {/* Tombol Utama 2: Faskes & Darurat Banda (Di Depan Workspace Sidebar) */}
+              <button
+                type="button"
+                onClick={() => {
+                  onSelectTab('faskes')
+                  setMobileSidebarOpen(false)
+                }}
+                className={`w-full flex items-center rounded-xl text-xs font-medium transition-all group relative ${
+                  collapsed
+                    ? 'justify-center py-2.5 px-0 h-11'
+                    : 'gap-3.5 px-3 py-2.5 text-left'
+                } ${
+                  activeTab === 'faskes'
+                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold shadow-xs'
+                    : 'text-slate-300 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                {activeTab === 'faskes' && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-5 bg-rose-500 rounded-r-full shadow-xs" />
+                )}
+                <HeartPulse
+                  size={19}
+                  className={`shrink-0 transition-colors ${
+                    activeTab === 'faskes' ? 'text-rose-400' : 'text-rose-400/80 group-hover:text-rose-300'
+                  }`}
+                />
+                {!collapsed && (
+                  <div className="flex items-center justify-between flex-1 min-w-0">
+                    <span className="truncate text-[13px] tracking-tight">Faskes &amp; Darurat</span>
+                    <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold text-[9px] shrink-0">
+                      SOS
+                    </span>
+                  </div>
+                )}
+                {collapsed && (
+                  <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1E3A5F] border border-[#1E3A5F] text-white text-xs font-medium rounded-lg shadow-2xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                    Faskes &amp; Darurat Banda
                   </div>
                 )}
               </button>

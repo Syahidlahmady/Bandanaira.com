@@ -2460,6 +2460,12 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Memasang APK langsung ke emulator `ThinkNote_API34` via ADB streamed install (`adb install -r app-debug.apk`).
   - Menjalankan aplikasi secara langsung pada emulator (`adb shell am start -n com.bandanaira.ecosystem/.MainActivity`).
   - Memverifikasi inisialisasi plugin Capacitor, koneksi bridge jaringan, dan navigasi tab Faskes dengan GPS locking serta dokumentasi tangkapan layar.
+- [x] 119.7 Penyelarasan Desain Navigasi Mobile Responsif & Penempatan Faskes di Depan Sidebar Workspace:
+  - Menghapus komponen navigasi bawah ganda di `App.tsx` (`components/mobile/MobileBottomNav.tsx`) dan mengembalikan kontrol penuh navigasi bawah mobile responsif bawaan website (`components/landing/MobileBottomNav.tsx` dan `DashboardLayout.tsx`).
+  - Menempatkan fitur "Fasilitas Kesehatan & Pos Darurat Banda" (`faskes`) langsung di posisi terdepan daftar ruang kerja (*workspace*) pada sidebar (`DashboardLayout.tsx`), baik untuk Super Admin (di samping Dashboard Komando & grup tata kelola) maupun peran operasional lainnya.
+  - Memastikan 4 tab operasional utama pada bar navigasi bawah mobile dasbor tetap bersih dan konsisten dengan alur kerja pengguna.
+  - Menambahkan akses "Faskes & Darurat" pada drawer menu navigasi mobile publik (`BandaUnifiedNavbar.tsx`).
+  - Memverifikasi build frontend produksi (`npm run typecheck && npm run build`: 0 error) dan regenerasi biner Android APK (`./gradlew assembleDebug`: build successful).
 
 
 

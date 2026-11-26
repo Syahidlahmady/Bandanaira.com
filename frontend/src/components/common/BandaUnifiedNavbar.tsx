@@ -31,6 +31,7 @@ export const BandaUnifiedNavbar: React.FC<BandaUnifiedNavbarProps> = ({
 
   const navLinks = [
     { label: t.navbar.home, id: 'landing', isHash: false },
+    { label: 'Faskes & Darurat', id: 'faskes', isHash: false },
     { label: t.navbar.spatialMap, id: 'gis', isHash: false },
     { label: t.navbar.tourismSaw, id: 'smart_planner', isHash: false },
     { label: t.navbar.ecoStay, id: 'tourism', isHash: false },
