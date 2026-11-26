@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    ALLOW_OFFLINE_DEV_TOKENS: bool = False  # Strictly False by default; prevents backdoor authentication bypass
 
     # Brute-force & Account Lockout Policy
     MAX_LOGIN_ATTEMPTS: int = 5
@@ -30,6 +31,9 @@ class Settings(BaseSettings):
     AES_SECRET_KEY: str = "banda_neira_aes_256_gcm_master_key_32bytes_sec!"
     HMAC_BLIND_INDEX_PEPPER: str = "banda_neira_hmac_blind_index_pepper_salt_2026_xyz"
     RATE_LIMIT_NIK_SEARCH_PER_MINUTE: int = 20
+
+    # IoT Telemetry Security (Sensor Ingest Pre-Shared Key)
+    IOT_STATION_API_KEY: str = "banda-iot-station-psk-2026-secure"
 
     # Blockchain (Local EVM Testnet)
     BLOCKCHAIN_RPC_URL: str = "http://localhost:8545"

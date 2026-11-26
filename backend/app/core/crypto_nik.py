@@ -51,6 +51,16 @@ def decrypt_nik(encrypted_b64: str) -> str:
         raise ValueError(f"Gagal mendekripsi NIK (kunci salah atau data korup): {e}")
 
 
+def encrypt_pii(raw_text: str) -> str:
+    """Enkripsi simetris data sensitif PII (NIK, Nomor Telepon, Alamat) dengan AES-256-GCM."""
+    return encrypt_nik(raw_text)
+
+
+def decrypt_pii(encrypted_b64: str) -> str:
+    """Dekripsi data sensitif PII terenkripsi AES-256-GCM."""
+    return decrypt_nik(encrypted_b64)
+
+
 def compute_nik_blind_index(raw_nik: str) -> str:
     """
     Menghitung Blind Index deterministik menggunakan HMAC-SHA256 dengan secret server pepper.

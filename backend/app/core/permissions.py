@@ -7,6 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.app.core.config import settings
 from backend.app.core.security import decode_token
+from backend.app.core.token_blacklist import is_token_blacklisted
 from backend.app.database.session import get_db
 from backend.app.modules.auth.models import User
 
@@ -40,8 +41,22 @@ async def get_current_user(
     if not token:
         raise credentials_exception
 
-    # Support development and offline demo tokens (e.g. offline-jwt-smart_tourism_admin-...)
+    # Proteksi Revokasi Sesi: Cek apakah token ada dalam daftar blacklist (SEC-009)
+    if is_token_blacklisted(token):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token telah dicabut (revoked). Silakan login kembali.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Proteksi Pintu Belakang (Backdoor): Cegah bypass otentikasi via offline-jwt (SEC-001)
     if token.startswith("offline-jwt-"):
+        if not (settings.DEBUG and settings.ENVIRONMENT == "development" and settings.ALLOW_OFFLINE_DEV_TOKENS):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Offline demo token dilarang. Semua permintaan wajib menyertakan token JWT kriptografis yang valid.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         parts = token.split("-")
         role_hint = parts[2] if len(parts) > 2 else "admin"
         username_map = {

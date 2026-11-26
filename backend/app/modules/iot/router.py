@@ -2,10 +2,13 @@ import random
 import uuid
 from datetime import datetime, timezone
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy import select, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from backend.app.core.config import settings
+from backend.app.core.permissions import get_current_active_user
 from backend.app.database.session import get_db
+from backend.app.modules.auth.models import User
 from backend.app.modules.iot.models import IoTTelemetryLog
 from backend.app.modules.iot.schemas import (
     IoTTelemetryPacketInput,
@@ -89,12 +92,21 @@ def evaluate_telemetry_alerts(
 )
 async def ingest_iot_telemetry(
     packet: IoTTelemetryPacketInput,
+    x_station_token: Optional[str] = Header(None, alias="X-Station-Token"),
+    x_iot_key: Optional[str] = Header(None, alias="X-IoT-Key"),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Endpoint penerimaan paket telemetri berkala dari mikrokontroler ESP32 di stasiun pengolahan air & energi desa.
-    Memeriksa ambang batas anomali dan menyimpan log histori.
+    Mewajibkan autentikasi token stasiun (X-Station-Token) untuk mencegah paket palsu (SEC-006).
     """
+    token = x_station_token or x_iot_key
+    if token != settings.IOT_STATION_API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Otentikasi perangkat IoT gagal: Token stasiun (X-Station-Token) tidak valid atau tidak disertakan.",
+            headers={"WWW-Authenticate": "ApiKey"},
+        )
     code = packet.station_code
     default_meta = DEFAULT_STATIONS.get(code, {})
 
@@ -326,6 +338,7 @@ async def get_island_resiliency_summary(
 )
 async def simulate_hardware_telemetry_pulse(
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     Menyuntikkan paket pembacaan sensor dinamis dengan fluktuasi alami (tegangan surya, arus, TDS, tandon)

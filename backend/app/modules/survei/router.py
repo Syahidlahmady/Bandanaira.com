@@ -6,7 +6,15 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import func, select
 
+from backend.app.core.permissions import (
+    ROLE_ADMIN,
+    ROLE_FIELD_SURVEYOR,
+    ROLE_VILLAGE_OFFICER,
+    get_current_active_user,
+    require_roles,
+)
 from backend.app.database.session import get_db
+from backend.app.modules.auth.models import User
 from backend.app.modules.survei.models import RawSurvey
 from backend.app.modules.survei.schemas import (
     SurveyCreate,
@@ -38,6 +46,7 @@ def generate_survey_code() -> str:
 async def submit_raw_survey(
     payload: SurveyCreate,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     Menyimpan formulir survei lapangan dinamis ke koleksi mentah (MongoDB / Relational Staging).
@@ -193,6 +202,7 @@ async def get_raw_survey_detail(
 async def run_etl_pipeline(
     payload: ETLRunRequest,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_roles(ROLE_ADMIN, ROLE_FIELD_SURVEYOR, ROLE_VILLAGE_OFFICER)),
 ):
     """
     Mengelompokkan data survei mentah, memvalidasi koordinat, dan mengeksekusi
@@ -208,6 +218,7 @@ async def run_etl_pipeline(
 )
 async def get_survey_stats(
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     # Total
     total_res = await db.execute(select(func.count(RawSurvey.id)))

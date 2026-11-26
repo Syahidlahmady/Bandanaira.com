@@ -6,6 +6,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.config import settings
+from backend.app.core.permissions import ROLE_ADMIN, ROLE_VILLAGE_OFFICER, require_roles
 from backend.app.core.crypto_nik import (
     check_nik_rate_limit,
     compute_nik_blind_index,
@@ -14,6 +15,7 @@ from backend.app.core.crypto_nik import (
     mask_nik,
 )
 from backend.app.database.session import get_db
+from backend.app.modules.auth.models import User
 from backend.app.modules.koperasi.models import CoopAccount
 from backend.app.modules.population.models import Resident
 from backend.app.modules.security.schemas import (
@@ -107,6 +109,7 @@ async def search_citizen_by_nik_secure(
 @router.get("/audit-report", response_model=SecurityAuditResponse)
 async def get_security_audit_report(
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_roles(ROLE_ADMIN, ROLE_VILLAGE_OFFICER)),
 ) -> SecurityAuditResponse:
     """
     Menampilkan audit keamanan sistem, status kriptografi AES-256/HMAC, & integritas rantai blok (SRS 11).
@@ -163,6 +166,7 @@ async def get_security_audit_report(
 @router.post("/test-crypto-roundtrip", response_model=CryptoIntegrityCheckResponse)
 async def test_crypto_roundtrip(
     payload: CryptoIntegrityCheckInput,
+    current_user: User = Depends(require_roles(ROLE_ADMIN, ROLE_VILLAGE_OFFICER)),
 ) -> CryptoIntegrityCheckResponse:
     """
     Verifikasi langsung putaran kriptografi AES-256-GCM & Blind Index HMAC-SHA256.

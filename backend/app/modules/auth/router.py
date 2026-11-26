@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from jose import JWTError
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,7 +10,15 @@ from backend.app.core.account_lockout import (
     reset_login_failures,
 )
 from backend.app.core.config import settings
-from backend.app.core.permissions import ROLE_ADMIN, ROLE_FARMER, get_current_active_user, require_roles
+from backend.app.core.crypto_nik import check_nik_rate_limit
+from backend.app.core.permissions import (
+    ROLE_ADMIN,
+    ROLE_FARMER,
+    get_current_active_user,
+    oauth2_scheme,
+    require_roles,
+)
+from backend.app.core.token_blacklist import blacklist_token
 from backend.app.core.security import (
     create_access_token,
     create_refresh_token,
@@ -140,16 +148,39 @@ async def login(credentials: LoginRequest, db: AsyncSession = Depends(get_db)):
     )
 
 
+def mask_display_name(raw_name: str) -> str:
+    """Sensor nama lengkap untuk perlindungan PII sesuai UU PDP Pasal 35 & 36."""
+    if not raw_name or len(raw_name.strip()) <= 2:
+        return "***"
+    words = raw_name.strip().split()
+    masked = []
+    for w in words:
+        if len(w) <= 2:
+            masked.append(w[0] + "*")
+        elif len(w) <= 4:
+            masked.append(w[0] + "*" * (len(w) - 1))
+        else:
+            masked.append(w[0] + "*" * (len(w) - 2) + w[-1])
+    return " ".join(masked)
+
+
 @router.get("/identify-account")
 async def identify_account(
     identifier: str = Query(..., min_length=1),
+    request: Request = None,
     db: AsyncSession = Depends(get_db),
 ):
     """
     Mendeteksi akun pengguna secara dinamis dari database berdasarkan 16 digit NIK, username, atau email.
-    Digunakan oleh portal login Satu Pintu untuk menampilkan nama warga/petani dan peran mereka secara real-time.
-    Tidak mengekspos PII sensitif (hanya masked NIK, nama lengkap, desa, peran, dan kelompok tani jika ada).
+    Digunakan oleh portal login Satu Pintu untuk menampilkan peran mereka secara real-time.
+    Menerapkan Rate Limiting per IP dan menyamarkan Nama/NIK untuk kepatuhan UU PDP (SEC-004).
     """
+    # 1. Rate Limiting Anti-Enumeration (Mencegah brute-force scraping data warga)
+    if request:
+        forwarded = request.headers.get("X-Forwarded-For")
+        client_ip = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "127.0.0.1")
+        check_nik_rate_limit(client_ip)
+
     clean_id = identifier.strip()
     digits_only = "".join(ch for ch in clean_id if ch.isdigit())
 
@@ -182,7 +213,7 @@ async def identify_account(
     if not farmer and user:
         farmer = (await db.execute(select(Farmer).where(Farmer.user_id == user.id))).scalar_one_or_none()
 
-    name = resident.full_name if resident else (user.full_name if user else "Warga")
+    raw_name = resident.full_name if resident else (user.full_name if user else "Warga")
     village = (resident.village if resident else (user.village if user else None)) or "Banda Neira"
     is_active = (resident.residence_status == "active") if resident else (user.is_active if user else True)
 
@@ -194,6 +225,7 @@ async def identify_account(
     # Format NIK yang aman disamarkan
     raw_nik = resident.nik if resident else (user.username if (user and len(user.username) == 16 and user.username.isdigit()) else None)
     masked_nik = f"{raw_nik[:6]}******{raw_nik[-4:]}" if raw_nik and len(raw_nik) == 16 else clean_id
+    masked_name = mask_display_name(raw_name)
 
     # Tentukan primary_role dan role_title
     primary_role = "resident"
@@ -228,7 +260,7 @@ async def identify_account(
     return {
         "found": True,
         "identifier": clean_id,
-        "name": name,
+        "name": masked_name,
         "masked_nik": masked_nik,
         "village": village,
         "is_farmer": is_farmer,
@@ -239,6 +271,20 @@ async def identify_account(
         "roles": roles,
         "is_active": is_active,
     }
+
+
+@router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout(
+    token: Optional[str] = Depends(oauth2_scheme),
+    current_user: User = Depends(get_current_active_user),
+):
+    """
+    Mencabut token sesi akses saat logout (Token Revocation / Blacklist SEC-009).
+    Mencegah penyalahgunaan token yang telah keluar.
+    """
+    if token:
+        blacklist_token(token)
+    return {"message": "Berhasil logout. Token sesi akses telah dicabut dan dibatalkan secara permanen."}
 
 
 @router.post("/refresh", response_model=TokenResponse)

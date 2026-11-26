@@ -5,7 +5,15 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select, func, desc
 from sqlalchemy.ext.asyncio import AsyncSession
+from backend.app.core.permissions import (
+    ROLE_ADMIN,
+    ROLE_COOP_MANAGER,
+    ROLE_VILLAGE_OFFICER,
+    get_current_active_user,
+    require_roles,
+)
 from backend.app.database.session import get_db
+from backend.app.modules.auth.models import User
 from backend.app.modules.population.models import Resident
 from backend.app.modules.koperasi.models import CoopAccount, CoopTransaction
 from backend.app.modules.koperasi.pricing import (
@@ -25,6 +33,8 @@ from backend.app.modules.koperasi.schemas import (
 )
 
 router = APIRouter(prefix="/koperasi", tags=["Koperasi Hatta & Bank Sampah"])
+
+COOP_OPERATORS = require_roles(ROLE_ADMIN, ROLE_COOP_MANAGER, ROLE_VILLAGE_OFFICER)
 
 
 async def get_or_create_coop_account(db: AsyncSession, resident: Resident) -> CoopAccount:
@@ -62,6 +72,7 @@ def generate_receipt_hash(trx_code: str, nik: str, trx_type: str, qty: float, va
 async def setor_komoditas(
     payload: CommodityDepositInput,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(COOP_OPERATORS),
 ):
     """
     Mencatat transaksi setoran komoditas petani atau nelayan.
@@ -151,6 +162,7 @@ async def setor_komoditas(
 async def setor_sampah(
     payload: WasteDepositInput,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(COOP_OPERATORS),
 ):
     """
     Mencatat setoran sampah plastik (botol PET, galon HDPE, kardus) oleh warga desa.
@@ -241,11 +253,19 @@ async def setor_sampah(
 async def tebus_air_bersih(
     payload: WaterRedemptionInput,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     Warga menebus air minum bersih di stasiun pengolahan BWRO/SWRO desa.
     Memeriksa dan memotong kuota air NIK, lalu menghasilkan sinyal elektrik pembukaan Solenoid Valve.
     """
+    user_role_names = {r.name for r in current_user.roles}
+    is_operator = bool(current_user.is_superuser or user_role_names.intersection({ROLE_ADMIN, ROLE_COOP_MANAGER, ROLE_VILLAGE_OFFICER}))
+    if not is_operator and current_user.username != payload.nik:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Anda hanya berwenang menebus kuota air bersih untuk akun dan NIK Anda sendiri.",
+        )
     stmt = select(Resident).where(Resident.nik == payload.nik)
     res = await db.execute(stmt)
     resident = res.scalar_one_or_none()
@@ -317,11 +337,19 @@ async def tebus_air_bersih(
 async def get_citizen_coop_profile(
     nik: str,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     Mengambil ringkasan saldo, poin bank sampah, dan kuota air minum bersih berdasarkan 16 digit NIK.
     Digunakan oleh Kiosk Desa, Portal Warga, dan Kasir Koperasi Hatta.
     """
+    user_role_names = {r.name for r in current_user.roles}
+    is_operator = bool(current_user.is_superuser or user_role_names.intersection({ROLE_ADMIN, ROLE_COOP_MANAGER, ROLE_VILLAGE_OFFICER}))
+    if not is_operator and current_user.username != nik:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Anda hanya berwenang mengakses data profil koperasi milik Anda sendiri.",
+        )
     stmt = select(Resident).where(Resident.nik == nik)
     res = await db.execute(stmt)
     resident = res.scalar_one_or_none()
@@ -432,6 +460,7 @@ async def list_coop_transactions(
 )
 async def get_coop_recap(
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Menampilkan metrik agregat perputaran ekonomi koperasi, daur ulang plastik, dan distribusi air RO."""
     stmt_accounts = select(

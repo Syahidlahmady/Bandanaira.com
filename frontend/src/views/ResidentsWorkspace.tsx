@@ -356,10 +356,12 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
     }
   }, [currentUser?.village, setPopForm, popForm.village])
 
-  // Auto-save form draft in localStorage
+  // Auto-save form draft in sessionStorage (SEC-008: Menjamin data PII terhapus otomatis saat tab ditutup untuk keamanan perangkat/kiosk bersama)
   useEffect(() => {
     try {
-      const savedDraft = localStorage.getItem('banda_draft_resident')
+      // Hapus data lama yang tersisa di localStorage untuk kepatuhan UU PDP
+      localStorage.removeItem('banda_draft_resident')
+      const savedDraft = sessionStorage.getItem('banda_draft_resident')
       if (savedDraft) {
         const parsed = JSON.parse(savedDraft)
         if (parsed.full_name && !popForm.full_name) {
@@ -374,7 +376,7 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
   useEffect(() => {
     if (popForm.full_name || popForm.nik) {
       try {
-        localStorage.setItem('banda_draft_resident', JSON.stringify(popForm))
+        sessionStorage.setItem('banda_draft_resident', JSON.stringify(popForm))
       } catch {
         // ignore draft error
       }

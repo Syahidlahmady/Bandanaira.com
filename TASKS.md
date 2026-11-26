@@ -101,6 +101,8 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 114: Multi-Layered Security Architecture & Defense-in-Depth Blueprint (rancangan_kemanan_berlapis.md)**
 - [x] **Phase 115: Local System-Level Security Hardening (Docker Port Binding, OWASP Headers, & Brute-Force Lockout)**
 - [x] **Phase 116: Security Testing Agent Setup & Target Configuration (targets.json)**
+- [x] **Phase 117: Security Audit Execution & Vulnerability Report Generation via Testing Agent (pengujian-V1.md)**
+- [x] **Phase 118: Multi-Layered Security Remediation (Defense in Depth & 9 Vulnerabilities Patched)**
 ---
 
 ## Detailed Task Checklist
@@ -2397,6 +2399,40 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 116.3 Validasi Struktur & Inisialisasi Plan Pengujian:
   - Menjalankan `python3 scripts/testing_support.py validate-config --config targets.json` $\rightarrow$ Status `"valid": true`, `"ready_for_preflight": true`, tanpa pemblokir (*0 blockers*).
   - Menginisialisasi sesi pengujian terisolasi (`python3 scripts/testing_support.py init`) menghasilkan matriks kerja 10 workstreams (`coverage.csv`, `scope.json`, `state.json`).
+
+## [Phase 117] - Comprehensive Security Audit Execution & Vulnerability Report Generation (pengujian-V1.md)
+- [x] 117.1 Eksekusi Pengujian 10 Workstreams via `testing-agent`:
+  - Menjalankan analisis keamanan mendalam meliputi kontrol akses, pembatasan PII, batas kriptografi, otentikasi sesi, dan integritas rantai blok.
+  - Menemukan 9 kerentanan (1 Critical, 3 High, 4 Medium, 1 Low).
+  - Menyusun 13 berkas bukti terindeks (`evidence/`) dengan hash SHA-256 pada run `20261126T162919Z-ff3ab810`.
+  - Melakukan sealing & verifikasi struktur run menggunakan `testing_support.py seal` & `verify-run` $\rightarrow$ Valid, 17 coverage checks.
+- [x] 117.2 Pembuatan Laporan Resmi Audit Keamanan (`pengujian-V1.md`):
+  - Mendokumentasikan secara rinci analisis teknis per celah keamanan (SEC-001 hingga SEC-009), skor CVSS v3.1, cuplikan kode rentan, mekanisme eksploitasi, dan langkah remediasi teknis.
+  - Memetakan kepatuhan terhadap UU No. 27 Tahun 2022 (UU PDP) dan OWASP API Security Top 10 (2023).
+  - Menyusun diagram rencana aksi remediasi bertingkat (Prioritas P0 hingga P2).
+
+## [Phase 118] - Multi-Layered Security Remediation (Defense in Depth & 9 Vulnerabilities Patched)
+- [x] 118.1 Lapisan 1 & 2 (Perimeter & API Shield):
+  - Penerapan Anti-Enumeration Rate Limiting per IP pada `/api/v1/auth/identify-account` dan penyensoran nama lengkap (`mask_display_name`) untuk kepatuhan UU PDP (SEC-004).
+  - Otentikasi Pre-Shared Key (PSK) perangkat mikrokontroler sensor ESP32 pada `/api/v1/iot/telemetri` via header `X-Station-Token` (SEC-006).
+- [x] 118.2 Lapisan 3 (Identity & Access Management):
+  - Penutupan total backdoor `offline-jwt-*` pada `backend/app/core/permissions.py` (SEC-001).
+  - Penegakan kontrol otentikasi & hak akses kasir/pengurus koperasi (`COOP_OPERATORS`) pada seluruh rute finansial Koperasi Hatta & dispenser keran Solenoid Valve air RO (SEC-002).
+  - Penutupan celah BOLA/IDOR pada pengajuan surat kependudukan di `/api/v1/population/requests` dan penghapusan fallback record acak (SEC-003).
+  - Pembatasan eksekusi batch pipa migrasi data spasial ETL di `/api/v1/survei/migrasi-etl` hanya untuk surveyor/admin (SEC-005).
+  - Pembatasan endpoint laporan audit keamanan sistem di `/api/v1/security/audit-report` hanya untuk admin dan petugas desa.
+  - Implementasi Server-Side Token Revocation & Blacklist Store (`token_blacklist.py`) dengan endpoint `POST /api/v1/auth/logout` serta transmisi Bearer token pada `auth.ts` (SEC-009).
+- [x] 118.3 Lapisan 4 & 5 (Data Protection & At-Rest Cryptography):
+  - Migrasi penyimpanan draft formulir pendaftaran warga di browser dari `localStorage` ke `sessionStorage` pada `ResidentsWorkspace.tsx` untuk mencegah kebocoran data di perangkat bersama/kiosk desa (SEC-008).
+  - Implementasi fungsi enkripsi PII generik AES-256-GCM (`encrypt_pii` / `decrypt_pii`) untuk data nomor telepon dan alamat warga (SEC-008).
+  - Implementasi mekanisme Fail-Closed Secret Guard pada event startup `lifespan` di `main.py` yang menolak booting di lingkungan produksi jika masih menggunakan default secret keys (SEC-007).
+- [x] 118.4 Verifikasi & Pengujian Otomatis Komprehensif:
+  - Membuat unit test suite `backend/tests/test_defense_in_depth.py` yang memverifikasi penolakan backdoor, siklus blacklist token logout, fail-closed startup secret guard, roundtrip enkripsi PII, dan rate limiting anti-enumerasi (5/5 passed).
+  - Total pengujian keamanan core & defense-in-depth: 7 passed in 0.09s.
+  - Verifikasi build frontend produksi (`npm run build`): sukses 100% (2.488 modul ter-bundle dalam 9.06s).
+- [x] 118.5 Penyusunan Dokumen Resmi Laporan Hasil Perbaikan (`perbaikan-V1.md`):
+  - Mendokumentasikan matriks komparasi sebelum vs sesudah perbaikan untuk 9 celah keamanan (SEC-001 hingga SEC-009).
+  - Menyusun analisis teknis perbaikan, cuplikan kode terverifikasi, evaluasi kepatuhan UU PDP dan OWASP API Top 10, serta pengesahan akhir remediasi.
 
 
 

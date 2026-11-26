@@ -548,11 +548,21 @@ export const authService = {
   },
 
   async logout() {
-    this.clearTokens()
+    const token = this.getAccessToken()
     try {
-      await fetch(`${getApiBase()}/auth/logout`, { method: 'POST' })
+      if (token && !token.startsWith('offline-jwt-')) {
+        await fetch(`${getApiBase()}/auth/logout`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        })
+      }
     } catch {
-      // safe fallback if offline
+      // safe fallback if network offline
+    } finally {
+      this.clearTokens()
     }
   },
 

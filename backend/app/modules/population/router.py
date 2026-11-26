@@ -513,6 +513,9 @@ async def create_administrative_request(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
+    user_role_names = {r.name for r in current_user.roles}
+    is_officer_or_admin = bool(current_user.is_superuser or user_role_names.intersection({ROLE_ADMIN, ROLE_VILLAGE_OFFICER}))
+
     resident = None
     if request_in.resident_id:
         res_stmt = select(Resident).where(Resident.id == request_in.resident_id)
@@ -520,20 +523,28 @@ async def create_administrative_request(
         if not resident:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Resident not found",
+                detail="Data kependudukan tidak ditemukan",
+            )
+        # Proteksi BOLA/IDOR (SEC-003): Warga biasa hanya boleh membuat permohonan untuk dirinya sendiri
+        if not is_officer_or_admin and resident.nik != current_user.username:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Anda hanya berwenang membuat permohonan surat administratif atas nama diri sendiri.",
             )
     else:
-        # Match by full_name or fallback to first resident
-        res_stmt = select(Resident).where(Resident.full_name == current_user.full_name)
+        # Cari profil warga berdasarkan NIK (username) atau nama lengkap pengguna aktif
+        res_stmt = select(Resident).where(
+            or_(
+                Resident.nik == current_user.username,
+                Resident.full_name == current_user.full_name,
+            )
+        )
         resident = (await db.execute(res_stmt)).scalar_one_or_none()
-        if not resident:
-            fallback_stmt = select(Resident).limit(1)
-            resident = (await db.execute(fallback_stmt)).scalar_one_or_none()
 
         if not resident:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="No resident profile available to associate with this request",
+                detail="Profil kependudukan tidak ditemukan untuk akun Anda. Silakan hubungi petugas desa.",
             )
 
     req_data = request_in.model_dump()

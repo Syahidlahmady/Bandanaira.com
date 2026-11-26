@@ -4,6 +4,7 @@ from fastapi import Depends, FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from backend.app.core.config import settings
+from backend.app.core.permissions import ROLE_ADMIN, ROLE_VILLAGE_OFFICER, require_roles
 from backend.app.core.security_headers import SecurityHeadersMiddleware
 from backend.app.database.session import check_db_health, get_db
 from backend.app.modules.auth.router import router as auth_router
@@ -29,7 +30,23 @@ from backend.app.modules.survei.router import router as survei_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Auto-seed GIS spatial features (points + 17 village polygons) on application boot."""
+    """
+    Siklus hidup aplikasi:
+    1. Validasi Keamanan Startup (SEC-007): Mencegah booting di produksi jika menggunakan kunci default rahasia.
+    2. Auto-seed GIS spatial features (titik penting & poligon batas desa).
+    """
+    # Fail-Closed Production Secret Key Validation
+    if settings.ENVIRONMENT == "production":
+        insecure_keys = {
+            "banda_neira_digital_secret_key_change_in_production_2026_secure",
+            "banda_neira_aes_256_gcm_master_key_32bytes_sec!",
+        }
+        if settings.SECRET_KEY in insecure_keys or settings.AES_SECRET_KEY in insecure_keys:
+            raise RuntimeError(
+                "CRITICAL SECURITY ABORT: Server menolak booting di lingkungan produksi karena "
+                "masih menggunakan default SECRET_KEY / AES_SECRET_KEY. Harap ubah di berkas .env!"
+            )
+
     try:
         from backend.app.database.session import AsyncSessionLocal
         from backend.app.modules.gis.router import ensure_seed_features
@@ -74,8 +91,11 @@ app.include_router(survei_router, prefix=settings.API_V1_STR)
 
 
 @app.get(f"{settings.API_V1_STR}/audit-keamanan", tags=["OWASP Top 10 Security (SRS 11)"])
-async def audit_keamanan_alias(db=Depends(get_db)):
-    return await get_security_audit_report(db)
+async def audit_keamanan_alias(
+    db=Depends(get_db),
+    current_user=Depends(require_roles(ROLE_ADMIN, ROLE_VILLAGE_OFFICER)),
+):
+    return await get_security_audit_report(db, current_user)
 
 # CORS Middleware
 app.add_middleware(

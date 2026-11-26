@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Implementasi Keamanan Sistem Berlapis (Defense in Depth) & Audit Keamanan Penuh V1 - V2 (Phase 118 & 118.5)**:
+  - **Penutupan 9 Celah Keamanan (SEC-001 s/d SEC-009)**:
+    - **SEC-001 (CRITICAL)**: Menonaktifkan offline dev token backdoor (`offline-jwt-*`) secara fail-closed pada `permissions.py` dan `config.py` (`ALLOW_OFFLINE_DEV_TOKENS=False`).
+    - **SEC-002 (HIGH)**: Menerapkan RBAC ketat (`require_roles(ROLE_ADMIN, ROLE_COOP_MANAGER, ROLE_VILLAGE_OFFICER)`) pada operasional kasir timbangan/sampah dan verifikasi NIK kepemilikan pada kuota air solenoid di `koperasi/router.py`.
+    - **SEC-003 (HIGH)**: Menutup BOLA/IDOR pada `POST /api/v1/population/requests` dengan memvalidasi kepemilikan NIK terhadap akun aktif dan menghapus fallback arbitrer `limit(1)`.
+    - **SEC-004 (HIGH)**: Menerapkan rate limiting (20 req/menit per IP) dan penyensoran nama warga (*data masking*) pada `/api/v1/auth/identify-account` untuk kepatuhan UU PDP No. 27/2022.
+    - **SEC-005 (MEDIUM)**: Mengamankan endpoint pipa spasial ETL `/survei/migrasi-etl` dengan kewajiban role administrator / surveyor.
+    - **SEC-006 (MEDIUM)**: Mengamankan ingest telemetri IoT ESP32 `/iot/telemetri` dengan validasi pre-shared key `X-Station-Token`.
+    - **SEC-007 (MEDIUM)**: Menerapkan fail-closed secret guard pada `main.py` lifespan yang mencegah boot server produksi jika masih memakai kunci default.
+    - **SEC-008 (MEDIUM)**: Memigrasikan auto-save draf formulir warga dari `localStorage` ke `sessionStorage` pada `ResidentsWorkspace.tsx` guna mengamankan terminal/kiosk bersama, serta utilitas kriptografi PII AES-256-GCM pada `crypto_nik.py`.
+    - **SEC-009 (LOW)**: Menyediakan mekanisme pembatalan token server-side (`TokenBlacklistStore`) pada `POST /api/v1/auth/logout`.
+  - **Laporan Audit & Verifikasi**:
+    - Menerbitkan dokumen audit awal `pengujian-V1.md`, dokumentasi remedi `perbaikan-V1.md`, dan dokumen verifikasi akhir `pengujian-V2.md`.
+    - Verifikasi pengujian otomatis: 100% (17 checks) lolos pada sesi run `20261126T173846Z-ceb0daa0` tanpa temuan kerentanan tersisa.
+
 - **Sinkronisasi Penuh CRUD Artikel Sejarah antara Backend, CMS, Reader View, dan Dasbor Utama (Phase 66)**:
   - **Penerapan Migrasi Database & Seeding Nyata**: Menjalankan migrasi Alembic `014_community_contents_table` pada database PostgreSQL dan menyemai akun resmi `admin_wisata` (`smart_tourism_admin`).
   - **Resolusi Entitas Fleksibel di Backend**: Memperbarui endpoint `PUT /api/v1/tourism/community-contents/{content_id}` dan `DELETE` untuk mendukung resolusi naskah melalui UUID, `content_code` (e.g. `CNT-ART-006`), maupun `slug`, sekaligus mempertahankan kompatibilitas validasi UUID (status 400/404).
