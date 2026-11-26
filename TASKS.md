@@ -2467,9 +2467,10 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Menambahkan akses "Faskes & Darurat" pada drawer menu navigasi mobile publik (`BandaUnifiedNavbar.tsx`).
   - Memverifikasi build frontend produksi (`npm run typecheck && npm run build`: 0 error) dan regenerasi biner Android APK (`./gradlew assembleDebug`: build successful).
 - [x] 119.8 Aktivasi Penuh CI/CD GitHub Actions Build Android APK:
-  - Berhasil melakukan push alur kerja `.github/workflows/build-android-apk.yml` ke repositori `origin/main` (commit `85da534`).
-  - Job GitHub Actions *Build Android APK (Banda Ecosystem)* terpicu secara otomatis di cloud runner (`https://github.com/Syahidlahmady/Bandanaira.com/actions/runs/45891952893`).
-  - Menghasilkan artefak APK (`banda-digital-ecosystem-debug-apk`) yang dapat diunduh publik langsung dari GitHub.
+  - Berhasil melakukan push alur kerja `.github/workflows/build-android-apk.yml` ke repositori `origin/main` (commit `85da534` & `b67c430`).
+  - Mengonfigurasi Node.js 22, Temurin JDK 21, dan pre-installed Android SDK pada runner Ubuntu.
+  - Job GitHub Actions *Build Android APK (Banda Ecosystem)* sukses 100% (*all green*) pada cloud runner: [Run 45892706188](https://github.com/Syahidlahmady/Bandanaira.com/actions/runs/45892706188).
+  - Berhasil meng-upload artefak resmi `banda-digital-ecosystem-debug-apk` (38.9 MB) yang dapat diunduh publik langsung dari GitHub Actions.
 
 
 
