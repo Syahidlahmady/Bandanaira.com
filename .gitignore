@@ -66,6 +66,8 @@ agents/skills/21st-cli-use
 
 # Documents & Office files
 *.docx
+docs/mandat_syahidl_ahmady/07_*
+docs/mandat_syahidl_ahmady/08_*
 *.doc
 *.pptx
 *.xlsx
