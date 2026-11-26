@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- **Rancang Bangun & Implementasi Aplikasi Android Ekosistem Digital Banda Neira (Phase 119 - Mandat Syahid Ahmad Lahmady)**:
+  - **Inisialisasi Capacitor Native Android Shell (`frontend/capacitor.config.ts` & `frontend/android/`)**:
+    - Memasang dependensi `@capacitor/core`, `@capacitor/cli`, `@capacitor/android`, `@capacitor/geolocation`, `@capacitor/network`, `@capacitor/status-bar`.
+    - Menghasilkan proyek native Android Studio standar lengkap dengan Gradle wrapper, `AndroidManifest.xml`, ikon aplikasi, dan native splash screen.
+  - **Fitur Khusus Mandat: "Find Health Facilities" (`frontend/src/views/FindHealthFacilitiesView.tsx` & `data/healthFacilitiesData.ts`)**:
+    - Direktori terpadu RSUD Banda, Puskesmas Neira, Poskesdes Lonthoir, Selamon, Waer, Pos Medis Pulau Ai, Rhun, Hatta.
+    - Integrasi sensor GPS native (`@capacitor/geolocation`) dan kalkulasi jarak radius otomatis (*Haversine formula*).
+    - Akses 1-klik panggilan darurat bahari (Ambulans Laut, Pos SAR, UGD RSUD).
+    - Panduan P3K kelautan (sengatan ubur-ubur, duri babi/ikan beracun, dekompresi diving, heat exhaustion) tersimpan 100% offline di APK.
+  - **Desain Ergonomi Mobile & Bottom Navigation (`frontend/src/components/mobile/MobileBottomNav.tsx`)**:
+    - Menghadirkan bilah navigasi bawah ramah jempol (Dasbor, Warga NIK, Koperasi, Peta GIS, Faskes SOS) dengan safe-area insets.
+  - **Pipa Otomasi Kompilasi APK (CI/CD GitHub Actions)**:
+    - Membuat berkas alur kerja `.github/workflows/build-android-apk.yml` untuk memproduksi dan mengunggah artefak `app-debug.apk` secara otomatis di cloud runner Ubuntu + Java 17 + Android SDK.
+
 - **Implementasi Keamanan Sistem Berlapis (Defense in Depth) & Audit Keamanan Penuh V1 - V2 (Phase 118 & 118.5)**:
   - **Penutupan 9 Celah Keamanan (SEC-001 s/d SEC-009)**:
     - **SEC-001 (CRITICAL)**: Menonaktifkan offline dev token backdoor (`offline-jwt-*`) secara fail-closed pada `permissions.py` dan `config.py` (`ALLOW_OFFLINE_DEV_TOKENS=False`).

@@ -37,6 +37,7 @@ import {
   ArrowRight,
   Clock,
   AlertCircle,
+  HeartPulse,
 } from 'lucide-react'
 import { setPreferredTourismSubTab } from '../../services/tourism'
 import {
@@ -63,6 +64,7 @@ export type DashboardNavTab =
   | 'marketplace'
   | 'help'
   | 'sejarah'
+  | 'faskes'
 
 export interface DashboardLayoutProps {
   currentUser: any
@@ -525,6 +527,14 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       label: 'Katalog Marketplace Rempah',
       shortLabel: 'Marketplace',
       icon: ShoppingBag,
+      visible: true,
+    },
+    {
+      id: 'faskes',
+      label: 'Faskes & Darurat Banda',
+      shortLabel: 'Faskes',
+      icon: HeartPulse,
+      badge: 'SOS',
       visible: true,
     },
   ]

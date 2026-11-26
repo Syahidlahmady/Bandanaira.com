@@ -2434,6 +2434,29 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Mendokumentasikan matriks komparasi sebelum vs sesudah perbaikan untuk 9 celah keamanan (SEC-001 hingga SEC-009).
   - Menyusun analisis teknis perbaikan, cuplikan kode terverifikasi, evaluasi kepatuhan UU PDP dan OWASP API Top 10, serta pengesahan akhir remediasi.
 
+---
+
+## Phase 119: Rancang Bangun & Implementasi Aplikasi Android Ekosistem Digital Banda Neira (Mandat Syahid Ahmad Lahmady)
+
+- [x] 119.1 Inisialisasi Capacitor Native Shell di `frontend/`:
+  - Memasang dependensi `@capacitor/core`, `@capacitor/cli`, `@capacitor/android`, `@capacitor/geolocation`, `@capacitor/network`, `@capacitor/status-bar`.
+  - Membuat konfigurasi `capacitor.config.ts` (`appId`: `com.bandanaira.ecosystem`, `appName`: `Banda Digital Ecosystem`, `webDir`: `dist`).
+  - Menghasilkan proyek native Android standar (`frontend/android/`) via `npx cap add android`.
+- [x] 119.2 Konfigurasi Izin & Keamanan Android (`AndroidManifest.xml`):
+  - Mendaftarkan izin GPS (`ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`) dan jaringan (`INTERNET`, `ACCESS_NETWORK_STATE`).
+  - Mengonfigurasi `android:allowBackup="false"` untuk kepatuhan OWASP MASVS anti-data scraping.
+- [x] 119.3 Implementasi Fitur Khusus Mandat: "Find Health Facilities" (`FindHealthFacilitiesView.tsx`):
+  - Mengembangkan antarmuka direktori faskes terpadu (RSUD Banda, Puskesmas Neira, Poskesdes Lonthoir, Selamon, Waer, Pos Medis Pulau Ai, Rhun, Hatta).
+  - Menghubungkan sensor GPS native (`@capacitor/geolocation`) dan perhitungan jarak radius otomatis (*Haversine Formula*).
+  - Menghadirkan tombol darurat 1-klik (`tel:`) untuk Ambulans Laut (*Sea Ambulance*), Pos SAR Banda, dan IGD RSUD Banda.
+  - Menyediakan modul panduan P3K bahari dan pertanian khas kepulauan yang tersimpan 100% offline.
+- [x] 119.4 Desain Ergonomi Mobile & Navigasi Jempol (`MobileBottomNav.tsx`):
+  - Menghadirkan Bottom Navigation Bar mobile ramah jempol (Dasbor, Warga NIK, Koperasi, Peta GIS, Faskes SOS) dengan safe-area padding.
+- [x] 119.5 Sinkronisasi Aset & Pipa Otomasi CI/CD GitHub Actions:
+  - Melakukan kompilasi frontend dan sinkronisasi native via `npx cap sync android`.
+  - Membuat workflow `.github/workflows/build-android-apk.yml` untuk build otomatis berkas `app-debug.apk` di GitHub Actions.
+
+
 
 
 

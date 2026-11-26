@@ -48,6 +48,8 @@ const HistoryArticlesWorkspace = React.lazy(() => import('./views/HistoryArticle
 const MarketplaceAdminWorkspace = React.lazy(() => import('./views/MarketplaceAdminWorkspace.tsx').then(m => ({ default: m.MarketplaceAdminWorkspace })))
 const MarketplaceCatalogWorkspace = React.lazy(() => import('./views/MarketplaceCatalogWorkspace.tsx').then(m => ({ default: m.MarketplaceCatalogWorkspace })))
 const HelpDeskWorkspace = React.lazy(() => import('./views/HelpDeskWorkspace.tsx').then(m => ({ default: m.HelpDeskWorkspace })))
+const FindHealthFacilitiesView = React.lazy(() => import('./views/FindHealthFacilitiesView.tsx').then(m => ({ default: m.FindHealthFacilitiesView })))
+import { MobileBottomNav } from './components/mobile/MobileBottomNav.tsx'
 import { LandingPortalWorkspace } from './views/LandingPortalWorkspace.tsx'
 const UserEcosystemDashboard = React.lazy(() => import('./views/dashboard/UserEcosystemDashboard.tsx').then(m => ({ default: m.UserEcosystemDashboard })))
 import { DashboardLayout } from './views/dashboard/DashboardLayout.tsx'
@@ -86,6 +88,7 @@ export type TabId =
   | 'sejarah'
   | 'marketplace'
   | 'help'
+  | 'faskes'
 
 export const TAB_ROUTES: Record<TabId, string> = {
   landing: '/',
@@ -104,6 +107,7 @@ export const TAB_ROUTES: Record<TabId, string> = {
   sejarah: '/sejarah',
   marketplace: '/marketplace',
   help: '/help',
+  faskes: '/faskes',
 }
 
 export const ROUTE_TO_TAB: Record<string, TabId> = {
@@ -113,6 +117,9 @@ export const ROUTE_TO_TAB: Record<string, TabId> = {
   '/marketplace': 'marketplace',
   '/pasar': 'marketplace',
   '/katalog': 'marketplace',
+  '/faskes': 'faskes',
+  '/kesehatan': 'faskes',
+  '/darurat': 'faskes',
   '/': 'landing',
   '/landing': 'landing',
   '/beranda': 'landing',
@@ -1665,6 +1672,26 @@ export const App: React.FC = () => {
         </div>
       )}
 
+      {/* 2F-2. Dedicated Public Health Facilities & Emergency Hub (Mandat Syahid Ahmad Lahmady) */}
+      {!currentUser &&
+        !authService.getAccessToken() &&
+        activeTab === 'faskes' && (
+        <ErrorBoundary fallbackTitle="Terjadi Kendala Memuat Layanan Kesehatan Banda">
+          <React.Suspense
+            fallback={
+              <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] text-[#081D35] font-bold text-sm">
+                Memuat Fasilitas Kesehatan &amp; Darurat Banda...
+              </div>
+            }
+          >
+            <FindHealthFacilitiesView
+              onBackToDashboard={() => setActiveTab('landing')}
+              onNavigateToGis={() => setActiveTab('gis')}
+            />
+          </React.Suspense>
+        </ErrorBoundary>
+      )}
+
       {/* 2G. Dedicated Edge-to-Edge Fullscreen Smart Planner Workspace for Public Visitors */}
       {!currentUser &&
         !authService.getAccessToken() &&
@@ -2060,10 +2087,24 @@ export const App: React.FC = () => {
               onOpenMarketplace={() => setShowMarketplaceModal(true)}
             />
           )}
+
+          {/* TAB 14: FASILITAS KESEHATAN & DARURAT PULAU (MANDAT SYAHID AHMAD LAHMADY) */}
+          {activeTab === 'faskes' && (
+            <FindHealthFacilitiesView
+              onBackToDashboard={() => setActiveTab('dashboard')}
+              onNavigateToGis={() => setActiveTab('gis')}
+            />
+          )}
           </React.Suspense>
           </ErrorBoundary>
         </DashboardLayout>
       )}
+
+      {/* 4. Ergonomic Mobile Bottom Navigation Bar (Visible on mobile viewports md:hidden) */}
+      <MobileBottomNav
+        activeTab={activeTab}
+        onTabChange={(tab) => setActiveTab(tab)}
+      />
 
       {/* MODALS */}
       <React.Suspense fallback={null}>
