@@ -485,3 +485,222 @@ async def test_nik_cannot_be_duplicated_across_any_village(client: AsyncClient):
     )
     assert check_free.status_code == 200
     assert check_free.json()["available"] is True
+
+
+@pytest.mark.asyncio
+async def test_report_and_revoke_resident_death(client: AsyncClient):
+    token = await get_admin_token(client)
+    nik = "8171010101900777"
+
+    # 1. Register resident with auto-account
+    create_res = await client.post(
+        "/api/v1/population/residents",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "nik": nik,
+            "full_name": "Almarhum Warga Uji",
+            "gender": "L",
+            "village": "Dwiwarna",
+            "access_pin": "654321",
+        },
+    )
+    assert create_res.status_code == 201
+    res_data = create_res.json()
+    resident_id = res_data["id"]
+
+    # 2. Verify account is active and can login
+    login_before = await client.post(
+        "/api/v1/auth/login",
+        json={"username_or_email": nik, "password": "654321"},
+    )
+    assert login_before.status_code == 200
+
+    # 3. Report death
+    death_res = await client.post(
+        f"/api/v1/population/residents/{resident_id}/report-death",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "death_date": "2026-11-20",
+            "death_place": "RSUD Banda Neira",
+            "death_cause": "Usia Lanjut",
+            "death_certificate_no": "SKM/DW/2026/088",
+            "death_notes": "Dilaporkan oleh keluarga inti",
+        },
+    )
+    assert death_res.status_code == 200
+    updated_res = death_res.json()
+    assert updated_res["residence_status"] == "deceased"
+    assert updated_res["death_place"] == "RSUD Banda Neira"
+    assert updated_res["death_certificate_no"] == "SKM/DW/2026/088"
+
+    # 4. Attempt login with deceased resident account -> MUST FAIL (inactive 403)
+    login_after = await client.post(
+        "/api/v1/auth/login",
+        json={"username_or_email": nik, "password": "654321"},
+    )
+    assert login_after.status_code == 403
+
+    # 5. Attempt initiating mutation on deceased resident -> MUST FAIL (400)
+    mut_attempt = await client.post(
+        "/api/v1/population/mutations",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "resident_id": resident_id,
+            "destination_village": "Nusantara",
+            "reason": "Mencoba mutasi warga wafat",
+        },
+    )
+    assert mut_attempt.status_code == 400
+    assert "meninggal dunia" in mut_attempt.json()["detail"].lower()
+
+    # 6. Revoke death (administrative correction)
+    revoke_res = await client.post(
+        f"/api/v1/population/residents/{resident_id}/revoke-death",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert revoke_res.status_code == 200
+    assert revoke_res.json()["residence_status"] == "active"
+    assert revoke_res.json()["death_date"] is None
+
+    # Login works again after revocation
+    login_restored = await client.post(
+        "/api/v1/auth/login",
+        json={"username_or_email": nik, "password": "654321"},
+    )
+    assert login_restored.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_resident_mutation_dual_village_workflow(client: AsyncClient):
+    token = await get_admin_token(client)
+    nik = "8171010101900666"
+
+    # 1. Register resident in Dwiwarna
+    create_res = await client.post(
+        "/api/v1/population/residents",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "nik": nik,
+            "full_name": "Warga Mutasi Neira",
+            "gender": "P",
+            "village": "Dwiwarna",
+            "address": "Jl. Asal No. 1",
+            "rt": "001",
+            "rw": "001",
+            "access_pin": "123456",
+        },
+    )
+    assert create_res.status_code == 201
+    resident_id = create_res.json()["id"]
+
+    # 2. Initiate mutation to Nusantara (Origin initiates -> pending_destination)
+    init_res = await client.post(
+        "/api/v1/population/mutations",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "resident_id": resident_id,
+            "destination_village": "Nusantara",
+            "new_address": "Jl. Baru Nusantara No. 88",
+            "new_rt": "003",
+            "new_rw": "004",
+            "reason": "Mengikuti suami bertugas",
+            "skpwni_number": "SKPWNI/DW/2026/012",
+        },
+    )
+    assert init_res.status_code == 201
+    mut_data = init_res.json()
+    mutation_id = mut_data["id"]
+    assert mut_data["status"] == "pending_destination"
+    assert mut_data["origin_village"] == "Dwiwarna"
+    assert mut_data["destination_village"] == "Nusantara"
+
+    # Check resident is marked as 'moving'
+    res_check = await client.get(
+        f"/api/v1/population/residents/{resident_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert res_check.json()["residence_status"] == "moving"
+
+    # 3. Check mutation listed in list_mutations
+    list_mut = await client.get(
+        "/api/v1/population/mutations?status=pending_destination",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert list_mut.status_code == 200
+    assert any(m["id"] == mutation_id for m in list_mut.json()["items"])
+
+    # 4. Destination village verifies and approves the mutation
+    approve_res = await client.post(
+        f"/api/v1/population/mutations/{mutation_id}/approve",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "new_address": "Jl. Baru Nusantara No. 88 Definitif",
+            "new_rt": "003",
+            "new_rw": "004",
+        },
+    )
+    assert approve_res.status_code == 200
+    comp_mut = approve_res.json()
+    assert comp_mut["status"] == "completed"
+
+    # 5. Resident data is now definitively in Nusantara!
+    final_res = await client.get(
+        f"/api/v1/population/residents/{resident_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    r_data = final_res.json()
+    assert r_data["village"] == "Nusantara"
+    assert r_data["residence_status"] == "active"
+    assert r_data["address"] == "Jl. Baru Nusantara No. 88 Definitif"
+    assert r_data["rt"] == "003"
+
+
+@pytest.mark.asyncio
+async def test_resident_mutation_rejection(client: AsyncClient):
+    token = await get_admin_token(client)
+    nik = "8171010101900555"
+
+    # 1. Register resident in Lonthoir
+    create_res = await client.post(
+        "/api/v1/population/residents",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "nik": nik,
+            "full_name": "Warga Batal Mutasi",
+            "gender": "L",
+            "village": "Lonthoir",
+        },
+    )
+    assert create_res.status_code == 201
+    resident_id = create_res.json()["id"]
+
+    # 2. Initiate mutation to Selamon
+    init_res = await client.post(
+        "/api/v1/population/mutations",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "resident_id": resident_id,
+            "destination_village": "Selamon",
+            "reason": "Pindah kerja",
+        },
+    )
+    assert init_res.status_code == 201
+    mutation_id = init_res.json()["id"]
+
+    # 3. Reject mutation
+    reject_res = await client.post(
+        f"/api/v1/population/mutations/{mutation_id}/reject",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"reason": "Berkas SKPWNI belum lengkap dari kecamatan"},
+    )
+    assert reject_res.status_code == 200
+    assert reject_res.json()["status"] == "rejected"
+    assert reject_res.json()["rejection_reason"] == "Berkas SKPWNI belum lengkap dari kecamatan"
+
+    # 4. Resident returns to active in origin village
+    res_check = await client.get(
+        f"/api/v1/population/residents/{resident_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert res_check.json()["residence_status"] == "active"
+    assert res_check.json()["village"] == "Lonthoir"

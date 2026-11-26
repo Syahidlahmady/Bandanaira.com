@@ -262,6 +262,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const getRoleDisplayName = () => {
     if (isSuperuser || roles.includes('admin')) return 'Administrator Sistem'
     if (roles.includes('village_officer')) return 'Petugas Kantor Desa'
+    if (isFarmer && roles.includes('resident')) return 'Petani Rempah & Warga'
     if (isFarmer) return 'Petani Rempah Pala'
     if (isFarmerGroupAdmin) return 'Ketua Kelompok Tani'
     if (isHomestayOperator) return 'Mitra Usaha & Eco-Stay'
@@ -482,7 +483,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         : 'Cagar Budaya & Wisata',
       shortLabel: isSmartTourismAdmin ? 'Draf Artikel' : 'Wisata',
       icon: isSmartTourismAdmin ? BookOpen : Home,
-      visible: true,
+      visible: isHomestayOperator || isSmartTourismAdmin || isOfficerOrAdmin,
     },
     {
       id: 'gis',

@@ -250,3 +250,96 @@ async def test_change_password_self_service(client: AsyncClient):
     assert restore_res.status_code == 200
 
 
+@pytest.mark.asyncio
+async def test_identify_account_and_farmer_login_with_nik(client: AsyncClient):
+    """
+    Uji deteksi akun dinamis berdasarkan NIK dan proses login warga yang menjadi petani
+    menggunakan 16 digit NIK dan PIN pengaman.
+    """
+    # 1. Login sebagai admin untuk mendaftarkan warga
+    admin_login = await client.post(
+        "/api/v1/auth/login",
+        json={"username_or_email": "admin", "password": "Admin123!"},
+    )
+    assert admin_login.status_code == 200
+    admin_token = admin_login.json()["access_token"]
+
+    test_nik = "8101031205900888"
+    # 2. Daftarkan warga dengan profesi awal Pedagang (bukan petani) dan PIN 123456
+    res_payload = {
+        "nik": test_nik,
+        "full_name": "Hamid Al-Bandani",
+        "gender": "L",
+        "birth_place": "Lonthoir",
+        "birth_date": "1988-08-15",
+        "religion": "Islam",
+        "marital_status": "Kawin",
+        "occupation": "Pedagang Rempah Pasar",
+        "address": "RT 01 / RW 01, Kebun Pala Atas",
+        "village": "Lonthoir",
+        "phone_number": "081299887711",
+        "access_pin": "123456",
+    }
+    create_res = await client.post(
+        "/api/v1/population/residents",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json=res_payload,
+    )
+    assert create_res.status_code == 201
+    resident_id = create_res.json()["id"]
+
+    # 3. Kepala Desa verifikasi warga
+    ver_res = await client.post(
+        f"/api/v1/population/residents/{resident_id}/verify",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"verification_status": "verified"},
+    )
+    assert ver_res.status_code == 200
+
+    # 4. Ambil kelompok tani Lonthoir
+    grp_res = await client.get(
+        "/api/v1/farmers/groups",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert grp_res.status_code == 200
+    lonthoir_group = grp_res.json()[0]
+
+    # 5. Daftarkan warga sebagai anggota petani resmi di kelompok tani
+    add_farmer = await client.post(
+        "/api/v1/farmers",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={
+            "resident_id": resident_id,
+            "farmer_group_id": lonthoir_group["id"],
+        },
+    )
+    assert add_farmer.status_code == 201
+    farmer_data = add_farmer.json()
+    assert farmer_data["resident_id"] == resident_id
+
+    # 6. Uji Dynamic Identify Endpoint via NIK 16 Digit (Portal Login)
+    ident_res = await client.get(f"/api/v1/auth/identify-account?identifier={test_nik}")
+    assert ident_res.status_code == 200
+    ident_data = ident_res.json()
+    assert ident_data["found"] is True
+    assert ident_data["name"] == "Hamid Al-Bandani"
+    assert ident_data["is_farmer"] is True
+    assert ident_data["primary_role"] == "farmer"
+    assert "Petani Rempah" in ident_data["role_title"]
+    assert "farmer" in ident_data["roles"]
+
+    # 7. Uji Login Warga sebagai Petani Menggunakan NIK & PIN
+    farmer_login = await client.post(
+        "/api/v1/auth/login",
+        json={"username_or_email": test_nik, "password": "123456"},
+    )
+    assert farmer_login.status_code == 200
+    login_data = farmer_login.json()
+    assert "access_token" in login_data
+    assert login_data["user"]["username"] == test_nik
+    assert login_data["user"]["full_name"] == "Hamid Al-Bandani"
+    role_names = [r["name"] for r in login_data["user"]["roles"]]
+    assert "farmer" in role_names
+    assert "resident" in role_names
+
+

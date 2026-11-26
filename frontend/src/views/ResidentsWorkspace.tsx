@@ -22,6 +22,11 @@ import {
   QrCode,
   Home,
   CheckCheck,
+  ArrowRightLeft,
+  AlertOctagon,
+  HeartOff,
+  Building2,
+  Send,
 } from 'lucide-react'
 import {
   ResponsiveContainer,
@@ -35,9 +40,34 @@ import {
   Cell,
   CartesianGrid,
 } from 'recharts'
-import { Resident, ResidentCreateInput, PopulationStatistics, populationService } from '../services/population'
+import {
+  Resident,
+  ResidentCreateInput,
+  PopulationStatistics,
+  populationService,
+  ResidentMutation,
+  ResidentReportDeathInput,
+  ResidentMutationCreateInput,
+} from '../services/population'
 import { User } from '../services/auth'
 import { BANDA_OCCUPATIONS, getOccupationBadge } from '../components/OccupationBadge'
+
+export const BANDA_VILLAGES = [
+  'Banda Neira',
+  'Nusantara',
+  'Dwiwarna',
+  'Rajawali',
+  'Lonthoir',
+  'Selamon',
+  'Waer',
+  'Pulau Hatta',
+  'Pulau Ay',
+  'Pulau Rhun',
+  'Merdeka',
+  'Kampung Baru',
+  'Tanah Rata',
+  'Kombir',
+]
 
 interface ResidentsWorkspaceProps {
   currentUser?: User | null
@@ -89,8 +119,10 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
   setCredentialReceipt,
 }) => {
   // UI States
+  const [activeSection, setActiveSection] = useState<'residents' | 'mutations'>('residents')
   const [showForm, setShowForm] = useState(false)
   const [statusFilter, setStatusFilter] = useState<'all' | 'verified' | 'pending' | 'rejected'>('all')
+  const [residenceFilter, setResidenceFilter] = useState<'all' | 'active' | 'moving' | 'deceased' | 'temporary'>('all')
   const [selectedResident, setSelectedResident] = useState<Resident | null>(null)
   const [copiedNik, setCopiedNik] = useState<string | null>(null)
 
@@ -121,6 +153,169 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
     message?: string
     village?: string
   }>({ checking: false })
+
+  // Mutations State
+  const [mutations, setMutations] = useState<ResidentMutation[]>([])
+  const [loadingMutations, setLoadingMutations] = useState(false)
+  const [mutationTab, setMutationTab] = useState<'all' | 'incoming' | 'outgoing'>('all')
+
+  // Mutation Modal States
+  const [showMutationModal, setShowMutationModal] = useState(false)
+  const [mutationForm, setMutationForm] = useState<ResidentMutationCreateInput>({
+    resident_id: '',
+    destination_village: 'Nusantara',
+    new_address: '',
+    new_rt: '',
+    new_rw: '',
+    reason: '',
+    skpwni_number: '',
+  })
+  const [mutationTargetResident, setMutationTargetResident] = useState<Resident | null>(null)
+  const [mutationActionLoading, setMutationActionLoading] = useState(false)
+  const [mutationActionFeedback, setMutationActionFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  // Approve / Reject Mutation States
+  const [showApproveModal, setShowApproveModal] = useState<ResidentMutation | null>(null)
+  const [approveForm, setApproveForm] = useState<{ new_address: string; new_rt: string; new_rw: string; notes: string }>({
+    new_address: '',
+    new_rt: '',
+    new_rw: '',
+    notes: '',
+  })
+  const [showRejectModal, setShowRejectModal] = useState<ResidentMutation | null>(null)
+  const [rejectReason, setRejectReason] = useState('')
+
+  // Death Registry Modal States
+  const [showDeathModal, setShowDeathModal] = useState<Resident | null>(null)
+  const [deathForm, setDeathForm] = useState<ResidentReportDeathInput>({
+    death_date: new Date().toISOString().split('T')[0],
+    death_place: 'RSUD Banda Neira',
+    death_cause: 'Usia Lanjut',
+    death_certificate_no: '',
+    death_notes: '',
+  })
+  const [deathLoading, setDeathLoading] = useState(false)
+  const [deathFeedback, setDeathFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  const fetchMutations = async () => {
+    try {
+      setLoadingMutations(true)
+      const res = await populationService.listMutations(1, 100)
+      setMutations(res.items || [])
+    } catch (err) {
+      console.error('Failed to load mutations:', err)
+    } finally {
+      setLoadingMutations(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchMutations()
+  }, [])
+
+  const handleOpenMutation = (resident: Resident) => {
+    setMutationTargetResident(resident)
+    const defaultDest = BANDA_VILLAGES.find((v) => v.toLowerCase() !== (resident.village || '').toLowerCase()) || 'Nusantara'
+    setMutationForm({
+      resident_id: resident.id,
+      destination_village: defaultDest,
+      new_address: '',
+      new_rt: '',
+      new_rw: '',
+      reason: 'Pindah Domisili Tetap',
+      skpwni_number: `SKPWNI/${resident.village?.substring(0, 2).toUpperCase() || 'BN'}/${new Date().getFullYear()}/${Math.floor(100 + Math.random() * 900)}`,
+    })
+    setMutationActionFeedback(null)
+    setShowMutationModal(true)
+  }
+
+  const handleSubmitMutation = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!mutationForm.resident_id || !mutationForm.destination_village) return
+    try {
+      setMutationActionLoading(true)
+      setMutationActionFeedback(null)
+      await populationService.createMutation(mutationForm)
+      setMutationActionFeedback({ type: 'success', text: 'Permohonan mutasi berhasil diajukan dan menunggu verifikasi desa terkait!' })
+      fetchPopulationData(searchQuery, selectedOccupationFilter)
+      fetchMutations()
+      setTimeout(() => setShowMutationModal(false), 1200)
+    } catch (err: any) {
+      setMutationActionFeedback({ type: 'error', text: err.message || 'Gagal mengajukan mutasi.' })
+    } finally {
+      setMutationActionLoading(false)
+    }
+  }
+
+  const handleConfirmApprove = async () => {
+    if (!showApproveModal) return
+    try {
+      setMutationActionLoading(true)
+      await populationService.approveMutation(showApproveModal.id, approveForm)
+      setShowApproveModal(null)
+      fetchPopulationData(searchQuery, selectedOccupationFilter)
+      fetchMutations()
+    } catch (err: any) {
+      alert(err.message || 'Gagal menyetujui mutasi.')
+    } finally {
+      setMutationActionLoading(false)
+    }
+  }
+
+  const handleConfirmReject = async () => {
+    if (!showRejectModal || !rejectReason.trim()) return
+    try {
+      setMutationActionLoading(true)
+      await populationService.rejectMutation(showRejectModal.id, rejectReason)
+      setShowRejectModal(null)
+      setRejectReason('')
+      fetchPopulationData(searchQuery, selectedOccupationFilter)
+      fetchMutations()
+    } catch (err: any) {
+      alert(err.message || 'Gagal menolak mutasi.')
+    } finally {
+      setMutationActionLoading(false)
+    }
+  }
+
+  const handleOpenDeath = (resident: Resident) => {
+    setShowDeathModal(resident)
+    setDeathForm({
+      death_date: new Date().toISOString().split('T')[0],
+      death_place: 'RSUD Banda Neira',
+      death_cause: 'Usia Lanjut',
+      death_certificate_no: `SKM/${resident.village?.substring(0, 2).toUpperCase() || 'BN'}/${new Date().getFullYear()}/${Math.floor(100 + Math.random() * 900)}`,
+      death_notes: 'Dilaporkan oleh keluarga inti / ahli waris.',
+    })
+    setDeathFeedback(null)
+  }
+
+  const handleSubmitDeath = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!showDeathModal) return
+    try {
+      setDeathLoading(true)
+      setDeathFeedback(null)
+      await populationService.reportDeath(showDeathModal.id, deathForm)
+      setDeathFeedback({ type: 'success', text: 'Peristiwa kematian berhasil dicatat. Akun portal warga dinonaktifkan demi keamanan.' })
+      fetchPopulationData(searchQuery, selectedOccupationFilter)
+      setTimeout(() => setShowDeathModal(null), 1200)
+    } catch (err: any) {
+      setDeathFeedback({ type: 'error', text: err.message || 'Gagal mencatat kematian warga.' })
+    } finally {
+      setDeathLoading(false)
+    }
+  }
+
+  const handleRevokeDeath = async (resident: Resident) => {
+    if (!confirm(`Batalkan status meninggal dunia untuk ${resident.full_name}? Akun portal warga akan diaktifkan kembali.`)) return
+    try {
+      await populationService.revokeDeath(resident.id)
+      fetchPopulationData(searchQuery, selectedOccupationFilter)
+    } catch (err: any) {
+      alert(err.message || 'Gagal membatalkan status kematian.')
+    }
+  }
 
   useEffect(() => {
     if (popForm.nik && popForm.nik.length === 16) {
@@ -233,16 +428,23 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
     document.body.removeChild(link)
   }
 
-  // Client-side filtering for statusFilter & local quick search
+  // Client-side filtering for statusFilter, residenceFilter & local quick search
   const filteredResidents = useMemo(() => {
     return residents.filter((r) => {
-      // Status filter
+      // Verification status filter
       if (statusFilter !== 'all' && r.verification_status !== statusFilter) {
         return false
       }
+      // Residence status filter
+      if (residenceFilter !== 'all') {
+        const rStatus = r.residence_status || 'active'
+        if (rStatus !== residenceFilter) {
+          return false
+        }
+      }
       return true
     })
-  }, [residents, statusFilter])
+  }, [residents, statusFilter, residenceFilter])
 
   // Calculation for Top Occupations Chart Data
   const occupationChartData = useMemo(() => {
@@ -368,14 +570,73 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
             </button>
 
             <button
-              onClick={() => fetchPopulationData(searchQuery, selectedOccupationFilter)}
-              disabled={loadingPop}
+              onClick={() => {
+                fetchPopulationData(searchQuery, selectedOccupationFilter)
+                fetchMutations()
+              }}
+              disabled={loadingPop || loadingMutations}
               className="inline-flex items-center justify-center min-h-[44px] px-3.5 bg-white hover:bg-slate-50 text-slate-600 rounded-xl border border-slate-200/90 shadow-2xs transition-colors disabled:opacity-50 cursor-pointer"
               title="Muat ulang data dari server"
             >
-              <RefreshCw size={16} className={loadingPop ? 'animate-spin text-blue-600' : ''} />
+              <RefreshCw size={16} className={loadingPop || loadingMutations ? 'animate-spin text-blue-600' : ''} />
             </button>
           </div>
+        </div>
+
+        {/* Section Navigation Tabs: Data Penduduk vs Mutasi Penduduk Antar-Desa */}
+        <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl">
+            <button
+              onClick={() => setActiveSection('residents')}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-2 cursor-pointer ${
+                activeSection === 'residents'
+                  ? 'bg-white text-[#081D35] shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Users size={16} className={activeSection === 'residents' ? 'text-blue-600' : ''} />
+              <span>Data Penduduk & Kematian</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-200 text-slate-800 font-bold">
+                {residents.length}
+              </span>
+            </button>
+            <button
+              onClick={() => {
+                setActiveSection('mutations')
+                fetchMutations()
+              }}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-2 cursor-pointer ${
+                activeSection === 'mutations'
+                  ? 'bg-white text-[#081D35] shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <ArrowRightLeft size={16} className={activeSection === 'mutations' ? 'text-amber-600' : ''} />
+              <span>Mutasi Antar-Desa (Verifikasi 2 Arah)</span>
+              {mutations.filter((m) => m.status.startsWith('pending')).length > 0 && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-500 text-white font-bold animate-pulse">
+                  {mutations.filter((m) => m.status.startsWith('pending')).length} Menunggu
+                </span>
+              )}
+            </button>
+          </div>
+
+          {activeSection === 'mutations' && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  if (residents.length > 0) {
+                    handleOpenMutation(residents[0])
+                  } else {
+                    alert('Belum ada data warga terdaftar untuk diajukan mutasi.')
+                  }
+                }}
+                className="inline-flex items-center gap-2 px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
+              >
+                <ArrowRightLeft size={14} /> Ajukan Mutasi Keluar
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1094,11 +1355,11 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
           )}
         </div>
 
-        {/* Status Filter Segmented Button */}
+        {/* Status Verification Filter Segmented Button */}
         <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl shrink-0 w-full md:w-auto overflow-x-auto">
           <button
             onClick={() => setStatusFilter('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               statusFilter === 'all'
                 ? 'bg-white text-slate-800 shadow-2xs'
                 : 'text-slate-600 hover:text-slate-900'
@@ -1108,7 +1369,7 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
           </button>
           <button
             onClick={() => setStatusFilter('verified')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
               statusFilter === 'verified'
                 ? 'bg-emerald-600 text-white shadow-2xs'
                 : 'text-emerald-700 hover:bg-emerald-50'
@@ -1119,7 +1380,7 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
           </button>
           <button
             onClick={() => setStatusFilter('pending')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
               statusFilter === 'pending'
                 ? 'bg-amber-500 text-white shadow-2xs'
                 : 'text-amber-700 hover:bg-amber-50'
@@ -1130,10 +1391,46 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
           </button>
         </div>
 
+        {/* Status Kependudukan & Kematian Filter */}
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl shrink-0 w-full md:w-auto overflow-x-auto">
+          <button
+            onClick={() => setResidenceFilter('all')}
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              residenceFilter === 'all' ? 'bg-white text-slate-800 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Semua Domisili
+          </button>
+          <button
+            onClick={() => setResidenceFilter('active')}
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              residenceFilter === 'active' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-emerald-800 hover:bg-emerald-50'
+            }`}
+          >
+            Tetap Aktif
+          </button>
+          <button
+            onClick={() => setResidenceFilter('moving')}
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              residenceFilter === 'moving' ? 'bg-amber-600 text-white shadow-2xs' : 'text-amber-800 hover:bg-amber-50'
+            }`}
+          >
+            Mutasi
+          </button>
+          <button
+            onClick={() => setResidenceFilter('deceased')}
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              residenceFilter === 'deceased' ? 'bg-slate-900 text-white shadow-2xs' : 'text-slate-700 hover:bg-slate-200'
+            }`}
+          >
+            Wafat
+          </button>
+        </div>
+
         {/* Search Action Button */}
         <button
           onClick={() => fetchPopulationData(searchQuery, selectedOccupationFilter)}
-          className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors shrink-0 w-full md:w-auto"
+          className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors shrink-0 w-full md:w-auto cursor-pointer"
         >
           Cari Data
         </button>
@@ -1142,192 +1439,569 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
       {/* =========================================================================
           7. MASTER DATA TABLE (HIGH-CRAFT BENTO TABLE)
       ========================================================================== */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-extrabold text-[#081D35]">Daftar Registrasi Penduduk Desa</h3>
-            <span className="text-xs text-slate-500 font-medium">
-              (Menampilkan {filteredResidents.length} dari {residents.length} warga)
-            </span>
+      {activeSection === 'residents' && (
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-extrabold text-[#081D35]">Daftar Registrasi Penduduk Desa</h3>
+              <span className="text-xs text-slate-500 font-medium">
+                (Menampilkan {filteredResidents.length} dari {residents.length} warga)
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              {residenceFilter !== 'all' && (
+                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-white">
+                  Domisili: <strong className="capitalize">{residenceFilter}</strong>
+                </span>
+              )}
+              {statusFilter !== 'all' && (
+                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                  Filter: <strong className="capitalize">{statusFilter}</strong>
+                </span>
+              )}
+            </div>
           </div>
-          {statusFilter !== 'all' && (
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
-              Filter Status: <strong className="capitalize">{statusFilter}</strong>
-            </span>
-          )}
-        </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-200/80 text-slate-500 font-bold uppercase tracking-wider">
-                <th className="py-3.5 px-4">Nama Lengkap &amp; Dusun</th>
-                <th className="py-3.5 px-4">NIK (KTP Warga)</th>
-                <th className="py-3.5 px-4">Gender</th>
-                <th className="py-3.5 px-4">Mata Pencaharian</th>
-                <th className="py-3.5 px-4">Status Validasi</th>
-                <th className="py-3.5 px-4 text-center">Tindakan</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-              {filteredResidents.map((r) => {
-                const isVerified = r.verification_status === 'verified'
-                const isPending = r.verification_status === 'pending'
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="bg-slate-50/80 border-b border-slate-200/80 text-slate-500 font-bold uppercase tracking-wider">
+                  <th className="py-3.5 px-4">Nama Lengkap &amp; Dusun</th>
+                  <th className="py-3.5 px-4">NIK (KTP Warga)</th>
+                  <th className="py-3.5 px-4">Gender</th>
+                  <th className="py-3.5 px-4">Mata Pencaharian</th>
+                  <th className="py-3.5 px-4">Status Validasi</th>
+                  <th className="py-3.5 px-4">Status Domisili</th>
+                  <th className="py-3.5 px-4 text-center">Tindakan</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                {filteredResidents.map((r) => {
+                  const isVerified = r.verification_status === 'verified'
+                  const isPending = r.verification_status === 'pending'
+                  const isDeceased = r.residence_status === 'deceased'
+                  const isMoving = r.residence_status === 'moving'
 
-                return (
-                  <tr
-                    key={r.id}
-                    onClick={() => setSelectedResident(r)}
-                    className="hover:bg-slate-50/90 transition-colors cursor-pointer group"
-                  >
-                    {/* Nama & Dusun */}
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-700 font-black flex items-center justify-center shrink-0 border border-slate-200 group-hover:bg-[#081D35] group-hover:text-[#F4B75E] transition-colors">
-                          {r.full_name?.charAt(0)?.toUpperCase() || 'W'}
+                  return (
+                    <tr
+                      key={r.id}
+                      onClick={() => setSelectedResident(r)}
+                      className={`hover:bg-slate-50/90 transition-colors cursor-pointer group ${
+                        isDeceased ? 'bg-slate-50/50 opacity-80' : ''
+                      }`}
+                    >
+                      {/* Nama & Dusun */}
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-9 h-9 rounded-full font-black flex items-center justify-center shrink-0 border ${
+                            isDeceased
+                              ? 'bg-slate-800 text-slate-100 border-slate-700'
+                              : 'bg-slate-100 text-slate-700 border-slate-200 group-hover:bg-[#081D35] group-hover:text-[#F4B75E]'
+                          } transition-colors`}>
+                            {r.full_name?.charAt(0)?.toUpperCase() || 'W'}
+                          </div>
+                          <div>
+                            <p className={`font-extrabold transition-colors ${
+                              isDeceased ? 'text-slate-600 line-through decoration-slate-400' : 'text-slate-900 group-hover:text-blue-600'
+                            }`}>
+                              {r.full_name}
+                            </p>
+                            <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
+                              <Home size={11} />
+                              <span>Desa {r.village || 'Lonthoir'}</span>
+                              {r.rt && <span>• RT {r.rt}</span>}
+                              {r.rw && <span>/ RW {r.rw}</span>}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-extrabold text-slate-900 group-hover:text-blue-600 transition-colors">
-                            {r.full_name}
-                          </p>
-                          <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
-                            <Home size={11} />
-                            <span>Desa {r.village || 'Lonthoir'}</span>
-                            {r.rt && <span>• RT {r.rt}</span>}
-                            {r.rw && <span>/ RW {r.rw}</span>}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* NIK (Monospace with copy button) */}
-                    <td className="py-3.5 px-4">
-                      <div className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-slate-800 bg-slate-50 px-2 py-1 rounded-md border border-slate-200">
-                        <span>{r.nik}</span>
-                        <button
-                          onClick={(e) => handleCopyNik(r.nik, e)}
-                          title="Salin NIK"
-                          className="text-slate-400 hover:text-slate-600 transition-colors"
-                        >
-                          {copiedNik === r.nik ? (
-                            <Check size={13} className="text-emerald-600" />
-                          ) : (
-                            <Copy size={13} />
-                          )}
-                        </button>
-                      </div>
-                    </td>
-
-                    {/* Gender */}
-                    <td className="py-3.5 px-4">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded-md text-[11px] font-bold ${
-                          r.gender === 'L' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
-                        }`}
-                      >
-                        {r.gender === 'L' ? 'Laki-laki' : 'Perempuan'}
-                      </span>
-                    </td>
-
-                    {/* Mata Pencaharian */}
-                    <td className="py-3.5 px-4">{getOccupationBadge(r.occupation)}</td>
-
-                    {/* Status Verifikasi */}
-                    <td className="py-3.5 px-4">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                          isVerified
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                            : isPending
-                            ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                            : 'bg-rose-50 text-rose-700 border border-rose-200'
-                        }`}
-                      >
-                        {isVerified ? (
-                          <>
-                            <CheckCircle2 size={12} className="text-emerald-600" /> Terverifikasi
-                          </>
-                        ) : isPending ? (
-                          <>
-                            <Clock size={12} className="text-amber-600" /> Menunggu
-                          </>
-                        ) : (
-                          <>
-                            <X size={12} className="text-rose-600" /> Ditolak
-                          </>
-                        )}
-                      </span>
-                    </td>
-
-                    {/* Tindakan */}
-                    <td className="py-3.5 px-4 text-center">
-                      <div className="flex items-center justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                        {isPending && (
+                      {/* NIK */}
+                      <td className="py-3.5 px-4">
+                        <div className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-slate-800 bg-slate-50 px-2 py-1 rounded-md border border-slate-200">
+                          <span>{r.nik}</span>
                           <button
-                            onClick={() => handleVerifyResident(r.id, 'verified')}
-                            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-2xs transition-colors"
-                            title="Verifikasi keabsahan identitas warga"
+                            onClick={(e) => handleCopyNik(r.nik, e)}
+                            title="Salin NIK"
+                            className="text-slate-400 hover:text-slate-600 transition-colors"
                           >
-                            Verifikasi
+                            {copiedNik === r.nik ? (
+                              <Check size={13} className="text-emerald-600" />
+                            ) : (
+                              <Copy size={13} />
+                            )}
                           </button>
+                        </div>
+                      </td>
+
+                      {/* Gender */}
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`inline-block px-2 py-0.5 rounded-md text-[11px] font-bold ${
+                            r.gender === 'L' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
+                          }`}
+                        >
+                          {r.gender === 'L' ? 'Laki-laki' : 'Perempuan'}
+                        </span>
+                      </td>
+
+                      {/* Mata Pencaharian */}
+                      <td className="py-3.5 px-4">{getOccupationBadge(r.occupation)}</td>
+
+                      {/* Status Verifikasi */}
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                            isVerified
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : isPending
+                              ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                              : 'bg-rose-50 text-rose-700 border border-rose-200'
+                          }`}
+                        >
+                          {isVerified ? (
+                            <>
+                              <CheckCircle2 size={12} className="text-emerald-600" /> Terverifikasi
+                            </>
+                          ) : isPending ? (
+                            <>
+                              <Clock size={12} className="text-amber-600" /> Menunggu
+                            </>
+                          ) : (
+                            <>
+                              <X size={12} className="text-rose-600" /> Ditolak
+                            </>
+                          )}
+                        </span>
+                      </td>
+
+                      {/* Status Domisili & Wafat */}
+                      <td className="py-3.5 px-4">
+                        {isDeceased ? (
+                          <div className="space-y-0.5">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-slate-900 text-slate-100 border border-slate-700">
+                              <AlertOctagon size={10} className="text-rose-400" /> WAFAT
+                            </span>
+                            {r.death_date && (
+                              <span className="block text-[10px] text-slate-400 font-mono">
+                                {r.death_date}
+                              </span>
+                            )}
+                          </div>
+                        ) : isMoving ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500/15 text-amber-800 border border-amber-300">
+                            <ArrowRightLeft size={10} className="text-amber-600" /> SEDANG MUTASI
+                          </span>
+                        ) : r.residence_status === 'temporary' ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                            NON-PERMANEN
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <CheckCheck size={11} className="text-emerald-600" /> TETAP AKTIF
+                          </span>
                         )}
+                      </td>
+
+                      {/* Tindakan */}
+                      <td className="py-3.5 px-4 text-center">
+                        <div className="flex items-center justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                          {isPending && (
+                            <button
+                              onClick={() => handleVerifyResident(r.id, 'verified')}
+                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-2xs transition-colors cursor-pointer"
+                              title="Verifikasi keabsahan identitas warga"
+                            >
+                              Verifikasi
+                            </button>
+                          )}
+                          {!isDeceased && (
+                            <button
+                              onClick={() => {
+                                setResetPinTarget(r)
+                                setResetPinValue(Math.floor(100000 + Math.random() * 900000).toString())
+                                setShowResetPinValue(true)
+                                setResetPinError(null)
+                              }}
+                              className="px-2 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 border border-amber-200 cursor-pointer"
+                              title="Atur ulang PIN akun mandiri warga"
+                            >
+                              <KeyRound size={12} className="text-amber-700" />
+                              <span className="hidden xl:inline">Reset PIN</span>
+                            </button>
+                          )}
+
+                          {/* Tombol Mutasi Antar Desa */}
+                          {!isDeceased && (
+                            <button
+                              onClick={() => handleOpenMutation(r)}
+                              className="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 border border-blue-200 cursor-pointer"
+                              title="Ajukan mutasi domisili warga ke desa lain di Kepulauan Banda"
+                            >
+                              <ArrowRightLeft size={12} className="text-blue-600" />
+                              <span className="hidden xl:inline">Mutasi</span>
+                            </button>
+                          )}
+
+                          {/* Tombol Catat / Koreksi Kematian */}
+                          {isDeceased ? (
+                            <button
+                              onClick={() => handleRevokeDeath(r)}
+                              className="px-2 py-1 bg-slate-800 hover:bg-slate-900 text-slate-100 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 border border-slate-700 cursor-pointer"
+                              title="Batalkan status kematian & aktifkan kembali akun warga"
+                            >
+                              <HeartOff size={12} className="text-amber-400" />
+                              <span className="hidden xl:inline">Koreksi Wafat</span>
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleOpenDeath(r)}
+                              className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 border border-rose-200 cursor-pointer"
+                              title="Catat peristiwa kematian warga & nonaktifkan akun portal"
+                            >
+                              <AlertOctagon size={12} className="text-rose-600" />
+                              <span className="hidden xl:inline">Catat Wafat</span>
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => setSelectedResident(r)}
+                            className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                            title="Lihat KTP Digital Warga"
+                          >
+                            <Eye size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+
+                {/* Empty State */}
+                {filteredResidents.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="text-center py-12 px-4 text-slate-500">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+                        <Search size={22} />
+                      </div>
+                      <p className="font-bold text-slate-800 text-sm">Tidak ada data penduduk yang cocok</p>
+                      <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                        Coba periksa kata kunci pencarian atau bersihkan filter status dan profesi yang sedang aktif.
+                      </p>
+                      {(searchQuery || selectedOccupationFilter || statusFilter !== 'all' || residenceFilter !== 'all') && (
                         <button
                           onClick={() => {
-                            setResetPinTarget(r)
-                            setResetPinValue(Math.floor(100000 + Math.random() * 900000).toString())
-                            setShowResetPinValue(true)
-                            setResetPinError(null)
+                            setSearchQuery('')
+                            setSelectedOccupationFilter('')
+                            setStatusFilter('all')
+                            setResidenceFilter('all')
+                            fetchPopulationData('', '')
                           }}
-                          className="px-2 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 border border-amber-200"
-                          title="Atur ulang PIN akun mandiri warga"
+                          className="mt-3 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
                         >
-                          <KeyRound size={12} className="text-amber-700" />
-                          <span className="hidden xl:inline">Reset PIN</span>
+                          Bersihkan Semua Filter
                         </button>
-                        <button
-                          onClick={() => setSelectedResident(r)}
-                          className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
-                          title="Lihat KTP Digital Warga"
-                        >
-                          <Eye size={15} />
-                        </button>
-                      </div>
+                      )}
                     </td>
                   </tr>
-                )
-              })}
-
-              {/* Empty State */}
-              {filteredResidents.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="text-center py-12 px-4 text-slate-500">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
-                      <Search size={22} />
-                    </div>
-                    <p className="font-bold text-slate-800 text-sm">Tidak ada data penduduk yang cocok</p>
-                    <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                      Coba periksa kata kunci pencarian atau bersihkan filter status dan profesi yang sedang aktif.
-                    </p>
-                    {(searchQuery || selectedOccupationFilter || statusFilter !== 'all') && (
-                      <button
-                        onClick={() => {
-                          setSearchQuery('')
-                          setSelectedOccupationFilter('')
-                          setStatusFilter('all')
-                          fetchPopulationData('', '')
-                        }}
-                        className="mt-3 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors"
-                      >
-                        Bersihkan Semua Filter
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* =========================================================================
+          7B. WORKSPACE MUTASI KEPENDUDUKAN ANTAR-DESA (DUAL VERIFICATION)
+      ========================================================================== */}
+      {activeSection === 'mutations' && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Mutasi Metric Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Permohonan</span>
+                <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <ArrowRightLeft size={18} />
+                </div>
+              </div>
+              <span className="text-2xl font-black text-[#081D35]">{mutations.length}</span>
+              <p className="text-[11px] text-slate-500 mt-2 font-medium">Seluruh mutasi tercatat</p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Pindah Datang (Masuk)</span>
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <Home size={18} />
+                </div>
+              </div>
+              <span className="text-2xl font-black text-emerald-600">
+                {currentUser?.village
+                  ? mutations.filter((m) => m.destination_village.toLowerCase() === currentUser.village?.toLowerCase()).length
+                  : mutations.length}
+              </span>
+              <p className="text-[11px] text-slate-500 mt-2 font-medium">Warga menetap di desa tujuan</p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Pindah Keluar</span>
+                <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                  <Building2 size={18} />
+                </div>
+              </div>
+              <span className="text-2xl font-black text-purple-700">
+                {currentUser?.village
+                  ? mutations.filter((m) => m.origin_village.toLowerCase() === currentUser.village?.toLowerCase()).length
+                  : mutations.length}
+              </span>
+              <p className="text-[11px] text-slate-500 mt-2 font-medium">Warga dilepas ke desa lain</p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-amber-300 bg-amber-50/20 shadow-xs">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold text-amber-800 uppercase tracking-wider">Menunggu Verifikasi</span>
+                <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+                  <Clock size={18} />
+                </div>
+              </div>
+              <span className="text-2xl font-black text-amber-700">
+                {mutations.filter((m) => m.status.startsWith('pending')).length}
+              </span>
+              <p className="text-[11px] text-amber-800 mt-2 font-semibold">Perlu persetujuan 2 desa</p>
+            </div>
+          </div>
+
+          {/* Table Container */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div className="p-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                <button
+                  onClick={() => setMutationTab('all')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    mutationTab === 'all' ? 'bg-white text-slate-800 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Semua ({mutations.length})
+                </button>
+                <button
+                  onClick={() => setMutationTab('incoming')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    mutationTab === 'incoming' ? 'bg-emerald-600 text-white shadow-2xs' : 'text-emerald-800 hover:bg-emerald-50'
+                  }`}
+                >
+                  Pindah Datang (Masuk)
+                </button>
+                <button
+                  onClick={() => setMutationTab('outgoing')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    mutationTab === 'outgoing' ? 'bg-purple-600 text-white shadow-2xs' : 'text-purple-800 hover:bg-purple-50'
+                  }`}
+                >
+                  Pindah Keluar (Keluar)
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={fetchMutations}
+                  className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                  title="Refresh Daftar Mutasi"
+                >
+                  <RefreshCw size={15} className={loadingMutations ? 'animate-spin text-blue-600' : ''} />
+                </button>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="bg-slate-50/80 border-b border-slate-200/80 text-slate-500 font-bold uppercase tracking-wider">
+                    <th className="py-3.5 px-4">Warga & NIK</th>
+                    <th className="py-3.5 px-4">Alur Mutasi Domisili</th>
+                    <th className="py-3.5 px-4">Alamat Baru di Desa Tujuan</th>
+                    <th className="py-3.5 px-4">No. SKPWNI & Alasan</th>
+                    <th className="py-3.5 px-4">Status Verifikasi</th>
+                    <th className="py-3.5 px-4 text-center">Tindakan Verifikasi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                  {mutations
+                    .filter((m) => {
+                      if (mutationTab === 'incoming' && currentUser?.village) {
+                        return m.destination_village.toLowerCase() === currentUser.village.toLowerCase()
+                      }
+                      if (mutationTab === 'outgoing' && currentUser?.village) {
+                        return m.origin_village.toLowerCase() === currentUser.village.toLowerCase()
+                      }
+                      return true
+                    })
+                    .map((m) => {
+                      const isPendingDest = m.status === 'pending_destination'
+                      const isPendingOrigin = m.status === 'pending_origin'
+                      const isCompleted = m.status === 'completed'
+                      const isRejected = m.status === 'rejected'
+
+                      const isDestOfficer = Boolean(
+                        currentUser?.is_superuser ||
+                        (currentUser?.village && currentUser.village.toLowerCase() === m.destination_village.toLowerCase())
+                      )
+                      const isOriginOfficer = Boolean(
+                        currentUser?.is_superuser ||
+                        (currentUser?.village && currentUser.village.toLowerCase() === m.origin_village.toLowerCase())
+                      )
+
+                      return (
+                        <tr key={m.id} className="hover:bg-slate-50/90 transition-colors">
+                          <td className="py-3.5 px-4">
+                            <p className="font-extrabold text-slate-900">{m.resident_name || 'Warga'}</p>
+                            <span className="font-mono text-[11px] text-slate-500 font-semibold bg-slate-100 px-1.5 py-0.5 rounded">
+                              {m.resident_nik || '-'}
+                            </span>
+                          </td>
+
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-1.5 font-bold">
+                              <span className="text-slate-700">Desa {m.origin_village}</span>
+                              <ArrowRightLeft size={13} className="text-amber-600 shrink-0" />
+                              <span className="text-blue-700">Desa {m.destination_village}</span>
+                            </div>
+                            <span className="text-[10px] text-slate-400 block mt-0.5">
+                              Inisiator: Desa {m.initiated_by_village}
+                            </span>
+                          </td>
+
+                          <td className="py-3.5 px-4">
+                            <p className="font-semibold text-slate-800">{m.new_address || 'Menunggu penetapan'}</p>
+                            <p className="text-[11px] text-slate-500">
+                              RT {m.new_rt || '-'} / RW {m.new_rw || '-'}
+                            </p>
+                          </td>
+
+                          <td className="py-3.5 px-4">
+                            <span className="font-mono text-[11px] font-bold text-slate-800 block">
+                              {m.skpwni_number || '-'}
+                            </span>
+                            <span className="text-slate-500 text-[11px]">{m.reason || 'Pindah domisili'}</span>
+                          </td>
+
+                          <td className="py-3.5 px-4">
+                            {isCompleted && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <CheckCircle2 size={12} className="text-emerald-600" /> Selesai / Pindah Definitif
+                              </span>
+                            )}
+                            {isPendingDest && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                <Clock size={12} className="text-amber-600" /> Menunggu Verifikasi Desa {m.destination_village}
+                              </span>
+                            )}
+                            {isPendingOrigin && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                                <Clock size={12} className="text-blue-600" /> Menunggu Pelepasan Desa {m.origin_village}
+                              </span>
+                            )}
+                            {isRejected && (
+                              <div className="space-y-0.5">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                                  <X size={12} className="text-rose-600" /> Ditolak
+                                </span>
+                                {m.rejection_reason && (
+                                  <p className="text-[10px] text-rose-600 italic">"{m.rejection_reason}"</p>
+                                )}
+                              </div>
+                            )}
+                          </td>
+
+                          <td className="py-3.5 px-4 text-center">
+                            <div className="flex items-center justify-center gap-1.5">
+                              {/* Kasus 1: Menunggu verifikasi Desa Tujuan */}
+                              {isPendingDest && isDestOfficer && (
+                                <>
+                                  <button
+                                    onClick={() => {
+                                      setShowApproveModal(m)
+                                      setApproveForm({
+                                        new_address: m.new_address || '',
+                                        new_rt: m.new_rt || '',
+                                        new_rw: m.new_rw || '',
+                                        notes: '',
+                                      })
+                                    }}
+                                    className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                                  >
+                                    Verifikasi &amp; Terima Warga
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setShowRejectModal(m)
+                                      setRejectReason('')
+                                    }}
+                                    className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                                  >
+                                    Tolak
+                                  </button>
+                                </>
+                              )}
+
+                              {/* Kasus 2: Menunggu persetujuan Desa Asal */}
+                              {isPendingOrigin && isOriginOfficer && (
+                                <>
+                                  <button
+                                    onClick={() => {
+                                      setShowApproveModal(m)
+                                      setApproveForm({
+                                        new_address: m.new_address || '',
+                                        new_rt: m.new_rt || '',
+                                        new_rw: m.new_rw || '',
+                                        notes: '',
+                                      })
+                                    }}
+                                    className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                                  >
+                                    Setujui Pelepasan Warga
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setShowRejectModal(m)
+                                      setRejectReason('')
+                                    }}
+                                    className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                                  >
+                                    Tolak
+                                  </button>
+                                </>
+                              )}
+
+                              {!((isPendingDest && isDestOfficer) || (isPendingOrigin && isOriginOfficer)) && (
+                                <span className="text-[11px] text-slate-400 italic">
+                                  {isCompleted ? 'Terverifikasi 2 Arah' : isRejected ? 'Mutasi Ditutup' : 'Menunggu Pihak Lain'}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+
+                  {mutations.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="text-center py-10 text-slate-500">
+                        <ArrowRightLeft size={24} className="mx-auto text-slate-300 mb-2" />
+                        <p className="font-bold text-slate-700">Belum ada riwayat mutasi antar-desa</p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          Gunakan tombol "Ajukan Permohonan Mutasi" untuk memproses perpindahan domisili warga antar desa.
+                        </p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* =========================================================================
           8. MODAL KARTU IDENTITAS DIGITAL (KTP DIGITAL DESA BANDA NEIRA)
@@ -1766,6 +2440,545 @@ export const ResidentsWorkspace: React.FC<ResidentsWorkspaceProps> = ({
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          11. MODAL INISIASI MUTASI KEPENDUDUKAN ANTAR-DESA
+      ========================================================================== */}
+      {showMutationModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/65 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-200 animate-scale-in">
+            <div className="bg-[#081D35] text-white p-5 flex items-center justify-between border-b border-amber-500/30">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-[#F4B75E] border border-amber-500/40 flex items-center justify-center">
+                  <ArrowRightLeft size={20} />
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-[#F4B75E] block">
+                    Verifikasi Dua Arah Antar Desa
+                  </span>
+                  <h4 className="text-sm font-extrabold tracking-tight">Permohonan Mutasi Domisili Warga</h4>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowMutationModal(false)}
+                className="text-white/70 hover:text-white p-1 rounded-lg cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitMutation} className="p-6 space-y-4">
+              {mutationActionFeedback && (
+                <div
+                  className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
+                    mutationActionFeedback.type === 'success'
+                      ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+                      : 'bg-rose-50 border border-rose-200 text-rose-800'
+                  }`}
+                >
+                  {mutationActionFeedback.type === 'success' ? (
+                    <CheckCircle2 size={15} className="shrink-0 text-emerald-600" />
+                  ) : (
+                    <AlertCircle size={15} className="shrink-0 text-rose-600" />
+                  )}
+                  <span>{mutationActionFeedback.text}</span>
+                </div>
+              )}
+
+              {/* Data Warga yang Dimutasi */}
+              {mutationTargetResident ? (
+                <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Warga Pemohon Mutasi</span>
+                    <p className="text-sm font-extrabold text-[#081D35]">{mutationTargetResident.full_name}</p>
+                    <p className="text-xs font-mono text-slate-600 mt-0.5">NIK: {mutationTargetResident.nik}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Desa Asal</span>
+                    <span className="inline-block px-2 py-0.5 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                      Desa {mutationTargetResident.village || 'Lonthoir'}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Pilih Warga</label>
+                  <select
+                    value={mutationForm.resident_id}
+                    onChange={(e) => {
+                      const resId = e.target.value
+                      const target = residents.find((r) => r.id === resId)
+                      setMutationForm((prev) => ({ ...prev, resident_id: resId }))
+                      setMutationTargetResident(target || null)
+                    }}
+                    required
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:bg-white focus:border-amber-500 outline-none"
+                  >
+                    <option value="">-- Pilih Warga Desa --</option>
+                    {residents
+                      .filter((r) => r.residence_status !== 'deceased')
+                      .map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.full_name} ({r.nik}) - Desa {r.village}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Desa Tujuan */}
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">
+                  Desa Tujuan di Kepulauan Banda <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  value={mutationForm.destination_village}
+                  onChange={(e) => setMutationForm((prev) => ({ ...prev, destination_village: e.target.value }))}
+                  required
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-blue-900 focus:bg-white focus:border-blue-500 outline-none"
+                >
+                  {BANDA_VILLAGES.filter(
+                    (v) => v.toLowerCase() !== (mutationTargetResident?.village || '').toLowerCase()
+                  ).map((v) => (
+                    <option key={v} value={v}>
+                      Desa {v}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Alamat Baru & RT/RW */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Rencana Alamat / Dusun Baru</label>
+                  <input
+                    type="text"
+                    value={mutationForm.new_address || ''}
+                    onChange={(e) => setMutationForm((prev) => ({ ...prev, new_address: e.target.value }))}
+                    placeholder="Contoh: Jl. Pelabuhan Baru No. 12"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:border-amber-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">RT / RW Baru</label>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="text"
+                      maxLength={3}
+                      placeholder="RT"
+                      value={mutationForm.new_rt || ''}
+                      onChange={(e) => setMutationForm((prev) => ({ ...prev, new_rt: e.target.value }))}
+                      className="w-1/2 px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-center text-slate-800 focus:bg-white outline-none"
+                    />
+                    <span className="text-slate-400">/</span>
+                    <input
+                      type="text"
+                      maxLength={3}
+                      placeholder="RW"
+                      value={mutationForm.new_rw || ''}
+                      onChange={(e) => setMutationForm((prev) => ({ ...prev, new_rw: e.target.value }))}
+                      className="w-1/2 px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-center text-slate-800 focus:bg-white outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Nomor SKPWNI & Alasan */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Nomor SKPWNI / Surat Pengantar</label>
+                  <input
+                    type="text"
+                    value={mutationForm.skpwni_number || ''}
+                    onChange={(e) => setMutationForm((prev) => ({ ...prev, skpwni_number: e.target.value }))}
+                    placeholder="Contoh: SKPWNI/2026/042"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:bg-white outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Alasan Perpindahan</label>
+                  <input
+                    type="text"
+                    value={mutationForm.reason || ''}
+                    onChange={(e) => setMutationForm((prev) => ({ ...prev, reason: e.target.value }))}
+                    placeholder="Pekerjaan, perkawinan, dsb"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-[11px] text-blue-900 flex items-start gap-2">
+                <ShieldCheck size={16} className="text-blue-700 shrink-0 mt-0.5" />
+                <span>
+                  Permohonan ini akan diteruskan ke kantor Desa Tujuan untuk diverifikasi dan disetujui bersama sebelum domisili resmi dipindahkan secara definitif.
+                </span>
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowMutationModal(false)}
+                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={mutationActionLoading}
+                  className="px-5 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  {mutationActionLoading ? (
+                    <>
+                      <RefreshCw size={14} className="animate-spin" /> Mengirim...
+                    </>
+                  ) : (
+                    <>
+                      <Send size={14} /> Ajukan Mutasi Warga
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          12. MODAL PERSETUJUAN / VERIFIKASI PENERIMAAN MUTASI
+      ========================================================================== */}
+      {showApproveModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/65 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-200 animate-scale-in">
+            <div className="bg-[#081D35] text-white p-5 flex items-center justify-between border-b border-emerald-500/30">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center">
+                  <CheckCircle2 size={20} />
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-400 block">
+                    Konfirmasi Verifikasi Desa
+                  </span>
+                  <h4 className="text-sm font-extrabold tracking-tight">Verifikasi &amp; Setujui Mutasi</h4>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowApproveModal(null)}
+                className="text-white/70 hover:text-white p-1 rounded-lg cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-500 font-semibold">Nama Warga:</span>
+                  <span className="text-xs font-extrabold text-slate-900">{showApproveModal.resident_name}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-500 font-semibold">NIK:</span>
+                  <span className="text-xs font-mono font-bold text-slate-800">{showApproveModal.resident_nik}</span>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                  <span className="text-xs text-slate-500 font-semibold">Perpindahan:</span>
+                  <span className="text-xs font-bold text-blue-700">
+                    Desa {showApproveModal.origin_village} ➔ Desa {showApproveModal.destination_village}
+                  </span>
+                </div>
+              </div>
+
+              {/* Form Konfirmasi Alamat & RT/RW Baru untuk Desa Tujuan */}
+              {showApproveModal.status === 'pending_destination' && (
+                <div className="space-y-3 pt-2">
+                  <label className="text-xs font-bold text-slate-800 block">
+                    Penetapan Alamat &amp; RT/RW Definitif di Desa {showApproveModal.destination_village}:
+                  </label>
+                  <input
+                    type="text"
+                    value={approveForm.new_address}
+                    onChange={(e) => setApproveForm((prev) => ({ ...prev, new_address: e.target.value }))}
+                    placeholder="Alamat / Dusun di Desa Tujuan"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white outline-none"
+                  />
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      maxLength={3}
+                      value={approveForm.new_rt}
+                      onChange={(e) => setApproveForm((prev) => ({ ...prev, new_rt: e.target.value }))}
+                      placeholder="RT Baru"
+                      className="w-1/2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-center text-slate-800 focus:bg-white outline-none"
+                    />
+                    <input
+                      type="text"
+                      maxLength={3}
+                      value={approveForm.new_rw}
+                      onChange={(e) => setApproveForm((prev) => ({ ...prev, new_rw: e.target.value }))}
+                      placeholder="RW Baru"
+                      className="w-1/2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-center text-slate-800 focus:bg-white outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-[11px] text-emerald-900 flex items-start gap-2">
+                <CheckCheck size={16} className="text-emerald-700 shrink-0 mt-0.5" />
+                <span>
+                  Dengan menyetujui, mutasi dinyatakan sah (Completed). Data domisili warga dan hak akses akun portal warga otomatis dialihkan ke desa tujuan.
+                </span>
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowApproveModal(null)}
+                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  disabled={mutationActionLoading}
+                  onClick={handleConfirmApprove}
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  {mutationActionLoading ? (
+                    <>
+                      <RefreshCw size={14} className="animate-spin" /> Memproses...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 size={14} /> Setujui &amp; Mutasi Sah
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          13. MODAL PENOLAKAN MUTASI
+      ========================================================================== */}
+      {showRejectModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/65 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-200 animate-scale-in">
+            <div className="bg-rose-950 text-white p-5 flex items-center justify-between border-b border-rose-800/40">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center justify-center">
+                  <X size={20} />
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-rose-400 block">
+                    Penolakan Mutasi
+                  </span>
+                  <h4 className="text-sm font-extrabold tracking-tight">Tolak Permohonan Mutasi</h4>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowRejectModal(null)}
+                className="text-white/70 hover:text-white p-1 rounded-lg cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <p className="text-xs text-slate-600">
+                Warga: <b>{showRejectModal.resident_name}</b> ({showRejectModal.resident_nik})
+              </p>
+              <div>
+                <label className="text-xs font-bold text-slate-800 block mb-1">
+                  Alasan Penolakan <span className="text-rose-500">*</span>
+                </label>
+                <textarea
+                  rows={3}
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder="Contoh: Berkas SKPWNI belum diverifikasi pihak kecamatan / ada sangkutan administratif di desa asal."
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:border-rose-500 outline-none"
+                  required
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowRejectModal(null)}
+                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  disabled={mutationActionLoading || !rejectReason.trim()}
+                  onClick={handleConfirmReject}
+                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
+                >
+                  {mutationActionLoading ? 'Memproses...' : 'Tolak Permohonan'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          14. MODAL PENCATATAN PERISTIWA KEMATIAN WARGA
+      ========================================================================== */}
+      {showDeathModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/65 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-200 animate-scale-in">
+            <div className="bg-slate-950 text-white p-5 flex items-center justify-between border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-slate-800 text-rose-400 border border-slate-700 flex items-center justify-center">
+                  <AlertOctagon size={20} />
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-rose-400 block">
+                    Buku Registrasi Kematian Desa
+                  </span>
+                  <h4 className="text-sm font-extrabold tracking-tight">Pencatatan Peristiwa Kematian Warga</h4>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDeathModal(null)}
+                className="text-white/70 hover:text-white p-1 rounded-lg cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitDeath} className="p-6 space-y-4">
+              {deathFeedback && (
+                <div
+                  className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
+                    deathFeedback.type === 'success'
+                      ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+                      : 'bg-rose-50 border border-rose-200 text-rose-800'
+                  }`}
+                >
+                  {deathFeedback.type === 'success' ? (
+                    <CheckCircle2 size={15} className="shrink-0 text-emerald-600" />
+                  ) : (
+                    <AlertCircle size={15} className="shrink-0 text-rose-600" />
+                  )}
+                  <span>{deathFeedback.text}</span>
+                </div>
+              )}
+
+              {/* Profil Warga yang Dicatat Kematian */}
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Identitas Warga Wafat</span>
+                  <p className="text-sm font-extrabold text-slate-900">{showDeathModal.full_name}</p>
+                  <p className="text-xs font-mono text-slate-600 mt-0.5">NIK: {showDeathModal.nik}</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Desa</span>
+                  <span className="font-bold text-xs text-slate-800">Desa {showDeathModal.village}</span>
+                </div>
+              </div>
+
+              {/* Tanggal & Tempat Kematian */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    Tanggal Wafat <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={deathForm.death_date}
+                    onChange={(e) => setDeathForm((prev) => ({ ...prev, death_date: e.target.value }))}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Tempat Wafat</label>
+                  <input
+                    type="text"
+                    value={deathForm.death_place || ''}
+                    onChange={(e) => setDeathForm((prev) => ({ ...prev, death_place: e.target.value }))}
+                    placeholder="Contoh: RSUD Banda Neira / Rumah Duka"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Penyebab & No. Surat Kematian */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Penyebab Kematian</label>
+                  <input
+                    type="text"
+                    value={deathForm.death_cause || ''}
+                    onChange={(e) => setDeathForm((prev) => ({ ...prev, death_cause: e.target.value }))}
+                    placeholder="Contoh: Sakit / Usia Lanjut"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Nomor Surat / Akta Kematian</label>
+                  <input
+                    type="text"
+                    value={deathForm.death_certificate_no || ''}
+                    onChange={(e) => setDeathForm((prev) => ({ ...prev, death_certificate_no: e.target.value }))}
+                    placeholder="Contoh: SKM/2026/012"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-800 focus:bg-white outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Catatan Pelapor */}
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Catatan Pelapor / Keterangan</label>
+                <textarea
+                  rows={2}
+                  value={deathForm.death_notes || ''}
+                  onChange={(e) => setDeathForm((prev) => ({ ...prev, death_notes: e.target.value }))}
+                  placeholder="Keluarga pelapor, saksi, atau keterangan pemakaman..."
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white outline-none"
+                />
+              </div>
+
+              {/* Security Warning Alert */}
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-900 flex items-start gap-2">
+                <AlertCircle size={16} className="text-amber-700 shrink-0 mt-0.5" />
+                <span>
+                  <b>Peringatan Keamanan:</b> Setelah status kematian disimpan, akun portal mandiri warga akan otomatis dinonaktifkan untuk mencegah pencurian identitas atau penyalahgunaan akun. Data kependudukan tetap tersimpan sebagai arsip historis desa.
+                </span>
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowDeathModal(null)}
+                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={deathLoading}
+                  className="px-5 py-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  {deathLoading ? (
+                    <>
+                      <RefreshCw size={14} className="animate-spin" /> Menyimpan...
+                    </>
+                  ) : (
+                    <>
+                      <AlertOctagon size={14} className="text-rose-400" /> Simpan Peristiwa Kematian
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

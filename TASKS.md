@@ -90,6 +90,10 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 100: Eliminasi Glitch Visual Kedipan Beranda Saat Login Menuju Dashboard**
 - [x] **Phase 101: Optimasi Kinerja Dashboard Admin, Eliminasi Render Loop & Reduksi Panggilan Endpoint Duplikat**
 - [x] **Phase 102: Implementasi Dedicated Mobile App Shell Landing Page (Capacitor & Mobile DevTools Viewport)**
+- [x] **Phase 106: Dual-Village Mutation Workflow, Death Registry & PostGIS History**
+- [x] **Phase 107: Dynamic NIK Login & Automatic Role Assignment for Resident Farmers**
+- [x] **Phase 108: Dynamic Multi-Role Navigation & Perspective Switcher**
+- [x] **Phase 109: Navigation Boundary Sharpening & Module Launchpad Access Control**
 - [x] **Phase 110: UI/UX Button Color Consistency & Slop Removal Overhaul Across Entire Application**
 - [x] **Phase 111: Workspace Pages Layout Harmonization to Match Dashboard Mobile-First Design**
 - [x] **Phase 112: Blockchain Batch Verification Modals Mobile-First Overhaul**
@@ -2194,54 +2198,89 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 24.50 detik).
 
 ---
-
-## [Phase 106] - Mobile-First Dashboard Redesign & Multi-Role Layout Harmonization
-- [x] 106.1 Ekstraksi Komponen Terpadu Mobile-First `BaseRoleDashboardView.tsx`:
-  - Mengeliminasi lebih dari 5.600 baris kode duplikasi layout di 9 tampilan dasbor role (`AdminDashboardView`, `ResidentDashboardView`, `CoopManagerDashboardView`, `FarmerDashboardView`, `FarmerGroupDashboardView`, `FieldSurveyorDashboardView`, `HomestayOperatorDashboardView`, `TouristDashboardView`, `VillageOfficerDashboardView`).
-  - Menerapkan arsitektur layout berbasis mobile-first sesuai acuan `.agents/skills/mobile-design/SKILL.md` dan `.agents/skills/mobile-responsiveness/SKILL.md`.
-- [x] 106.2 Rekonstruksi Grid & Tata Letak Responsif:
-  - **Kartu KPI Ringkasan**: Mengganti stacking 1-kolom memanjang di layar ponsel menjadi 2-kolom seimbang (`grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4`) dengan avatar kompak (`size-9 sm:size-12`) dan tipografi adaptif (`text-base sm:text-2xl font-black`), mencegah kartu memenuhi tinggi layar ponsel secara berlebihan.
-  - **Top 5 Bento Headline KPIs**: Menerapkan 2-kolom mobile grid dengan kartu ke-5 merentang penuh (`col-span-2 lg:col-span-1`), dilengkapi padding hemat ruang (`p-3 sm:p-4`) dan badge kompak.
-  - **Donut Chart Komposisi**: Mengubah orientasi menjadi `flex-col sm:flex-row` di ponsel agar lingkaran donut terpusat di atas dan legenda sektor tertata rapi dalam 2-kolom di bawah tanpa overlap atau pemotongan teks.
-  - **Line Chart Analitik**: Mengoptimalkan margin Recharts (`margin={{ top: 12, right: 12, left: -24, bottom: 0 }}`) dan tinggi responsif (`h-48 sm:h-64`) sehingga label sumbu Y tetap terbaca di lebar 360px–420px.
-- [x] 106.3 Optimalisasi Touch Target & Tombol Aksi Jempol (Thumb-Friendly):
-  - Memastikan seluruh kontrol interaktif utama memenuhi standar ergonomi jempol minimal 44×44px (`min-h-[44px]`).
-  - Mengubah tombol header komando menjadi grid 2-kolom proporsional di mobile (`grid grid-cols-2 sm:flex gap-2 w-full sm:w-auto`).
-  - Memperbarui 4 tombol format "Unduh Data Terbuka" (CSV, XLSX, JSON, API) dengan `min-h-[48px]`.
-  - Mengadaptasi formulir verifikasi hash blockchain dan input verifikasi cepat dengan `min-h-[44px]`.
-- [x] 106.4 Penataan Header, Topbar, dan Spacing Dashboard:
-  - Mengurangi padding kontainer dari pemborosan 16px menjadi `p-2 sm:p-6` agar area kartu analitik mendapatkan lebar maksimal di ponsel.
-  - Menyelaraskan floating header pencarian dan kluster tombol kanan (telemetri, status online, tema, menu cepat, lonceng) agar tidak berjejal atau overflow horizontal.
-  - Mengoptimalkan badge jam real-time `LiveClockBadge` dengan perataan fleksibel (`justify-between sm:justify-start`).
-- [x] 106.5 Pengujian & Verifikasi:
+## [Phase 106] - Siklus Hidup & Mutasi Kependudukan Antar-Desa (Verifikasi 2 Arah) & Pencatatan Kematian
+- [x] 106.1 Skema Basis Data & Migrasi Alembic (`015_resident_mutation_death.py`):
+  - Menambahkan kolom status kependudukan `residence_status` (`active`, `moving`, `moved_out`, `temporary`, `deceased`) dan atribut pencatatan kematian (`death_date`, `death_place`, `death_cause`, `death_certificate_no`, `death_notes`, `reported_death_at`, `reported_death_by`) pada tabel `residents`.
+  - Membuat tabel `resident_mutations` dengan lifecycle verifikasi dua arah (`pending_destination`, `pending_origin`, `completed`, `rejected`, `cancelled`), atribut desa asal, desa tujuan, alamat baru, RT/RW, no SKPWNI, alasan, serta referensi persetujuan kedua pihak (`origin_approved_by`, `destination_approved_by`).
+- [x] 106.2 API Backend Mutasi Dua Arah & Pelaporan Kematian:
+  - `POST /api/v1/population/mutations`: Inisiasi permohonan mutasi domisili (mendukung inisiasi dari desa asal maupun desa tujuan).
+  - `GET /api/v1/population/mutations`: Daftar permohonan mutasi dengan filter tipe mutasi (`incoming`, `outgoing`) dan filter yurisdiksi desa.
+  - `POST /api/v1/population/mutations/{id}/approve`: Persetujuan verifikasi mutasi oleh desa terkait. Begitu kedua desa menyetujui, status menjadi `completed`, data domisili resident diperbarui ke desa tujuan, dan akun login pengguna (`users.village`) otomatis dipindahkan.
+  - `POST /api/v1/population/mutations/{id}/reject`: Penolakan permohonan mutasi dengan alasan resmi; memulihkan status kependudukan warga ke aktif di desa asal.
+  - `POST /api/v1/population/residents/{id}/report-death`: Pencatatan peristiwa kematian warga, pengisian akta kematian, dan penonaktifan otomatis akun portal warga (`users.is_active = False`) demi keamanan identitas.
+  - `POST /api/v1/population/residents/{id}/revoke-death`: Pembatalan status kematian (koreksi administratif) dan pengaktifan kembali akun warga.
+- [x] 106.3 Antarmuka Pengguna Kependudukan (`ResidentsWorkspace.tsx`):
+  - Tab navigasi antarmuka: **Data Penduduk & Kematian** vs **Mutasi Antar-Desa (Verifikasi 2 Arah)**.
+  - Filter status kependudukan baru: Tetap Aktif, Sedang Mutasi, Meninggal (Wafat), Non-Permanen.
+  - Badge penanda status kependudukan di tabel warga (`WAFAT`, `MUTASI`, `TETAP AKTIF`).
+  - Tindakan pada baris warga: tombol **Mutasi Antar-Desa**, **Catat Kematian**, dan **Koreksi Wafat**.
+  - Tampilan manajemen mutasi lengkap dengan 4 kartu metrik (Total, Pindah Datang, Pindah Keluar, Menunggu Verifikasi), filter sub-tab, dan tabel daftar mutasi.
+  - Modal interaktif inisiasi mutasi antar desa, modal verifikasi penerimaan (dengan penetapan RT/RW baru), modal penolakan, dan modal buku registrasi kematian desa.
+- [x] 106.4 Pengujian Otomatis & Verifikasi Build:
+  - Seluruh pengujian unit backend (`test_population.py`, `test_auth.py`) lulus 100% (31 passed).
   - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% (0 error).
-  - Build produksi Vite (`npm run build`) sukses 100% (2.487 modul ter-bundle).
-  - Pengujian unit backend (`pytest tests/test_health.py`) lulus 100% (3 passed).
+  - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 21.08 detik).
 
-## [Phase 107] - UX Button Color Compliance & Complete Elimination of Purple/Indigo Palette
-- [x] 107.1 Penghapusan Warna Ungu pada Tombol & Kontrol Interaktif:
+---
+
+## [Phase 107] - Integrasi Dinamis Login Warga Petani Berbasis NIK & Multi-Role Additive RBAC
+- [x] 107.1 Integrasi & Sinkronisasi Peran Petani di Backend (`farmers/router.py`):
+  - Saat warga didaftarkan oleh Poktan / Petugas Desa menjadi anggota petani (`POST /api/v1/farmers` dengan `resident_id`), sistem secara otomatis mencari/membuat akun `User` dengan `username = resident.nik`.
+  - Mengaitkan `farmer.user_id = user.id` dan menyematkan peran `ROLE_FARMER` (`farmer`) ke dalam `user.roles` berdampingan dengan `ROLE_RESIDENT`.
+  - Pada fungsi `ensure_default_farmers_seeded`, sinkronisasi otomatis warga berprofesi petani/pekebun juga menautkan `user_id` dan menyematkan peran `ROLE_FARMER`.
+- [x] 107.2 Self-Healing Role Sync & Endpoint Deteksi Akun (`auth/router.py`):
+  - `POST /api/v1/auth/login`: Menyinkronkan peran `ROLE_FARMER` secara *self-healing* ketika warga yang terdaftar di tabel `farmers` login menggunakan 16 digit NIK dan PIN, sehingga token JWT memuat hak akses ganda: `roles: ['resident', 'farmer']`.
+  - `GET /api/v1/auth/identify-account`: Endpoint deteksi akun real-time berdasarkan 16 digit NIK atau username, mengembalikan masked NIK, nama lengkap warga, desa, status keanggotaan petani, dan nama kelompok tani tanpa membocorkan PII privat.
+- [x] 107.3 Antarmuka Login Dinamis & Bebas Mock Statis (`LoginSection.tsx` & `services/auth.ts`):
+  - Menghilangkan ketergantungan pencocokan NIK ke mock array statis `DEFAULT_PROJECT_ACCOUNTS` untuk NIK 16 digit warga nyata.
+  - Form input NIK portal satu pintu mendeteksi identitas warga/petani secara real-time via debounced API query (`identifyAccount`), menampilkan badge konfirmasi nama dan peran secara dinamis.
+  - Pengiriman kredensial NIK 16 digit dan PIN langsung ditujukan ke backend `/api/v1/auth/login`.
+- [x] 107.4 Pengujian Otomatis & Verifikasi Build:
+  - Test case `test_identify_account_and_farmer_login_with_nik` di `test_auth.py` lulus 100%.
+  - Seluruh pengujian `test_auth.py` dan `test_farmers_and_farms.py` lulus 100% (26 passed).
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% (0 error).
+  - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 18.81 detik).
+
+---
+
+## [Phase 108] - Navigasi Multi-Role & Switcher Perspektif Antar Peran Aktif Pengguna
+- [x] 108.1 Switcher Perspektif Peran Multi-Role Dinamis (`UserEcosystemDashboard.tsx`):
+  - Memungkinkan pengguna non-admin yang memegang peran ganda (misal warga desa yang menjadi petani: `['resident', 'farmer']`, atau warga yang menjadi operator homestay: `['resident', 'homestay_operator']`) untuk beralih perspektif dasbor secara instan antara dasbor warga (`ResidentDashboardView`) dan dasbor keahlian/vokasinya (`FarmerDashboardView`).
+  - Menghitung daftar peran sah `userAllowedRoleKeys` secara aman dan mengunci akses agar pengguna hanya dapat memilih peran yang memang tercantum dalam `currentUser.roles`, mencegah eskalasi hak akses (*privilege escalation*).
+  - Menampilkan panel peralihan peran (*Multi-Role Switcher*) secara adaptif baik bagi Super Admin (simulasi 10 peran) maupun bagi pengguna multi-role.
+- [x] 108.2 Gelar & Header Multi-Role Adaptif (`DashboardLayout.tsx`):
+  - Menyesuaikan fungsi `getRoleDisplayName()` untuk menampilkan identitas peran ganda secara presisi (misal: "Petani Rempah & Warga").
+- [x] 108.3 Pengujian & Verifikasi Build:
+  - Pemeriksaan tipe TypeScript (`npm run typecheck` / `tsc --noEmit`) lulus 100% (0 error).
+  - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 16.50 detik).
+
+---
+
+## [Phase 109] - Penajaman Batasan Navigasi & Eliminasi Modul Wisata dari Tampilan Petani
+- [x] 109.1 Pembatasan Visibilitas Navigasi Bilah Samping (`DashboardLayout.tsx`):
+  - Memperbaiki visibilitas item navigasi `tourism` (`Cagar Budaya & Eco-Stay`) dari yang sebelumnya `visible: true` secara umum menjadi kondisional berbasis peran (`visible: isHomestayOperator || isSmartTourismAdmin || isOfficerOrAdmin`).
+  - Memastikan peran `farmer` dan `resident` murni tidak lagi terdistraksi oleh modul pariwisata di sidebar maupun navigasi bawah mobile.
+- [x] 109.2 Pembatasan Peluncur Modul Cepat (`UserEcosystemDashboard.tsx`):
+  - Mengunci akses tombol pintas `Wisata & Eco-Stay` pada *drawer launchpad* hanya untuk operator homestay, admin wisata, dan aparatur desa/admin.
+- [x] 109.3 Pengujian Otomatis & Verifikasi Build:
+  - Pemeriksaan tipe TypeScript (`npm run typecheck` / `tsc --noEmit`) lulus 100% (0 error).
+  - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 17.36 detik).
+
+---
+
+## [Phase 110] - UI/UX Button Color Consistency & Slop Removal Overhaul Across Entire Application
+- [x] 110.1 Penghapusan Warna Ungu pada Tombol & Kontrol Interaktif:
   - Mengganti seluruh tombol, tab filter, dan kontrol aksi interaktif yang sebelumnya menggunakan varian ungu/violet/indigo (`purple-600`, `purple-700`, `indigo-600`, dll) dengan warna standar sistem desain Banda Neira:
     - **Primary Action Buttons**: Deep Navy (`#081D35` hover `#0F2C59` dengan teks Nutmeg Gold `#F4B75E`) untuk tombol aksi utama dan formulir pencatatan.
     - **Secondary & Informational Buttons**: Ocean Blue (`#0284C7` / `blue-600` / `sky-600`) untuk tombol verifikasi, unduh data, API, dan salin hash payload.
     - **Success & Sertifikasi**: Emerald Green (`#059669` / `emerald-600`) untuk sertifikat publik QR dan status validasi.
-- [x] 107.2 Harmonisasi Workspace & Komponen:
-  - `HarvestGradingWorkspace.tsx`:
-    - Mengganti tombol header **"Buat Batch QR"** secara spesifik menjadi **Ocean Blue** (`bg-blue-600 hover:bg-blue-700 text-white`) dengan ikon `<QrCode size={16} className="text-white" />`.
-    - Mengganti tombol submit formulir **"Terbitkan Batch & Buat Label QR"** menjadi `bg-blue-600 hover:bg-blue-700 text-white`.
-    - Mengganti tombol submit tahapan mutu **"+ Catat Tahapan & Hash"** menjadi `bg-blue-600 hover:bg-blue-700 text-white`.
-    - Mengganti tombol cetak stiker & salin hash (`text-blue-600`), serta kartu batch & border ke Ocean Blue.
-  - `KoperasiKasirWorkspace.tsx`: Tombol tab filter aktif "Buku Besar" dan "Riwayat Transaksi" diganti dari `bg-purple-600` menjadi `bg-[#081D35] text-[#F4B75E]`; kartu ringkasan transaksi kasir diselaraskan ke Sapphire Blue.
-  - `AuditTrailWorkspace.tsx`: Tombol inspeksi JSON mutasi dan tombol salin JSON diganti dari indigo menjadi Ocean Blue (`hover:bg-blue-50 text-blue-600 hover:text-blue-800`).
+- [x] 110.2 Harmonisasi Workspace & Komponen:
+  - `HarvestGradingWorkspace.tsx`: Tombol header "Buat Batch QR", submit formulir, dan tombol catat tahapan mutu diselaraskan ke Ocean Blue (`bg-blue-600`).
+  - `KoperasiKasirWorkspace.tsx`: Tab filter aktif diselaraskan ke Deep Navy & Nutmeg Gold.
+  - `AuditTrailWorkspace.tsx`: Tombol inspeksi JSON mutasi dan tombol salin diselaraskan ke Ocean Blue.
   - `BaseRoleDashboardView.tsx`: Tombol ekspor API diselaraskan ke Sky Blue (`border-sky-200 hover:border-sky-600 text-sky-600`).
-  - `futuristic-nav.tsx`: Efek active indicator glow diperbarui dari `to-purple-500` menjadi `to-[#F4B75E]` (Warm Nutmeg Gold).
-  - `DashboardLayout.tsx`: Ikon notifikasi dan badge kategori blockchain diselaraskan ke Ocean Blue.
-  - `QuickLoginModal.tsx`: Badge simulator surveyor dan poktan diselaraskan ke Blue dan Emerald.
-  - Seluruh 10 Dasbor Role (`FarmerGroup`, `Homestay`, `VillageOfficer`, `Admin`, `SmartTourism`, `Surveyor`, `Resident`, `CoopManager`, `Farmer`, `Tourist`): Hex color `#7C3AED` dan `#6366F1` serta `bg-purple-100` diselaraskan menjadi Ocean Blue `#0284C7` dan `bg-sky-100`.
-- [x] 107.3 Pengujian & Verifikasi:
-  - 0 kemunculan tombol dan komponen interaktif ungu di seluruh `frontend/src/` (terverifikasi melalui ripgrep/grep).
-  - `tsc --noEmit`: 0 TypeScript error.
-  - `npm run build`: 100% lolos (2.487 modul ter-bundle, 0 error).
-  - `docker compose exec -T backend pytest tests/test_health.py`: 3/3 passed.
+  - `futuristic-nav.tsx`: Efek active indicator glow diperbarui ke Warm Nutmeg Gold (`#F4B75E`).
+  - Seluruh 10 Dasbor Role: Warna ungu slop dieliminasi 100% menjadi Ocean Blue `#0284C7` dan `bg-sky-100`.
 
 ## [Phase 111] - Workspace Pages Layout Harmonization to Match Dashboard Mobile-First Design
 - [x] 111.1 Rekonstruksi Grid & Tata Letak Mobile-First pada Seluruh Workspace:
@@ -2358,6 +2397,7 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 116.3 Validasi Struktur & Inisialisasi Plan Pengujian:
   - Menjalankan `python3 scripts/testing_support.py validate-config --config targets.json` $\rightarrow$ Status `"valid": true`, `"ready_for_preflight": true`, tanpa pemblokir (*0 blockers*).
   - Menginisialisasi sesi pengujian terisolasi (`python3 scripts/testing_support.py init`) menghasilkan matriks kerja 10 workstreams (`coverage.csv`, `scope.json`, `state.json`).
+
 
 
 

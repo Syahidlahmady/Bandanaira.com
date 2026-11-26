@@ -115,6 +115,10 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
     : []
   const isSuperuser = Boolean(currentUser?.is_superuser)
   const isAdmin = isSuperuser || roles.includes('admin')
+  const isHomestayOperator = roles.includes('homestay_operator') || roles.includes('operator_homestay')
+  const isSmartTourismAdmin = roles.includes('smart_tourism_admin') || roles.includes('admin_wisata')
+  const isOfficerOrAdmin = isAdmin || roles.includes('village_officer')
+  const canAccessTourism = isAdmin || isHomestayOperator || isSmartTourismAdmin || isOfficerOrAdmin
 
   const detectInitialRoleKey = (): RoleKey => {
     if (isSuperuser || roles.includes('admin')) return 'admin'
@@ -129,7 +133,28 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
     return 'resident'
   }
 
-  // State peran aktif: Jika Admin, dapat berganti pratinjau seluruh role. Jika Non-Admin, dikunci sesuai perannya!
+  // Daftar peran yang secara sah dimiliki oleh pengguna ini (multi-role RBAC)
+  const userAllowedRoleKeys: RoleKey[] = React.useMemo(() => {
+    if (isAdmin) {
+      return Object.keys(ROLE_PROFILES) as RoleKey[]
+    }
+    const keys: RoleKey[] = []
+    if (roles.includes('village_officer')) keys.push('village_officer')
+    if (roles.includes('farmer_group_admin') || roles.includes('ketua_kelompok')) keys.push('farmer_group_admin')
+    if (roles.includes('farmer') || roles.includes('petani')) keys.push('farmer')
+    if (roles.includes('coop_manager') || roles.includes('pengelola_koperasi')) keys.push('coop_manager')
+    if (roles.includes('homestay_operator') || roles.includes('operator_homestay')) keys.push('homestay_operator')
+    if (roles.includes('smart_tourism_admin') || roles.includes('admin_wisata')) keys.push('smart_tourism_admin')
+    if (roles.includes('field_surveyor') || roles.includes('surveyor')) keys.push('field_surveyor')
+    if (roles.includes('resident') || keys.length === 0) {
+      if (!keys.includes('resident')) {
+        keys.push('resident')
+      }
+    }
+    return keys
+  }, [isAdmin, roles])
+
+  // State peran aktif: Diinisialisasi peran utama atau prop, pengguna multi-role dapat beralih antar peran sah miliknya
   const [selectedRoleKey, setSelectedRoleKey] = useState<RoleKey>(propActiveRoleKey || detectInitialRoleKey)
 
   useEffect(() => {
@@ -140,8 +165,11 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
     }
   }, [propActiveRoleKey, currentUser])
 
-  // Peran aktif yang efektif: jika bukan Admin, SELALU gunakan role asli pengguna (tidak bisa bypass ke admin)
-  const activeRoleKey: RoleKey = isAdmin ? (propActiveRoleKey || selectedRoleKey) : detectInitialRoleKey()
+  // Peran aktif yang efektif: pastikan aman dan terbatas pada peran sah pengguna
+  const effectiveCandidate: RoleKey = propActiveRoleKey || selectedRoleKey
+  const activeRoleKey: RoleKey = userAllowedRoleKeys.includes(effectiveCandidate)
+    ? effectiveCandidate
+    : detectInitialRoleKey()
   const profile = ROLE_PROFILES[activeRoleKey] || ROLE_PROFILES.resident
 
   const handleVerifySubmit = (e: React.FormEvent) => {
@@ -475,22 +503,28 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
       </div>
 
       {/* =====================================================================
-          4. PEMILIH PERSPEKTIF ROLE (KHUSUS ADMINISTRATOR SISTEM)
+          4. PEMILIH PERSPEKTIF ROLE (ADMINISTRATOR & PENGGUNA MULTI-ROLE)
       ====================================================================== */}
-      {isAdmin && (
+      {userAllowedRoleKeys.length > 1 && (
         <div className="bg-white rounded-xl sm:rounded-2xl p-3.5 sm:p-4 border border-slate-200/80 shadow-xs space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
               <Eye size={14} className="text-[#0284C7] shrink-0" />
-              <span>Kontrol Perspektif Peran Pengguna:</span>
+              <span>
+                {isAdmin
+                  ? 'Kontrol Perspektif Peran Pengguna (Role Simulation Switcher):'
+                  : 'Peralihan Peran & Ruang Kerja Aktif:'}
+              </span>
             </span>
-            <span className="text-[10px] font-semibold text-slate-400 hidden sm:inline">
-              Simulasi 10 peran ekosistem
+            <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 hidden sm:inline">
+              {isAdmin
+                ? 'Simulasi 10 peran ekosistem'
+                : `Anda memiliki ${userAllowedRoleKeys.length} peran aktif dalam ekosistem digital`}
             </span>
           </div>
 
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar touch-pan-x -mx-1 px-1">
-            {(Object.keys(ROLE_PROFILES) as RoleKey[]).map((rKey) => {
+            {userAllowedRoleKeys.map((rKey) => {
               const p = ROLE_PROFILES[rKey]
               const isSelected = activeRoleKey === rKey
               return (
@@ -632,19 +666,21 @@ export const UserEcosystemDashboard: React.FC<UserEcosystemDashboardProps> = ({
               <p className="text-[11px] text-slate-500 mt-0.5">Studio peta kepulauan</p>
             </button>
 
-            {/* 7. Cagar Budaya & Eco-Stay */}
-            <button
-              type="button"
-              onClick={() => {
-                onNavigate('tourism')
-                setShowModuleLaunchpad(false)
-              }}
-              className="p-3.5 rounded-xl bg-slate-50 hover:bg-amber-50/60 border border-slate-200 hover:border-amber-300 text-left transition cursor-pointer group"
-            >
-              <Home size={18} className="text-[#F4B75E] mb-2 group-hover:scale-110 transition-transform" />
-              <p className="text-xs font-bold text-[#081D35]">Wisata &amp; Eco-Stay</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">177 Situs &amp; akomodasi</p>
-            </button>
+            {/* 7. Cagar Budaya & Eco-Stay (Hanya Operator Homestay, Admin Wisata, atau Petugas/Admin) */}
+            {canAccessTourism && (
+              <button
+                type="button"
+                onClick={() => {
+                  onNavigate('tourism')
+                  setShowModuleLaunchpad(false)
+                }}
+                className="p-3.5 rounded-xl bg-slate-50 hover:bg-amber-50/60 border border-slate-200 hover:border-amber-300 text-left transition cursor-pointer group"
+              >
+                <Home size={18} className="text-[#F4B75E] mb-2 group-hover:scale-110 transition-transform" />
+                <p className="text-xs font-bold text-[#081D35]">Wisata &amp; Eco-Stay</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">177 Situs &amp; akomodasi</p>
+              </button>
+            )}
 
             {/* 8. DSS SAW Smart Planner (Hanya untuk Administrator) */}
             {isAdmin && (
