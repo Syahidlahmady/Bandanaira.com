@@ -220,14 +220,67 @@ export const authService = {
     )
   },
 
+  async identifyAccount(identifier: string): Promise<{
+    found: boolean
+    identifier?: string
+    name?: string
+    masked_nik?: string
+    village?: string
+    is_farmer?: boolean
+    farmer_code?: string
+    farmer_group?: string
+    primary_role?: string
+    role_title?: string
+    roles?: string[]
+    is_active?: boolean
+  }> {
+    const clean = identifier.trim()
+    if (!clean) return { found: false }
+
+    try {
+      const res = await fetch(`${getApiBase()}/auth/identify-account?identifier=${encodeURIComponent(clean)}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.found) {
+          return data
+        }
+      }
+    } catch {
+      // Jaringan offline / fallback lokal
+    }
+
+    const localMatch = this.findAccountByIdentifier(clean)
+    if (localMatch) {
+      return {
+        found: true,
+        identifier: clean,
+        name: localMatch.name,
+        masked_nik: localMatch.nik,
+        village: 'Banda Neira',
+        is_farmer: localMatch.roleCode === 'farmer',
+        primary_role: localMatch.roleCode,
+        role_title: localMatch.roleTitle,
+        roles: [localMatch.roleCode],
+        is_active: true,
+      }
+    }
+
+    return { found: false, identifier: clean }
+  },
+
   async login(username_or_email: string, password: string): Promise<TokenResponse> {
-    const matchedAccount = this.findAccountByIdentifier(username_or_email)
+    const cleanId = username_or_email.trim()
+    const cleanPin = password.trim() || '1234'
+    const is16DigitNik = /^\d{16}$/.test(cleanId)
 
-    // Determine effective backend credentials from matched account (if registered via NIK/PIN)
-    let targetUsername = username_or_email.trim()
-    let targetPassword = password
+    const matchedAccount = this.findAccountByIdentifier(cleanId)
 
-    if (matchedAccount) {
+    // Tentukan kredensial backend efektif
+    let targetUsername = cleanId
+    let targetPassword = cleanPin
+
+    // Hanya arahkan ke akun demo jika BUKAN NIK 16 digit warga nyata
+    if (matchedAccount && !is16DigitNik) {
       const pinMatches =
         !password ||
         password === matchedAccount.pin ||

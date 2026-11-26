@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from 'react'
+import React, { FormEvent, useEffect, useState } from 'react'
 import { AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react'
 import pelabuhanBandaNeiraDanGunungBandaApi from '../assets/image.webp'
 import { authService } from '../services/auth'
@@ -333,9 +333,68 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
   const [pin, setPin] = useState('1234')
   const [showPin, setShowPin] = useState(false)
 
-  const detectedAccount = identifier.trim()
-    ? authService.findAccountByIdentifier(identifier)
-    : undefined
+  const [detectedAccount, setDetectedAccount] = useState<{
+    name: string
+    roleTitle: string
+    roleCode: string
+    isFarmer?: boolean
+  } | null>(() => {
+    const initMatch = authService.findAccountByIdentifier('8171010101900001')
+    return initMatch
+      ? {
+          name: initMatch.name,
+          roleTitle: initMatch.roleTitle,
+          roleCode: initMatch.roleCode,
+          isFarmer: initMatch.roleCode === 'farmer',
+        }
+      : null
+  })
+
+  // Deteksi akun dinamis dari database (termasuk warga yang menjadi petani)
+  useEffect(() => {
+    let isCancelled = false
+    const cleanId = identifier.trim()
+
+    if (!cleanId) {
+      setDetectedAccount(null)
+      return
+    }
+
+    // 1. Cek instan dari cache / alias lokal
+    const localMatch = authService.findAccountByIdentifier(cleanId)
+    if (localMatch) {
+      setDetectedAccount({
+        name: localMatch.name,
+        roleTitle: localMatch.roleTitle,
+        roleCode: localMatch.roleCode,
+        isFarmer: localMatch.roleCode === 'farmer',
+      })
+    }
+
+    // 2. Debounce query ke API endpoint /api/v1/auth/identify-account
+    const timer = setTimeout(async () => {
+      try {
+        const info = await authService.identifyAccount(cleanId)
+        if (!isCancelled && info.found && info.name) {
+          setDetectedAccount({
+            name: info.name,
+            roleTitle: info.role_title || 'Warga Terdaftar',
+            roleCode: info.primary_role || 'resident',
+            isFarmer: info.is_farmer,
+          })
+        } else if (!isCancelled && !localMatch) {
+          setDetectedAccount(null)
+        }
+      } catch {
+        // Abaikan error jaringan
+      }
+    }, 250)
+
+    return () => {
+      isCancelled = true
+      clearTimeout(timer)
+    }
+  }, [identifier])
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()

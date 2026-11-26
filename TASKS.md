@@ -2186,15 +2186,73 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% (0 error).
   - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 24.50 detik).
 
+---
 
+## [Phase 106] - Siklus Hidup & Mutasi Kependudukan Antar-Desa (Verifikasi 2 Arah) & Pencatatan Kematian
+- [x] 106.1 Skema Basis Data & Migrasi Alembic (`015_resident_mutation_death.py`):
+  - Menambahkan kolom status kependudukan `residence_status` (`active`, `moving`, `moved_out`, `temporary`, `deceased`) dan atribut pencatatan kematian (`death_date`, `death_place`, `death_cause`, `death_certificate_no`, `death_notes`, `reported_death_at`, `reported_death_by`) pada tabel `residents`.
+  - Membuat tabel `resident_mutations` dengan lifecycle verifikasi dua arah (`pending_destination`, `pending_origin`, `completed`, `rejected`, `cancelled`), atribut desa asal, desa tujuan, alamat baru, RT/RW, no SKPWNI, alasan, serta referensi persetujuan kedua pihak (`origin_approved_by`, `destination_approved_by`).
+- [x] 106.2 API Backend Mutasi Dua Arah & Pelaporan Kematian:
+  - `POST /api/v1/population/mutations`: Inisiasi permohonan mutasi domisili (mendukung inisiasi dari desa asal maupun desa tujuan).
+  - `GET /api/v1/population/mutations`: Daftar permohonan mutasi dengan filter tipe mutasi (`incoming`, `outgoing`) dan filter yurisdiksi desa.
+  - `POST /api/v1/population/mutations/{id}/approve`: Persetujuan verifikasi mutasi oleh desa terkait. Begitu kedua desa menyetujui, status menjadi `completed`, data domisili resident diperbarui ke desa tujuan, dan akun login pengguna (`users.village`) otomatis dipindahkan.
+  - `POST /api/v1/population/mutations/{id}/reject`: Penolakan permohonan mutasi dengan alasan resmi; memulihkan status kependudukan warga ke aktif di desa asal.
+  - `POST /api/v1/population/residents/{id}/report-death`: Pencatatan peristiwa kematian warga, pengisian akta kematian, dan penonaktifan otomatis akun portal warga (`users.is_active = False`) demi keamanan identitas.
+  - `POST /api/v1/population/residents/{id}/revoke-death`: Pembatalan status kematian (koreksi administratif) dan pengaktifan kembali akun warga.
+- [x] 106.3 Antarmuka Pengguna Kependudukan (`ResidentsWorkspace.tsx`):
+  - Tab navigasi antarmuka: **Data Penduduk & Kematian** vs **Mutasi Antar-Desa (Verifikasi 2 Arah)**.
+  - Filter status kependudukan baru: Tetap Aktif, Sedang Mutasi, Meninggal (Wafat), Non-Permanen.
+  - Badge penanda status kependudukan di tabel warga (`WAFAT`, `MUTASI`, `TETAP AKTIF`).
+  - Tindakan pada baris warga: tombol **Mutasi Antar-Desa**, **Catat Kematian**, dan **Koreksi Wafat**.
+  - Tampilan manajemen mutasi lengkap dengan 4 kartu metrik (Total, Pindah Datang, Pindah Keluar, Menunggu Verifikasi), filter sub-tab, dan tabel daftar mutasi.
+  - Modal interaktif inisiasi mutasi antar desa, modal verifikasi penerimaan (dengan penetapan RT/RW baru), modal penolakan, dan modal buku registrasi kematian desa.
+- [x] 106.4 Pengujian Otomatis & Verifikasi Build:
+  - Seluruh pengujian unit backend (`test_population.py`, `test_auth.py`) lulus 100% (31 passed).
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% (0 error).
+  - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 21.08 detik).
 
+---
 
+## [Phase 107] - Integrasi Dinamis Login Warga Petani Berbasis NIK & Multi-Role Additive RBAC
+- [x] 107.1 Integrasi & Sinkronisasi Peran Petani di Backend (`farmers/router.py`):
+  - Saat warga didaftarkan oleh Poktan / Petugas Desa menjadi anggota petani (`POST /api/v1/farmers` dengan `resident_id`), sistem secara otomatis mencari/membuat akun `User` dengan `username = resident.nik`.
+  - Mengaitkan `farmer.user_id = user.id` dan menyematkan peran `ROLE_FARMER` (`farmer`) ke dalam `user.roles` berdampingan dengan `ROLE_RESIDENT`.
+  - Pada fungsi `ensure_default_farmers_seeded`, sinkronisasi otomatis warga berprofesi petani/pekebun juga menautkan `user_id` dan menyematkan peran `ROLE_FARMER`.
+- [x] 107.2 Self-Healing Role Sync & Endpoint Deteksi Akun (`auth/router.py`):
+  - `POST /api/v1/auth/login`: Menyinkronkan peran `ROLE_FARMER` secara *self-healing* ketika warga yang terdaftar di tabel `farmers` login menggunakan 16 digit NIK dan PIN, sehingga token JWT memuat hak akses ganda: `roles: ['resident', 'farmer']`.
+  - `GET /api/v1/auth/identify-account`: Endpoint deteksi akun real-time berdasarkan 16 digit NIK atau username, mengembalikan masked NIK, nama lengkap warga, desa, status keanggotaan petani, dan nama kelompok tani tanpa membocorkan PII privat.
+- [x] 107.3 Antarmuka Login Dinamis & Bebas Mock Statis (`LoginSection.tsx` & `services/auth.ts`):
+  - Menghilangkan ketergantungan pencocokan NIK ke mock array statis `DEFAULT_PROJECT_ACCOUNTS` untuk NIK 16 digit warga nyata.
+  - Form input NIK portal satu pintu mendeteksi identitas warga/petani secara real-time via debounced API query (`identifyAccount`), menampilkan badge konfirmasi nama dan peran secara dinamis.
+  - Pengiriman kredensial NIK 16 digit dan PIN langsung ditujukan ke backend `/api/v1/auth/login`.
+- [x] 107.4 Pengujian Otomatis & Verifikasi Build:
+  - Test case `test_identify_account_and_farmer_login_with_nik` di `test_auth.py` lulus 100%.
+  - Seluruh pengujian `test_auth.py` dan `test_farmers_and_farms.py` lulus 100% (26 passed).
+  - Pemeriksaan tipe TypeScript (`tsc --noEmit`) lulus 100% (0 error).
+  - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 18.81 detik).---
 
+## [Phase 108] - Navigasi Multi-Role & Switcher Perspektif Antar Peran Aktif Pengguna
+- [x] 108.1 Switcher Perspektif Peran Multi-Role Dinamis (`UserEcosystemDashboard.tsx`):
+  - Memungkinkan pengguna non-admin yang memegang peran ganda (misal warga desa yang menjadi petani: `['resident', 'farmer']`, atau warga yang menjadi operator homestay: `['resident', 'homestay_operator']`) untuk beralih perspektif dasbor secara instan antara dasbor warga (`ResidentDashboardView`) dan dasbor keahlian/vokasinya (`FarmerDashboardView`).
+  - Menghitung daftar peran sah `userAllowedRoleKeys` secara aman dan mengunci akses agar pengguna hanya dapat memilih peran yang memang tercantum dalam `currentUser.roles`, mencegah eskalasi hak akses (*privilege escalation*).
+  - Menampilkan panel peralihan peran (*Multi-Role Switcher*) secara adaptif baik bagi Super Admin (simulasi 10 peran) maupun bagi pengguna multi-role.
+- [x] 108.2 Gelar & Header Multi-Role Adaptif (`DashboardLayout.tsx`):
+  - Menyesuaikan fungsi `getRoleDisplayName()` untuk menampilkan identitas peran ganda secara presisi (misal: "Petani Rempah & Warga").
+- [x] 108.3 Pengujian & Verifikasi Build:
+  - Pemeriksaan tipe TypeScript (`npm run typecheck` / `tsc --noEmit`) lulus 100% (0 error).
+  - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 16.50 detik).
 
+---
 
-
-
-
+## [Phase 109] - Penajaman Batasan Navigasi & Eliminasi Modul Wisata dari Tampilan Petani
+- [x] 109.1 Pembatasan Visibilitas Navigasi Bilah Samping (`DashboardLayout.tsx`):
+  - Memperbaiki visibilitas item navigasi `tourism` (`Cagar Budaya & Eco-Stay`) dari yang sebelumnya `visible: true` secara umum menjadi kondisional berbasis peran (`visible: isHomestayOperator || isSmartTourismAdmin || isOfficerOrAdmin`).
+  - Memastikan peran `farmer` dan `resident` murni tidak lagi terdistraksi oleh modul pariwisata di sidebar maupun navigasi bawah mobile.
+- [x] 109.2 Pembatasan Peluncur Modul Cepat (`UserEcosystemDashboard.tsx`):
+  - Mengunci akses tombol pintas `Wisata & Eco-Stay` pada *drawer launchpad* hanya untuk operator homestay, admin wisata, dan aparatur desa/admin.
+- [x] 109.3 Pengujian Otomatis & Verifikasi Build:
+  - Pemeriksaan tipe TypeScript (`npm run typecheck` / `tsc --noEmit`) lulus 100% (0 error).
+  - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 17.36 detik).
 
 
 
