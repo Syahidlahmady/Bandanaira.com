@@ -2276,8 +2276,9 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] 110.3 Restriksi Antarmuka Login & Quick Login Simulator (`LoginSection.tsx` & `QuickLoginModal.tsx`):
   - Pembatasan ketat input NIK 16 digit angka (`inputMode="numeric"`, `maxLength={16}`, filter regex `\D`) dan PIN 6 digit angka (`maxLength={6}`).
   - Validasi ketat format NIK (16 angka) dan PIN (6 angka) sebelum submit.
-  - Mode toggle: Mode Warga (Default NIK 16 digit & PIN 6 digit) dan Mode Akses Khusus Petugas/Admin (kredensial teks bebas untuk Admin & Mitra pariwisata universal).
-  - Penyegaran daftar demo di `QuickLoginModal`: 10 aktor sesuai mandat pengguna, tab filter per kategori peran (Kades, Poktan, Petani, Warga, Wisata), dan tombol tersembunyi `🔐 Login Khusus Admin` untuk administrator.
+  - Mode toggle dirancang khusus hanya untuk mitra pariwisata: Mode Warga (Default NIK 16 digit & PIN 6 digit) dan Mode Mitra Pariwisata (kredensial teks bebas untuk mitra homestay dan wisata non-NIK).
+  - Penghapusan total label, tombol, dan referensi kata "Admin" dari antarmuka login publik dan footer Quick Login modal (Administrator sepenuhnya tersembunyi / *hidden* dari layar login).
+  - Penyegaran daftar demo di `QuickLoginModal`: 10 aktor publik sesuai mandat pengguna dan tab filter per kategori peran (Kades, Poktan, Petani, Warga, Wisata).
 - [x] 110.4 Form & Tampilan Pemandu Wisata Berbasis NIK (`tourism.ts` & `TourismEcoStayWorkspace.tsx`):
   - Integrasi input 16 digit NIK warga terdaftar pada modal tambah/edit pemandu wisata.
   - Tampilan indikator panjang digit dan badge NIK warga pada kartu publik dan tabel CMS admin pemandu wisata.
