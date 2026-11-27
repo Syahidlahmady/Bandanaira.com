@@ -44,6 +44,7 @@ async def test_setor_komoditas_balance(client: AsyncClient):
     # 10 kg * Rp 75,000 = Rp 750,000
     res = await client.post(
         "/api/v1/koperasi/transaksi/setor-komoditas",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "nik": nik,
             "commodity_type": "pala_super",
@@ -60,7 +61,10 @@ async def test_setor_komoditas_balance(client: AsyncClient):
     assert data["receipt_hash"].startswith("0x")
 
     # 2. Cek Profil Koperasi Warga
-    res_prof = await client.get(f"/api/v1/koperasi/warga/{nik}/profil")
+    res_prof = await client.get(
+        f"/api/v1/koperasi/warga/{nik}/profil",
+        headers={"Authorization": f"Bearer {token}"},
+    )
     assert res_prof.status_code == 200
     prof = res_prof.json()
     assert prof["coop_balance_rp"] == 750000.0
@@ -79,6 +83,7 @@ async def test_setor_komoditas_water_quota(client: AsyncClient):
     # Fuli = Rp 95,000 / kg. Air = Rp 500 / liter -> 95,000 / 500 = 190.0 Liter air
     res = await client.post(
         "/api/v1/koperasi/transaksi/setor-komoditas",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "nik": nik,
             "commodity_type": "fuli_merah",
@@ -91,7 +96,10 @@ async def test_setor_komoditas_water_quota(client: AsyncClient):
     data = res.json()
     assert data["water_quota_impact_ltr"] == 190.0
 
-    res_prof = await client.get(f"/api/v1/koperasi/warga/{nik}/profil")
+    res_prof = await client.get(
+        f"/api/v1/koperasi/warga/{nik}/profil",
+        headers={"Authorization": f"Bearer {token}"},
+    )
     prof = res_prof.json()
     # Awal 20.0 + 190.0 = 210.0 Liter
     assert prof["clean_water_quota_ltr"] == 210.0
@@ -109,6 +117,7 @@ async def test_setor_sampah_plastik_air_bersih(client: AsyncClient):
     # 3 kg -> 30 Liter air bersih, 30 poin
     res = await client.post(
         "/api/v1/koperasi/transaksi/setor-sampah",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "nik": nik,
             "waste_type": "botol_plastik_pet",
@@ -124,7 +133,10 @@ async def test_setor_sampah_plastik_air_bersih(client: AsyncClient):
     assert data["water_quota_impact_ltr"] == 30.0
 
     # Cek Akun Warga
-    res_prof = await client.get(f"/api/v1/koperasi/warga/{nik}/profil")
+    res_prof = await client.get(
+        f"/api/v1/koperasi/warga/{nik}/profil",
+        headers={"Authorization": f"Bearer {token}"},
+    )
     prof = res_prof.json()
     assert prof["plastic_points"] == 30
     # Awal 20 + 30 = 50 liter
@@ -142,6 +154,7 @@ async def test_tebus_air_dispenser_happy_path_and_exhaustion(client: AsyncClient
     # Tebus 15 Liter di Dispenser RO Lonthoir
     res = await client.post(
         "/api/v1/koperasi/tebus-air",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "nik": nik,
             "liters_requested": 15.0,
@@ -159,6 +172,7 @@ async def test_tebus_air_dispenser_happy_path_and_exhaustion(client: AsyncClient
     # Coba tebus 10 Liter padahal sisa 5 Liter -> Harusnya gagal 400
     res_fail = await client.post(
         "/api/v1/koperasi/tebus-air",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "nik": nik,
             "liters_requested": 10.0,
@@ -178,6 +192,7 @@ async def test_koperasi_ledger_and_recap(client: AsyncClient):
     # Setor cakalang 5kg = Rp 125,000
     res1 = await client.post(
         "/api/v1/koperasi/transaksi/setor-komoditas",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "nik": nik,
             "commodity_type": "ikan_cakalang",
@@ -190,6 +205,7 @@ async def test_koperasi_ledger_and_recap(client: AsyncClient):
     # Setor 2kg botol plastik = 20L air, 20 poin
     res2 = await client.post(
         "/api/v1/koperasi/transaksi/setor-sampah",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "nik": nik,
             "waste_type": "botol_plastik_pet",
@@ -200,13 +216,19 @@ async def test_koperasi_ledger_and_recap(client: AsyncClient):
     assert res2.status_code == 201
 
     # Cek riwayat buku besar (ledger)
-    res_ledger = await client.get(f"/api/v1/koperasi/transaksi?nik={nik}")
+    res_ledger = await client.get(
+        f"/api/v1/koperasi/transaksi?nik={nik}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
     assert res_ledger.status_code == 200
     items = res_ledger.json()
     assert len(items) == 2
 
     # Cek Rekapitulasi Ekosistem Pulau
-    res_recap = await client.get("/api/v1/koperasi/rekapitulasi")
+    res_recap = await client.get(
+        "/api/v1/koperasi/rekapitulasi",
+        headers={"Authorization": f"Bearer {token}"},
+    )
     assert res_recap.status_code == 200
     recap = res_recap.json()
     assert recap["total_transactions_count"] >= 2
@@ -216,9 +238,11 @@ async def test_koperasi_ledger_and_recap(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_koperasi_invalid_resident(client: AsyncClient):
+    token = await get_admin_token(client)
     # NIK yang tidak terdaftar
     res = await client.post(
         "/api/v1/koperasi/transaksi/setor-komoditas",
+        headers={"Authorization": f"Bearer {token}"},
         json={
             "nik": "9999999999999999",
             "commodity_type": "pala_super",
