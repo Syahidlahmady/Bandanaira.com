@@ -329,9 +329,11 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
   loading,
   error,
 }) => {
+  const [isSpecialAccess, setIsSpecialAccess] = useState(false)
   const [identifier, setIdentifier] = useState('8171010101900001')
-  const [pin, setPin] = useState('1234')
+  const [pin, setPin] = useState('123456')
   const [showPin, setShowPin] = useState(false)
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   const [detectedAccount, setDetectedAccount] = useState<{
     name: string
@@ -396,10 +398,45 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
     }
   }, [identifier])
 
+  const handleToggleMode = () => {
+    const nextMode = !isSpecialAccess
+    setIsSpecialAccess(nextMode)
+    setValidationError(null)
+    if (nextMode) {
+      // Mode Akses Khusus
+      setIdentifier('operator_homestay')
+      setPin('Homestay123!')
+    } else {
+      // Mode NIK Warga
+      setIdentifier('8171010101900001')
+      setPin('123456')
+    }
+  }
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setValidationError(null)
     const cleanId = identifier.trim()
-    const cleanPin = pin.trim() || '1234'
+    const cleanPin = pin.trim()
+
+    if (!isSpecialAccess) {
+      // Strict NIK 16 digit validation
+      if (!/^\d{16}$/.test(cleanId)) {
+        setValidationError('NIK wajib berupa tepat 16 digit angka tertera di KTP.')
+        return
+      }
+      // Strict PIN 6 digit validation
+      if (!/^\d{6}$/.test(cleanPin)) {
+        setValidationError('PIN pengaman warga wajib berupa 6 digit angka.')
+        return
+      }
+    } else {
+      if (!cleanId || !cleanPin) {
+        setValidationError('Username / ID Akun dan kata sandi wajib diisi.')
+        return
+      }
+    }
+
     setUsername(cleanId)
     setPassword(cleanPin)
 
@@ -423,29 +460,54 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
           <ArrowLeft size={16} />
           <span>Kembali ke Beranda</span>
         </button>
+
+        <button
+          type="button"
+          onClick={handleToggleMode}
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            isSpecialAccess
+              ? 'bg-amber-100 text-amber-800 border border-amber-300'
+              : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
+          }`}
+        >
+          <span>{isSpecialAccess ? '👤 Beralih ke Login NIK Warga' : '🏨 Akses Mitra Pariwisata'}</span>
+        </button>
       </div>
 
       <div className="flex flex-col items-start gap-5 sm:gap-7 px-0 py-2 sm:py-6 relative self-stretch w-full flex-1">
         {/* Header Title */}
         <header className="flex flex-col items-start gap-1.5 sm:gap-2.5 relative self-stretch w-full">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-            <p className="font-semibold text-amber-600 text-[10px] sm:text-[11px] tracking-[1.5px] uppercase">
-              PORTAL WARGA &amp; EKOSISTEM BANDA
-            </p>
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${isSpecialAccess ? 'bg-sky-500' : 'bg-amber-500'} animate-pulse`} />
+              <p className={`font-semibold ${isSpecialAccess ? 'text-sky-600' : 'text-amber-600'} text-[10px] sm:text-[11px] tracking-[1.5px] uppercase`}>
+                {isSpecialAccess ? 'PORTAL MITRA PARIWISATA' : 'PORTAL WARGA & EKOSISTEM BANDA'}
+              </p>
+            </div>
+
+            {/* Mobile Mode Switch Button */}
+            <button
+              type="button"
+              onClick={handleToggleMode}
+              className="lg:hidden text-[11px] font-bold text-amber-700 underline"
+            >
+              {isSpecialAccess ? 'Mode Warga' : 'Mitra Wisata'}
+            </button>
           </div>
           <h1 className="font-bold text-[#081D35] text-2xl sm:text-3xl lg:text-[34px] tracking-tight leading-tight">
-            Selamat Datang Kembali
+            {isSpecialAccess ? 'Portal Mitra Pariwisata' : 'Selamat Datang Kembali'}
           </h1>
           <p className="font-normal text-[#627085] text-xs sm:text-sm leading-relaxed">
-            Masukkan 16 digit NIK atau ID akun beserta PIN pengaman Anda. Hak akses peran terverifikasi otomatis.
+            {isSpecialAccess
+              ? 'Login resmi pengelola homestay, akomodasi eco-stay, dan pemandu wisata dengan ID akun terdaftar.'
+              : 'Masukkan 16 digit NIK terdaftar serta 6 digit PIN pengaman Anda. Akses peran diverifikasi otomatis.'}
           </p>
         </header>
 
-        {error && (
+        {(error || validationError) && (
           <div className="w-full flex items-center gap-2.5 rounded-xl border border-rose-300 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
             <AlertCircle size={18} className="shrink-0" />
-            <span>{error}</span>
+            <span>{validationError || error}</span>
           </div>
         )}
 
@@ -453,13 +515,13 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
           className="flex flex-col items-start gap-4 sm:gap-5 relative self-stretch w-full"
           onSubmit={handleSubmit}
         >
-          {/* NIK Input */}
+          {/* NIK / Username Input */}
           <div className="flex flex-col items-start gap-1.5 relative self-stretch w-full">
             <label
               htmlFor="nik"
               className="font-semibold text-[#24364f] text-xs sm:text-[13px] leading-snug"
             >
-              16 Digit Nomor Induk Kependudukan (NIK) / ID Akun
+              {isSpecialAccess ? 'ID Akun / Username Mitra' : 'Nomor Induk Kependudukan (NIK 16 Digit)'}
             </label>
             <div className="flex h-12 sm:h-[54px] items-center gap-3 px-3.5 sm:px-4 relative self-stretch w-full bg-slate-50 rounded-xl overflow-hidden border border-slate-200 focus-within:border-[#081D35] focus-within:ring-1 focus-within:ring-[#081D35] focus-within:bg-white transition-colors">
               <FieldIconSvg type="nik" />
@@ -467,15 +529,30 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
                 id="nik"
                 name="nik"
                 type="text"
-                inputMode="numeric"
+                inputMode={isSpecialAccess ? 'text' : 'numeric'}
+                maxLength={isSpecialAccess ? 50 : 16}
                 autoComplete="username"
                 value={identifier}
-                onChange={(event) => setIdentifier(event.target.value)}
-                placeholder="XXXX-XXXX-XXXX-XXXX"
+                onChange={(event) => {
+                  setValidationError(null)
+                  if (!isSpecialAccess) {
+                    // Strict numeric filter max 16 digits
+                    const digitsOnly = event.target.value.replace(/\D/g, '').slice(0, 16)
+                    setIdentifier(digitsOnly)
+                  } else {
+                    setIdentifier(event.target.value)
+                  }
+                }}
+                placeholder={isSpecialAccess ? 'ID Akun / Username Mitra' : '8171010101900001'}
                 aria-describedby="nik-help"
                 required
                 className="flex-1 min-w-0 bg-transparent border-0 outline-none font-normal text-[#081D35] text-base sm:text-lg tracking-normal sm:tracking-[1.10px] placeholder:text-[#627085]"
               />
+              {!isSpecialAccess && (
+                <span className="text-[11px] font-mono text-slate-400 font-bold">
+                  {identifier.length}/16
+                </span>
+              )}
             </div>
             {detectedAccount ? (
               <p
@@ -492,19 +569,21 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
                 id="nik-help"
                 className="font-normal text-[#627085] text-[11px] sm:text-xs leading-tight"
               >
-                Masukkan 16 digit NIK tertera di KTP atau ID akun resmi terdaftar.
+                {isSpecialAccess
+                  ? 'Gunakan ID akun terdaftar bagi pengelola homestay atau pemandu wisata Banda.'
+                  : 'Masukkan 16 digit angka NIK tertera di KTP warga kepulauan Banda.'}
               </p>
             )}
           </div>
 
-          {/* PIN Input */}
+          {/* PIN / Password Input */}
           <div className="flex flex-col items-start gap-1.5 relative self-stretch w-full">
             <div className="flex items-center justify-between w-full">
               <label
                 htmlFor="pin"
                 className="font-semibold text-[#24364f] text-xs sm:text-[13px] leading-snug"
               >
-                PIN Pengaman (4 Digit)
+                {isSpecialAccess ? 'Kata Sandi (Password)' : 'PIN Pengaman Warga (6 Digit Angka)'}
               </label>
               <button
                 type="button"
@@ -524,18 +603,32 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
                 id="pin"
                 name="pin"
                 type={showPin ? 'text' : 'password'}
-                inputMode="numeric"
-                maxLength={6}
+                inputMode={isSpecialAccess ? 'text' : 'numeric'}
+                maxLength={isSpecialAccess ? 64 : 6}
                 autoComplete="current-password"
                 value={pin}
-                onChange={(event) => setPin(event.target.value)}
-                placeholder="• • • •"
+                onChange={(event) => {
+                  setValidationError(null)
+                  if (!isSpecialAccess) {
+                    // Strict numeric filter max 6 digits
+                    const digitsOnly = event.target.value.replace(/\D/g, '').slice(0, 6)
+                    setPin(digitsOnly)
+                  } else {
+                    setPin(event.target.value)
+                  }
+                }}
+                placeholder={isSpecialAccess ? '••••••••' : '• • • • • •'}
                 required
                 className="flex-1 min-w-0 bg-transparent border-0 outline-none font-normal text-[#081D35] text-base sm:text-lg tracking-wider placeholder:text-[#627085]"
               />
+              {!isSpecialAccess && (
+                <span className="text-[11px] font-mono text-slate-400 font-bold">
+                  {pin.length}/6
+                </span>
+              )}
               <button
                 type="button"
-                aria-label={showPin ? 'Sembunyikan PIN' : 'Tampilkan PIN'}
+                aria-label={showPin ? 'Sembunyikan' : 'Tampilkan'}
                 aria-pressed={showPin}
                 onClick={() => setShowPin((visible) => !visible)}
                 className="w-11 h-11 -mr-2 flex items-center justify-center shrink-0 text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
@@ -551,7 +644,7 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
             disabled={loading}
             className="flex h-12 sm:h-[54px] items-center justify-center gap-2.5 px-5 relative self-stretch w-full bg-[#081D35] hover:bg-[#0c2a4d] active:bg-[#061628] text-white rounded-xl font-bold text-base sm:text-lg shadow-md hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer disabled:opacity-60 mt-1 border border-[#F4B75E]/30"
           >
-            <span>{loading ? 'Memverifikasi...' : 'Masuk ke Portal Warga'}</span>
+            <span>{loading ? 'Memverifikasi...' : isSpecialAccess ? 'Masuk Sebagai Mitra' : 'Masuk ke Portal Warga'}</span>
             <svg
               className="w-4 h-4 sm:w-5 sm:h-5 text-[#F4B75E] shrink-0"
               viewBox="0 0 18 18"
@@ -571,7 +664,9 @@ export const AccountLoginSection: React.FC<LoginSectionProps> = ({
         </form>
 
         <p className="w-full py-2.5 px-3 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] sm:text-xs text-center text-[#627085] leading-relaxed">
-          Akun kependudukan terintegrasi NIK diterbitkan secara resmi melalui Kantor Desa.
+          {isSpecialAccess
+            ? 'Akses mitra pariwisata dilindungi audit log keamanan dan pembatasan peran berbasis RBAC.'
+            : 'Akun kependudukan terintegrasi NIK diterbitkan secara resmi melalui Kantor Desa dengan PIN 6 digit.'}
         </p>
 
         {/* Trust Badges */}

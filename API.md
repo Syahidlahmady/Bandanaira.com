@@ -148,7 +148,7 @@ RESTful API specification for **Banda Digital Ecosystem**.
 | `GET` | `/api/v1/tourism/bookings/{booking_code}` | Public | Lookup booking details and status by unique code |
 | `GET` | `/api/v1/tourism/heritage-catalog` | Public | 177 Cagar Budaya catalog with historical narratives, photo galleries, and audio guide MP3 stream links |
 | `GET` | `/api/v1/tourism/guides` | Public | List licensed Banda tour guides with island and verified filters |
-| `POST` | `/api/v1/tourism/guides` | `admin`, `village_officer`, `smart_tourism_admin` | Register licensed tour guide profile with specialties, languages, and daily fee |
+| `POST` | `/api/v1/tourism/guides` | `admin`, `village_officer`, `smart_tourism_admin` | Register licensed tour guide profile linked to 16-digit registered resident NIK |
 | `PUT` | `/api/v1/tourism/guides/{id}` | `admin`, `village_officer`, `smart_tourism_admin` | Update tour guide details, daily fee, or HPI verification status |
 | `DELETE` | `/api/v1/tourism/guides/{id}` | `admin`, `village_officer`, `smart_tourism_admin` | Delete tour guide record |
 | `GET` | `/api/v1/tourism/community-contents` | Public | List curated Bank Konten Batch 1 & Pokdarwis/UMKM workshop works with `content_type`, `priority_category`, `island`, and `only_published` filters |

@@ -19,7 +19,7 @@ async def test_create_resident_happy_path(client: AsyncClient):
         "/api/v1/population/residents",
         headers={"Authorization": f"Bearer {token}"},
         json={
-            "nik": "8171010101900001",
+            "nik": "8171010101990099",
             "full_name": "Ahmad Baadilla",
             "gender": "L",
             "birth_place": "Banda Neira",
@@ -34,7 +34,7 @@ async def test_create_resident_happy_path(client: AsyncClient):
     )
     assert res.status_code == 201
     data = res.json()
-    assert data["nik"] == "8171010101900001"
+    assert data["nik"] == "8171010101990099"
     assert data["full_name"] == "Ahmad Baadilla"
     assert data["verification_status"] == "pending"
     assert data["village"] == "Banda Neira"
@@ -60,7 +60,7 @@ async def test_create_resident_invalid_nik_and_gender(client: AsyncClient):
         "/api/v1/population/residents",
         headers={"Authorization": f"Bearer {token}"},
         json={
-            "nik": "8171010101900002",
+            "nik": "8171010101909002",
             "full_name": "Salah Gender",
             "gender": "X",
         },
@@ -72,7 +72,7 @@ async def test_create_resident_invalid_nik_and_gender(client: AsyncClient):
 async def test_duplicate_nik_rejected(client: AsyncClient):
     token = await get_admin_token(client)
     payload = {
-        "nik": "8171010101900003",
+        "nik": "8171010101909003",
         "full_name": "Penduduk Asli",
         "gender": "P",
         "village": "Banda Neira",
@@ -309,7 +309,7 @@ async def test_village_officer_territorial_scoping_residents_and_stats(client: A
     # Petugas Desa Lonthoir
     petugas_res = await client.post(
         "/api/v1/auth/login",
-        json={"username_or_email": "petugas", "password": "Petugas123!"},
+        json={"username_or_email": "8171010101850001", "password": "123456"},
     )
     petugas_token = petugas_res.json()["access_token"]
 

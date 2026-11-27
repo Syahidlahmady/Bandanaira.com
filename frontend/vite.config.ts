@@ -8,6 +8,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@capacitor/geolocation': fileURLToPath(new URL('./src/types/capacitor-fallback.ts', import.meta.url)),
+      '@capacitor/network': fileURLToPath(new URL('./src/types/capacitor-fallback.ts', import.meta.url)),
     },
   },
   server: {

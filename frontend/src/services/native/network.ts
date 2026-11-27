@@ -29,7 +29,7 @@ export async function getNetworkStatus(): Promise<NetworkStatus> {
  */
 export function onNetworkStatusChange(callback: (status: NetworkStatus) => void): () => void {
   try {
-    const handlePromise = Network.addListener('networkStatusChange', (status) => {
+    const handlePromise = Network.addListener('networkStatusChange', (status: { connected: boolean; connectionType: string }) => {
       callback({
         connected: status.connected,
         connectionType: status.connectionType
@@ -37,7 +37,7 @@ export function onNetworkStatusChange(callback: (status: NetworkStatus) => void)
     });
 
     return () => {
-      handlePromise.then(h => h.remove());
+      handlePromise.then((h: { remove: () => Promise<void> }) => h.remove());
     };
   } catch {
     const onlineHandler = () => callback({ connected: true, connectionType: 'browser' });

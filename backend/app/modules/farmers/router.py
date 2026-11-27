@@ -34,16 +34,13 @@ router = APIRouter(prefix="/farmers", tags=["Farmers Management"])
 FARMER_MANAGERS = require_roles(ROLE_ADMIN, ROLE_VILLAGE_OFFICER, ROLE_FARMER_GROUP_ADMIN)
 
 _DEFAULT_GROUPS = [
-    ("Kelompok Tani Pala Lonthoir Subur", "Daud Walalayo", "Lonthoir", "081234000001"),
-    ("Kelompok Tani Rempah Banda Neira Makmur", "Ibrahim Baadilla", "Banda Neira", "081234000002"),
-    ("Kelompok Tani Selamon Bersatu", "Hasan Latarissa", "Selamon", "081234000003"),
+    ("Poktan Pala Lonthoir Mandiri", "Hasan Baadilla", "Lonthoir", "081234560011"),
+    ("Poktan Rempah Dwiwarna Sejahtera", "Ibrahim Latarisa", "Dwiwarna", "081234560012"),
 ]
 
 _DEFAULT_FARMERS = [
-    ("BN-PKT-001", "Usman Alkatiri", "081240111222", "Kelompok Tani Pala Lonthoir Subur"),
-    ("BN-PKT-002", "Daud Walalayo", "081240111333", "Kelompok Tani Pala Lonthoir Subur"),
-    ("BN-PKT-003", "Fatimah Patty", "081240111444", "Kelompok Tani Rempah Banda Neira Makmur"),
-    ("BN-PKT-004", "Ali Renuat", "081240111555", "Kelompok Tani Selamon Bersatu"),
+    ("PTR-LNT-001", "Ali Wailissa", "081234560021", "Poktan Pala Lonthoir Mandiri"),
+    ("PTR-DWR-001", "Ruslan Rumra", "081234560022", "Poktan Rempah Dwiwarna Sejahtera"),
 ]
 
 

@@ -103,6 +103,9 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 - [x] **Phase 116: Security Testing Agent Setup & Target Configuration (targets.json)**
 - [x] **Phase 117: Security Audit Execution & Vulnerability Report Generation via Testing Agent (pengujian-V1.md)**
 - [x] **Phase 118: Multi-Layered Security Remediation (Defense in Depth & 9 Vulnerabilities Patched)**
+- [x] **Phase 119: Dedicated Mobile Native App Shell (Capacitor Android), Health Facilities Directory, & CI/CD GitHub Actions Automated APK Build**
+- [x] **Phase 120: Restriksi Login NIK 16 Digit & PIN 6 Digit, Penyegaran Aktor Demo Mandat Pengguna, dan Penautan NIK Pemandu Wisata**
+- [x] **Phase 121: Pembersihan Tuntas Data Mock-up Lama yang Salah & Integritas Data GIS**
 ---
 
 ## Detailed Task Checklist
@@ -2488,6 +2491,49 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
 
 
 
+---
+
+## [Phase 120] - Restriksi Login NIK 16 Digit & PIN 6 Digit, Penyegaran Aktor Demo Mandat Pengguna, dan Penautan NIK Pemandu Wisata
+- [x] 120.1 Skema & Penautan Pemandu Wisata ke NIK Warga Terdaftar (`tourism` backend & database):
+  - Membuat migrasi Alembic `016_tour_guide_resident_link.py` yang menambahkan kolom `resident_id` (UUID foreign key ke `residents.id`) dan `resident_nik` (`VARCHAR(16)`) pada tabel `tour_guides`.
+  - Memperbarui model SQLAlchemy `TourGuide` dan skema Pydantic `TourGuideCreateInput`, `TourGuideUpdateInput`, dan `TourGuideItemResponse`.
+  - Mengharuskan pendaftaran pemandu wisata (`POST /api/v1/tourism/guides`) menyertakan 16 digit NIK warga aktif yang terdaftar di database kependudukan Banda Neira, menolak NIK yang tidak terdaftar (400) atau berstatus meninggal dunia (400).
+- [x] 120.2 Penyegaran & Pembersihan Seed Data Aktor Sistem (`backend/app/modules/auth/seed.py`):
+  - Tepat **1 Administrator**: `admin` / `Admin123!` (hidden dari daftar demo publik, login khusus non-NIK).
+  - **2 Kepala Desa**: Lonthoir (`8171010101850001` / PIN `123456`) & Dwiwarna (`8171010101850002` / PIN `123456`).
+  - **2 Ketua Poktan**: Lonthoir (`8171010101800001` / PIN `123456`) & Dwiwarna (`8171010101800002` / PIN `123456`).
+  - **2 Petani Rempah**: Lonthoir (`8171010101900001` / PIN `123456`) & Dwiwarna (`8171010101900002` / PIN `123456`).
+  - **2 Warga Sipil**: Lonthoir (`8171010101950001` / PIN `123456`) & Dwiwarna (`8171010101950002` / PIN `123456`).
+  - **2 Universal Pariwisata**: Admin Homestay (`operator_homestay` / `Homestay123!`) & Admin Wisata (`admin_wisata` / `Wisata123!`).
+- [x] 120.3 Restriksi Antarmuka Login & Quick Login Simulator (`LoginSection.tsx` & `QuickLoginModal.tsx`):
+  - Pembatasan ketat input NIK 16 digit angka (`inputMode="numeric"`, `maxLength={16}`, filter regex `\D`) dan PIN 6 digit angka (`maxLength={6}`).
+  - Validasi ketat format NIK (16 angka) dan PIN (6 angka) sebelum submit.
+  - Mode toggle dirancang khusus hanya untuk mitra pariwisata: Mode Warga (Default NIK 16 digit & PIN 6 digit) dan Mode Mitra Pariwisata (kredensial teks bebas untuk mitra homestay dan wisata non-NIK).
+  - Penghapusan total label, tombol, dan referensi kata "Admin" dari antarmuka login publik dan footer Quick Login modal (Administrator sepenuhnya tersembunyi / *hidden* dari layar login).
+  - Penyegaran daftar demo di `QuickLoginModal`: 10 aktor publik sesuai mandat pengguna dan tab filter per kategori peran (Kades, Poktan, Petani, Warga, Wisata).
+- [x] 120.4 Form & Tampilan Pemandu Wisata Berbasis NIK (`tourism.ts` & `TourismEcoStayWorkspace.tsx`):
+  - Integrasi input 16 digit NIK warga terdaftar pada modal tambah/edit pemandu wisata.
+  - Tampilan indikator panjang digit dan badge NIK warga pada kartu publik dan tabel CMS admin pemandu wisata.
+- [x] 120.5 Pengujian Otomatis & Verifikasi Build:
+  - Seluruh pengujian backend (`test_tourism.py`, `test_auth.py`, `test_population.py`) lulus 100% (48 passed).
+  - Pemeriksaan tipe TypeScript (`npm run typecheck` / `tsc --noEmit`) lulus 100% (0 error).
+  - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 14.32 detik).
+
+---
+
+## [Phase 121] - Pembersihan Tuntas Data Mock-up Lama yang Salah & Integritas Data GIS
+- [x] 121.1 Pembersihan Menyeluruh Data Stale Mock-up (`seed.py` & PostgreSQL container):
+  - Mengimplementasikan `clean_stale_data()` yang sadar dialek database (*dialect-aware*): menjalankan `TRUNCATE TABLE ... CASCADE` pada PostgreSQL dan aman dengan `DELETE FROM` pada SQLite in-memory test runner.
+  - Menghapus tuntas puluhan data dummy lama (resident salah, poktan tumpang tindih, petani dummy, dan tour guides tanpa NIK).
+  - Melindungi dan memelihara 100% data spasial GIS asli (`spatial_features: 92` cagar budaya & batas desa PostGIS) tanpa disentuh.
+- [x] 121.2 Sinkronisasi Data Bersih & Akun Sistem Operasional:
+  - Database kini memiliki struktur tepat sesuai mandat: 1 Admin Pusat (hidden), 2 Kepala Desa, 2 Kelompok Tani (Lonthoir & Dwiwarna), 2 Petani Rempah, 2 Petak Kebun Resmi, 2 Warga Sipil, 2 Universal Mitra Wisata, dan 2 Pemandu Wisata Resmi berlisensi HPI yang terikat ke NIK warga sah.
+  - Memperbarui akun pendukung operasional fungsional non-NIK (`pengelola_koperasi` & `surveyor`) agar seluruh alur bisnis platform tetap berjalan mulus.
+- [x] 121.3 Harmonisasi Test Suite & Verifikasi Menyeluruh:
+  - Memperbarui `test_farmers_and_farms.py`, `test_tourism.py`, `test_population.py`, dan `test_koperasi.py` agar sinkron dengan NIK dan PIN aktor resmi Banda Neira.
+  - Seluruh 63 unit/integration test backend lulus 100% (63 passed, 0 failed).
+  - Pemeriksaan tipe TypeScript frontend (`tsc --noEmit`) lulus 100% (0 error).
+  - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 18.84 detik).
 
 
 
