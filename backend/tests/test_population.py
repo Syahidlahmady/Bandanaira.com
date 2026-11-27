@@ -60,7 +60,7 @@ async def test_create_resident_invalid_nik_and_gender(client: AsyncClient):
         "/api/v1/population/residents",
         headers={"Authorization": f"Bearer {token}"},
         json={
-            "nik": "8171010101900002",
+            "nik": "8171010101909002",
             "full_name": "Salah Gender",
             "gender": "X",
         },
@@ -72,7 +72,7 @@ async def test_create_resident_invalid_nik_and_gender(client: AsyncClient):
 async def test_duplicate_nik_rejected(client: AsyncClient):
     token = await get_admin_token(client)
     payload = {
-        "nik": "8171010101900003",
+        "nik": "8171010101909003",
         "full_name": "Penduduk Asli",
         "gender": "P",
         "village": "Banda Neira",

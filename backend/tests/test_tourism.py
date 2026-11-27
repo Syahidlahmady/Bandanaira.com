@@ -214,9 +214,9 @@ async def test_cms_tour_guides_crud(client: AsyncClient):
     res_list = await client.get("/api/v1/tourism/guides")
     assert res_list.status_code == 200
     guides = res_list.json()
-    assert len(guides) >= 3
+    assert len(guides) >= 2
     names = [g["name"] for g in guides]
-    assert "Dewi Nusantara" in names
+    assert "Ali Wailissa" in names or "Ruslan Rumra" in names
 
     # 2. Register resident for tour guide and test NIK validation (protected)
     admin_token = await get_auth_token(client, "admin", "Admin123!")

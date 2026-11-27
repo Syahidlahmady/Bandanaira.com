@@ -2287,6 +2287,22 @@ Project status and step-by-step development tracker for **Banda Digital Ecosyste
   - Pemeriksaan tipe TypeScript (`npm run typecheck` / `tsc --noEmit`) lulus 100% (0 error).
   - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 14.32 detik).
 
+---
+
+## [Phase 111] - Pembersihan Tuntas Data Mock-up Lama yang Salah & Integritas Data GIS
+- [x] 111.1 Pembersihan Menyeluruh Data Stale Mock-up (`seed.py` & PostgreSQL container):
+  - Mengimplementasikan `clean_stale_data()` yang sadar dialek database (*dialect-aware*): menjalankan `TRUNCATE TABLE ... CASCADE` pada PostgreSQL dan aman dengan `DELETE FROM` pada SQLite in-memory test runner.
+  - Menghapus tuntas puluhan data dummy lama (resident salah, poktan tumpang tindih, petani dummy, dan tour guides tanpa NIK).
+  - Melindungi dan memelihara 100% data spasial GIS asli (`spatial_features: 92` cagar budaya & batas desa PostGIS) tanpa disentuh.
+- [x] 111.2 Sinkronisasi Data Bersih & Akun Sistem Operasional:
+  - Database kini memiliki struktur tepat sesuai mandat: 1 Admin Pusat (hidden), 2 Kepala Desa, 2 Kelompok Tani (Lonthoir & Dwiwarna), 2 Petani Rempah, 2 Petak Kebun Resmi, 2 Warga Sipil, 2 Universal Mitra Wisata, dan 2 Pemandu Wisata Resmi berlisensi HPI yang terikat ke NIK warga sah.
+  - Memperbarui akun pendukung operasional fungsional non-NIK (`pengelola_koperasi` & `surveyor`) agar seluruh alur bisnis platform tetap berjalan mulus.
+- [x] 111.3 Harmonisasi Test Suite & Verifikasi Menyeluruh:
+  - Memperbarui `test_farmers_and_farms.py`, `test_tourism.py`, `test_population.py`, dan `test_koperasi.py` agar sinkron dengan NIK dan PIN aktor resmi Banda Neira.
+  - Seluruh 63 unit/integration test backend lulus 100% (63 passed, 0 failed).
+  - Pemeriksaan tipe TypeScript frontend (`tsc --noEmit`) lulus 100% (0 error).
+  - Build produksi Vite (`npm run build`) sukses 100% (2.486 modul ter-bundle dalam 18.84 detik).
+
 
 
 

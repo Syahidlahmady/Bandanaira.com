@@ -113,7 +113,9 @@ async def test_register_farmer_and_farms(client: AsyncClient):
     fc = geojson_res.json()
     assert fc["type"] == "FeatureCollection"
     assert len(fc["features"]) >= 1
-    sample_feature = fc["features"][0]
+    sample_feature = next(
+        f for f in fc["features"] if f["properties"].get("farm_code") == "BN-FARM-001"
+    )
     assert sample_feature["type"] == "Feature"
     assert sample_feature["geometry"]["type"] == "Point"
     assert sample_feature["geometry"]["coordinates"] == [129.9042, -4.5255]
@@ -177,9 +179,9 @@ async def get_user_token(client: AsyncClient, username: str, password: str) -> s
 @pytest.mark.asyncio
 async def test_farm_approval_workflow_and_role_permissions(client: AsyncClient):
     admin_token = await get_admin_token(client)
-    ketua_token = await get_user_token(client, "ketua_kelompok", "Ketua123!")
-    petani_token = await get_user_token(client, "petani", "Petani123!")
-    petugas_token = await get_user_token(client, "petugas", "Petugas123!")
+    ketua_token = await get_user_token(client, "8171010101800001", "123456")
+    petani_token = await get_user_token(client, "8171010101900001", "123456")
+    petugas_token = await get_user_token(client, "8171010101850001", "123456")
 
     # 1. Create a farmer as admin
     farmer_res = await client.post(
@@ -420,7 +422,7 @@ async def test_spatial_polygon_boundary_and_overlap_validation(client: AsyncClie
 
 @pytest.mark.asyncio
 async def test_village_boundary_enforcement_and_territorial_scoping(client: AsyncClient):
-    ketua_token = await get_user_token(client, "ketua_kelompok", "Ketua123!")
+    ketua_token = await get_user_token(client, "8171010101800001", "123456")
 
     # 1. Fetch farmers as ketua_kelompok (Desa Lonthoir) -> should only see Lonthoir
     farmers_res = await client.get(
@@ -502,7 +504,7 @@ async def test_village_boundary_enforcement_and_territorial_scoping(client: Asyn
     valid_farm_id = valid_farm_res.json()["id"]
 
     # Petugas Lonthoir menyetujui kebun valid -> Berhasil 200!
-    petugas_token = await get_user_token(client, "petugas", "Petugas123!")
+    petugas_token = await get_user_token(client, "8171010101850001", "123456")
     approve_ok = await client.patch(
         f"/api/v1/farms/{valid_farm_id}/verification",
         headers={"Authorization": f"Bearer {petugas_token}"},
@@ -539,7 +541,7 @@ async def test_village_boundary_enforcement_and_territorial_scoping(client: Asyn
 @pytest.mark.asyncio
 async def test_poktan_add_farmer_from_verified_resident_nik_happy_path(client: AsyncClient):
     admin_token = await get_admin_token(client)
-    ketua_token = await get_user_token(client, "ketua_kelompok", "Ketua123!")
+    ketua_token = await get_user_token(client, "8171010101800001", "123456")
 
     # 1. Kepala Desa / Admin daftarkan warga Lonthoir
     res_payload = {
@@ -617,7 +619,7 @@ async def test_poktan_add_farmer_from_verified_resident_nik_happy_path(client: A
 @pytest.mark.asyncio
 async def test_poktan_add_farmer_unverified_and_cross_village_and_duplicate_rejected(client: AsyncClient):
     admin_token = await get_admin_token(client)
-    ketua_token = await get_user_token(client, "ketua_kelompok", "Ketua123!")
+    ketua_token = await get_user_token(client, "8171010101800001", "123456")
 
     # 1. Warga Lonthoir masih status 'pending' (belum diverifikasi Kepala Desa)
     p_unverified = await client.post(

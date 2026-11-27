@@ -1,11 +1,13 @@
 import logging
-from sqlalchemy import select
+import uuid
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.app.core.security import hash_password
 from backend.app.modules.auth.models import Role, User
 from backend.app.modules.population.models import Resident
 from backend.app.modules.farmers.models import Farmer, FarmerGroup
 from backend.app.modules.farms.models import Farm
+from backend.app.modules.tourism.models import TourGuide
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +23,7 @@ INITIAL_ROLES = [
     ("field_surveyor", "Field surveyor and IoT operator collecting dynamic surveys and monitoring telemetry"),
 ]
 
-# 1 Administrator Pusat (Hidden dari daftar demo publik, login khusus)
+# 1 Administrator Pusat (Hidden dari daftar demo publik, login khusus non-NIK)
 ADMIN_USER = {
     "username": "admin",
     "email": "admin@bandadigital.id",
@@ -93,6 +95,15 @@ FARMERS_SEED = [
         "roles": ["resident", "farmer"],
         "group_name": "Poktan Pala Lonthoir Mandiri",
         "farmer_code": "PTR-LNT-001",
+        "farm": {
+            "farm_code": "PLT-LNT-001",
+            "name": "Kebun Pala Pala Purba Lonthoir",
+            "commodity": "Pala Banda",
+            "latitude": -4.5421,
+            "longitude": 129.8974,
+            "area_sqm": 7500.0,
+            "village": "Lonthoir",
+        },
     },
     {
         "nik": "8171010101900002",
@@ -104,6 +115,15 @@ FARMERS_SEED = [
         "roles": ["resident", "farmer"],
         "group_name": "Poktan Rempah Dwiwarna Sejahtera",
         "farmer_code": "PTR-DWR-001",
+        "farm": {
+            "farm_code": "PLT-DWR-001",
+            "name": "Kebun Cengkih & Pala Dwiwarna",
+            "commodity": "Cengkih & Pala",
+            "latitude": -4.5245,
+            "longitude": 129.9032,
+            "area_sqm": 5200.0,
+            "village": "Dwiwarna",
+        },
     },
 ]
 
@@ -129,44 +149,125 @@ CIVILIAN_RESIDENTS = [
     },
 ]
 
-# Universal Tourism Accounts (non-NIK, login khusus universal)
+# 2 Universal Tourism Accounts (non-NIK, login khusus universal)
 UNIVERSAL_TOURISM_ACCOUNTS = [
     {
         "username": "operator_homestay",
         "email": "homestay@bandadigital.id",
         "password": "Homestay123!",
-        "full_name": "Rahmat Delfika (Admin Homestay Universal)",
+        "full_name": "Rahmat Delfika",
         "role": "homestay_operator",
     },
     {
         "username": "admin_wisata",
         "email": "wisata@bandadigital.id",
         "password": "Wisata123!",
-        "full_name": "Dewi Nusantara (Admin Wisata Universal)",
+        "full_name": "Dewi Nusantara",
         "role": "smart_tourism_admin",
     },
 ]
 
-# Akun Pendukung Operasional Sistem (Koperasi & Surveyor)
+# Akun Operasional Khusus Pendukung (non-NIK, login fungsional modul)
 SUPPORT_ACCOUNTS = [
     {
         "username": "pengelola_koperasi",
         "email": "koperasi@bandadigital.id",
         "password": "Koperasi123!",
-        "full_name": "Faisal Latarisa (Pengelola Koperasi Hatta)",
+        "full_name": "Pengelola Koperasi Serba Usaha",
         "role": "coop_manager",
     },
     {
         "username": "surveyor",
         "email": "surveyor@bandadigital.id",
         "password": "Surveyor123!",
-        "full_name": "Fauzan Arisanto (Surveyor Lapangan & IoT)",
+        "full_name": "Surveyor Lapangan & IoT",
         "role": "field_surveyor",
     },
 ]
 
+# 2 Pemandu Wisata Berlisensi (Wajib terhubung ke NIK warga terdaftar)
+TOUR_GUIDES_SEED = [
+    {
+        "resident_nik": "8171010101900001",  # Ali Wailissa (Lonthoir)
+        "name": "Ali Wailissa",
+        "license_number": "HPI-BANDA-001",
+        "phone_whatsapp": "6281234560021",
+        "specialties": "Trekking Kebun Pala Purba Lonthoir & Gastronomi Rempah Kenari",
+        "languages": "Indonesia, English",
+        "fee_per_day_rp": 350000.0,
+        "photo_url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80",
+        "bio": "Putra asli Lonthoir yang memandu napak tilas perkebunan pala tertua abad ke-16 serta edukasi panen kenari dan pala organik.",
+        "island_base": "Pulau Banda Besar",
+        "is_verified": True,
+        "is_active": True,
+        "rating": 4.95,
+        "trips_completed": 48,
+    },
+    {
+        "resident_nik": "8171010101900002",  # Ruslan Rumra (Dwiwarna)
+        "name": "Ruslan Rumra",
+        "license_number": "HPI-BANDA-002",
+        "phone_whatsapp": "6281234560022",
+        "specialties": "Sejarah Benteng Belgica, Rumah Bung Hatta & Sutan Sjahrir",
+        "languages": "Indonesia, English, Dutch",
+        "fee_per_day_rp": 400000.0,
+        "photo_url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80",
+        "bio": "Pemandu budaya berlisensi HPI dengan pengalaman menceritakan sejarah peradaban rempah dan diplomasi kolonial Banda Neira.",
+        "island_base": "Pulau Neira",
+        "is_verified": True,
+        "is_active": True,
+        "rating": 5.0,
+        "trips_completed": 62,
+    },
+]
 
-async def _upsert_user_with_roles(
+
+async def clean_stale_data(db: AsyncSession) -> None:
+    """Membersihkan seluruh data mock-up lama yang tidak sesuai dari database sebelum seeding."""
+    bind = db.bind
+    dialect_name = bind.dialect.name if bind and hasattr(bind, "dialect") else ""
+    tables_to_clean = [
+        "batch_events",
+        "batch_harvests",
+        "product_batches",
+        "blockchain_transactions",
+        "raw_surveys",
+        "iot_telemetry_logs",
+        "audit_logs",
+        "administrative_requests",
+        "resident_mutations",
+        "coop_transactions",
+        "coop_accounts",
+        "bookings",
+        "tour_guides",
+        "harvests",
+        "farms",
+        "farmers",
+        "farmer_groups",
+        "residents",
+        "user_roles",
+        "users",
+    ]
+
+    if "sqlite" in dialect_name.lower():
+        logger.info("🧹 Membersihkan seluruh data test SQLite via DELETE FROM...")
+        for tbl in tables_to_clean:
+            try:
+                await db.execute(text(f"DELETE FROM {tbl};"))
+            except Exception:
+                pass
+        await db.commit()
+        logger.info("✓ Pembersihan SQLite selesai.")
+        return
+
+    logger.info("🧹 Membersihkan seluruh data lama & akun dummy lama via TRUNCATE CASCADE...")
+    truncate_sql = f"TRUNCATE TABLE {', '.join(tables_to_clean)} CASCADE;"
+    await db.execute(text(truncate_sql))
+    await db.commit()
+    logger.info("✓ Pembersihan data lama selesai (TRUNCATE CASCADE sukses).")
+
+
+async def _create_user_with_roles(
     db: AsyncSession,
     username: str,
     email: str,
@@ -176,82 +277,54 @@ async def _upsert_user_with_roles(
     village: str | None = None,
     is_superuser: bool = False,
 ) -> User:
-    user_stmt = select(User).where(User.username == username)
-    user = (await db.execute(user_stmt)).scalar_one_or_none()
-
-    # Query role objects
     roles_stmt = select(Role).where(Role.name.in_(role_names))
     role_objs = (await db.execute(roles_stmt)).scalars().all()
 
-    if not user:
-        user = User(
-            username=username,
-            email=email,
-            password_hash=hash_password(password),
-            full_name=full_name,
-            is_active=True,
-            is_superuser=is_superuser,
-            village=village,
-            roles=list(role_objs),
-        )
-        db.add(user)
-        logger.info(f"User created: {username} ({', '.join(role_names)})")
-    else:
-        user.email = email
-        user.full_name = full_name
-        user.password_hash = hash_password(password)
-        user.is_active = True
-        user.is_superuser = is_superuser
-        user.village = village
-        user.roles = list(role_objs)
-        logger.info(f"User updated: {username} ({', '.join(role_names)})")
-
+    user = User(
+        username=username,
+        email=email,
+        password_hash=hash_password(password),
+        full_name=full_name,
+        is_active=True,
+        is_superuser=is_superuser,
+        village=village,
+        roles=list(role_objs),
+    )
+    db.add(user)
     await db.flush()
     return user
 
 
-async def _upsert_resident(
+async def _create_resident(
     db: AsyncSession,
     nik: str,
     full_name: str,
     gender: str,
     village: str,
     occupation: str,
-    address: str = "Banda Neira",
+    address: str = "Kepulauan Banda",
 ) -> Resident:
-    res_stmt = select(Resident).where(Resident.nik == nik)
-    resident = (await db.execute(res_stmt)).scalar_one_or_none()
-
-    if not resident:
-        resident = Resident(
-            nik=nik,
-            full_name=full_name,
-            gender=gender,
-            village=village,
-            address=address,
-            occupation=occupation,
-            verification_status="verified",
-            residence_status="active",
-        )
-        resident.sync_crypto_nik()
-        db.add(resident)
-        logger.info(f"Resident created: {nik} - {full_name}")
-    else:
-        resident.full_name = full_name
-        resident.gender = gender
-        resident.village = village
-        resident.occupation = occupation
-        resident.verification_status = "verified"
-        resident.residence_status = "active"
-        resident.sync_crypto_nik()
-        logger.info(f"Resident updated: {nik} - {full_name}")
-
+    resident = Resident(
+        nik=nik,
+        full_name=full_name,
+        gender=gender,
+        village=village,
+        address=address,
+        occupation=occupation,
+        verification_status="verified",
+        residence_status="active",
+    )
+    resident.sync_crypto_nik()
+    db.add(resident)
     await db.flush()
     return resident
 
 
-async def seed_roles_and_admin(db: AsyncSession) -> None:
-    """Melakukan penyegaran data seed sesuai pemetaan aktor Banda Digital Ecosystem."""
+async def seed_roles_and_admin(db: AsyncSession, clean_first: bool = True) -> None:
+    """Menjalankan seeding bersih pemetaan aktor Banda Digital Ecosystem."""
+    if clean_first:
+        await clean_stale_data(db)
+
     # 1. Seed Roles
     for role_name, description in INITIAL_ROLES:
         stmt = select(Role).where(Role.name == role_name)
@@ -261,8 +334,8 @@ async def seed_roles_and_admin(db: AsyncSession) -> None:
             db.add(role)
     await db.commit()
 
-    # 2. Seed 1 Super Administrator (Hidden)
-    await _upsert_user_with_roles(
+    # 2. Seed 1 Super Administrator (Hidden dari publik)
+    await _create_user_with_roles(
         db=db,
         username=ADMIN_USER["username"],
         email=ADMIN_USER["email"],
@@ -272,9 +345,9 @@ async def seed_roles_and_admin(db: AsyncSession) -> None:
         is_superuser=ADMIN_USER["is_superuser"],
     )
 
-    # 3. Seed 2 Kepala Desa (berbasis NIK & PIN 6 digit)
+    # 3. Seed 2 Kepala Desa (berbasis NIK 16 digit & PIN 6 digit)
     for kades in VILLAGE_HEADS:
-        res = await _upsert_resident(
+        await _create_resident(
             db=db,
             nik=kades["nik"],
             full_name=kades["full_name"],
@@ -282,7 +355,7 @@ async def seed_roles_and_admin(db: AsyncSession) -> None:
             village=kades["village"],
             occupation=kades["occupation"],
         )
-        await _upsert_user_with_roles(
+        await _create_user_with_roles(
             db=db,
             username=kades["nik"],
             email=f"{kades['nik']}@warga.bandadigital.id",
@@ -292,29 +365,20 @@ async def seed_roles_and_admin(db: AsyncSession) -> None:
             village=kades["village"],
         )
 
-    # 4. Seed 2 Poktan & 2 Ketua Poktan (berbasis NIK & PIN 6 digit)
+    # 4. Seed 2 Poktan & 2 Ketua Poktan (berbasis NIK 16 digit & PIN 6 digit)
     group_map = {}
     for grp in FARMER_GROUPS_SEED:
-        # Kelompok Tani
-        g_stmt = select(FarmerGroup).where(FarmerGroup.name == grp["group_name"])
-        f_group = (await db.execute(g_stmt)).scalar_one_or_none()
-        if not f_group:
-            f_group = FarmerGroup(
-                name=grp["group_name"],
-                village=grp["village"],
-                leader_name=grp["leader_name"],
-                contact_number=grp["contact"],
-            )
-            db.add(f_group)
-            await db.flush()
-        else:
-            f_group.village = grp["village"]
-            f_group.leader_name = grp["leader_name"]
-            f_group.contact_number = grp["contact"]
+        f_group = FarmerGroup(
+            name=grp["group_name"],
+            village=grp["village"],
+            leader_name=grp["leader_name"],
+            contact_number=grp["contact"],
+        )
+        db.add(f_group)
+        await db.flush()
         group_map[grp["group_name"]] = f_group
 
-        # Resident Ketua Poktan
-        res = await _upsert_resident(
+        res = await _create_resident(
             db=db,
             nik=grp["leader_nik"],
             full_name=grp["leader_name"],
@@ -322,7 +386,7 @@ async def seed_roles_and_admin(db: AsyncSession) -> None:
             village=grp["village"],
             occupation=grp["occupation"],
         )
-        usr = await _upsert_user_with_roles(
+        usr = await _create_user_with_roles(
             db=db,
             username=grp["leader_nik"],
             email=f"{grp['leader_nik']}@warga.bandadigital.id",
@@ -332,29 +396,22 @@ async def seed_roles_and_admin(db: AsyncSession) -> None:
             village=grp["village"],
         )
 
-        # Farmer entry untuk Ketua Poktan
-        f_stmt = select(Farmer).where(Farmer.farmer_code == grp["farmer_code"])
-        f_rec = (await db.execute(f_stmt)).scalar_one_or_none()
-        if not f_rec:
-            f_rec = Farmer(
-                farmer_code=grp["farmer_code"],
-                name=grp["leader_name"],
-                phone=grp["contact"],
-                status="active",
-                farmer_group_id=f_group.id,
-                resident_id=res.id,
-                user_id=usr.id,
-            )
-            db.add(f_rec)
-        else:
-            f_rec.name = grp["leader_name"]
-            f_rec.farmer_group_id = f_group.id
-            f_rec.resident_id = res.id
-            f_rec.user_id = usr.id
+        f_rec = Farmer(
+            farmer_code=grp["farmer_code"],
+            name=grp["leader_name"],
+            phone=grp["contact"],
+            status="active",
+            farmer_group_id=f_group.id,
+            resident_id=res.id,
+            user_id=usr.id,
+        )
+        db.add(f_rec)
+        await db.flush()
 
-    # 5. Seed 2 Petani Rempah (berbasis NIK & PIN 6 digit)
+    # 5. Seed 2 Petani Rempah & Petak Kebun (berbasis NIK 16 digit & PIN 6 digit)
+    residents_by_nik = {}
     for ptn in FARMERS_SEED:
-        res = await _upsert_resident(
+        res = await _create_resident(
             db=db,
             nik=ptn["nik"],
             full_name=ptn["full_name"],
@@ -362,7 +419,8 @@ async def seed_roles_and_admin(db: AsyncSession) -> None:
             village=ptn["village"],
             occupation=ptn["occupation"],
         )
-        usr = await _upsert_user_with_roles(
+        residents_by_nik[ptn["nik"]] = res
+        usr = await _create_user_with_roles(
             db=db,
             username=ptn["nik"],
             email=f"{ptn['nik']}@warga.bandadigital.id",
@@ -372,28 +430,38 @@ async def seed_roles_and_admin(db: AsyncSession) -> None:
             village=ptn["village"],
         )
         f_grp = group_map.get(ptn["group_name"])
-        f_stmt = select(Farmer).where(Farmer.farmer_code == ptn["farmer_code"])
-        f_rec = (await db.execute(f_stmt)).scalar_one_or_none()
-        if not f_rec:
-            f_rec = Farmer(
-                farmer_code=ptn["farmer_code"],
-                name=ptn["full_name"],
-                phone="08123456002" + ptn["farmer_code"][-1],
-                status="active",
-                farmer_group_id=f_grp.id if f_grp else None,
-                resident_id=res.id,
-                user_id=usr.id,
-            )
-            db.add(f_rec)
-        else:
-            f_rec.name = ptn["full_name"]
-            f_rec.farmer_group_id = f_grp.id if f_grp else None
-            f_rec.resident_id = res.id
-            f_rec.user_id = usr.id
+        f_rec = Farmer(
+            farmer_code=ptn["farmer_code"],
+            name=ptn["full_name"],
+            phone="08123456002" + ptn["farmer_code"][-1],
+            status="active",
+            farmer_group_id=f_grp.id if f_grp else None,
+            resident_id=res.id,
+            user_id=usr.id,
+        )
+        db.add(f_rec)
+        await db.flush()
 
-    # 6. Seed 2 Warga Sipil (berbasis NIK & PIN 6 digit)
+        # Seed plot kebun untuk petani
+        farm_info = ptn.get("farm")
+        if farm_info:
+            farm_obj = Farm(
+                farmer_id=f_rec.id,
+                farm_code=farm_info["farm_code"],
+                name=farm_info["name"],
+                primary_commodity=farm_info["commodity"],
+                latitude=farm_info["latitude"],
+                longitude=farm_info["longitude"],
+                area_sqm=farm_info["area_sqm"],
+                village=farm_info["village"],
+                verification_status="verified",
+            )
+            db.add(farm_obj)
+            await db.flush()
+
+    # 6. Seed 2 Warga Sipil (berbasis NIK 16 digit & PIN 6 digit)
     for wga in CIVILIAN_RESIDENTS:
-        res = await _upsert_resident(
+        res = await _create_resident(
             db=db,
             nik=wga["nik"],
             full_name=wga["full_name"],
@@ -401,7 +469,8 @@ async def seed_roles_and_admin(db: AsyncSession) -> None:
             village=wga["village"],
             occupation=wga["occupation"],
         )
-        await _upsert_user_with_roles(
+        residents_by_nik[wga["nik"]] = res
+        await _create_user_with_roles(
             db=db,
             username=wga["nik"],
             email=f"{wga['nik']}@warga.bandadigital.id",
@@ -411,9 +480,9 @@ async def seed_roles_and_admin(db: AsyncSession) -> None:
             village=wga["village"],
         )
 
-    # 7. Seed 2 Universal Tourism Accounts (non-NIK)
-    for univ in UNIVERSAL_TOURISM_ACCOUNTS:
-        await _upsert_user_with_roles(
+    # 7. Seed 2 Universal Tourism Accounts & Support Accounts (non-NIK)
+    for univ in UNIVERSAL_TOURISM_ACCOUNTS + SUPPORT_ACCOUNTS:
+        await _create_user_with_roles(
             db=db,
             username=univ["username"],
             email=univ["email"],
@@ -422,19 +491,30 @@ async def seed_roles_and_admin(db: AsyncSession) -> None:
             role_names=[univ["role"]],
         )
 
-    # 8. Seed Support Accounts (Koperasi & Surveyor)
-    for supp in SUPPORT_ACCOUNTS:
-        await _upsert_user_with_roles(
-            db=db,
-            username=supp["username"],
-            email=supp["email"],
-            password=supp["password"],
-            full_name=supp["full_name"],
-            role_names=[supp["role"]],
+    # 8. Seed 2 Pemandu Wisata Resmi (terhubung ke NIK warga terdaftar)
+    for tg_info in TOUR_GUIDES_SEED:
+        r_obj = residents_by_nik.get(tg_info["resident_nik"])
+        guide = TourGuide(
+            resident_id=r_obj.id if r_obj else None,
+            resident_nik=tg_info["resident_nik"],
+            name=tg_info["name"],
+            license_number=tg_info["license_number"],
+            phone_whatsapp=tg_info["phone_whatsapp"],
+            specialties=tg_info["specialties"],
+            languages=tg_info["languages"],
+            fee_per_day_rp=tg_info["fee_per_day_rp"],
+            photo_url=tg_info["photo_url"],
+            bio=tg_info["bio"],
+            island_base=tg_info["island_base"],
+            is_verified=tg_info["is_verified"],
+            is_active=tg_info["is_active"],
+            rating=tg_info["rating"],
+            trips_completed=tg_info["trips_completed"],
         )
+        db.add(guide)
 
     await db.commit()
-    logger.info("✓ Pemetaan aktor Banda Neira berhasil disegarkan!")
+    logger.info("✓ Pemetaan aktor Banda Neira berhasil disegarkan dan dibersihkan 100%!")
 
 
 if __name__ == "__main__":
@@ -443,7 +523,7 @@ if __name__ == "__main__":
 
     async def main():
         async with AsyncSessionLocal() as session:
-            await seed_roles_and_admin(session)
-            print("✓ Seluruh data seed pemetaan aktor berhasil diterapkan.")
+            await seed_roles_and_admin(session, clean_first=True)
+            print("✓ Seluruh data lama berhasil dibersihkan & seed aktor bersih berhasil diterapkan.")
 
     asyncio.run(main())

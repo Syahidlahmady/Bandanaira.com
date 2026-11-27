@@ -11,7 +11,7 @@ async def get_admin_token(client: AsyncClient) -> str:
 
 
 async def create_sample_resident(
-    client: AsyncClient, token: str, nik: str = "8171010101900001", name: str = "Ahmad Baadilla"
+    client: AsyncClient, token: str, nik: str = "8171010101909001", name: str = "Ahmad Baadilla"
 ):
     res = await client.post(
         "/api/v1/population/residents",
@@ -37,7 +37,7 @@ async def create_sample_resident(
 @pytest.mark.asyncio
 async def test_setor_komoditas_balance(client: AsyncClient):
     token = await get_admin_token(client)
-    resident = await create_sample_resident(client, token, "8171010101900001", "Ahmad Baadilla")
+    resident = await create_sample_resident(client, token, "8171010101909001", "Ahmad Baadilla")
     nik = resident["nik"]
 
     # 1. Setor 10 kg Pala Super ke Tabungan Saldo Rp
@@ -72,7 +72,7 @@ async def test_setor_komoditas_balance(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_setor_komoditas_water_quota(client: AsyncClient):
     token = await get_admin_token(client)
-    nik = "8171010101900002"
+    nik = "8171010101909002"
     await create_sample_resident(client, token, nik, "Fatima Al-Banda")
 
     # Setor 1 kg Fuli Merah ke Kuota Air Bersih
@@ -101,7 +101,7 @@ async def test_setor_komoditas_water_quota(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_setor_sampah_plastik_air_bersih(client: AsyncClient):
     token = await get_admin_token(client)
-    nik = "8171010101900003"
+    nik = "8171010101909003"
     await create_sample_resident(client, token, nik, "Muhammad Syahrir")
 
     # Setor 3 kg Botol Plastik PET
@@ -135,7 +135,7 @@ async def test_setor_sampah_plastik_air_bersih(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_tebus_air_dispenser_happy_path_and_exhaustion(client: AsyncClient):
     token = await get_admin_token(client)
-    nik = "8171010101900004"
+    nik = "8171010101909004"
     await create_sample_resident(client, token, nik, "Siti Rahma")
 
     # Kuota default warga baru = 20 Liter
@@ -172,7 +172,7 @@ async def test_tebus_air_dispenser_happy_path_and_exhaustion(client: AsyncClient
 @pytest.mark.asyncio
 async def test_koperasi_ledger_and_recap(client: AsyncClient):
     token = await get_admin_token(client)
-    nik = "8171010101900005"
+    nik = "8171010101909005"
     await create_sample_resident(client, token, nik, "La Ode Rahman")
 
     # Setor cakalang 5kg = Rp 125,000
